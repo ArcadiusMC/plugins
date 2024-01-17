@@ -1,0 +1,52 @@
+package net.arcadiusmc.core.listeners;
+
+import net.arcadiusmc.core.CorePlugin;
+import net.arcadiusmc.command.help.ArcadiusHelpList;
+import net.arcadiusmc.core.user.Components;
+import net.arcadiusmc.core.user.UserServiceImpl;
+import net.arcadiusmc.enchantment.FtcEnchants;
+import net.arcadiusmc.events.DayChangeEvent;
+import net.arcadiusmc.events.EarlyShutdownEvent;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.server.PluginDisableEvent;
+import org.bukkit.event.server.ServerLoadEvent;
+import org.bukkit.plugin.java.JavaPlugin;
+
+class ServerListener implements Listener {
+
+  @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+  public void onServerLoad(ServerLoadEvent event) {
+    CorePlugin plugin = JavaPlugin.getPlugin(CorePlugin.class);
+    plugin.getUserService().onServerLoaded();
+
+    FtcEnchants.closeRegistrations();
+
+    ArcadiusHelpList helpList = ArcadiusHelpList.helpList();
+    helpList.update();
+  }
+
+  @EventHandler(ignoreCancelled = true)
+  public void onEarlyShutdown(EarlyShutdownEvent event) {
+    CorePlugin plugin = JavaPlugin.getPlugin(CorePlugin.class);
+    UserServiceImpl service = plugin.getUserService();
+    service.shutdown();
+  }
+
+  @EventHandler(ignoreCancelled = true)
+  public void onPluginDisable(PluginDisableEvent event) {
+    Components.unregisterAll(event.getPlugin());
+  }
+
+  @EventHandler(ignoreCancelled = true)
+  public void onDayChange(DayChangeEvent event) {
+    if (event.getTime().getDayOfMonth() != 1) {
+      return;
+    }
+
+    CorePlugin plugin = JavaPlugin.getPlugin(CorePlugin.class);
+    UserServiceImpl service = plugin.getUserService();
+    service.getMonthlyPlaytime().clear();
+  }
+}
