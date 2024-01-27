@@ -1,0 +1,86 @@
+# Specifies data about how the server is displayed in players' server lists,
+# including the server's icon and MOTD
+# ------------------------------------------------------------------------------
+# Format:
+# ------------------------------------------------------------------------------
+# 'condition' (Optional value):
+#  If a string, assumes input is raw JavaScript, else you can specify if it's a
+#  script path, or a JavaScript code. This value is optional, if not set,
+#  condition will always be true.
+#  At present, 2 objects are placed into the script's bindings, a LocalDate
+#  object named 'date' and a regular java Random.
+#
+# examples:
+# - condition = "random.nextBoolean()"
+# - condition = { path = "path/to/script.js" }
+# - condition = { js = "false == false" }
+# ------------------------------------------------------------------------------
+# 'icons' (Required value):
+#  Specifies either a single icon's path, or a list of icon paths, one of which
+#  will be chosen at random. The file paths given to this argument are relative
+#  to the 'icons' directory inside the plugin folder
+#
+# examples:
+# - icons = "path/to/icon.png"
+# - icons = [ "icon/path.png", "foo/bar.png" ]
+# ------------------------------------------------------------------------------
+# 'period' (Optional value):
+#  Specifies the date month period the icon will be active in, if not set, entry
+#  is always active.
+#
+# examples:
+# - period = "01.01"
+#  Only active on the first day of January
+#
+# - period = [ "01.01", "30.01" ]
+#  Active from the 1st till the 30th of January
+#
+# - period = [ "01.12", "31.01" ]
+#  Active from the 1st of December till the 31st of January
+# ------------------------------------------------------------------------------
+# 'motd' (Optional value):
+#  Specifies a string displayed after the 'For The Crown - ' in the server's
+#  MOTD.
+#  By default, this text will be gray
+#
+# examples:
+# - motd = "Now with guilds"
+# - motd = "Now with emotes :heart:"
+# - motd = "Now with <gradient=red,blue:gradientsss!>"
+# ------------------------------------------------------------------------------
+# 'version_text' (Optional value):
+#  Specifies the version text displayed next to the 5 bars on the side. If this
+#  is set, the 5 bars will become crossed out and display an "Incompatible
+#  Version" message.
+#
+# examples:
+# - version_text = "&4Maintenance"
+# - version_text = "&4Out of Order
+# ------------------------------------------------------------------------------
+# 'protocol_override' (Optional value):
+#  Overrides the ProtocolVersion number sent to the client during pings, if this
+#  value is not set for an entry, then it will be set to the current one
+#
+#  See https://minecraft.wiki/w/Protocol_version
+#
+# examples:
+# - protocol_override = 1
+# - protocol_override = 0x4000009A
+# ------------------------------------------------------------------------------
+# 'priority' (Optional value):
+#  Specifies how much the entry should be prioritized over others, larger number
+#  means it will be tested before others. By default, the value will be 0
+#
+# examples:
+# - priority =   0
+# - priority =  10
+# - priority = -10
+# ------------------------------------------------------------------------------
+# 'overlay' (Optional value):
+#  Overlays a specified icon PNG file ontop of all specified icons in the
+#  current section.
+#
+# examples:
+# - priority = "other-icon.png"
+# - priority = "path/icon.png"
+# ------------------------------------------------------------------------------
