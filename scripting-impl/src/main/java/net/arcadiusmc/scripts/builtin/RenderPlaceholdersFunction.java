@@ -77,7 +77,7 @@ public class RenderPlaceholdersFunction implements Callable {
 
   private PlaceholderRenderer toRenderer(Object[] args, int index) {
     if (args.length <= index) {
-      return Placeholders.newRenderer();
+      return Placeholders.newRenderer().useDefaults();
     }
 
     Object value = args[index];
@@ -90,7 +90,7 @@ public class RenderPlaceholdersFunction implements Callable {
       return context.renderer();
     }
 
-    return Placeholders.newRenderer();
+    return Placeholders.newRenderer().useDefaults();
   }
 
   record ValuePlaceholder(Object value, Context cx, Scriptable scope) implements TextPlaceholder {
