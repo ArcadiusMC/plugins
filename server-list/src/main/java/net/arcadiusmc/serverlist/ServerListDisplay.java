@@ -60,9 +60,7 @@ public class ServerListDisplay {
   }
 
   void saveDefaults() {
-    PluginJar.saveResources("icons", iconDirectory);
     PluginJar.saveResources("serverlist.toml", loaderFile);
-    LOGGER.debug("Saved default server icon directory");
   }
 
   /** Caches all registered entries that are applicable to the current date */
