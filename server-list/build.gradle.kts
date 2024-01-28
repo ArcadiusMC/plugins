@@ -12,6 +12,6 @@ dependencies {
 }
 
 pluginYml {
-  name = "FTC-ServerList"
+  name = "ServerList"
   main = "net.arcadiusmc.serverlist.ServerlistPlugin"
 }
