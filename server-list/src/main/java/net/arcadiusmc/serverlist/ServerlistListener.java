@@ -90,7 +90,12 @@ public class ServerlistListener implements Listener {
       user = null;
     }
 
-    placeholders.add("message", placeholders.render(pair.motdPart, user));
+    if (pair.motdPart == null) {
+      placeholders.add("message", Component.empty());
+    } else {
+      placeholders.add("message", placeholders.render(pair.motdPart, user));
+    }
+
     event.motd(placeholders.render(base, user));
 
     if (pair.icon != null) {
