@@ -1,0 +1,49 @@
+
+#
+# Settings applied to this dialogue tree
+#
+# - available-style:
+#     Sets the style used for buttons that are available for players to click on
+#     Default: "aqua"
+# - unavailable-style:
+#     Sets the style used for buttons that are NOT available for players to click on
+#     Default: "gray"
+# - button-format:
+#     Sets the format that buttons are rendered in. Use the '${buttonText}' placeholder
+#     for the button's actual text.
+#     Default: "=[ &f${buttonText}&r ]="
+# - prefix:
+#     Text that prefixes each node when it's viewed by a player
+#     Default: ""
+# - suffix
+#     Text that's appended to the end of each node's text
+#     Default: ""
+# - entry-point:
+#     Entry point for any players that are interacting with this dialogue tree
+#     Defaults to an empty value, meaning there's no entry point
+#
+settings:
+  available-style: "aqua"
+  unavailable-style: "gray"
+  button-format: "=[ &f${buttonText}&r ]="
+  prefix: ""
+  suffix: ""
+  entry-point: "name-of-a-node"
+
+name-of-a-node:
+  prompt: "This is a prompt :)"
+
+  conditions:
+    - has_score: "obj=crown range=3.."
+
+  on-view:
+    - console_cmd: "kill %player"
+    - player_cmd: "say aww man :("
+    - script: "script/file/asda.js"
+    - js: "player.health = 0"
+
+  links:
+    - node: name-of-another-node
+
+    - node: name-of-a-third-node
+      prompt: "Oh, I say!"
