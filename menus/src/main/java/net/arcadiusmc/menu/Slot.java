@@ -3,9 +3,17 @@ package net.arcadiusmc.menu;
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.codecs.PrimitiveCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
 import lombok.Getter;
+import net.arcadiusmc.utils.io.FtcCodecs;
 import net.arcadiusmc.utils.io.JsonWrapper;
+import net.arcadiusmc.utils.io.Results;
 import org.apache.commons.lang3.Validate;
 
 /**
@@ -23,6 +31,8 @@ import org.apache.commons.lang3.Validate;
 public class Slot {
 
   /* ----------------------------- CONSTANTS ------------------------------ */
+
+  static final Codec<Slot> CODEC;
 
   /**
    * The size of possible column positions (x coordinates) in an inventory, basically max column pos
@@ -215,5 +225,62 @@ public class Slot {
   @Override
   public String toString() {
     return "(x=" + x + ", y=" + y + ", index=" + index + ")";
+  }
+
+  static {
+    final Codec<Slot> recordCodec = RecordCodecBuilder.create(instance -> {
+      return instance
+          .group(
+              Codec.mapEither(Codec.BYTE.fieldOf("x"), Codec.BYTE.fieldOf("column"))
+                  .xmap(e -> e.map(b -> b, b -> b), Either::left)
+                  .forGetter(Slot::getX),
+
+              Codec.mapEither(Codec.BYTE.fieldOf("y"), Codec.BYTE.fieldOf("row"))
+                  .xmap(e -> e.map(b -> b, b -> b), Either::left)
+                  .forGetter(Slot::getY)
+          )
+          .apply(instance, Slot::of);
+    });
+
+    final Codec<Slot> stringCodec = new PrimitiveCodec<>() {
+      @Override
+      public <T> DataResult<Slot> read(DynamicOps<T> ops, T input) {
+        return ops.getStringValue(input).flatMap(string -> {
+          return FtcCodecs.safeParse(string, reader -> {
+            reader.skipWhitespace();
+            int x = reader.readInt();
+            reader.skipWhitespace();
+            reader.expect(',');
+            reader.skipWhitespace();
+            int y = reader.readInt();
+            return Slot.of(x, y);
+          });
+        });
+      }
+
+      @Override
+      public <T> T write(DynamicOps<T> ops, Slot value) {
+        return ops.createString(value.getX() + "," + value.getY());
+      }
+    };
+
+    final Codec<Slot> indexCodec = Codec.INT
+        .comapFlatMap(
+            integer -> {
+              if (integer < 0) {
+                return Results.error("Inventory index may not be less than 0");
+              }
+
+              int max = X_SIZE * Y_SIZE;
+              if (integer >= max) {
+                return Results.error("Inventory index may not be greater than %s", max-1);
+              }
+
+              return Results.success(of(integer));
+            },
+            Slot::getIndex
+        );
+
+    CODEC = FtcCodecs.combine(stringCodec, recordCodec, indexCodec);
   }
 }
