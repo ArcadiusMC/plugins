@@ -4,15 +4,11 @@ import static org.mozilla.javascript.Context.VERSION_ES6;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
@@ -70,12 +66,11 @@ public class RhinoScript implements Script {
   @Getter @Setter
   private Path workingDirectory;
 
-  private Map<String, ScriptExtension> extensions;
-
-  private final List<Class> imported = new ArrayList<>();
-
   @Getter
   private final ScriptLoader loader;
+
+  private final SchedulerExtension scheduler;
+  private final EventsExtension events;
 
   public RhinoScript(ScriptLoader loader, ScriptManager service, Source source) {
     this.source  = Objects.requireNonNull(source, "Null source");
@@ -83,6 +78,9 @@ public class RhinoScript implements Script {
     this.loader  = Objects.requireNonNull(loader, "Null loader");
 
     this.logger = Loggers.getLogger(getName());
+
+    this.events = new EventsExtension(service.getScriptPlugin(), this);
+    this.scheduler = new SchedulerExtension(service.getScriptPlugin(), this);
   }
 
   @Override
@@ -217,31 +215,6 @@ public class RhinoScript implements Script {
     return bindingScope.entrySet();
   }
 
-  public NativeObject getBindingScope() {
-    ensureCompiled();
-    return bindingScope;
-  }
-
-  @Override
-  public Script importClass(@NotNull Class<?> clazz) {
-    imported.add(clazz);
-
-    if (compiled != null) {
-      runtimeImport(clazz);
-    }
-
-    return this;
-  }
-
-  void runtimeImport(Class<?> importedClass) {
-    runtimeImport(importedClass.getSimpleName(), importedClass);
-  }
-
-  void runtimeImport(String name, Class<?> importedClass) {
-    NativeJavaClass njc = new NativeJavaClass(bindingScope, importedClass);
-    bindingScope.put(name, bindingScope, njc);
-  }
-
   private Context enterContext() {
     Context ctx = Context.enter();
     ctx.setLanguageVersion(VERSION_ES6);
@@ -280,16 +253,8 @@ public class RhinoScript implements Script {
       put("logger", logger);
       put("_script", Context.javaToJS(this, bindingScope, ctx));
 
-      if (extensions != null) {
-        extensions.forEach((s, extension) -> {
-          extension.onScriptCompile(this);
-          put(s, extension);
-        });
-      }
-
-      if (!imported.isEmpty()) {
-        imported.forEach(this::runtimeImport);
-      }
+      put("events", events);
+      put("scheduler", scheduler);
 
       var modules = service.getModules();
       modules.applyAutoImports(this).orThrow(s -> {
@@ -436,59 +401,8 @@ public class RhinoScript implements Script {
   }
 
   @Override
-  public ImmutableMap<String, ScriptExtension> getExtensions() {
-    if (extensions == null || extensions.isEmpty()) {
-      return ImmutableMap.of();
-    }
-
-    return ImmutableMap.copyOf(extensions);
-  }
-
-  @Override
-  public boolean addExtension(String name, ScriptExtension extension) {
-    Objects.requireNonNull(name, "Null extension name");
-    Objects.requireNonNull(extension, "Null extension");
-
-    if (extensions == null) {
-      extensions = new Object2ObjectOpenHashMap<>();
-    } else if (extensions.containsKey(name)) {
-      return false;
-    }
-
-    extensions.put(name, extension);
-    extension.setScript(this);
-
-    if (isCompiled()) {
-      extension.onScriptCompile(this);
-      put(name, extension);
-    }
-
-    return true;
-  }
-
-  @Override
-  public ScriptExtension removeExtension(String name) {
-    Objects.requireNonNull(name, "Null extension name");
-
-    if (extensions == null || extensions.isEmpty()) {
-      return null;
-    }
-
-    var ext = extensions.remove(name);
-
-    if (ext != null) {
-      ext.setScript(null);
-
-      if (compiled != null) {
-        remove(name);
-      }
-    }
-
-    return ext;
-  }
-
-  @Override
   public NativeObject getScriptObject() throws IllegalStateException {
+    ensureCompiled();
     return evaluationScope;
   }
 
@@ -507,13 +421,12 @@ public class RhinoScript implements Script {
       onCloseResult.logError();
     });
 
-    if (extensions != null) {
-      extensions.values().forEach(ext -> ext.onScriptClose(this));
-    }
-
     if (parent != null) {
       parent.removeChild(this);
     }
+
+    events.onScriptClose();
+    scheduler.onScriptClose();
 
     children.forEach(Script::close);
     children.clear();

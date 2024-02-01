@@ -4,11 +4,20 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import net.arcadiusmc.utils.Tasks;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
-public class SchedulerExtension extends ScriptExtension {
+public class SchedulerExtension {
+
+  private final RhinoScript script;
+  private final Plugin plugin;
 
   private final List<ScriptTask> tasks = new ObjectArrayList<>();
+
+  public SchedulerExtension(Plugin plugin, RhinoScript script) {
+    this.script = script;
+    this.plugin = plugin;
+  }
 
   public ScriptTask run(Consumer<ScriptTask> consumer) {
     ScriptTask wrapper = new ScriptTask(consumer);
@@ -37,8 +46,7 @@ public class SchedulerExtension extends ScriptExtension {
     return wrapper;
   }
 
-  @Override
-  protected void onScriptClose(Script script) {
+  void onScriptClose() {
     var it = tasks.iterator();
     while (it.hasNext()) {
       var n = it.next();

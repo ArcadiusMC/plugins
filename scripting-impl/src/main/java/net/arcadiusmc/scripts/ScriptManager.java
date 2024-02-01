@@ -156,12 +156,7 @@ public class ScriptManager implements ScriptService {
   @Override
   public @NotNull Script newScript(ScriptLoader loader, @NotNull Source source) {
     Script script = new RhinoScript(loader, this, source);
-
     script.setWorkingDirectory(scriptsDirectory);
-
-    script.addExtension("events", new EventsExtension(scriptPlugin));
-    script.addExtension("scheduler", new SchedulerExtension());
-
     return script;
   }
 

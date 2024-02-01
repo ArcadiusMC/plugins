@@ -16,13 +16,15 @@ import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
-public class EventsExtension extends ScriptExtension {
+public class EventsExtension {
 
+  private final RhinoScript script;
   private final Plugin plugin;
   private final List<ExecutorWrapper> wrappers = new ObjectArrayList<>();
 
-  public EventsExtension(Plugin plugin) {
+  public EventsExtension(Plugin plugin, RhinoScript script) {
     this.plugin = plugin;
+    this.script = script;
   }
 
   /* ---------------------------- REGISTRATION ---------------------------- */
@@ -85,8 +87,7 @@ public class EventsExtension extends ScriptExtension {
     });
   }
 
-  @Override
-  protected void onScriptClose(Script script) {
+  void onScriptClose() {
     unregisterAll();
   }
 

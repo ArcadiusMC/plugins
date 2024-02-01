@@ -1,7 +1,6 @@
 package net.arcadiusmc.scripts;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import java.nio.file.Path;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -222,25 +221,11 @@ public interface Script extends AutoCloseable {
   NativeObject getScriptObject() throws IllegalStateException;
 
   /**
-   * Imports a class, making it accessible to the script. Imported classes will persist between
-   * {@link #compile()} and {@link #close()} calls
-   *
-   * @param clazz Class to import
-   * @return {@code this}
-   */
-  Script importClass(@NotNull Class<?> clazz);
-
-  /**
    * Compiles the script from the {@link #getSource()}.
    * <p>
    * This function will load the input from the {@link #getSource()} and then pass it to a
    * preprocessor that compiles ES6+ code to a version of javascript compatible with the
    * internal Rhino scripting engine
-   * <p>
-   * This function running successfully will also mean all classes imported via
-   * {@link #importClass(Class)} will be placed into the script.
-   * {@link ScriptExtension#onScriptCompile(Script)} will be executed on all extensions and the
-   * extension object itself will be placed into the script's bindings
    *
    * @return {@code this}
    * @throws ScriptLoadException If the script failed to load, will always have a cause
@@ -300,31 +285,6 @@ public interface Script extends AutoCloseable {
    * @return {@code this}
    */
   Script removeChild(Script child);
-
-  /**
-   * Gets a map of all extensions in a script
-   * @return Script's active extensions
-   */
-  ImmutableMap<String, ScriptExtension> getExtensions();
-
-  /**
-   * Adds an extension to a script
-   *
-   * @param name Extension's name, will be used as the name of the extension's binding value
-   * @param extension Extension
-   *
-   * @return {@code true}, if the extension was added, {@code false}, if the extension couldn't be
-   *         added due to a naming conflict
-   */
-  boolean addExtension(String name, ScriptExtension extension);
-
-  /**
-   * Removes an extension with the specified {@code name}
-   * @param name Extension name
-   * @return Removed extension, or {@code null}, if an extension with the specified {@code name}
-   *         didn't exist
-   */
-  ScriptExtension removeExtension(String name);
 
   /**
    * Closes the script.
