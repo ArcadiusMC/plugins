@@ -2,140 +2,65 @@ package net.arcadiusmc.text;
 
 import static net.arcadiusmc.text.Text.format;
 import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.Component.translatable;
 import static net.kyori.adventure.text.event.ClickEvent.runCommand;
 
+import com.google.common.base.Joiner;
 import javax.annotation.Nullable;
+import net.arcadiusmc.text.loader.MessageList;
+import net.arcadiusmc.text.loader.MessageRef;
+import net.arcadiusmc.text.loader.MessageRender;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.UserProperty;
-import net.arcadiusmc.Worlds;
-import net.arcadiusmc.user.UserBlockList;
+import net.forthecrown.grenadier.CommandSource;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Location;
 import org.bukkit.event.player.PlayerQuitEvent.QuitReason;
 
 public interface Messages {
 
+  MessageList MESSAGE_LIST = MessageList.create();
+
   Style CHAT_URL = Style.style(TextDecoration.UNDERLINED)
       .hoverEvent(text("Click to open link!"));
 
-  TextComponent FTC_PREFIX
-      = Text.gradient("[ArcadiusMC] ", NamedTextColor.RED, NamedTextColor.GOLD);
+  MessageRef BUTTON_ACCEPT_TICK = reference("generic.button.tick");
 
-  /**
-   * Common text which simply states "Click to allow"
-   */
-  TextComponent CLICK_TO_ALLOW = text("Click to Allow");
-
-  /**
-   * Common text which simply states "Click to deny"
-   */
-  TextComponent CLICK_TO_DENY = text("Click to Deny");
-
-  /**
-   * Common text which simply states "Click to confirm" Used mostly in hover events
-   */
-  TextComponent CLICK_TO_CONFIRM = text("Click to confirm");
-
-  /**
-   * A tick encased by square brackets with {@link #CLICK_TO_ALLOW} hover event
-   */
-  TextComponent BUTTON_ACCEPT_TICK = text("[✔]").hoverEvent(CLICK_TO_ALLOW);
-
-  /**
-   * A special unicode cross encased by square brackets with {@link #CLICK_TO_DENY} hover event.
-   */
-  TextComponent BUTTON_DENY_CROSS = text("[✖]").hoverEvent(CLICK_TO_DENY);
+  MessageRef BUTTON_DENY_CROSS = reference("generic.button.cross");
 
   /**
    * Standard " < " previous page button with hover text, and bold and yellow styling
    */
-  TextComponent PREVIOUS_PAGE = text(" < ", NamedTextColor.YELLOW, TextDecoration.BOLD)
-      .hoverEvent(translatable("spectatorMenu.previous_page"));
+  MessageRef PREVIOUS_PAGE = reference("generic.button.previousPage");
 
   /**
    * Standard " > " next page button with hover text, and bold and yellow styling
    */
-  TextComponent NEXT_PAGE = text(" > ", NamedTextColor.YELLOW, TextDecoration.BOLD)
-      .hoverEvent(translatable("spectatorMenu.next_page"));
+  MessageRef NEXT_PAGE = reference("generic.button.nextPage");
 
-  /**
-   * A standard page border made up of spaces with a {@link TextDecoration#STRIKETHROUGH} style
-   * applied to them as well as gray coloring.
-   */
-  TextComponent PAGE_BORDER = text("                  ",
-      NamedTextColor.GRAY, TextDecoration.STRIKETHROUGH
-  );
+  MessageRef BUTTON_CONFIRM = reference("generic.button.confirm");
 
-  /**
-   * Standard aqua colored button which states "[Confirm]" and has {@link #CLICK_TO_CONFIRM} as the
-   * hover text
-   */
-  TextComponent BUTTON_CONFIRM = text("[Confirm]", NamedTextColor.AQUA)
-      .hoverEvent(CLICK_TO_CONFIRM);
-
-  /**
-   * Red button which states "[Deny]" and has {@link #CLICK_TO_DENY} as the hover text
-   */
-  TextComponent BUTTON_DENY = text("[Deny]", NamedTextColor.RED)
-      .hoverEvent(CLICK_TO_DENY);
+  MessageRef BUTTON_DENY = reference("generic.button.deny");
 
   /**
    * Green button which states "[Acccept]" and has "Click to accept" as the hover text
    */
-  TextComponent BUTTON_ACCEPT = text("[Accept]", NamedTextColor.GREEN)
-      .hoverEvent(text("Click to accept"));
+  MessageRef BUTTON_ACCEPT = reference("generic.button.accept");
 
   /**
    * Common text which says "Click me!" lol
    */
-  TextComponent CLICK_ME = text("Click me!");
+  MessageRef CLICK_ME = reference("generic.click_me");
 
   /**
    * Uncategorized message which states that all-caps messages cannot be sent
    */
-  TextComponent ALL_CAPS = text("Please do not send all caps messages.", NamedTextColor.GRAY);
-
-  /**
-   * Uncategorized display name of the "Hit me!" dummy entities
-   */
-  TextComponent DUMMY_NAME = text("Hit me!", NamedTextColor.GOLD);
-
-  /**
-   * Red ❤
-   */
-  TextComponent HEART = text("❤", NamedTextColor.DARK_RED);
-
-  /**
-   * Cyan claim button for mail
-   */
-  TextComponent CLAIM = text("[Claim]", NamedTextColor.AQUA);
-
-  /**
-   * Message shown when denying an incoming request of any kind.
-   */
-  TextComponent REQUEST_DENIED = text("Request denied.", NamedTextColor.GRAY);
-
-  /**
-   * Message shown when accepting an incoming request of any kind.
-   */
-  TextComponent REQUEST_ACCEPTED = text("Accepted request.", NamedTextColor.GRAY);
-
-  /**
-   * Message shown when cancelling an outgoing request of any kind
-   */
-  TextComponent REQUEST_CANCELLED = text("Cancelling request.", NamedTextColor.YELLOW);
-
-  /**
-   * Message stating something was claimed
-   */
-  TextComponent CLAIMED = text("Claimed ", NamedTextColor.YELLOW);
+  MessageRef ALL_CAPS = reference("allCaps");
 
   /**
    * This is for a weird thing to get around an issue, there are some commands that accept '-clear'
@@ -145,47 +70,29 @@ public interface Messages {
   TextComponent DASH_CLEAR = text("-clear");
 
   /**
-   * Text informing the viewer of lacking permissions
-   */
-  TextComponent NO_PERMISSION = text("You do not have permission to use this!", NamedTextColor.RED);
-
-  /**
    * Text which simply says null
    */
   TextComponent NULL = text("null");
 
-  /**
-   * Unknown command message that's used as a permission denied message
-   */
-  TextComponent UNKNOWN_COMMAND
-      = text("Unknown command. Type\"/help\" for help", NamedTextColor.WHITE);
+  MessageRef SEPARATED_FORMAT = reference("blocking.separated");
+  MessageRef BLOCKED_SENDER   = reference("blocking.sender");
+  MessageRef BLOCKED_TARGET   = reference("blocking.target");
 
-  TextComponent NOTHING_CHANGED = text("Nothing changed", NamedTextColor.GRAY);
+  static MessageRender render(String key) {
+    return MESSAGE_LIST.render(key);
+  }
 
-  TextColor CHAT_NAME_COLOR = TextColor.fromHexString("#e6e6e6");
+  static MessageRender render(String... key) {
+    return MESSAGE_LIST.render(Joiner.on('.').join(key));
+  }
 
-  /**
-   * AFK tab suffix
-   */
-  TextComponent AFK_SUFFIX = text(" [AFK]", NamedTextColor.GRAY);
+  static Component renderText(String key, Audience viewer) {
+    return render(key).create(viewer);
+  }
 
-  /**
-   * Format used by {@link UserBlockList#testBlocked(User, User, String, String)} for separated players.
-   */
-  String SEPARATED_FORMAT = "You are forcefully separated from {0, user}!";
-
-  String BLOCKED_SENDER = "You have blocked {0, user}!";
-
-  String BLOCKED_TARGET = "{0, user} has blocked you!";
-
-  String BASE_JOIN_MESSAGE = "{0, user} joined the game";
-
-  String BASE_JOIN_MESSAGE_NEW_NAME = "{0, user} (formerly known as {1}) joined the game";
-
-  String BASE_LEAVE_MESSAGE = "{0, user} left the game";
-  String BASE_LEAVE_MESSAGE_TIMEOUT = "{0, user} left the game (Timed out)";
-  String BASE_LEAVE_MESSAGE_ERROR = "{0, user} left the game (Error)";
-  String BASE_LEAVE_MESSAGE_KICKED = "{0, user} left the game (Kicked)";
+  static MessageRef reference(String key) {
+    return MESSAGE_LIST.reference(key);
+  }
 
   static Component createButton(Component text, String cmd, Object... args) {
     return text.clickEvent(runCommand(String.format(cmd, args)));
@@ -197,8 +104,8 @@ public interface Messages {
    * @param user The user whose display name to use
    * @return The formatted message
    */
-  static Component notOnline(User user) {
-    return format("{0, user} is not online", user);
+  static ViewerAwareMessage notOnline(User user) {
+    return render("player.notOnline").addValue("player", user);
   }
 
   /**
@@ -209,7 +116,7 @@ public interface Messages {
    * @return The created text
    */
   static Component nextPage(@Nullable ClickEvent event) {
-    return NEXT_PAGE.clickEvent(event);
+    return NEXT_PAGE.renderText(null).clickEvent(event);
   }
 
   /**
@@ -220,7 +127,7 @@ public interface Messages {
    * @return The created text
    */
   static Component previousPage(@Nullable ClickEvent event) {
-    return PREVIOUS_PAGE.clickEvent(event);
+    return PREVIOUS_PAGE.renderText(null).clickEvent(event);
   }
 
   /**
@@ -231,7 +138,7 @@ public interface Messages {
    * @return The created button component
    */
   static Component tickButton(String cmd, Object... args) {
-    return createButton(BUTTON_ACCEPT_TICK, cmd, args);
+    return createButton(BUTTON_ACCEPT_TICK.renderText(null), cmd, args);
   }
 
   /**
@@ -242,7 +149,7 @@ public interface Messages {
    * @return The created button component
    */
   static Component crossButton(String cmd, Object... args) {
-    return createButton(BUTTON_DENY_CROSS, cmd, args);
+    return createButton(BUTTON_DENY_CROSS.renderText(null), cmd, args);
   }
 
   /**
@@ -253,7 +160,7 @@ public interface Messages {
    * @return The created button
    */
   static Component confirmButton(String cmd, Object... args) {
-    return createButton(BUTTON_CONFIRM, cmd, args);
+    return createButton(BUTTON_CONFIRM.renderText(null), cmd, args);
   }
 
   /**
@@ -264,7 +171,7 @@ public interface Messages {
    * @return The created button
    */
   static Component denyButton(String cmd, Object... args) {
-    return createButton(BUTTON_DENY, cmd, args);
+    return createButton(BUTTON_DENY.renderText(null), cmd, args);
   }
 
   /**
@@ -275,7 +182,7 @@ public interface Messages {
    * @return The created button
    */
   static Component acceptButton(String cmd, Object... args) {
-    return createButton(BUTTON_ACCEPT, cmd, args);
+    return createButton(BUTTON_ACCEPT.renderText(null), cmd, args);
   }
 
   /**
@@ -284,24 +191,22 @@ public interface Messages {
    * @param l The location the viewer died at
    * @return The formatted message
    */
-  static Component diedAt(Location l) {
-    return format("You died at &e{0, location}&r{1}",
-        NamedTextColor.GRAY,
-        l,
-
-        // Optionally add world name, only if
-        // not in overworld
-        l.getWorld().equals(Worlds.overworld())
-            ? "!"
-            : "world: " + Text.formatWorldName(l.getWorld()) + "!"
-    );
+  static ViewerAwareMessage diedAt(Location l) {
+    return render("server.diedAt").addValue("location", l);
   }
 
-  static Component chatMessage(Component displayName, Component message) {
-    return format("{0} &7&l> &r{1}",
-        displayName.color(CHAT_NAME_COLOR),
-        message
-    );
+  static Component chatMessage(Audience viewer, User sender, Component message) {
+    return render("server.chat")
+        .addValue("player", sender)
+        .addValue("message", message)
+        .create(viewer);
+  }
+
+  static Component chatMessage(Audience viewer, CommandSource sender, Component message) {
+    return render("server.chat.nonPlayer")
+        .addValue("sender", sender.displayName())
+        .addValue("message", message)
+        .create(viewer);
   }
 
   /**
@@ -410,25 +315,32 @@ public interface Messages {
     );
   }
 
-  static Component joinMessage(Component displayName) {
-    return Text.format(BASE_JOIN_MESSAGE, NamedTextColor.YELLOW, displayName);
+  static ViewerAwareMessage firstTimeJoin(User user) {
+    return render("server.join.firstTime")
+        .addValue("player", user);
   }
 
-  static Component newNameJoinMessage(Component displayName, Object previousName) {
-    return Text.format(BASE_JOIN_MESSAGE_NEW_NAME, NamedTextColor.YELLOW,
-        displayName, previousName
-    );
+  static ViewerAwareMessage joinMessage(User user) {
+    return render("server.join")
+        .addValue("player", user);
   }
 
-  static Component leaveMessage(Component displayName, QuitReason reason) {
-    String format = switch (reason) {
-      case KICKED -> BASE_LEAVE_MESSAGE_KICKED;
-      case TIMED_OUT -> BASE_LEAVE_MESSAGE_TIMEOUT;
-      case ERRONEOUS_STATE -> BASE_LEAVE_MESSAGE_ERROR;
-      default -> BASE_LEAVE_MESSAGE;
+  static ViewerAwareMessage newNameJoinMessage(User user, Object previousName) {
+    return render("server.join.newName")
+        .addValue("player", user)
+        .addValue("previousName", previousName);
+  }
+
+  static ViewerAwareMessage leaveMessage(User user, QuitReason reason) {
+    String formatKey = "server.leave" + switch (reason) {
+      case KICKED -> ".kicked";
+      case ERRONEOUS_STATE -> ".error";
+      case TIMED_OUT -> ".timeout";
+      default -> "";
     };
-    
-    return Text.format(format, NamedTextColor.YELLOW, displayName);
+
+    return render(formatKey)
+        .addValue("player", user);
   }
 
 
@@ -438,10 +350,9 @@ public interface Messages {
    * @param unitDisplay The unit display of the user
    * @return The formatted message
    */
-  static Component unitQuerySelf(Component unitDisplay) {
-    return format("You have &e{0}&r.",
-        NamedTextColor.GRAY, unitDisplay
-    );
+  static ViewerAwareMessage unitQuerySelf(Component unitDisplay) {
+    return render("unitQuery.self")
+        .addValue("units", unitDisplay);
   }
 
   /**
@@ -451,10 +362,45 @@ public interface Messages {
    * @param target      The user
    * @return The formatted message
    */
-  static Component unitQueryOther(Component unitDisplay, User target) {
-    return format("&e{0, user} &rhas &6{1}&r.",
-        NamedTextColor.GRAY,
-        target, unitDisplay
-    );
+  static ViewerAwareMessage unitQueryOther(Component unitDisplay, User target) {
+    return render("unitQuery.other")
+        .addValue("units", unitDisplay)
+        .addValue("player", target);
+  }
+
+  static ViewerAwareMessage clickToTeleport() {
+    return render("generic.click_to_teleport");
+  }
+
+  static ViewerAwareMessage location(Location l, boolean includeWorld, boolean clickable) {
+    String formatKey = "formats.location" + (includeWorld ? "" : ".noWorld");
+
+    MessageRender message = render(formatKey).addValue("pos", l);
+
+    if (!clickable) {
+      return message;
+    }
+
+    return viewer -> {
+      return message.create(viewer)
+          .hoverEvent(clickToTeleport().create(viewer))
+          .clickEvent(ClickEvent.runCommand(
+              "/tp_exact x=%s y=%s z=%s yaw=%s pitch=%s world=%s".formatted(
+                  l.getX(), l.getY(), l.getZ(),
+                  l.getYaw(),
+                  l.getPitch(),
+                  l.getWorld().getName()
+              )
+          ));
+    };
+  }
+
+  static Component currency(Number amount) {
+    return UnitFormat.currency(amount);
+  }
+
+  static Component currencyUnit(boolean singular) {
+    String formatKey = singular ? "units.currency.singular" : "units.currency.plural";
+    return MESSAGE_LIST.renderText(formatKey, null);
   }
 }

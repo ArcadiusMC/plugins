@@ -3,12 +3,10 @@ package net.arcadiusmc.utils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
-import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.codecs.EitherCodec;
 import com.mojang.serialization.codecs.ListCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.time.LocalDate;
@@ -22,10 +20,11 @@ import java.time.temporal.ChronoField;
 import java.util.List;
 import java.util.Objects;
 import lombok.Data;
+import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.Results;
 import net.forthecrown.nbt.BinaryTag;
 import net.forthecrown.nbt.BinaryTags;
 import net.forthecrown.nbt.CompoundTag;
-import net.arcadiusmc.utils.io.Results;
 
 /**
  * Represents the period of time in which a holiday is active, or just the date its active
@@ -374,15 +373,6 @@ public class MonthDayPeriod {
             }
         );
 
-    CODEC = new EitherCodec<>(recordCodec, new EitherCodec<>(stringCodec, arrayCodec))
-        .xmap(
-            either -> either.map(o -> o, e2 -> e2.map(o -> o, o -> o)),
-            period -> {
-              if (period.isExact()) {
-                return Either.right(Either.left(period));
-              }
-              return Either.right(Either.right(period));
-            }
-        );
+    CODEC = FtcCodecs.combine(recordCodec, arrayCodec, stringCodec);
   }
 }

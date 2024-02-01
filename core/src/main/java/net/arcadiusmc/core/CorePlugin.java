@@ -1,9 +1,9 @@
 package net.arcadiusmc.core;
 
 import lombok.Getter;
+import net.arcadiusmc.ArcadiusServer;
 import net.arcadiusmc.BukkitServices;
 import net.arcadiusmc.Cooldowns;
-import net.arcadiusmc.ArcadiusServer;
 import net.arcadiusmc.InventoryStorage;
 import net.arcadiusmc.command.help.ArcadiusHelpList;
 import net.arcadiusmc.core.announcer.AutoAnnouncer;
@@ -13,7 +13,10 @@ import net.arcadiusmc.core.grave.GraveImpl;
 import net.arcadiusmc.core.listeners.CoreListeners;
 import net.arcadiusmc.core.listeners.MobHealthBar;
 import net.arcadiusmc.core.placeholder.PlaceholderServiceImpl;
+import net.arcadiusmc.core.tab.TabMenu;
 import net.arcadiusmc.core.user.UserServiceImpl;
+import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.loader.MessageLoader;
 import net.arcadiusmc.text.placeholder.PlaceholderService;
 import net.arcadiusmc.user.UserService;
 import net.arcadiusmc.user.Users;
@@ -37,6 +40,7 @@ public class CorePlugin extends JavaPlugin {
   private JoinInfo joinInfo;
   private Wild wild;
   private EmojiLoader emojiLoader;
+  private TabMenu tabMenu;
 
   public static CorePlugin plugin() {
     return getPlugin(CorePlugin.class);
@@ -45,7 +49,6 @@ public class CorePlugin extends JavaPlugin {
   @Override
   public void onEnable() {
     CoreDataFix.execute();
-
     Grenadier.plugin(this);
     GraveImpl.init();
 
@@ -58,6 +61,7 @@ public class CorePlugin extends JavaPlugin {
     joinInfo = new JoinInfo();
     wild = new Wild();
     emojiLoader = new EmojiLoader();
+    tabMenu = new TabMenu(this);
 
     BukkitServices.register(ArcadiusServer.class, ftcServer);
     BukkitServices.register(ArcadiusHelpList.class, helpList);
@@ -94,6 +98,8 @@ public class CorePlugin extends JavaPlugin {
     ftcConfig = TomlConfigs.loadPluginConfig(this, CoreConfig.class);
     saver.start();
     dayChange.schedule();
+
+    MessageLoader.loadPluginMessages(this, Messages.MESSAGE_LIST);
   }
 
   @Override
@@ -134,5 +140,6 @@ public class CorePlugin extends JavaPlugin {
     helpList.load();
     wild.load();
     emojiLoader.load();
+    tabMenu.load();
   }
 }

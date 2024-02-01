@@ -1,0 +1,111 @@
+#
+# Base tab header and footer shown if no animation frames are being used
+#
+# Default: Empty display
+#
+base:
+  header: ""
+  footer: ""
+
+#
+# If a scoreboard objective with the 'list' display slot exists, then
+# the header and footer specified here will be appended onto the tab
+# header and footer shown to players
+#
+# Default: Empty display
+#
+score-append:
+  header: ""
+  footer: ""
+
+#
+# If a scoreboard objective with the 'list' display slot exists, then
+# the header and footer specified here will be prepended onto the tab
+# header and footer shown to players
+#
+# Default: Empty display
+#
+score-prepend:
+  header: ""
+  footer: ""
+
+#
+# Specifies parameters about the adaptive border that can be used
+# in the tab header/footer with the following placeholders:
+# - ${tabBorder}: The full adaptive border made to span from the
+#     left to the right edge of the tab list
+# - ${tabBorder.half}: Half size adaptive border
+# - ${tabBorder.third}: Third size adaptive border
+# - ${tabBorder.quarter}: Quarter size adaptive border
+#
+# Values:
+# - connection-bar-width-px:
+#     Width of the 4 connection bars for each
+#     Default: 10
+# - head-width-px:
+#     Width of the head texture in the tab menu
+#     Default: 8
+# - min-width-px:
+#     Minimum width (in pixels) of the adaptive border
+#     Default: 96
+# - hearts-width-px:
+#     Width of the hearts display in the tab menu
+#     Default: 81
+# - over-reach:
+#     Arbitrary increase added onto the border's final width
+#     Default: 4
+# - char:
+#     Character/String used to create the border
+#     Default: " "
+# - style:
+#     Style the border uses (Same syntax as messages.yml styling)
+#     Default: ";strikethrough"
+# - gradient:
+#     List of colors (eg: red, #FFAACC, 0xFFAADD) that will make
+#     up the gradient the border uses.
+#     Default: []
+#
+adaptive-border:
+  connection-bar-width-px: 10
+  head-width-px: 8
+  min-width-px: 96
+  hearts-width-px: 81
+  over-reach-px: 4
+  char: " "
+  style: ";strikethrough"
+  gradient: []
+
+#
+# Interval between animation frames, can be a number (ticks), or a
+# time string (eg: 1s, 3m, 1s+4t, 4s-14t)
+#
+# Any time value less than 1 tick will disable the animation
+#
+# Default: 0
+#
+frame-rate: 0
+
+#
+# Determines if the animation specified in 'animation-frames' is
+# reversed when it reaches the end. If set to false, the animation
+# simply restarts from the first frame.
+#
+# Default: false
+#
+reverse-animation-at-end: false
+
+#
+# List of animation frames, each frame includes a 'header'
+# and 'footer' value.
+#
+# These frames will be iterated through and displayed in order.
+# The frame swap interval is determined by the 'frame-rate' value
+#
+# Default: an empty frame list
+#
+animation-frames: [
+  {
+    header: "",
+    footer: ""
+  }
+]

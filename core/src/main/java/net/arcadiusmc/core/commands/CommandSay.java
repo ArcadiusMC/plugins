@@ -45,7 +45,7 @@ public class CommandSay extends BaseCommand {
                     .setBroadcast()
                     .setSource(c.getSource())
                     .setRenderer((viewer, baseMessage) -> {
-                      return Messages.chatMessage(c.getSource().displayName(), baseMessage);
+                      return Messages.chatMessage(viewer, c.getSource(), baseMessage);
                     })
                     .send();
               }

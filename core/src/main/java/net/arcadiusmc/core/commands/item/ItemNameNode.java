@@ -2,16 +2,18 @@ package net.arcadiusmc.core.commands.item;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import java.util.Locale;
-import net.arcadiusmc.core.CoreMessages;
-import net.arcadiusmc.core.commands.CommandNickname;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.arguments.chat.MessageSuggestions;
 import net.arcadiusmc.command.help.Usage;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.core.commands.CommandNickname;
+import net.arcadiusmc.text.Text;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Completions;
-import net.arcadiusmc.text.Text;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.translation.GlobalTranslator;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public class ItemNameNode extends ItemModifierNode {
 
@@ -65,16 +67,22 @@ public class ItemNameNode extends ItemModifierNode {
             })
 
             .executes(c -> {
-              var held = getHeld(c.getSource());
-              var meta = held.getItemMeta();
-              var name = Arguments.getMessage(c, "name").asComponent();
+              CommandSource source = c.getSource();
+
+              ItemStack held = getHeld(source);
+              ItemMeta meta = held.getItemMeta();
+              Component name = Arguments.getMessage(c, "name").asComponent();
 
               if (Text.isDashClear(name)) {
                 meta.displayName(null);
-                c.getSource().sendSuccess(CoreMessages.CLEARED_ITEM_NAME);
+                source.sendSuccess(ItemMessages.NAME_CLEARED.renderText(source));
               } else {
                 meta.displayName(optionallyWrap(name, c, "name"));
-                c.getSource().sendSuccess(CoreMessages.setItemName(name));
+                source.sendSuccess(
+                    ItemMessages.NAME_SET.get()
+                        .addValue("name", name)
+                        .create(source)
+                );
               }
 
               held.setItemMeta(meta);

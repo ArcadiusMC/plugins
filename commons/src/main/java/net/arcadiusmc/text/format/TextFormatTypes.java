@@ -8,20 +8,21 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.UUID;
+import net.arcadiusmc.registry.Registries;
+import net.arcadiusmc.registry.Registry;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.PeriodFormat;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.UnitFormat;
+import net.arcadiusmc.user.NameRenderFlags;
 import net.arcadiusmc.user.User;
+import net.arcadiusmc.user.UserLookup;
 import net.arcadiusmc.user.Users;
 import net.arcadiusmc.user.name.DisplayIntent;
 import net.arcadiusmc.user.name.UserNameFactory;
+import net.arcadiusmc.utils.Time;
 import net.arcadiusmc.utils.math.WorldVec3i;
 import net.forthecrown.grenadier.CommandSource;
-import net.arcadiusmc.registry.Registries;
-import net.arcadiusmc.registry.Registry;
-import net.arcadiusmc.user.NameRenderFlags;
-import net.arcadiusmc.user.UserLookup;
-import net.arcadiusmc.utils.Time;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
@@ -40,7 +41,20 @@ public class TextFormatTypes {
    * <p>
    * If the argument is null or not a number, then it will call {@link Text#valueOf(Object)}
    */
-  public static final TextFormatType CURRENCY = unitFormatter(UnitFormat.UNIT_CURRENCY);
+  public static final TextFormatType CURRENCY = (value, style, viewer) -> {
+    if (!(value instanceof Number number)) {
+      return Text.valueOf(value, viewer);
+    }
+
+    return Messages.currency(number);
+  };
+
+  public static final TextFormatType GEMS = (value, style, viewer) -> {
+    if (!(value instanceof Number number)) {
+      return Text.valueOf(value, viewer);
+    }
+    return UnitFormat.gems(number);
+  };
 
   /**
    * Formats the given {@link Date}/{@link Number} <code>arg</code> into a date component
@@ -304,7 +318,9 @@ public class TextFormatTypes {
     formatTypes.register(DEFAULT_NAME, DEFAULT);
 
     formatTypes.register("location",  LOCATION);
-    formatTypes.register("rhines",    CURRENCY);
+    formatTypes.register("gems",      GEMS);
+    formatTypes.register("currency",  CURRENCY);
+    formatTypes.register("rhines",    CURRENCY); // Backwards compatibility
     formatTypes.register("date",      DATE);
     formatTypes.register("class",     CLASS);
     formatTypes.register("time",      TIME);
@@ -313,9 +329,4 @@ public class TextFormatTypes {
     formatTypes.register("vector",    VECTOR);
     formatTypes.register("number",    NUMBER);
   }
-
-  static TextFormatType unitFormatter(String unit) {
-    return new UnitType(unit);
-  }
-
 }

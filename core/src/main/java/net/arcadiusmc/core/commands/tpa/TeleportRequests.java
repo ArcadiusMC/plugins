@@ -2,15 +2,16 @@ package net.arcadiusmc.core.commands.tpa;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
-import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.request.RequestTable;
 import net.arcadiusmc.command.request.RequestValidator;
-import net.arcadiusmc.events.WorldAccessTestEvent;
+import net.arcadiusmc.text.loader.MessageRef;
 import net.arcadiusmc.user.Properties;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.Audiences;
+import net.arcadiusmc.utils.WgUtils;
 import net.kyori.adventure.audience.Audience;
-import org.bukkit.World;
+import org.bukkit.Location;
+import org.bukkit.entity.Player;
 
 public class TeleportRequests {
 
@@ -53,25 +54,44 @@ public class TeleportRequests {
 
   static class TpaValidator implements RequestValidator<TeleportRequest> {
 
+    static CommandSyntaxException makeError(
+        MessageRef ref,
+        User sender,
+        User target,
+        Audience viewer
+    ) {
+      return ref.get()
+          .addValue("sender", sender)
+          .addValue("target", target)
+          .exception(viewer);
+    }
+
     @Override
     public void validate(TeleportRequest request, Audience viewer) throws CommandSyntaxException {
-      var sender = request.getSender();
-      var target = request.getTarget();
-
-      boolean isSender = Audiences.equals(viewer, sender);
+      User sender = request.getSender();
+      User target = request.getTarget();
 
       boolean tpaHere = request.isTpaHere();
+      boolean isSender = Audiences.equals(viewer, sender);
 
       if (sender.equals(target)) {
-        throw TpExceptions.CANNOT_TP_SELF;
+        throw TpExceptions.SELF.exception(viewer);
       }
 
       if (!sender.get(Properties.TPA)) {
-        throw TpExceptions.TPA_DISABLED_SENDER;
+        throw makeError(
+            isSender ? TpExceptions.DISABLED_SENDER : TpExceptions.DISABLED_TARGET,
+            sender, target,
+            viewer
+        );
       }
 
       if (!target.get(Properties.TPA)) {
-        throw TpExceptions.tpaDisabled(target);
+        throw makeError(
+            isSender ? TpExceptions.DISABLED_TARGET : TpExceptions.DISABLED_SENDER,
+            sender, target,
+            viewer
+        );
       }
 
       if (!request.accepted) {
@@ -79,21 +99,34 @@ public class TeleportRequests {
         TeleportRequest incoming = table.getIncoming(target, sender);
 
         if (outgoing != null || incoming != null) {
-          throw Exceptions.requestAlreadySent(target);
+          throw makeError(TpExceptions.ALREADY_SENT, sender, target, viewer);
         }
-
-
       }
-      World world = tpaHere ? sender.getWorld() : target.getWorld();
 
-      CommandSyntaxException noMessage = tpaHere
-          ? TpExceptions.CANNOT_TP_HERE
-          : TpExceptions.cannotTpaTo(target);
+      // Player standing at the teleport destination
+      Player destinationPlayer = tpaHere ? sender.getPlayer() : target.getPlayer();
+      Location destinationLocation = destinationPlayer.getLocation();
 
-      WorldAccessTestEvent.testOrThrow(sender.getPlayer(), world, noMessage);
+      Player teleported = tpaHere ? target.getPlayer() : sender.getPlayer();
 
-      if (!tpaHere && !sender.canTeleport()) {
-        throw TpExceptions.CANNOT_TP;
+      if (!WgUtils.testFlag(destinationLocation, WgUtils.PLAYER_TELEPORTING, teleported)) {
+        MessageRef noMessage = (isSender != tpaHere)
+            ? TpExceptions.FORBIDDEN_HERE
+            : TpExceptions.FORBIDDEN_NORMAL;
+
+        throw makeError(noMessage, sender, target, viewer);
+      }
+
+      MessageRef cooldownError;
+
+      if (tpaHere) {
+        if (!target.canTeleport()) {
+          cooldownError = isSender ? TpExceptions.COOLDOWN_TARGET : TpExceptions.COOLDOWN_SENDER;
+          throw makeError(cooldownError, sender, target, viewer);
+        }
+      } else if (!sender.canTeleport()) {
+        cooldownError = isSender ? TpExceptions.COOLDOWN_SENDER : TpExceptions.COOLDOWN_TARGET;
+        throw makeError(cooldownError, sender, target, viewer);
       }
     }
   }

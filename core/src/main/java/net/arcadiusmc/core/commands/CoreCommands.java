@@ -1,9 +1,9 @@
 package net.arcadiusmc.core.commands;
 
-import net.arcadiusmc.core.CorePlugin;
 import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.CurrencyCommand;
 import net.arcadiusmc.command.UserMapTopCommand;
+import net.arcadiusmc.core.CorePlugin;
 import net.arcadiusmc.core.commands.admin.CommandAlts;
 import net.arcadiusmc.core.commands.admin.CommandBroadcast;
 import net.arcadiusmc.core.commands.admin.CommandCooldown;
@@ -11,16 +11,15 @@ import net.arcadiusmc.core.commands.admin.CommandFtcCore;
 import net.arcadiusmc.core.commands.admin.CommandGameMode;
 import net.arcadiusmc.core.commands.admin.CommandGetOffset;
 import net.arcadiusmc.core.commands.admin.CommandGetPos;
-import net.arcadiusmc.core.commands.admin.CommandHologram;
 import net.arcadiusmc.core.commands.admin.CommandInvStore;
 import net.arcadiusmc.core.commands.admin.CommandLaunch;
-import net.arcadiusmc.core.commands.admin.CommandMakeAward;
 import net.arcadiusmc.core.commands.admin.CommandMemory;
 import net.arcadiusmc.core.commands.admin.CommandPlayerTime;
 import net.arcadiusmc.core.commands.admin.CommandSign;
 import net.arcadiusmc.core.commands.admin.CommandSkull;
 import net.arcadiusmc.core.commands.admin.CommandSpecificGameMode;
 import net.arcadiusmc.core.commands.admin.CommandSpeed;
+import net.arcadiusmc.core.commands.admin.CommandSudo;
 import net.arcadiusmc.core.commands.admin.CommandTab;
 import net.arcadiusmc.core.commands.admin.CommandTeleport;
 import net.arcadiusmc.core.commands.admin.CommandTeleportExact;
@@ -31,6 +30,7 @@ import net.arcadiusmc.core.commands.admin.CommandTop;
 import net.arcadiusmc.core.commands.admin.CommandVanish;
 import net.arcadiusmc.core.commands.admin.CommandWorld;
 import net.arcadiusmc.core.commands.docs.CommandDocGen;
+import net.arcadiusmc.core.commands.help.CommandHelp;
 import net.arcadiusmc.core.commands.home.CommandDeleteHome;
 import net.arcadiusmc.core.commands.home.CommandHome;
 import net.arcadiusmc.core.commands.home.CommandHomeList;
@@ -43,10 +43,10 @@ import net.arcadiusmc.core.commands.tpa.CommandTpaCancel;
 import net.arcadiusmc.core.commands.tpa.CommandTpask;
 import net.arcadiusmc.core.commands.tpa.CommandTpaskHere;
 import net.arcadiusmc.core.user.UserServiceImpl;
-import net.forthecrown.grenadier.annotations.AnnotatedCommandContext;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.UnitFormat;
 import net.arcadiusmc.user.Users;
-import net.arcadiusmc.user.currency.Currency;
+import net.forthecrown.grenadier.annotations.AnnotatedCommandContext;
 import net.kyori.adventure.text.Component;
 
 public final class CoreCommands {
@@ -76,10 +76,8 @@ public final class CoreCommands {
     new CommandSign();
     new CommandPlayerTime();
     new CommandMemory();
-    new CommandMakeAward();
     new CommandLaunch();
     new CommandInvStore();
-    new CommandHologram();
     new CommandGetPos();
     new CommandGetOffset();
     new CommandGameMode();
@@ -87,6 +85,7 @@ public final class CoreCommands {
     new CommandBroadcast();
     new CommandDocGen();
     new CommandTellRawF();
+    new CommandSudo();
 
     new CommandSay();
     new CommandNickname();
@@ -124,9 +123,9 @@ public final class CoreCommands {
 
     AnnotatedCommandContext ctx = Commands.createAnnotationContext();
     ctx.registerCommand(new CommandTeleport());
-    ctx.registerCommand(new CommandVanish());
+    ctx.registerCommand(new CommandVanish(plugin));
     ctx.registerCommand(new CommandFtcCore());
-    ctx.registerCommand(new CommandTab());
+    ctx.registerCommand(new CommandTab(plugin));
     ctx.registerCommand(new CommandAlts());
     ctx.registerCommand(new CommandTimeFields());
   }
@@ -135,15 +134,9 @@ public final class CoreCommands {
     UserServiceImpl users = (UserServiceImpl) Users.getService();
     var currencies = users.getCurrencies();
 
-    currencies.get("rhines").ifPresent(currency -> {
+    currencies.get("balances").ifPresent(currency -> {
       new CurrencyCommand("balance", currency, "bal", "bank", "cash", "money", "ebal");
     });
-
-    currencies.get("gems").ifPresent(currency -> {
-      new CurrencyCommand("gems", currency);
-    });
-
-    new CurrencyCommand("votes", Currency.wrap("Vote", users.getVotes()));
   }
 
   static void createMapTopCommands() {
@@ -152,7 +145,7 @@ public final class CoreCommands {
     new UserMapTopCommand(
         "baltop",
         users.getBalances(),
-        UnitFormat::currency,
+        Messages::currency,
         Component.text("Top balances"),
         "balancetop", "banktop", "topbals", "topbalances"
     );

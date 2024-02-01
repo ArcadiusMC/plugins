@@ -39,6 +39,8 @@ public interface Arguments {
 
   SuffixedNumberArgument<Integer> GAMETIME = createGametimeArgument();
 
+  ColorArgument COLOR = new ColorArgument();
+
   static List<User> getUsers(CommandContext<CommandSource> c, String argument)
       throws CommandSyntaxException
   {
@@ -67,7 +69,7 @@ public interface Arguments {
 
     try {
       Result result = c.getArgument(arg, Result.class);
-      return viewer -> result.format(source, viewer);
+      return result.toPlayerMessage(source);
     } catch (IllegalArgumentException exc) {
       if (exc.getMessage().startsWith("Argument '")) {
         return c.getArgument(arg, ViewerAwareMessage.class);

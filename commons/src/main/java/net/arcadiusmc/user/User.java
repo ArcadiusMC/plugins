@@ -203,6 +203,13 @@ public interface User extends ForwardingAudience.Single {
   void showPlayer(User other) throws UserOfflineException;
 
   /**
+   * Tests if a user can see another user
+   * @param user User to test
+   * @return {@code true}, if this user can see the specified {@code user}, {@code false} otherwise
+   */
+  boolean canSee(User user);
+
+  /**
    * Gets the user's total playtime in seconds
    * @return Playtime in seconds
    */

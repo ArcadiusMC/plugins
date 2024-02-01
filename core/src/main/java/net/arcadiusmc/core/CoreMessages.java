@@ -1,45 +1,40 @@
 package net.arcadiusmc.core;
 
+import static net.arcadiusmc.text.Messages.MESSAGE_LIST;
+import static net.arcadiusmc.text.Messages.currency;
 import static net.arcadiusmc.text.Text.format;
 import static net.arcadiusmc.text.Text.isEmpty;
-import static net.arcadiusmc.text.Text.vformat;
 import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.Component.translatable;
 import static net.kyori.adventure.text.event.ClickEvent.runCommand;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import net.arcadiusmc.Worlds;
 import net.arcadiusmc.core.commands.CommandSelfOrUser;
 import net.arcadiusmc.core.commands.CommandSuicide;
 import net.arcadiusmc.core.user.UserHomes;
-import net.forthecrown.grenadier.CommandSource;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.TextJoiner;
-import net.arcadiusmc.text.UnitFormat;
 import net.arcadiusmc.text.ViewerAwareMessage;
+import net.arcadiusmc.text.loader.MessageRef;
+import net.arcadiusmc.text.loader.MessageRender;
 import net.arcadiusmc.user.Properties;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.apache.commons.lang3.Range;
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.enchantments.Enchantment;
 
 public interface CoreMessages {
 
   /**
    * The title header of the ignored players list
    */
-  Component IGNORE_LIST_HEADER = text("Ignored players: ", NamedTextColor.GOLD);
-
-  Component GAME_MODE_SELF = text("own", NamedTextColor.GOLD);
+  MessageRef IGNORE_LIST = MESSAGE_LIST.reference("cmd.ignorelist.format");
 
   /**
    * Suffix to display for players on the <code>/list</code> command that are hidden, aka,
@@ -47,25 +42,36 @@ public interface CoreMessages {
    */
   Component VANISHED_LIST_SUFFIX = text(" [Hidden]", NamedTextColor.GRAY);
 
-  /**
-   * Header for the <code>/near</code> command
-   */
-  Component NEARBY_HEADER = text("Nearby players: ", NamedTextColor.GOLD);
+  MessageRef NEARBY_FORMAT = MESSAGE_LIST.reference("cmd.near.format");
+
+  MessageRef NEARBY_ENTRY = MESSAGE_LIST.reference("cmd.near.entry");
+
+  MessageRef ME_OTHER = MESSAGE_LIST.reference("commands.me.other");
+
+  MessageRef ME_SELF = MESSAGE_LIST.reference("commands.me.self");
+
+  MessageRef PLAYER_LIST_FORMAT = MESSAGE_LIST.reference("cmd.list.message");
 
   /**
    * Message shown by {@link CommandSuicide}
    */
-  Component CMD_SUICIDE = text("Committing suicide :(", NamedTextColor.GRAY);
+  MessageRef CMD_SUICIDE = MESSAGE_LIST.reference("commands.suicide");
 
   /**
    * Message stating the viewer was healed
    */
-  TextComponent HEALED = text("You were healed!", NamedTextColor.YELLOW);
+  MessageRef HEALED = MESSAGE_LIST.reference("commands.heal.target");
 
   /**
    * Message stating the viewer had their appetite satiated.
    */
-  TextComponent FED = text("You were fed!", NamedTextColor.YELLOW);
+  MessageRef FED = MESSAGE_LIST.reference("commands.fed.target");
+
+  MessageRef HOPPER_WARNING = MESSAGE_LIST.reference("tooManyHoppers");
+
+  MessageRef DURABILITY_WARN_SUBTITLE = MESSAGE_LIST.reference("durabilityWarning.subtile");
+
+  MessageRef DURABILITY_WARN_TITLE = MESSAGE_LIST.reference("durabilityWarning.tile");
 
   /**
    * Inventory title used by {@link CommandSelfOrUser} for it's
@@ -73,62 +79,10 @@ public interface CoreMessages {
    */
   Component DISPOSAL = text("Disposal");
 
-  Component CLEARED_ENCHANTMENTS = text("Cleared all enchantments", NamedTextColor.GRAY);
+  MessageRef PAY_SELF = MESSAGE_LIST.reference("cmd.pay.error.self");
 
-  Component CLEARED_LORE = text("Cleared lore", NamedTextColor.GRAY);
-
-  Component CLEARED_ITEM_NAME = text("Cleared item name!", NamedTextColor.GRAY);
-
-  Component MERGED_ITEM_DATA = text("Merged item data", NamedTextColor.GRAY);
-
-  Component REMOVED_ITEM_DATA = text("Removed item data", NamedTextColor.GRAY);
-
-  Component CLEARED_ATTRIBUTE_MODS = text("Cleared attribute modifiers", NamedTextColor.GRAY);
-
-  Component REMOVED_ATTRIBUTE_MOD = text("Removed attribute modifier", NamedTextColor.GRAY);
-
-  String WITHDRAW_FORMAT_SINGLE = "You got &e{0}&r that's worth &6{1}&r.";
-
-  String WITHDRAW_FORMAT_MULTIPLE = "You got &e{0}&r that are worth &6{1}&r.";
-
-
-  /**
-   * Message stating that a default home was set
-   */
-  TextComponent HOMES_DEF_SET = text("Default home set", NamedTextColor.GOLD);
-
-  /**
-   * Message stating that you're teleporting home
-   */
-  TextComponent TELEPORTING_HOME = text("Teleporting home", NamedTextColor.GRAY);
-
-  /**
-   * Home list header for when you're viewing your own homes
-   */
-  TextComponent HOMES_LIST_HEADER_SELF = text("Your homes", NamedTextColor.GOLD);
-
-  /**
-   * Creates a message stating that a home by the given name was set to the viewer's current
-   * location
-   *
-   * @param name The name of the home that was set
-   * @return The formatted message
-   */
-  static Component homeSet(String name) {
-    return format("Set home &6{0}&r to current location",
-        NamedTextColor.YELLOW, name
-    );
-  }
-
-  /**
-   * Creates a message stating the user is teleporting to a home by the given name.
-   *
-   * @param homeName The home's name
-   * @return The formatted message
-   */
-  static Component teleportingHome(String homeName) {
-    return format("Teleporting to {0}.", NamedTextColor.GRAY, homeName);
-  }
+  MessageRef PAY_DISABLED_TARGET = MESSAGE_LIST.reference("cmd.pay.error.blocked");
+  MessageRef PAY_DISABLED_SENDER = MESSAGE_LIST.reference("cmd.pay.error.disabled");
 
   /**
    * Lists the homes in the given home map. This only lists the entries, this does not include any
@@ -151,57 +105,23 @@ public interface CoreMessages {
         .asComponent();
   }
 
-  /**
-   * Creates a home list header with the given user's display name
-   *
-   * @param user The homes' owner
-   * @return The formatted message
-   */
-  static Component homeListHeader(User user) {
-    return format("{0, user}'s homes", NamedTextColor.GOLD, user);
+  static Component withdrew(Audience viewer, int coins, int worth) {
+    return coinMessage("withdraw", viewer, coins, worth);
   }
 
-  /**
-   * Creates a message saying the given user's home with the given name was deleted
-   *
-   * @param user The user whose home was deleted
-   * @param home The name of the deleted home
-   * @return The formatted message
-   */
-  static Component deletedHomeOther(User user, String home) {
-    return format("Deleted &6{0, user}&r's home: '&6{1}&r'",
-        NamedTextColor.YELLOW,
-        user, home
-    );
+  static Component deposit(Audience viewer, int coins, int worth) {
+    return coinMessage("deposit", viewer, coins, worth);
   }
 
-  /**
-   * Creates a message saying that a home by the given name was deleted
-   *
-   * @param home The name of the deleted home
-   * @return The formatted message
-   */
-  static Component deletedHomeSelf(String home) {
-    return format("Deleted home '&6{0}&r'",
-        NamedTextColor.YELLOW, home
-    );
-  }
+  private static Component coinMessage(String key, Audience viewer, int coins, int worth) {
+    String formatKey = coins == 1
+        ? "coins." + key + ".single"
+        : "coins." + key + ".multiple";
 
-
-  static Component withdrew(int items, int earned) {
-    String format = items == 1 ? WITHDRAW_FORMAT_SINGLE : WITHDRAW_FORMAT_MULTIPLE;
-
-    return format(format,
-        NamedTextColor.GRAY,
-        UnitFormat.coins(items), earned
-    );
-  }
-
-  static Component deposit(int coins, int earned) {
-    return format("You deposited &e{0}&r and received &6{1, rhines}&r.",
-        NamedTextColor.GRAY,
-        UnitFormat.coins(coins), earned
-    );
+    return MESSAGE_LIST.render(formatKey)
+        .addValue("coins", coins)
+        .addValue("worth", currency(worth))
+        .create(viewer);
   }
 
   /**
@@ -211,22 +131,21 @@ public interface CoreMessages {
    * @return The formatted component
    */
   static Component listBlocked(Collection<UUID> users, Audience viewer) {
-    return joinIds(users, IGNORE_LIST_HEADER, viewer);
+    return joinIds(users, IGNORE_LIST, viewer);
   }
 
-  static Component joinIds(Collection<UUID> uuids, Component header) {
-    return joinIds(uuids, header, null);
-  }
-
-  static Component joinIds(Collection<UUID> uuids, Component header, Audience viewer) {
-    return TextJoiner.onComma()
-        .setColor(NamedTextColor.GOLD)
-        .setPrefix(header)
+  static Component joinIds(Collection<UUID> uuids, MessageRef format, Audience viewer) {
+    Component joined = TextJoiner.onComma()
         .add(uuids.stream().map(uuid -> {
           var user = Users.get(uuid);
           return user.displayName(viewer).color(NamedTextColor.YELLOW);
         }))
         .asComponent();
+
+    return format.get()
+        .addValue("players", joined)
+        .addValue("uuids", uuids)
+        .create(viewer);
   }
 
 
@@ -236,8 +155,9 @@ public interface CoreMessages {
    * @param target The player being ignored
    * @return The formatted message
    */
-  static Component ignorePlayer(User target) {
-    return format("Ignored &6{0, user}", NamedTextColor.YELLOW, target);
+  static ViewerAwareMessage ignorePlayer(User target) {
+    return MESSAGE_LIST.render("blocking.added")
+        .addValue("player", target);
   }
 
   /**
@@ -246,46 +166,9 @@ public interface CoreMessages {
    * @param target The player being unignored
    * @return The formatted message
    */
-  static Component unignorePlayer(User target) {
-    return format("Unignored &e{0, user}", NamedTextColor.GRAY, target);
-  }
-
-  static Component gameModeChangedSelf(GameMode mode) {
-    return format("Set {0} gamemode to &e{1}&r.",
-        NamedTextColor.GRAY,
-        GAME_MODE_SELF,
-        translatable(mode)
-    );
-  }
-
-  static Component gameModeChangedOther(User target, GameMode mode) {
-    return format("Set {0, user}'s gamemode to &e{1}&r.",
-        NamedTextColor.GRAY,
-        target,
-        translatable(mode)
-    );
-  }
-
-  static Component gameModeChangedTarget(CommandSource changer, GameMode mode) {
-    return format("&6{0}&r changed your gamemode to &e{1}&r.",
-        NamedTextColor.GRAY,
-        Text.sourceDisplayName(changer),
-        translatable(mode)
-    );
-  }
-
-  static Component sudoCommand(User target, String cmd) {
-    return format("Forcing &e{0, user}&r to run '&f{1}&r'",
-        NamedTextColor.GRAY,
-        target, cmd
-    );
-  }
-
-  static Component sudoChat(User target, String chat) {
-    return format("Forcing &e{0, user}&r to say '&f{1}&r'",
-        NamedTextColor.GRAY,
-        target, chat
-    );
+  static ViewerAwareMessage unignorePlayer(User target) {
+    return MESSAGE_LIST.render("blocking.removed")
+        .addValue("player", target);
   }
 
   /**
@@ -311,7 +194,6 @@ public interface CoreMessages {
   static Component listPlayers(Collection<User> users, Audience viewer) {
     return TextJoiner.onComma()
         .setColor(NamedTextColor.YELLOW)
-        .setPrefix(text("Players: "))
 
         // Add users
         .add(users.stream()
@@ -332,47 +214,13 @@ public interface CoreMessages {
         .asComponent();
   }
 
-
-  /**
-   * Message stating the viewer's nickname was cleared
-   */
-  Component NICK_CLEARED = text("Cleared nickname", NamedTextColor.GRAY);
-
-  /**
-   * Creates a message stating the viewer set their nickname to the given nick
-   *
-   * @param nick The set nickname
-   * @return The formatted message
-   */
-  static Component nickSetSelf(String nick) {
-    return format("Nickname set to '&f{0}&r'", NamedTextColor.GRAY, nick);
-  }
-
-  /**
-   * Creates a message stating the given user's nickname was set to the given value
-   *
-   * @param user The user whose nickname was changed
-   * @param nick The value their nick was set to
-   * @return The formatted message
-   */
-  static Component nickSetOther(User user, String nick) {
-    return format("Set &e{0}&r's nickname to '&f{1}&r'",
-        NamedTextColor.GRAY,
-        user.displayName(), nick
-    );
-  }
-
-  /**
-   * Creates a message stating the user's given nickname was cleared
-   *
-   * @param user The user whose nickname was cleared
-   * @return The formatted message
-   */
-  static Component nickClearOther(User user) {
-    return format("Cleared &e{0, user}&r's nickname.",
-        NamedTextColor.GRAY, user
-    );
-  }
+  MessageRef NICK_TOO_LONG = MESSAGE_LIST.reference("cmd.nickname.error.tooLong");
+  MessageRef NICK_UNAVAILABLE = MESSAGE_LIST.reference("cmd.nickname.error.unavailable");
+  MessageRef NICK_NONE_SET = MESSAGE_LIST.reference("cmd.nickname.error.noNick");
+  MessageRef NICK_SET_SELF = MESSAGE_LIST.reference("cmd.nickname.set.self");
+  MessageRef NICK_SET_OTHER = MESSAGE_LIST.reference("cmd.nickname.set.other");
+  MessageRef NICK_CLEARED_SELF = MESSAGE_LIST.reference("cmd.nickname.cleared.self");
+  MessageRef NICK_CLEARED_OTHER = MESSAGE_LIST.reference("cmd.nickname.cleared.other");
 
   /**
    * Creates a message saying the item held by the given user was repaired
@@ -390,8 +238,9 @@ public interface CoreMessages {
    * @param target The user being healed
    * @return The formatted message
    */
-  static Component healing(User target) {
-    return format("Healing &6{0, user}&r!", NamedTextColor.YELLOW, target);
+  static ViewerAwareMessage healing(User target) {
+    return MESSAGE_LIST.render("commands.heal")
+        .addValue("player", target);
   }
 
   /**
@@ -400,102 +249,78 @@ public interface CoreMessages {
    * @param target The user that was fed
    * @return The formatted message
    */
-  static Component feeding(User target) {
-    return format("Satiated the appetite of &6{0, user}&r!", NamedTextColor.YELLOW, target);
+  static ViewerAwareMessage feeding(User target) {
+    return MESSAGE_LIST.render("commands.fed")
+        .addValue("player", target);
   }
-
-  static Component addedEnchant(Enchantment enchantment, int level) {
-    return format("Added enchantment '&e{0}&r' to held item.",
-        NamedTextColor.GRAY,
-        enchantment.displayName(level)
-    );
-  }
-
-  static Component removedEnchant(Enchantment enchantment) {
-    return format("Removed enchantment '&e{0}&r' from held item.",
-        NamedTextColor.GRAY,
-        enchantment.displayName(1)
-    );
-  }
-
-  static Component removedLoreIndex(int index) {
-    return format("Removed lore at line &e{0, number}&r.",
-        NamedTextColor.GRAY,
-        index
-    );
-  }
-
-  static Component removedLoreRange(Range<Integer> range) {
-    return format("Removed lore from &e{0, number}&r to &e{1, number}&r.",
-        NamedTextColor.GRAY,
-        range.getMinimum(),
-        range.getMaximum()
-    );
-  }
-
-  static Component addedLore(Component text) {
-    return format("Added '&f{0}&r' to lore",
-        NamedTextColor.GRAY,
-        text
-    );
-  }
-
-  static Component setItemName(Component name) {
-    return format("Set item name to '&f{0}&r'",
-        NamedTextColor.GRAY,
-        name
-    );
-  }
-
-  static Component addedAttributeModifier(Attribute attr, AttributeModifier mod) {
-    var hover = text(
-        mod.toString()
-            .replaceAll(", ", "\n")
-            .replaceAll("AttributeModier\\{", "Modifier data:{\n")
-            .replaceAll("}", "\n}")
-    );
-
-    return format("Added modifier for attribute '&e{0}&r'",
-        NamedTextColor.GRAY,
-        Component.text(attr.key().asString())
-            .hoverEvent(hover)
-    );
-  }
-
 
   static ViewerAwareMessage paidMultiple(int paid, int amount) {
-    return vformat("Paid &6{0, number}&r players &6{1, rhines}&r, total: &6{2, rhines}&r.",
-        NamedTextColor.YELLOW,
-        paid, amount,
-        paid * amount
-    );
+    return MESSAGE_LIST.render("cmd.pay.sender.total")
+        .addValue("totalAmount", amount)
+        .addValue("targetCount", paid);
   }
 
-  static ViewerAwareMessage payTarget(User sender, int amount, @Nullable Component message) {
-    if (isEmpty(message)) {
-      return vformat("You received &6{1, rhines}&r from &e{0, user}&r.",
-          NamedTextColor.GRAY,
-          sender, amount
-      );
-    }
-
-    return vformat("You received &6{1, rhines}&r from &e{0, user}&r: &f{2}",
-        NamedTextColor.GRAY,
-        sender, amount, message
-    );
+  static Component payTarget(
+      Audience sender,
+      Audience target,
+      int amount,
+      @Nullable Component message
+  ) {
+    return payMessage("target", sender, target, amount, message).create(target);
   }
 
-  static ViewerAwareMessage paySender(User target, int amount, @Nullable ViewerAwareMessage message) {
+  static Component paySender(
+      Audience sender,
+      Audience target,
+      int amount,
+      @Nullable Component message
+  ) {
+    return payMessage("sender", sender, target, amount, message).create(sender);
+  }
+
+  private static ViewerAwareMessage payMessage(
+      String key,
+      Audience sender,
+      Audience target,
+      int amount,
+      Component message
+  ) {
+    MessageRender render;
+
     if (isEmpty(message)) {
-      return vformat("Paid &6{0, rhines}&r to &e{1, user}&r.",
-          NamedTextColor.GRAY,
-          amount, target
-      );
+      render = MESSAGE_LIST.render("cmd.pay." + key);
+    } else {
+      render = MESSAGE_LIST.render("cmd.pay." + key + ".message");
     }
 
-    return vformat("Paid &6{0, rhines}&r to &e{1, user}&r: &f{2}",
-        NamedTextColor.GRAY,
-        amount, target, message
+    return render
+        .addValue("sender", sender)
+        .addValue("target", target)
+        .addValue("amountRaw", amount)
+        .addValue("amount", currency(amount))
+        .addValue("message", message);
+  }
+
+  static List<Component> coinLore(int amount) {
+    List<Component> lines = new ArrayList<>();
+    Component currencyText = currency(amount);
+
+    lines.add(
+        MESSAGE_LIST.render("coins.lore.worth")
+            .addValue("world", Worlds.overworld())
+            .addValue("worth", currencyText)
+            .addValue("rawWorth", amount)
+            .create(null)
     );
+
+    lines.add(
+        MESSAGE_LIST.render("coins.lore.date")
+            .addValue("world", Worlds.overworld())
+            .addValue("worth", currencyText)
+            .addValue("rawWorth", amount)
+            .create(null)
+    );
+
+    return lines;
   }
 }

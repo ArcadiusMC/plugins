@@ -1,24 +1,22 @@
 package net.arcadiusmc.core.commands.admin;
 
-import static net.kyori.adventure.text.Component.text;
-
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
-import net.arcadiusmc.core.CorePermissions;
-import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.ExpandedEntityArgument;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.core.CorePermissions;
+import net.arcadiusmc.text.Messages;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.forthecrown.grenadier.types.ParsedPosition;
 import net.forthecrown.grenadier.types.ParsedPosition.Type;
-import net.arcadiusmc.text.Text;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -154,15 +152,8 @@ public class CommandLaunch extends BaseCommand {
       }
     }
 
-    if (entities.size() == 1) {
-      c.getSource().sendSuccess(
-          Text.format("Launched &e{0}&r.", entities.get(0).teamDisplayName())
-      );
-    } else {
-      c.getSource().sendSuccess(
-          Text.format("Launched &e{0, number}&r entities.", entities.size())
-      );
-    }
+    CommandSource source = c.getSource();
+    source.sendSuccess(launchMessage(entities, source));
 
     return 0;
   }
@@ -177,7 +168,7 @@ public class CommandLaunch extends BaseCommand {
           || pos.getYCoordinate().relative()
           || pos.getZCoordinate().relative()
       ) {
-        throw Exceptions.create("Cannot use relative ('^') coordinates here");
+        throw Messages.MESSAGE_LIST.exception("cmd.launch.error.relativeCords", c.getSource());
       }
     }
 
@@ -203,7 +194,22 @@ public class CommandLaunch extends BaseCommand {
       }
     }
 
-    c.getSource().sendSuccess(text("Launched " + entities.size() + " entities"));
+    CommandSource source = c.getSource();
+    source.sendSuccess(launchMessage(entities, source));
+
     return 0;
+  }
+
+  private Component launchMessage(Collection<Entity> launched, CommandSource source) {
+    if (launched.size() == 1) {
+      return Messages.MESSAGE_LIST.render("cmd.launch.single")
+          .addValue("entity", launched.iterator().next())
+          .addValue("entities", launched.size())
+          .create(source);
+    }
+
+    return Messages.MESSAGE_LIST.render("cmd.launch.multiple")
+        .addValue("entities", launched.size())
+        .create(source);
   }
 }

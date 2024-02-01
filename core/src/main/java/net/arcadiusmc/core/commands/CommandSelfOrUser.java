@@ -90,10 +90,10 @@ public class CommandSelfOrUser extends BaseCommand {
           player.setSaturation(10f);
 
           if (!self) {
-            user.sendMessage(CoreMessages.FED);
+            user.sendMessage(CoreMessages.FED.renderText(user));
           }
 
-          source.sendSuccess(CoreMessages.feeding(user));
+          source.sendSuccess(CoreMessages.feeding(user).create(source));
           return 0;
         }
     );
@@ -108,10 +108,10 @@ public class CommandSelfOrUser extends BaseCommand {
           player.getActivePotionEffects().forEach(e -> player.removePotionEffect(e.getType()));
 
           if (!self) {
-            player.sendMessage(CoreMessages.HEALED);
+            player.sendMessage(CoreMessages.HEALED.renderText(player));
           }
 
-          source.sendMessage(CoreMessages.healing(user));
+          source.sendMessage(CoreMessages.healing(user).create(source));
           return 0;
         }
     );
@@ -123,7 +123,6 @@ public class CommandSelfOrUser extends BaseCommand {
         (user, source, self) -> {
           Inventory inv = Bukkit.createInventory(null, 54, CoreMessages.DISPOSAL);
           user.getPlayer().openInventory(inv);
-
           return 0;
         },
         "bin"

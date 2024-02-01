@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import net.arcadiusmc.core.commands.HelpArgument;
+import net.arcadiusmc.core.commands.help.HelpArgument;
 import net.arcadiusmc.command.BaseCommand;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Completions;

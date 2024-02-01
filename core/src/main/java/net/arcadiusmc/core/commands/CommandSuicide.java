@@ -30,7 +30,7 @@ public class CommandSuicide extends BaseCommand {
             player.setHealth(0);
           }
 
-          player.sendMessage(CoreMessages.CMD_SUICIDE);
+          player.sendMessage(CoreMessages.CMD_SUICIDE.renderText(player));
           return 0;
         });
   }

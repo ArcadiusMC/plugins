@@ -34,7 +34,7 @@ public class CommandSkull extends BaseCommand {
               Player player = c.getSource().asPlayer();
 
               if (player.getInventory().firstEmpty() == -1) {
-                throw Exceptions.INVENTORY_FULL;
+                throw Exceptions.INVENTORY_FULL.exception(player);
               }
 
               User user = Arguments.getUser(c, "profile");

@@ -62,7 +62,8 @@ public class ChatHandleListener implements Listener {
         @NotNull Component message,
         @NotNull Audience viewer
     ) {
-      return Messages.chatMessage(displayName, message);
+      User user = Users.get(source);
+      return Messages.chatMessage(viewer, user, message);
     }
   }
 }

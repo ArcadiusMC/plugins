@@ -1,15 +1,18 @@
 package net.arcadiusmc.core.commands.item;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.arcadiusmc.command.Exceptions;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.text.PeriodFormat;
+import net.arcadiusmc.text.loader.MessageRender;
+import net.arcadiusmc.utils.Time;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.forthecrown.grenadier.types.RegistryArgument;
-import net.arcadiusmc.text.Text;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 import org.bukkit.Registry;
+import org.bukkit.entity.Player;
 
 public class ItemCooldownNode extends ItemModifierNode {
 
@@ -40,47 +43,59 @@ public class ItemCooldownNode extends ItemModifierNode {
   public void create(LiteralArgumentBuilder<CommandSource> command) {
     command.then(argument("material", MATERIAL_ARG)
         .executes(c -> {
-          var player = c.getSource().asPlayer();
+          Player player = c.getSource().asPlayer();
           Material material = c.getArgument("material", Material.class);
 
           if (!player.hasCooldown(material)) {
-            throw Exceptions.format("You do not have a cooldown for {0}",
-                material
-            );
+            throw ItemMessages.NO_COOLDOWN.get()
+                .addValue("material", material)
+                .exception(player);
           }
 
           int remainingTicks = player.getCooldown(material);
 
-          c.getSource().sendMessage(
-              Text.format(
-                  "Material &e{0}&r remaining cooldown: &e{1, time, -ticks}&r.",
-                  NamedTextColor.GRAY,
-                  material,
-                  remainingTicks
-              )
+          player.sendMessage(
+              ItemMessages.COOLDOWN_DISPLAY.get()
+                  .addValue("material", material)
+                  .addValue("remainingTicks", remainingTicks)
+                  .addValue("remaining", PeriodFormat.of(Time.ticksToMillis(remainingTicks)))
+                  .create(player)
           );
           return 0;
         })
 
         .then(argument("cooldown", ArgumentTypes.time())
             .executes(c -> {
-              var player = c.getSource().asPlayer();
-              Material material = c.getArgument("material", Material.class);
               long cooldownTicks = ArgumentTypes.getTicks(c, "cooldown");
-
-              player.setCooldown(material, (int) cooldownTicks);
-
-              c.getSource().sendMessage(
-                  Text.format(
-                      "Set &e{0}&r's cooldown to &e{1, time, -ticks -short}&r.",
-                      NamedTextColor.GRAY,
-                      material,
-                      cooldownTicks
-                  )
-              );
-              return 0;
+              return setCooldown(c, cooldownTicks);
             })
         )
+
+        .then(literal("remove")
+            .executes(c -> setCooldown(c, 0))
+        )
     );
+  }
+
+  private int setCooldown(CommandContext<CommandSource> c, long cooldownTicks)
+      throws CommandSyntaxException
+  {
+    Player player = c.getSource().asPlayer();
+    Material material = c.getArgument("material", Material.class);
+
+    player.setCooldown(material, (int) cooldownTicks);
+
+    MessageRender render = cooldownTicks < 1
+        ? ItemMessages.REMOVED_COOLDOWN.get()
+        : ItemMessages.SET_COOLDOWN.get();
+
+    c.getSource().sendSuccess(
+        render
+            .addValue("material", material)
+            .addValue("remainingTicks", cooldownTicks)
+            .addValue("remaining", PeriodFormat.of(Time.ticksToMillis(cooldownTicks)))
+            .create(player)
+    );
+    return 0;
   }
 }

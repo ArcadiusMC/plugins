@@ -1,24 +1,26 @@
 package net.arcadiusmc.core.commands;
 
-import static net.kyori.adventure.text.Component.text;
-
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.arcadiusmc.core.CorePermissions;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.help.UsageFactory;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.GrenadierCommand;
-import net.arcadiusmc.text.channel.ChannelledMessage;
+import net.arcadiusmc.core.CorePermissions;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.ViewerAwareMessage;
+import net.arcadiusmc.text.channel.ChannelledMessage;
+import net.arcadiusmc.text.loader.MessageRef;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
 import net.arcadiusmc.utils.Audiences;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.GrenadierCommand;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 
 public class CommandTell extends BaseCommand {
+
+  static final MessageRef TELL_FORMAT = Messages.MESSAGE_LIST.reference("cmd.tell.format");
+  static final MessageRef SELF = Messages.MESSAGE_LIST.reference("cmd.tell.self");
 
   public CommandTell() {
     super("ftell");
@@ -98,23 +100,31 @@ public class CommandTell extends BaseCommand {
       Component firstDisplay;
       Component secondDisplay;
 
-      if (Audiences.equals(sender, target)) {
-        firstDisplay = text("me");
-        secondDisplay = text("me");
+      Component me = SELF.renderText(viewer);
+
+      if (Audiences.equals(sender, target) && Audiences.equals(viewer, sender)) {
+        firstDisplay = me;
+        secondDisplay = me;
       } else if (Audiences.equals(viewer, sender)) {
-        firstDisplay = text("me");
+        firstDisplay = me;
         secondDisplay = Text.sourceDisplayName(target, viewer);
       } else if (Audiences.equals(viewer, target)) {
         firstDisplay = Text.sourceDisplayName(sender, viewer);
-        secondDisplay = text("me");
+        secondDisplay = me;
       } else {
         firstDisplay = Text.sourceDisplayName(sender, viewer);
         secondDisplay = Text.sourceDisplayName(target, viewer);
       }
 
-      return Text.format("[&e{0}&r -> &e{1}&r] &f{2}", NamedTextColor.GOLD,
-          firstDisplay, secondDisplay, baseMessage
-      );
+      return TELL_FORMAT.get()
+          .addValue("targetSource", target)
+          .addValue("senderSource", target)
+
+          .addValue("sender", firstDisplay)
+          .addValue("target", secondDisplay)
+          .addValue("message", baseMessage)
+
+          .create(viewer);
     });
 
     channelled.send();

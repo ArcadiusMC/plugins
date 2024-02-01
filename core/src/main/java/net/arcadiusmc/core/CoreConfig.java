@@ -27,8 +27,6 @@ public class CoreConfig {
 
   private int maxNickLength = 16;
 
-  private String[] illegalWorlds = { "world_void", "world_test" };
-
   private LocalTime dayUpdateTime = LocalTime.of(0, 0, 1);
 
   private boolean placeholdersDisabled = false;
@@ -43,6 +41,8 @@ public class CoreConfig {
   private boolean rightClickDeposits = true;
 
   private int hoppersInOneChunk = 128;
+
+  private int nearCommandDistance = 200;
 
   private double durabilityWarningThreshold = 0.1d;
 

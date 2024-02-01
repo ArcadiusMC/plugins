@@ -10,14 +10,20 @@ import net.arcadiusmc.text.ViewerAwareMessage;
 import net.arcadiusmc.text.placeholder.PlaceholderRenderer;
 import net.arcadiusmc.text.placeholder.Placeholders;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextReplacementConfig;
 import org.bukkit.entity.Entity;
 
 public class CommandTellRawF extends BaseCommand {
 
+  static final TextReplacementConfig NL_REPLACER = TextReplacementConfig.builder()
+      .matchLiteral("\\n")
+      .replacement(Component.newline())
+      .build();
+
   public CommandTellRawF() {
     super("tellrawf");
     setAliases("tellraw", "ftellraw", "ftc_tellraw");
-    setDescription("FTC's version of /tellraw with more lax text input");
+    setDescription("ArcadiusMC's version of /tellraw with more lax text input");
     register();
   }
 
@@ -35,13 +41,16 @@ public class CommandTellRawF extends BaseCommand {
                   for (Entity entity : entities) {
                     Component rendered = message.create(entity);
                     rendered = renderer.render(rendered, entity);
-
-                    entity.sendMessage(rendered);
+                    entity.sendMessage(replaceNewlines(rendered));
                   }
 
                   return 0;
                 })
             )
         );
+  }
+
+  private static Component replaceNewlines(Component text) {
+    return text.replaceText(NL_REPLACER);
   }
 }

@@ -1,12 +1,17 @@
 package net.arcadiusmc.core.commands;
 
+import net.arcadiusmc.core.CoreExceptions;
 import net.arcadiusmc.core.CorePermissions;
 import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.BaseCommand;
+import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.forthecrown.grenadier.GrenadierCommand;
 import net.kyori.adventure.sound.Sound;
+import org.bukkit.GameMode;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 public class CommandHat extends BaseCommand {
 
@@ -46,8 +51,15 @@ public class CommandHat extends BaseCommand {
           Player player = c.getSource().asPlayer();
           ItemStack held = Commands.getHeldItem(player);
 
-          var inventory = player.getInventory();
+          PlayerInventory inventory = player.getInventory();
           ItemStack helmet = inventory.getHelmet();
+
+          if (ItemStacks.notEmpty(helmet)
+              && helmet.containsEnchantment(Enchantment.BINDING_CURSE)
+              && player.getGameMode() != GameMode.CREATIVE
+          ) {
+            throw CoreExceptions.CANNOT_REMOVE_HELMET.exception(player);
+          }
 
           inventory.setHelmet(held);
           inventory.setItemInMainHand(helmet);

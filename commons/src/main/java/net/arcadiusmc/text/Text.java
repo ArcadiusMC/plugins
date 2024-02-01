@@ -16,18 +16,18 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
-import net.arcadiusmc.user.User;
-import net.arcadiusmc.user.Users;
 import net.arcadiusmc.Worlds;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.nbt.BinaryTag;
-import net.forthecrown.nbt.paper.PaperNbt;
 import net.arcadiusmc.text.format.ComponentFormat;
 import net.arcadiusmc.text.format.FormatBuilder;
 import net.arcadiusmc.text.parse.ChatParseFlag;
 import net.arcadiusmc.text.parse.ChatParser;
 import net.arcadiusmc.text.parse.TextContext;
+import net.arcadiusmc.user.User;
+import net.arcadiusmc.user.Users;
 import net.arcadiusmc.utils.VanillaAccess;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.nbt.BinaryTag;
+import net.forthecrown.nbt.paper.PaperNbt;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
@@ -264,6 +264,10 @@ public final class Text {
 
   public static TextComponent gradient(String input, TextColor... colors) {
     return gradient(input, false, colors);
+  }
+
+  public static TextComponent gradient(String input, boolean hsv, List<TextColor> colors) {
+    return gradient(input, hsv, colors.toArray(TextColor[]::new));
   }
 
   /**
@@ -814,6 +818,10 @@ public final class Text {
     // so I put it here lol
     if (arg instanceof KeybindComponent.KeybindLike like) {
       return Component.keybind(like);
+    }
+
+    if (arg instanceof Number number) {
+      return formatNumber(number);
     }
 
     // Some kind of object, we don't know what it is,

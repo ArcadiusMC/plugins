@@ -13,6 +13,7 @@ import com.mojang.serialization.Encoder;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.PrimitiveCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.lang.reflect.Array;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,6 +24,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import lombok.experimental.UtilityClass;
+import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.registry.Registries;
 import net.arcadiusmc.utils.TomlConfigs;
 import net.arcadiusmc.utils.inventory.ItemList;
@@ -33,6 +35,7 @@ import net.forthecrown.nbt.CompoundTag;
 import net.forthecrown.nbt.string.TagParseException;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.NbtOps;
 import org.bukkit.Bukkit;
@@ -223,8 +226,23 @@ public @UtilityClass class FtcCodecs {
 
   public static final Codec<UUID> INT_ARRAY_UUID = UUIDUtil.CODEC;
   public static final Codec<UUID> STRING_UUID = UUIDUtil.STRING_CODEC;
+  public static final Codec<TextColor> COLOR = Codec.STRING.comapFlatMap(
+      string -> safeParse(string, Arguments.COLOR),
+      Object::toString
+  );
 
   /* ----------------------------------------------------------- */
+
+  public static <V> Codec<V[]> arrayOf(Codec<V> baseType, Class<V> arrayValueType) {
+    return baseType.listOf().xmap(
+        vs -> {
+          V[] arr = (V[]) Array.newInstance(arrayValueType, vs.size());
+          vs.toArray(arr);
+          return arr;
+        },
+        Arrays::asList
+    );
+  }
 
   public static <V> Codec<V> combine(List<Codec<V>> codecs) {
     return combine(0, codecs);

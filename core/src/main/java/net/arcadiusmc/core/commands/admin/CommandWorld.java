@@ -1,19 +1,25 @@
 package net.arcadiusmc.core.commands.admin;
 
-import net.arcadiusmc.core.CorePermissions;
+import com.mojang.brigadier.context.CommandContext;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.help.UsageFactory;
-import net.forthecrown.grenadier.GrenadierCommand;
-import net.forthecrown.grenadier.types.ArgumentTypes;
-import net.arcadiusmc.text.Text;
+import net.arcadiusmc.core.CorePermissions;
+import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.loader.MessageRef;
+import net.arcadiusmc.text.loader.MessageRender;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.UserTeleport.Type;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.GrenadierCommand;
+import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.World;
 
 public class CommandWorld extends BaseCommand {
+
+  static final MessageRef SELF = Messages.MESSAGE_LIST.reference("admincmd.world.self");
+  static final MessageRef OTHER = Messages.MESSAGE_LIST.reference("admincmd.world.other");
 
   public CommandWorld() {
     super("world");
@@ -36,38 +42,40 @@ public class CommandWorld extends BaseCommand {
         .then(argument("world", ArgumentTypes.world())
             .executes(c -> {
               User user = getUserSender(c);
-              World world = c.getArgument("world", World.class);
-
-              user.createTeleport(() -> world.getSpawnLocation().toCenterLocation(), Type.OTHER)
-                  .setStartMessage(
-                      Component.text("Teleporting to " + world.getName(),
-                          NamedTextColor.GRAY
-                      )
-                  )
-                  .setDelay(null)
-                  .start();
-
-              return 0;
+              return moveToWorld(c, user);
             })
 
             .then(argument("user", Arguments.ONLINE_USER)
                 .executes(c -> {
                   User user = Arguments.getUser(c, "user");
-                  World world = c.getArgument("world", World.class);
-
-                  user.createTeleport(() -> world.getSpawnLocation().toCenterLocation(), Type.OTHER)
-                      .setDelay(null)
-                      .setSilent(user.hasPermission(CorePermissions.CMD_TELEPORT))
-                      .start();
-
-                  c.getSource().sendSuccess(
-                      Text.format("Teleporting {0, user} to {1}",
-                          user, world.getName()
-                      )
-                  );
-                  return 0;
+                  return moveToWorld(c, user);
                 })
             )
         );
+  }
+
+  private int moveToWorld(CommandContext<CommandSource> c, User user) {
+    CommandSource source = c.getSource();
+    World world = c.getArgument("world", World.class);
+
+    user.createTeleport(() -> world.getSpawnLocation().toCenterLocation(), Type.OTHER)
+        .setDelay(null)
+        .setSilent(user.hasPermission(CorePermissions.CMD_TELEPORT))
+        .start();
+
+    boolean self = source.textName().equals(user.getName());
+    MessageRender message = self ? SELF.get() : OTHER.get();
+    Component rendered = message
+        .addValue("player", user)
+        .addValue("world", world)
+        .create(source);
+
+    if (self) {
+      source.sendMessage(rendered);
+    } else {
+      source.sendSuccess(rendered);
+    }
+
+    return 0;
   }
 }

@@ -69,7 +69,7 @@ public class CommandIgnoreList extends BaseCommand {
     UserBlockList list = user.getComponent(UserBlockList.class);
 
     if (list.getBlocked().isEmpty()) {
-      throw Exceptions.NOTHING_TO_LIST;
+      throw Exceptions.NOTHING_TO_LIST.exception(source);
     }
 
     source.sendMessage(CoreMessages.listBlocked(list.getBlocked(), source));

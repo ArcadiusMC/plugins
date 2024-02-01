@@ -13,7 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class FtcEnchants {
+public class CustomEnchantments {
 
   static void openForRegistrations() {
     try {
@@ -26,7 +26,7 @@ public class FtcEnchants {
     }
   }
 
-  public static <T extends FtcEnchant> T register(final T enchant) {
+  public static <T extends CustomEnchantment> T register(final T enchant) {
     openForRegistrations();
 
     Registry.register(
@@ -42,14 +42,14 @@ public class FtcEnchants {
     BuiltInRegistries.ENCHANTMENT.freeze();
   }
 
-  public static void addEnchant(ItemStack item, FtcEnchant enchant, int level) {
+  public static void addEnchant(ItemStack item, CustomEnchantment enchant, int level) {
     var meta = item.getItemMeta();
     addEnchant(meta, enchant, level);
 
     item.setItemMeta(meta);
   }
 
-  public static void addEnchant(ItemMeta meta, FtcEnchant enchant, int level) {
+  public static void addEnchant(ItemMeta meta, CustomEnchantment enchant, int level) {
     if (meta instanceof EnchantmentStorageMeta storageMeta) {
       storageMeta.addStoredEnchant(enchant, level, true);
     } else {

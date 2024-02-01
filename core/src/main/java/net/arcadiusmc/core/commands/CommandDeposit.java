@@ -3,13 +3,13 @@ package net.arcadiusmc.core.commands;
 import com.google.common.collect.Iterators;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.Iterator;
-import net.arcadiusmc.core.Coins;
-import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.help.UsageFactory;
-import net.forthecrown.grenadier.GrenadierCommand;
+import net.arcadiusmc.core.Coins;
+import net.arcadiusmc.core.CoreExceptions;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.inventory.ItemStacks;
+import net.forthecrown.grenadier.GrenadierCommand;
 import org.bukkit.inventory.ItemStack;
 
 public class CommandDeposit extends BaseCommand {
@@ -65,7 +65,7 @@ public class CommandDeposit extends BaseCommand {
     int earned = Coins.deposit(user, it, -1);
 
     if (earned < 1) {
-      throw Exceptions.create("You must be holding the coins you wish to deposit.");
+      throw CoreExceptions.HOLD_COINS.exception(user);
     }
 
     return 0;

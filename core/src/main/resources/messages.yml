@@ -1,0 +1,503 @@
+# ------------------------------------------------------------
+# _style:
+# Sets the style used by all messages in the section
+#
+# Styles in subsections are merged with parent styles,
+# subsection style overrides parent style for each
+# conflicting value
+#
+# Examples:
+# _style: "gray"
+#   Makes each message in the section have gray text by default
+#
+# _style: "gray;italic;bold"
+#   Gray, bold and italic text
+#
+# _style: "red;!italic"
+#   Red text with Italic text explicitly disabled
+#
+# _style: ";italic"
+#   Unset color with Italic text
+#
+# ------------------------------------------------------------
+# _styles:
+# Defines style variables, not usable outside the file itself,
+#
+# Syntax is the same as '_style'
+#
+# Use variables with: _style: $<name>
+#
+# Example:
+# _style: $normal
+# _style: $err
+# ------------------------------------------------------------
+
+_styles:
+  err: "red"
+  normal: "gray"
+
+generic:
+  button:
+    tick:             "${text: content='[✔]' hover='Click to allow'}"
+    cross:            "${text: content='[✖]' hover='Click to deny'}"
+    confirm:          "${text: content='[Confirm]' hover='Click to confirm'}"
+    deny:             "${text: content='[Deny]' hover='Click to deny'"
+    accept:           "${text: content='[Accept]' hover='Click to accept'"
+    nextPage:         "${text: content=' > ' hover='Next Page' color='yellow' -bold}"
+    previousPage:     "${text: content=' < ' hover='Previous Page' color='yellow' -bold}"
+    firsPage:         "${text: content=' >> ' hover='First Page' color='yellow' -bold}"
+    lastPage:         "${text: content=' << ' hover='Last Page' color='yellow' -bold}"
+
+  click_me:           "Click me!"
+  click_to_allow:     "Click to allow"
+  click_to_deny:      "Click to deny"
+  click_to_confirm:   "Click to confirm"
+  click_to_teleport:  "Click to teleport"
+  pageBorder:         "&7&m                  "
+
+server:
+  name:               "ArcadiusMC"
+  join:               "&e${player} joined the game"
+  join.firstTime:     "&eWelcome ${player} to the server!"
+  join.newName:       "&e${player} (formerly known as ${previousName}) joined the game"
+  leave:              "&e${player} left the game"
+  leave.timeout:      "&e${player} left the game (Timed out)"
+  leave.error:        "&e${player} left the game (Error)"
+  leave.kicked:       "&e${player} left the game (Kicked)"
+  diedAt:             "&7You died at ${location.worldIfNotDefault}!"
+  chat:               "&#e6e6e6${player} &7&l» &f${message}"
+  chat.nonPlayer:     "&#e6e6e6${sender} &7&l» &f${message}"
+  adminBroadcast:     "&8${source} &l» &7${message}"
+
+formats:
+  location.noWorld:   "${pos.x}x ${pos.y}y ${pos.z}z"
+  location:           "${pos.x}x ${pos.y}y ${pos.z}z world: ${pos.world}"
+
+units:
+  # None of these elements have a 'viewer' value specified
+  # so values like ${viewer.name} will not render, because
+  # a viewer has not been specified
+
+  display:            "${amount} ${unit}"
+  votes.singular:     "Vote"
+  votes.plural:       "Votes"
+  playtime.singular:  "Hour"
+  playtime.plural:    "Hours"
+  gems.singular:      "Gem"
+  gems.plural:        "Gems"
+  currency.singular:  "Denari"
+  currency.plural:    "Denari"
+
+unitEdit:
+  _style: $normal
+  set:                "&e${player}&r now has &6${new}&r. &8(Was ${old})"
+  subtracted:         "Removed &e${amount}&r from &6${player}&r, now has: &e${new}&r."
+  added:              "Gave &e${player}&r &6${amount}&r, now has: &e${new}&r."
+
+blocking:
+  _style: $normal
+  separated:          "You are forcefully separated from ${target}!"
+  sender:             "You have blocked ${target}!"
+  target:             "${sender} has blocked you!"
+  added:              "&eIgnored &6${player}&e."
+  removed:            "&eStopped ignoring &6${player}&e."
+  self:               "Cannot ignore self"
+
+unitQuery:
+  _style: $normal
+  self:               "You have &e${units}&r."
+  other:              "&6${player}&r has &r${units}&r."
+
+cooldowns:
+  _style: $err
+  eternal:            "This could only be done once!"
+  long:               "You can do this in ${remaining}."
+  short:              "You can do this every ${cooldown}"
+
+coins:
+  lore.worth:         "&eWorth ${worth}"
+  lore.date:          "Minted in the year ${world.year.roman}"
+  deposit.multiple:   "&7Deposited &e${coins} Coins&7 worth &6${worth}&7 total."
+  deposit.single:     "&7Deposited &e1 Coin&7 worth &6${worth}&7."
+  withdraw.multiple:  "&7Withdrew &e${coins} Coins&7 worth &6${worth}&7."
+  withdraw.single:    "&7Withdrew &e1 Coin&7 worth &6${worth}&7."
+  noneHeld:           "You must be holding the coins you wish to deposit."
+
+player.notOnline:     "${player} is not online"
+tooManyHoppers:       "&7Too many hoppers in one chunk! &8(Limit: ${hopperLimit})"
+allCaps:              "&7Please do not send all caps messages."
+
+durabilityWarning:
+  title:              "&cYour ${item} is about to break"
+  subtitle:           "&6${durability} / ${maxDurability} durability left"
+
+commands:
+  suicide:            "&7Committing suicide :("
+  fed.target:         "&eYou were fed!"
+  fed:                "&eSatiated the appetite of &6${player}&e!"
+  heal.target:        "&eYou were healed!"
+  heal:               "&eHealed &6${player}&e."
+  repair.error:       "Held item cannot be repaired!"
+  repair.target:      "&eHeld item repaired!"
+  repair:             "&eRepaired item held by &6${player}&e!"
+  roll:               "&7Rolled number: &e${number}&7."
+  time:               "Set time in ${world.rawId} to ${time}"
+  me.other:           "* ${player} ${message}"
+  me.self:            "${message}"
+  leaveNotAllowed:    "Not allowed to use here"
+
+errors:
+  emptyList:          "Nothing to list."
+  cannotAfford:       "Cannot afford ${amount}."
+  inventoryFull:      "Inventory full!"
+  inventoryEmpty:     "Inventory empty!"
+  mustHoldItem:       "Must be holding an item!"
+  invalidColor:       "Invalid color ${color}"
+
+teleporting:
+  _style: $normal
+  start:              "${action} in ${delay}"
+  complete:           "${action}..."
+  cancelled:          "Teleport cancelled"
+  destinationError:   "&cInternal error getting teleport destination"
+
+homes:
+  _style: "yellow"
+
+  error:
+    _style: $err
+    forbidden:        "Not allowed to visit that home."
+    set:              "Cannot set home here!"
+    limit:            "Cannot make more homes (Over limit of ${maxHomes})"
+    noDefault:        "No default home set (Set with /sethome)"
+    unknown:          "Unknown home: '${name}'"
+
+  deleted:
+    regular.self:     "Deleted home '&6${home.name}&r'"
+    regular.other:    "Deleted home &6${player}&r's '&6${home.name}&r'"
+    default.self:     "Deleted default home."
+    default.other:    "Deleted home &6${player}&r's default home."
+
+  teleport.regular:   "&7Teleporting to ${home.name}."
+  teleport.default:   "&7Teleporting home."
+  set:                "Set home &6${home.name}&r to current location."
+  set.default:        "Set default home to your current location."
+
+  list:
+    _style: "gold"
+    self.unlimited:   "Your homes: &e${homes}."
+    self.limited:     "Your homes &e(${homeCount} / ${maxHomes})&r: &e${homes}."
+    other.unlimited:  "${player} homes: ${homes}."
+    other.limited:    "${player} homes &e(${homeCount} / ${maxHomes})&r: &e${homes}."
+
+profile:
+  balances:           "Balances"
+  uuid:               "UUID"
+  realName:           "Name"
+  firstJoin:          "First Joined"
+  votes:              "Total Votes"
+  playtime:           "Playtime"
+  status:             "Profile public"
+  lastOnline:         "Last Online"
+  ip:                 "IP"
+  returnLocation:     "/back location"
+  location:           "Location"
+  playerListButton:   "[Hover to see]"
+  blocked:            "Blocked players"
+  separated:          "Separated from"
+  blocked.format:     "Blocked: ${players}"
+  separated.format:   "Separated: ${players}"
+
+cmd.near:
+  empty:              "No one nearby"
+  entry:              "&e${player} &7(${distance} blocks)"
+  format:             "&eNearby players &7(${players.size})&e: ${players}"
+
+cmd.pay:
+  _style: $normal
+  error:
+    _style: $err
+    self:             "Cannot pay yourself"
+    disabled.target:  "${target} has disabled paying."
+    disabled.sender:  "Paying disabled &7(Change in /settings)"
+  target:             "&6${sender}&r paid you &e${amount}&r."
+  target.message:     "&6${sender}&r paid you &e${amount}&r: &f${message}"
+  sender:             "Paid &e${amount}&r to &6${target}&r."
+  sender.message:     "Paid &e${amount}&r to &6${target}&r: &f${message}"
+  sender.total:       "Paid &e${totalAmount}&r to &6${targetCount}&r players."
+
+cmd.nickname:
+  _style: $normal
+
+  error:
+    _style: $err
+    tooLong:          "Nickname too long! &7(max length is ${maxLength} characters)"
+    unavailable:      "Nickname unavailable."
+    noNick:           "${player} has no set nickname"
+
+  set.self:           "Set nick to '&e${nick}&r'"
+  set.other:          "Set &e${player}&r's nick to '&e${nick}&r'"
+  cleared.self:       "Cleared nickname"
+  cleared.other:      "Cleared &e${player}&7's nick."
+
+cmd.gameMode:
+  _style: $normal
+
+  changed.self:       "Set &eown&r gamemode to &6${gamemode}&r."
+  changed.other:      "Set &e${target}&r's gamemode to &6${gamemode}&r."
+  changed.target:     "&e${sender}&r set your gamemode to &6${gamemode}&r."
+
+  spectator:          "Spectator"
+  creative:           "Creative"
+  survival:           "Survival"
+  adventure:          "Adventure"
+
+cmd.tell:
+  self:               "me"
+  format:             "&6[&e${sender}&6 -> &e${target}&6] &f${message}"
+  noReplyTargets:     "No one to reply to"
+
+cmd.alts:
+  list:
+    header:           "${player}'s alts and main data:"
+    field.alts:       "Alt accounts"
+    field.main:       "Main account"
+
+  noAlts:             "${player} has no alt accounts"
+  notAnAlt:           "${player} is not an alt account"
+  notAltFor:          "${alt} is not an alt for ${main}"
+  alreadyAnAlt:       "${alt} is already an alt for ${main}"
+  cleared:            "Cleared &e${alts}&f alts from &e${player}&f."
+  removed:            "${alt} is no longer an alt for ${main}"
+  set:                "${alt} is now an alt for ${main}"
+
+cmd.list:
+  emptyServer:        "The server is empty :("
+  message:            "&eThere are &6${server.onlinePlayers}&e out of &6${server.maxPlayers}&e players online\nPlayers: &6${playerList}"
+
+cmd.timeFields:
+  list.header:        "${player} time fields:"
+  unset:              "Unset field &e${field}&r for &e${player}&r."
+  set:                "Set field &e${field}&r to &e${time}&r for &e${player}&r."
+
+cmd.teleport:
+  failed.all:         "Failed to teleport any entities"
+  failed.self:        "Failed to teleport"
+  failed:             "&7Failed to teleport ${number} entities"
+  self:               "&7Teleporting to ${location}"
+  single:             "&7Teleported &e${entity}&7 to &6${location}&7."
+  multiple:           "&7Teleported &e${number}&7 entities to &6${location}&7."
+
+cmd.tab:
+  _style: $normal
+  updated:            "Updated TAB menu for all players."
+  reloaded:           "Reloaded TAB list."
+  unset.suffix:       "Removed &e${player}&r's tab suffix."
+  unset.prefix:       "Removed &e${player}&r's tab prefix."
+  unset.displayName:  "Removed &e${player}&r's tab display name."
+  set.suffix:         "Set &e${player}&r's tab suffix to '&f${value}&r'"
+  set.prefix:         "Set &e${player}&r's tab prefix to '&f${value}&r'"
+  set.displayName:    "Set &e${player}&r's tab display name to '&f${value}&r'"
+
+cmd.speed:
+  _style: $normal
+  set.fly:            "Set &e${player}&r's fly speed to &e${speed}&r."
+  set.run:            "Set &e${player}&r's walk speed to &e${speed}&r."
+  get.fly:            "&e${player}&r's fly speed: &e${speed}&8 (Internal value: ${speed.internal})"
+  get.run:            "&e${player}&r's walk speed: &e${speed}&8 (Internal value: ${speed.internal})"
+
+cmd.sign:
+  clear:              "Cleared &e${sign}."
+  glow:               "Set &e${sign}&r glowing: &e${glow}&r."
+  waxed:              "Set &e${sign}&r waxed: &e${waxed}&r."
+  type:               "Set &e${sign}&r type: &e${type}&r."
+  color:              "Set &e${sign}&r color: &e${color}&r."
+  copy:               "&eCopied sign."
+  paste:              "&ePasted sign."
+  line.set:           "Set line ${line.num}&r to '${line.text}'"
+  line.clear:         "Cleared line ${line.num}"
+
+cmd.ptime:
+  _style: $normal
+  get:                "&e${player}&r's time: days=&e${time.days}&r absolute=&e${time}&r."
+  reset:              "Reset &e${player}&r's time."
+  set:                "Set &r${player}&r's time to &6${time}&r."
+
+cmd.time:
+  _style: $normal
+  get:                "Time in &e${world.raw}&r: &6${world.fulltime}&r, days=&6${world.days}&r, years=&6${world.years}&r"
+  set:                "Set time in &e${world.raw}&r to &6${world.fulltime}&r."
+
+cmd.launch:
+  _style: $normal
+
+  error:
+    _style: $err
+    relativeCords:    "Cannot use relative ('~') coordinates here!"
+
+  multiple:           "Launched ${entities} entities."
+  single:             "Launched ${entity}."
+
+cmd.invstore:
+  _style: $normal
+
+  error:
+    _style: $err
+    noStored:         "${player}&r has no '${category}' inventory stored."
+    taken:            "${player} already has a '${category}' inventory stored."
+
+  reload:             "Reloaded stored inventories."
+  saved:              "Saved stored inventories."
+  stored:             "Stored ${player}'s items in '${category}'"
+  returned:           "Returned ${player}'s items from '${category}'"
+  swapped:            "Swapped ${player}'s items with stored inventory '${category}'"
+  give:               "Gave ${player}'s items from '${category}'"
+
+cmd.ftccore:
+  reload.plugin:      "Reloaded Arcadius plugin"
+  reload.config:      "Reloaded Arcadius config"
+  saved.config:       "Saved Arcadius plugin"
+
+cmd.cooldown:
+  _style: $normal
+
+  error:
+    _style: $err
+    noCooldown:       "${player} is not on '${category}' cooldown."
+    alreadySet:       "${player} is already on '${category}' cooldown."
+
+  get.endless:        "${player}'s '${category}' cooldown will never end."
+  get.finite:         "${player}'s '${category}' cooldown will end in ${remaining} (${remaining.date})"
+  set.endless:        "Placed ${player} on infinite '${category}' cooldown."
+  set.finite:         "Placed ${player} on '${category}' cooldown for ${time}."
+  remove:             "Removed ${player} from '${category}' cooldown"
+
+cmd.tpa:
+  _style: $normal
+
+  error:
+    _style: $err
+    destination:      "Cannot teleport, error getting destination."
+    teleporting:      "You are already teleporting!"
+    notTeleporting:   "Not currently teleporting."
+    forbidden.normal: "Not allowed to TPA to ${target}."
+    forbidden.here:   "${target} is not allowed to TPA to you."
+    noIncoming:       "You have no incoming TPA requests."
+    noIncoming.from:  "You have no incoming TPA requests from ${player}."
+    noOutgoing:       "You haven't sent any TPA requests."
+    noOutgoing.to:    "You haven't sent any TPA requests to ${player}."
+    self:             "Cannot teleport to yourself lol"
+    disabled.sender:  "You have TPA requests disabled (Change in /settings)"
+    disabled.target:  "${target} has TPA requests disabled."
+    alreadySent:      "You've already sent a TPA request to ${target}."
+    cooldown.normal:  "Cannot currently teleport."
+    cooldown.here:    "${player} cannot currently teleport."
+
+  request:
+    normal.sender:    "Sent TPA request to &e${target}&r. ${cancel}"
+    normal.target:    "&e${sender}&r has requested to teleport to you. ${accept} ${deny}"
+    here.sender:      "Sent TPA-Here request to &e${target}&r. ${cancel}"
+    here.target:      "&e${sender}&r has requested you teleport to them. ${accept} ${deny}"
+
+  cancelled.sender:   "Teleport cancelled."
+  cancelled.target:   "&e${sender}&r cancelled their TPA request."
+  denyAll:            "Denied all TPA requests."
+  denied.sender:      "&e${target}&r denied your TPA request."
+  denied.target:      "Denied &e${sender}&r's TPA request."
+  accepted.sender:    "&e${target}&r accepted your TPA request."
+  accepted.target:    "Accepted &e${sender}&r's TPA request."
+
+cmd.enchant:
+  _style: $normal
+
+  error:
+    _style: $err
+    levelTooLow:      "Enchantment level must be higher than existing value &7(${existing.roman})"
+    notFound:         "Item doesn't have ${enchantment}"
+
+  added:              "Enchanted held item with &e${enchantment}&r."
+  removed:            "Removed enchantment &e${enchantment}&r."
+  cleared:            "Cleared all enchantments."
+
+cmd.lore:
+  _style: $normal
+
+  error:
+    _style: $err
+    noLore:           "Item has no lore"
+
+  added:              "Added lore: '&d&o${lore}&r'"
+  removed.index:      "Removed lore at index &e${index}&r."
+  removed.range:      "Removed lore between &e${index}&r."
+  set:                "Set lore at index &e${index}&r to '&d&o${lore}&r'"
+  display:            "Item lore:\n${lines}"
+  display.line:       "${line}) &d&o${line.content}"
+  cleared:            "Cleared lore"
+
+# /item_attribute_modifiers
+# Great name for a command, I know
+cmd.attrmods:
+  _style: $normal
+
+  error:
+    _style: $err
+    noModifiers:      "No attribute modifiers on held item"
+
+  added:              "Added modifier for attribute ${attribute}."
+  removed:            "Removed attribute modifier."
+  cleared:            "Cleared attribute modifiers."
+
+cmd.itemcooldown:
+  _style: $normal
+
+  error:
+    _style: $err
+    noCooldown:       "No cooldown on held item"
+
+  set:                "Set &e${material}&r cooldown to &6${cooldown}&r."
+  removed:            "Removed &e${material}&r cooldown."
+  display:            "&e${material}&r is on cooldown for &6${remaining}&r."
+
+cmd.itemname:
+  _style: $normal
+  set:                "Set item name to '&f${name}&r'"
+  cleared:            "Cleared item name."
+
+cmd.wild:
+  _style: $err
+  notAllowed:         "Cannot use /wild here"
+  failed:             "Failed to find wilderness location"
+
+cmd.ignorelist:
+  _style: "yellow"
+  format:             "Ignored players: &6${players}."
+
+cmd.hat:
+  cannotRemove:       "Cannot remove hat! &7(${enchantment.minecraft.binding_curse})"
+
+cmd.back:
+  _style: $err
+  noReturn:           "No location to return to!"
+  forbidden:          "Not allowed to return there!"
+
+admincmd:
+  _style: $normal
+  world.self:         "Teleporting to &e${world.raw}&r."
+  world.other:        "Teleporting &e${player}&r to &6${world.raw}&r."
+
+cmd.vanish:
+  _style: "gold"
+
+  # disabled.target and enabled.target are shown to
+  # the player that was vanished / unvanished when
+  # doing '/v <player>'
+  enabled.self:       "Now vanished."
+  enabled.other:      "${player} is now vanished."
+  enabled.target:     "You are now vanished."
+  disabled.self:      "No longer vanished."
+  disabled.other:     "${player} is no longer vanished."
+  disabled.target:    "You are no longer vanished."
+
+cmd.sudo:
+  _style: $normal
+  command:            "Forced &e${player}&r to execute '&f${command}&r'"

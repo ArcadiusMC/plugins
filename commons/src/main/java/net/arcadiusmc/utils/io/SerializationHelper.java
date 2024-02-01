@@ -11,6 +11,9 @@ import java.util.function.Consumer;
 import net.arcadiusmc.Loggers;
 import net.forthecrown.nbt.BinaryTags;
 import net.forthecrown.nbt.CompoundTag;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.slf4j.Logger;
 import org.tomlj.Toml;
 import org.tomlj.TomlTable;
@@ -20,11 +23,25 @@ public final class SerializationHelper {
 
   private static final Logger LOGGER = Loggers.getLogger();
 
-  public static final IoReader<CompoundTag>
-      TAG_READER = file -> BinaryTags.readCompressed(Files.newInputStream(file));
+  public static final IoReader<CompoundTag> TAG_READER
+      = file -> BinaryTags.readCompressed(Files.newInputStream(file));
 
-  public static final IoReader<JsonObject>
-      JSON_READER = JsonUtils::readFileObject;
+  public static final IoReader<JsonObject> JSON_READER
+      = JsonUtils::readFileObject;
+
+  public static final IoReader<ConfigurationSection> YML_READER = file -> {
+    YamlConfiguration config = new YamlConfiguration();
+
+    try (var reader = Files.newBufferedReader(file)) {
+      try {
+        config.load(reader);
+      } catch (InvalidConfigurationException e) {
+        throw new IOException(e);
+      }
+    }
+
+    return config;
+  };
 
   public static <T> DataResult<T> readFileObject(Path file, IoReader<T> reader) {
     if (!Files.exists(file)) {
@@ -75,7 +92,7 @@ public final class SerializationHelper {
         return Results.error("TOML read errors");
       }
 
-      return Results.success(TomlUtil.toJson(t));
+      return Results.success(FormatConversions.tomlToJson(t));
     });
   }
 
@@ -97,9 +114,22 @@ public final class SerializationHelper {
   public static boolean readAsJson(Path file, Consumer<JsonWrapper> callback) {
     String fName = file.getFileName().toString();
 
-    if (fName.endsWith(".toml")) {
+    if (fName.endsWith(".yml") || fName.endsWith(".yaml")) {
+      return readFile(file, YML_READER, section -> {
+        JsonObject json;
+
+        try {
+          json = FormatConversions.ymlToJson(section).getAsJsonObject();
+        } catch (IllegalStateException exc) {
+          LOGGER.error("Error during YML->JSON conversion", exc);
+          return;
+        }
+
+        callback.accept(JsonWrapper.wrap(json));
+      });
+    } else if (fName.endsWith(".toml")) {
       return readTomlFile(file, table -> {
-        JsonObject obj = TomlUtil.toJson(table);
+        JsonObject obj = FormatConversions.tomlToJson(table);
         JsonWrapper json = JsonWrapper.wrap(obj);
         callback.accept(json);
       });

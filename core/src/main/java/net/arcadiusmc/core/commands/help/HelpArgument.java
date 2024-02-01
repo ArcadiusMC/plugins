@@ -1,4 +1,4 @@
-package net.arcadiusmc.core.commands;
+package net.arcadiusmc.core.commands.help;
 
 import com.google.common.base.Strings;
 import com.mojang.brigadier.StringReader;

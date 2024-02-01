@@ -1,44 +1,32 @@
 package net.arcadiusmc.text;
 
 import java.util.concurrent.TimeUnit;
+import net.arcadiusmc.text.loader.MessageRef;
 import net.kyori.adventure.text.Component;
 
 /**
  * Utility class for formatting specific units like Rhines, Gems and Votes into messages.
  */
 public interface UnitFormat {
-  /* ----------------------------- CONSTANTS ------------------------------ */
+
+  MessageRef FORMAT_REF = Messages.MESSAGE_LIST.reference("units.display");
 
   /**
-   * The unit of a single piece of currency
+   * Formats the given amount into a currency message
+   * @param currency Amount of gems
+   * @return Formatted message
    */
-  String UNIT_CURRENCY = "Denari";
+  static Component currency(Number currency) {
+    return unit(currency, "currency");
+  }
 
   /**
-   * Single vote unit
+   * Formats the given amount into a gem message
+   * @param number Amount of gems
+   * @return Formatted message
    */
-  String UNIT_VOTE = "Vote";
-
-  /**
-   * Single hour unit
-   */
-  String UNIT_HOUR = "Hour";
-
-  /**
-   * Single coin unit
-   */
-  String UNIT_COIN = "Coin";
-
-  /* ----------------------------- UTILITY METHODS ------------------------------ */
-
-  /**
-   * Formats the given amount into a rhine message
-   *
-   * @param amount The amount to format
-   * @return A formatted component
-   */
-  static Component currency(Number amount) {
-    return unit(amount, UNIT_CURRENCY);
+  static Component gems(Number number) {
+    return unit(number, "gems");
   }
 
   /**
@@ -48,7 +36,7 @@ public interface UnitFormat {
    * @return The formatted message
    */
   static Component votes(Number number) {
-    return unit(number, UNIT_VOTE);
+    return unit(number, "votes");
   }
 
   /**
@@ -59,31 +47,24 @@ public interface UnitFormat {
    * @return The formatted message
    */
   static Component playTime(Number seconds) {
-    return unit(TimeUnit.SECONDS.toHours(seconds.longValue()), UNIT_HOUR);
+    return unit(TimeUnit.SECONDS.toHours(seconds.longValue()), "playtime");
   }
 
-  /**
-   * @param amount
-   * @return
-   */
-  static Component coins(Number amount) {
-    return unit(amount, UNIT_COIN);
+  private static Component unit(Number number, String key) {
+    return unit(number, "units." + key + ".singular", "units." + key + ".plural");
   }
 
-  /**
-   * Creates a unit message
-   * <p>
-   * If there's more than 1 of the given amount, the returned message will have an 's' appended to
-   * it.
-   *
-   * @param amount The amount of units
-   * @param unit   The unit to format, singular
-   * @return The formatted message.
-   */
-  static Component unit(Number amount, String unit) {
-    return Component.text(
-        Text.NUMBER_FORMAT.format(amount) + " " + plural(unit, amount.doubleValue())
-    );
+  private static Component unit(Number amount, String singularKey, String pluralKey) {
+    long longValue = amount.longValue();
+
+    Component unit = longValue == 1
+        ? Messages.MESSAGE_LIST.renderText(singularKey, null)
+        : Messages.MESSAGE_LIST.renderText(pluralKey, null);
+
+    return FORMAT_REF.get()
+        .addValue("unit", unit)
+        .addValue("amount", amount)
+        .create(null);
   }
 
   static String plural(String unit, double dval) {

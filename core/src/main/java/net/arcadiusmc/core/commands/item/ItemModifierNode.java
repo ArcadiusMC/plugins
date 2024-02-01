@@ -5,15 +5,15 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.function.Consumer;
-import net.arcadiusmc.core.CoreExceptions;
-import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.BaseCommand;
+import net.arcadiusmc.command.Commands;
+import net.arcadiusmc.text.Text;
+import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.forthecrown.grenadier.CommandContexts;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
-import net.arcadiusmc.text.Text;
-import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.kyori.adventure.text.Component;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public abstract class ItemModifierNode extends BaseCommand {
@@ -34,8 +34,9 @@ public abstract class ItemModifierNode extends BaseCommand {
     create(command);
   }
 
-  protected void getItemSuggestions(CommandSource source,
-                                    Consumer<ItemStack> consumer
+  protected void getItemSuggestions(
+      CommandSource source,
+      Consumer<ItemStack> consumer
   ) {
     if (!source.isPlayer()) {
       return;
@@ -54,19 +55,14 @@ public abstract class ItemModifierNode extends BaseCommand {
   public abstract void create(LiteralArgumentBuilder<CommandSource> command);
 
   protected ItemStack getHeld(CommandSource source) throws CommandSyntaxException {
-    var player = source.asPlayer();
-    var held = Commands.getHeldItem(player);
-
-    if (held.getItemMeta() == null) {
-      throw CoreExceptions.ITEM_CANNOT_HAVE_META;
-    }
-
-    return held;
+    Player player = source.asPlayer();
+    return Commands.getHeldItem(player);
   }
 
-  protected Component optionallyWrap(Component text,
-                                     CommandContext<CommandSource> c,
-                                     String argName
+  protected Component optionallyWrap(
+      Component text,
+      CommandContext<CommandSource> c,
+      String argName
   ) {
     var input = CommandContexts.getInput(c, argName);
 

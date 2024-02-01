@@ -4,11 +4,11 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import net.arcadiusmc.BukkitServices;
 import net.arcadiusmc.command.BaseCommand;
 import net.forthecrown.grenadier.CommandSource;
-import net.kyori.adventure.text.Component;
 
 public interface ArcadiusHelpList {
 
@@ -32,8 +32,7 @@ public interface ArcadiusHelpList {
    * @throws CommandSyntaxException If the query was invalid, or if the page
    * number was invalid, relative to the amount of query results
    */
-  Component query(CommandSource source, String tag, int page, int pageSize)
-      throws CommandSyntaxException;
+  List<HelpEntry> query(CommandSource source, String tag);
 
   CompletableFuture<Suggestions> suggest(CommandSource source, SuggestionsBuilder builder);
 

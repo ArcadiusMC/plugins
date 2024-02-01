@@ -5,17 +5,18 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
-import net.arcadiusmc.core.CoreExceptions;
-import net.arcadiusmc.core.CoreMessages;
 import net.arcadiusmc.command.help.UsageFactory;
-import net.arcadiusmc.enchantment.FtcEnchant;
-import net.arcadiusmc.enchantment.FtcEnchants;
+import net.arcadiusmc.enchantment.CustomEnchantment;
+import net.arcadiusmc.enchantment.CustomEnchantments;
+import net.arcadiusmc.text.Messages;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Completions;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public class EnchantmentNode extends ItemModifierNode {
 
@@ -44,8 +45,10 @@ public class EnchantmentNode extends ItemModifierNode {
     command
         .then(literal("clear")
             .executes(c -> {
-              var item = getHeld(c.getSource());
-              var meta = item.getItemMeta();
+              CommandSource source = c.getSource();
+
+              ItemStack item = getHeld(source);
+              ItemMeta meta = item.getItemMeta();
 
               for (var e : meta.getEnchants().keySet()) {
                 meta.removeEnchant(e);
@@ -53,7 +56,7 @@ public class EnchantmentNode extends ItemModifierNode {
 
               item.setItemMeta(meta);
 
-              c.getSource().sendMessage(CoreMessages.CLEARED_ENCHANTMENTS);
+              source.sendMessage(ItemMessages.CLEARED_ENCHANTMENTS.renderText(source));
               return 0;
             })
         )
@@ -89,16 +92,26 @@ public class EnchantmentNode extends ItemModifierNode {
 
             .then(literal("remove")
                 .executes(c -> {
-                  var held = getHeld(c.getSource());
-                  var enchantment = getEnchantment(c);
+                  CommandSource source = c.getSource();
+
+                  ItemStack held = getHeld(source);
+                  Enchantment enchantment = getEnchantment(c);
 
                   if (!held.containsEnchantment(enchantment)) {
-                    throw CoreExceptions.enchantNotFound(enchantment);
+                    throw Messages.MESSAGE_LIST.render("cmd.enchant.error.notFound")
+                        .addValue("enchantment", enchantment.displayName(1))
+                        .exception(source);
                   }
 
-                  held.removeEnchantment(enchantment);
+                  int level = held.removeEnchantment(enchantment);
 
-                  c.getSource().sendSuccess(CoreMessages.removedEnchant(enchantment));
+                  source.sendSuccess(
+                      ItemMessages.REMOVED_ENCHANTMENT.get()
+                          .addValue("enchant", enchantment)
+                          .addValue("level", level)
+                          .addValue("enchantment", enchantment.displayName(level))
+                          .create(source)
+                  );
                   return 0;
                 })
             )
@@ -110,37 +123,42 @@ public class EnchantmentNode extends ItemModifierNode {
   }
 
   int enchant(CommandContext<CommandSource> c, int level) throws CommandSyntaxException {
-    var item = getHeld(c.getSource());
-    var enchantment = getEnchantment(c);
+    CommandSource source = c.getSource();
+
+    ItemStack item = getHeld(source);
+    Enchantment enchantment = getEnchantment(c);
 
     if (item.getType() == Material.BOOK) {
       item.setType(Material.ENCHANTED_BOOK);
     }
 
     if (item.getEnchantmentLevel(enchantment) >= level) {
-      throw CoreExceptions.ENCH_MUST_BE_BETTER;
+      throw ItemMessages.ENCHANT_LEVEL_TOO_LOW.exception(source);
     }
 
-    var meta = item.getItemMeta();
+    ItemMeta meta = item.getItemMeta();
 
     if (meta instanceof EnchantmentStorageMeta storageMeta) {
-
-      if (enchantment instanceof FtcEnchant ftcEnchant) {
-        FtcEnchants.addEnchant(meta, ftcEnchant, level);
+      if (enchantment instanceof CustomEnchantment custom) {
+        CustomEnchantments.addEnchant(meta, custom, level);
       } else {
         storageMeta.addStoredEnchant(enchantment, level, true);
       }
-
+    } else if (enchantment instanceof CustomEnchantment custom) {
+      CustomEnchantments.addEnchant(meta, custom, level);
     } else {
-      if (enchantment instanceof FtcEnchant ftcEnchant) {
-        FtcEnchants.addEnchant(meta, ftcEnchant, level);
-      } else {
-        meta.addEnchant(enchantment, level, true);
-      }
+      meta.addEnchant(enchantment, level, true);
     }
 
     item.setItemMeta(meta);
-    c.getSource().sendSuccess(CoreMessages.addedEnchant(enchantment, level));
+
+    source.sendSuccess(
+        ItemMessages.ADDED_ENCHANTMENT.get()
+            .addValue("enchant", enchantment)
+            .addValue("level", level)
+            .addValue("enchantment", enchantment.displayName(level))
+            .create(source)
+    );
     return 0;
   }
 }

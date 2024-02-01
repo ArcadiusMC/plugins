@@ -10,13 +10,13 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import net.arcadiusmc.Loggers;
-import net.forthecrown.grenadier.types.ArgumentTypes;
-import net.forthecrown.grenadier.types.TimeArgument;
 import net.arcadiusmc.utils.io.PathUtil;
 import net.arcadiusmc.utils.io.PluginJar;
 import net.arcadiusmc.utils.io.configurate.ComponentSerializerType;
 import net.arcadiusmc.utils.io.configurate.TomlConfigurationLoader;
 import net.arcadiusmc.utils.math.WorldVec3i;
+import net.forthecrown.grenadier.types.ArgumentTypes;
+import net.forthecrown.grenadier.types.TimeArgument;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -145,17 +145,7 @@ public final class TomlConfigs {
   }
 
   public static Duration parseDuration(StringReader reader) throws CommandSyntaxException {
-    TimeArgument parser = ArgumentTypes.time();
-    Duration result = parser.parse(reader);
-
-    while (reader.canRead() && reader.peek() == ':') {
-      reader.skip();
-
-      Duration dur = parser.parse(reader);
-      result = result.plus(dur);
-    }
-
-    return result;
+    return ArgumentTypes.time().parse(reader);
   }
 
   public static TypeSerializer<Duration> createDurationSerializer() {
@@ -190,8 +180,7 @@ public final class TomlConfigs {
           return;
         }
 
-        long millis = obj.toMillis();
-        node.set(millis);
+        node.set(TimeArgument.toString(obj));
       }
     };
   }

@@ -8,9 +8,9 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.UUID;
 import java.util.function.Predicate;
-import net.arcadiusmc.core.CoreExceptions;
-import net.arcadiusmc.core.CoreMessages;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.core.CoreExceptions;
+import net.arcadiusmc.text.Messages;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.forthecrown.grenadier.types.EnumArgument;
@@ -103,7 +103,9 @@ public class ItemAttributeNode extends ItemModifierNode {
     command
         .then(literal("clear")
             .executes(c -> {
-              var held = getHeld(c.getSource());
+              CommandSource source = c.getSource();
+
+              var held = getHeld(source);
               var meta = held.getItemMeta();
 
               var mods = meta.getAttributeModifiers();
@@ -118,7 +120,7 @@ public class ItemAttributeNode extends ItemModifierNode {
 
               held.setItemMeta(meta);
 
-              c.getSource().sendSuccess(CoreMessages.CLEARED_ATTRIBUTE_MODS);
+              source.sendSuccess(Messages.MESSAGE_LIST.renderText("cmd.attrmods.cleared", source));
               return 0;
             })
         )
@@ -126,7 +128,9 @@ public class ItemAttributeNode extends ItemModifierNode {
         .then(literal("add")
             .then(argument("args", ATTR_ARGS)
                 .executes(c -> {
-                  var held = getHeld(c.getSource());
+                  CommandSource source = c.getSource();
+
+                  var held = getHeld(source);
                   var args = c.getArgument("args", ParsedOptions.class);
 
                   var value = args.getValue(VALUE_ARG);
@@ -158,8 +162,10 @@ public class ItemAttributeNode extends ItemModifierNode {
 
                   held.setItemMeta(meta);
 
-                  c.getSource().sendSuccess(
-                      CoreMessages.addedAttributeModifier(attribute, modifier)
+                  source.sendSuccess(
+                      Messages.MESSAGE_LIST.render("cmd.attrmods.added")
+                          .addValue("attribute", attribute.getKey())
+                          .create(source)
                   );
                   return 0;
                 })
@@ -193,8 +199,11 @@ public class ItemAttributeNode extends ItemModifierNode {
   }
 
   private int removeAttr(CommandContext<CommandSource> c, Predicate<ItemMeta> remover)
-      throws CommandSyntaxException {
-    var held = getHeld(c.getSource());
+      throws CommandSyntaxException
+  {
+    CommandSource source = c.getSource();
+
+    var held = getHeld(source);
     var meta = held.getItemMeta();
 
     if (!remover.test(meta)) {
@@ -203,7 +212,7 @@ public class ItemAttributeNode extends ItemModifierNode {
 
     held.setItemMeta(meta);
 
-    c.getSource().sendSuccess(CoreMessages.REMOVED_ATTRIBUTE_MOD);
+    source.sendSuccess(Messages.MESSAGE_LIST.renderText("cmd.attrmods.removed", source));
     return 0;
   }
 }

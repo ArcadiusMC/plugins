@@ -4,8 +4,8 @@ import static net.arcadiusmc.command.Commands.getUserSender;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.Map;
-import net.arcadiusmc.core.TabList;
 import net.arcadiusmc.Permissions;
+import net.arcadiusmc.core.CorePlugin;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.annotations.Argument;
 import net.forthecrown.grenadier.annotations.CommandFile;
@@ -21,6 +21,12 @@ import org.bukkit.event.player.PlayerQuitEvent.QuitReason;
 
 @CommandFile("commands/vanish.gcn")
 public class CommandVanish {
+
+  private final CorePlugin plugin;
+
+  public CommandVanish(CorePlugin plugin) {
+    this.plugin = plugin;
+  }
 
   @VariableInitializer
   void createVars(Map<String, Object> variables) {
@@ -100,7 +106,7 @@ public class CommandVanish {
       joinMessage(user);
     }
 
-    TabList.update();
+    plugin.getTabMenu().update();
   }
 
   void leaveMessage(User user) {

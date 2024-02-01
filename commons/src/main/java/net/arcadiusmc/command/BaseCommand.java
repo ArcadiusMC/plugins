@@ -13,15 +13,15 @@ import net.forthecrown.grenadier.CommandSource;
 
 public abstract class BaseCommand extends AbstractCommand {
 
-  public static final String DEFAULT_DESCRIPTION = "An FTC command";
+  public static final String DEFAULT_DESCRIPTION = "An ArcadiusMC command";
 
   @Getter
   private boolean simpleUsages = false;
 
   public BaseCommand(String name) {
-    super(name);
+    super(name.toLowerCase());
 
-    String perm = Commands.getDefaultPermission(name);
+    String perm = Commands.getDefaultPermission(getName());
 
     setPermission(Permissions.register(perm));
     setDescription(DEFAULT_DESCRIPTION);

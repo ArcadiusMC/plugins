@@ -37,7 +37,7 @@ public class CommandIgnore extends BaseCommand {
               User target = Arguments.getUser(c, "user");
 
               if (target.equals(user)) {
-                throw CoreExceptions.CANNOT_IGNORE_SELF;
+                throw CoreExceptions.CANNOT_IGNORE_SELF.exception(user);
               }
 
               UserBlockList list = user.getComponent(UserBlockList.class);

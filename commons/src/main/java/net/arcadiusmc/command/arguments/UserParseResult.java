@@ -47,7 +47,7 @@ public class UserParseResult implements ParseResult<User> {
     assert result != null : "Result is null???";
 
     if (!offlineAllowed && !result.isOnline()) {
-      throw Exceptions.notOnline(result);
+      throw Exceptions.notOnline(result, source);
     }
 
     if (validate
@@ -55,7 +55,7 @@ public class UserParseResult implements ParseResult<User> {
         && !source.hasPermission(Permissions.VANISH_SEE)
         && !offlineAllowed
     ) {
-      throw Exceptions.notOnline(result);
+      throw Exceptions.notOnline(result, source);
     }
 
     return result;

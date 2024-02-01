@@ -5,20 +5,18 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import net.arcadiusmc.core.CorePermissions;
-import net.arcadiusmc.core.InventoryStorageImpl;
 import net.arcadiusmc.InventoryStorage;
-import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.core.CorePermissions;
+import net.arcadiusmc.core.InventoryStorageImpl;
+import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.loader.MessageRender;
+import net.arcadiusmc.user.User;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Completions;
 import net.forthecrown.grenadier.GrenadierCommand;
-import net.arcadiusmc.text.Text;
-import net.arcadiusmc.user.User;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 
 public class CommandInvStore extends BaseCommand {
 
@@ -44,10 +42,10 @@ public class CommandInvStore extends BaseCommand {
     );
 
     factory.usage(
-        "save <player> <category: quoted string> [-doNotClear]",
+        "save <player> <category: quoted string> [-keep-items]",
 
         "Saves a <player>'s inventory in a <category>",
-        "If the '-doNotClear' flag is not set, the player's",
+        "If the '-keep-items' flag is not set, the player's",
         "inventory is cleared after it's stored away"
     );
 
@@ -103,7 +101,10 @@ public class CommandInvStore extends BaseCommand {
         .then(literal("reload")
             .executes(c -> {
               InventoryStorageImpl.getStorage().load();
-              c.getSource().sendSuccess(Component.text("Reloaded SavedInventories from disk"));
+
+              CommandSource source = c.getSource();
+              source.sendSuccess(Messages.MESSAGE_LIST.renderText("cmd.invstore.reload", source));
+
               return 0;
             })
         )
@@ -111,7 +112,10 @@ public class CommandInvStore extends BaseCommand {
         .then(literal("save")
             .executes(c -> {
               InventoryStorageImpl.getStorage().save();
-              c.getSource().sendSuccess(Component.text("Saved SavedInventories to disk"));
+
+              CommandSource source = c.getSource();
+              source.sendSuccess(Messages.MESSAGE_LIST.renderText("cmd.invstore.saved", source));
+
               return 0;
             })
 
@@ -121,7 +125,7 @@ public class CommandInvStore extends BaseCommand {
 
                     .executes(c -> storeInventory(c, true))
 
-                    .then(literal("-doNotClear")
+                    .then(literal("-keep-items")
                         .executes(c -> storeInventory(c, false))
                     )
                 )
@@ -154,6 +158,20 @@ public class CommandInvStore extends BaseCommand {
         );
   }
 
+  static MessageRender alreadyStored(User player, String category) {
+    return createMessage("cmd.invstore.error.taken", player, category);
+  }
+
+  static MessageRender nothingStored(User player, String category) {
+    return createMessage("cmd.invstore.error.noStored", player, category);
+  }
+
+  static MessageRender createMessage(String key, User player, String category) {
+    return Messages.MESSAGE_LIST.render(key)
+        .addValue("player", player)
+        .addValue("category", category);
+  }
+
   private int storeInventory(CommandContext<CommandSource> c, boolean clearAfter)
       throws CommandSyntaxException
   {
@@ -163,10 +181,7 @@ public class CommandInvStore extends BaseCommand {
     String category = c.getArgument("category", String.class);
 
     if (store.hasStoredInventory(user.getPlayer(), category)) {
-      throw Exceptions.format(
-          "Player {0, user} already has a stored inventory in {1}",
-          user, category
-      );
+      throw alreadyStored(user, category).exception(c.getSource());
     }
 
     store.storeInventory(user.getPlayer(), category);
@@ -175,11 +190,10 @@ public class CommandInvStore extends BaseCommand {
       user.getInventory().clear();
     }
 
-    c.getSource().sendSuccess(
-        Text.format("Stored &e{0, user}&r's inventory in category &e{1}&r.",
-            NamedTextColor.GRAY,
-            user, category
-        )
+    CommandSource source = c.getSource();
+    source.sendSuccess(
+        createMessage("cmd.invstore.stored", user, category)
+            .create(source)
     );
     return 0;
   }
@@ -191,20 +205,15 @@ public class CommandInvStore extends BaseCommand {
     String category = c.getArgument("category", String.class);
 
     if (!store.hasStoredInventory(user.getPlayer(), category)) {
-      throw Exceptions.format(
-          "Player {0, user} has NO stored inventory in category {1}",
-          user, category
-      );
+      throw nothingStored(user, category).exception(c.getSource());
     }
 
     store.returnItems(user.getPlayer(), category);
 
-    c.getSource().sendSuccess(
-        Text.format(
-            "&7Returned items from category &e{0}&r to player &e{1, user}&r.",
-            NamedTextColor.GRAY,
-            category, user
-        )
+    CommandSource source = c.getSource();
+    source.sendSuccess(
+        createMessage("cmd.invstore.returned", user, category)
+            .create(source)
     );
     return 0;
   }
@@ -217,14 +226,10 @@ public class CommandInvStore extends BaseCommand {
 
     store.swap(user.getPlayer(), category);
 
-    c.getSource().sendSuccess(
-        Text.format(
-            "Swapped &e{0, user}&r's inventory with the stored "
-                + "inventory in category &e{1}&r.",
-            NamedTextColor.GRAY,
-
-            user, category
-        )
+    CommandSource source = c.getSource();
+    source.sendSuccess(
+        createMessage("cmd.invstore.swapped", user, category)
+            .create(source)
     );
     return 0;
   }
@@ -236,18 +241,13 @@ public class CommandInvStore extends BaseCommand {
     String category = c.getArgument("category", String.class);
 
     if (!store.giveItems(user.getPlayer(), category)) {
-      throw Exceptions.format(
-          "Player {0, user} has NO stored inventory in category {1}",
-          user, category
-      );
+      throw nothingStored(user, category).exception(c.getSource());
     }
 
-    c.getSource().sendSuccess(
-        Text.format(
-            "Gave &e{0, user}&r their items back from category &e{1}&r.",
-            NamedTextColor.GRAY,
-            user, category
-        )
+    CommandSource source = c.getSource();
+    source.sendSuccess(
+        createMessage("cmd.invstore.give", user, category)
+            .create(source)
     );
     return 0;
   }

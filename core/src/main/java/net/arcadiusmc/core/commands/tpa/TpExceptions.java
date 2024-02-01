@@ -1,33 +1,33 @@
 package net.arcadiusmc.core.commands.tpa;
 
-import static net.arcadiusmc.command.Exceptions.create;
-import static net.arcadiusmc.command.Exceptions.format;
+import static net.arcadiusmc.text.Messages.MESSAGE_LIST;
 
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.arcadiusmc.user.User;
+import net.arcadiusmc.text.loader.MessageRef;
 
 public interface TpExceptions {
 
-  CommandSyntaxException CANNOT_TP = create("Cannot currently teleport.");
+  MessageRef NO_INCOMING = makeRef("error.noIncoming");
+  MessageRef NO_INCOMING_FROM = makeRef("error.noIncoming.from");
 
-  CommandSyntaxException NO_TP_REQUESTS = create("You haven't received any tp requests.");
+  MessageRef NO_OUTGOING = makeRef("error.noOutgoing");
+  MessageRef NO_OUTGOING_TO = makeRef("error.noOutgoing.to");
 
-  CommandSyntaxException NO_TP_REQUESTS_OUT = create("You haven't sent any tp requests.");
+  MessageRef NOT_TELEPORTING = makeRef("error.notTeleporting");
 
-  CommandSyntaxException CANNOT_TP_SELF = create("You cannot teleport to yourself.");
+  MessageRef SELF = makeRef("error.self");
 
-  CommandSyntaxException NOT_CURRENTLY_TELEPORTING = create("You aren't currently teleporting");
+  MessageRef DISABLED_SENDER = makeRef("error.disabled.sender");
+  MessageRef DISABLED_TARGET = makeRef("error.disabled.target");
 
-  CommandSyntaxException TPA_DISABLED_SENDER = create(
-      "You have TPA requests disabled.\nUse /tpatoggle to enable them.");
+  MessageRef ALREADY_SENT = makeRef("error.alreadySent");
 
-  CommandSyntaxException CANNOT_TP_HERE = create("Cannot tpa here.");
+  MessageRef FORBIDDEN_NORMAL = makeRef("error.forbidden.normal");
+  MessageRef FORBIDDEN_HERE = makeRef("error.forbidden.here");
 
-  static CommandSyntaxException tpaDisabled(User user) {
-    return format("{0, user} has disabled TPA requests.", user);
-  }
+  MessageRef COOLDOWN_SENDER = makeRef("error.cooldown.sender");
+  MessageRef COOLDOWN_TARGET = makeRef("error.cooldown.target");
 
-  static CommandSyntaxException cannotTpaTo(User user) {
-    return format("Cannot tpa to {0, user}.", user);
+  static MessageRef makeRef(String suffix) {
+    return MESSAGE_LIST.reference("cmd.tpa." + suffix);
   }
 }

@@ -19,7 +19,7 @@ public class CommandAlts {
   void showInfo(
       CommandSource source,
       @Argument("user") User user
-  ) throws CommandSyntaxException {
+  ) {
     var service = Users.getService();
 
     Collection<UUID> altsList = service.getAltAccounts(user.getUniqueId());

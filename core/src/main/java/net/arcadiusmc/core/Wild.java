@@ -1,5 +1,7 @@
 package net.arcadiusmc.core;
 
+import static net.arcadiusmc.text.Messages.MESSAGE_LIST;
+
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
@@ -11,7 +13,7 @@ import java.nio.file.Path;
 import java.util.Random;
 import java.util.Set;
 import net.arcadiusmc.Loggers;
-import net.arcadiusmc.command.Exceptions;
+import net.arcadiusmc.text.loader.MessageRef;
 import net.arcadiusmc.utils.io.JsonUtils;
 import net.arcadiusmc.utils.io.JsonWrapper;
 import net.arcadiusmc.utils.io.PathUtil;
@@ -26,6 +28,9 @@ import org.bukkit.entity.Player;
 import org.slf4j.Logger;
 
 public class Wild {
+
+  static final MessageRef DISABLED = MESSAGE_LIST.reference("cmd.wild.notAllowed");
+  static final MessageRef FAILED = MESSAGE_LIST.reference("cmd.wild.failed");
 
   private static final Logger LOGGER = Loggers.getLogger();
 
@@ -46,13 +51,13 @@ public class Wild {
 
   public Location getWildLocation(Player player) throws CommandSyntaxException {
     if (!test(player)) {
-      throw Exceptions.create("Cannot use /wild here");
+      throw DISABLED.exception(player);
     }
 
     Location found = findWild(player.getWorld());
 
     if (found == null) {
-      throw Exceptions.create("Cannot find Wild location");
+      throw FAILED.exception(player);
     }
 
     return found;

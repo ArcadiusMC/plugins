@@ -1,7 +1,6 @@
 package net.arcadiusmc.core.commands;
 
 import static net.kyori.adventure.text.Component.empty;
-import static net.kyori.adventure.text.Component.text;
 
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -9,22 +8,23 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import java.util.List;
 import java.util.Objects;
-import net.arcadiusmc.core.CoreExceptions;
+import java.util.Optional;
+import net.arcadiusmc.command.BaseCommand;
+import net.arcadiusmc.command.Exceptions;
+import net.arcadiusmc.command.arguments.Arguments;
+import net.arcadiusmc.command.help.UsageFactory;
 import net.arcadiusmc.core.CoreMessages;
 import net.arcadiusmc.core.CorePermissions;
 import net.arcadiusmc.core.PrefsBook;
-import net.arcadiusmc.command.Exceptions;
-import net.arcadiusmc.command.BaseCommand;
-import net.arcadiusmc.command.arguments.Arguments;
-import net.arcadiusmc.command.help.UsageFactory;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.Completions;
-import net.forthecrown.grenadier.GrenadierCommand;
 import net.arcadiusmc.text.ViewerAwareMessage;
 import net.arcadiusmc.text.channel.ChannelledMessage;
 import net.arcadiusmc.text.channel.MessageHandler;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.UserBlockList;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.Completions;
+import net.forthecrown.grenadier.GrenadierCommand;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Sound;
 
 public class CommandPay extends BaseCommand {
@@ -147,15 +147,15 @@ public class CommandPay extends BaseCommand {
       ViewerAwareMessage message
   ) throws CommandSyntaxException {
     if (!user.get(PrefsBook.PAY)) {
-      throw CoreExceptions.SENDER_PAY_DISABLED;
+      throw CoreMessages.PAY_DISABLED_SENDER.exception(user);
     }
 
-    var denyReason = UserBlockList.filterPlayers(
+    Optional<Component> denyReason = UserBlockList.filterPlayers(
         user,
         targets,
         PrefsBook.PAY,
-        "Cannot pay blocked user: {0, user}",
-        text("You cannot pay yourself.")
+        CoreMessages.PAY_DISABLED_TARGET,
+        CoreMessages.PAY_SELF
     );
 
     if (denyReason.isPresent()) {
@@ -164,7 +164,7 @@ public class CommandPay extends BaseCommand {
 
     int total = amount * targets.size();
     if (!user.hasBalance(total)) {
-      throw Exceptions.cannotAfford(amount * targets.size());
+      throw Exceptions.cannotAfford(user, total);
     }
 
     byte paidAmount = 0;
@@ -179,7 +179,7 @@ public class CommandPay extends BaseCommand {
     ch.setChannelName("commands/pay");
     ch.shownToSource(false);
     ch.setRenderer((viewer, baseMessage) -> {
-      return CoreMessages.payTarget(user, amount, baseMessage).create(viewer);
+      return CoreMessages.payTarget(user, viewer, amount, baseMessage);
     });
 
     if (ch.send() == -1) {
@@ -189,10 +189,7 @@ public class CommandPay extends BaseCommand {
     for (User target : targets) {
       target.addBalance(amount);
       user.removeBalance(amount);
-
-      user.sendMessage(CoreMessages.paySender(target, amount, actualMessage));
-      target.playSound(Sound.UI_TOAST_IN, 2, 1.3f);
-
+      user.sendMessage(CoreMessages.paySender(user, target, amount, actualMessage.create(user)));
       paidAmount++;
     }
 
@@ -201,7 +198,7 @@ public class CommandPay extends BaseCommand {
     }
 
     if (paidAmount > 1) {
-      user.sendMessage(CoreMessages.paidMultiple(paidAmount, amount));
+      user.sendMessage(CoreMessages.paidMultiple(paidAmount, amount).create(user));
     }
 
     return 0;

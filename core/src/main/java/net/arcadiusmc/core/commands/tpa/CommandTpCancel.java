@@ -22,7 +22,7 @@ public class CommandTpCancel extends BaseCommand {
       User user = getUserSender(c);
 
       if (user.isTeleporting()) {
-        throw TpExceptions.NOT_CURRENTLY_TELEPORTING;
+        throw TpExceptions.NOT_TELEPORTING.exception(user);
       }
 
       user.getCurrentTeleport().interrupt();

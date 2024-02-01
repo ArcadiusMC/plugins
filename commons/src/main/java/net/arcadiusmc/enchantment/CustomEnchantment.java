@@ -14,7 +14,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class FtcEnchant extends Enchantment {
+public abstract class CustomEnchantment extends Enchantment {
 
   private final NamespacedKey key;
 
@@ -26,7 +26,7 @@ public abstract class FtcEnchant extends Enchantment {
   private final EnchantmentTarget target;
   private final Set<EquipmentSlot> slots;
 
-  public FtcEnchant(@NotNull NamespacedKey key,
+  public CustomEnchantment(@NotNull NamespacedKey key,
                     String name,
                     EnchantmentTarget type,
                     EquipmentSlot... slots
@@ -37,11 +37,11 @@ public abstract class FtcEnchant extends Enchantment {
     this.target = type;
     this.slots = Set.of(slots);
 
-    FtcEnchants.openForRegistrations();
+    CustomEnchantments.openForRegistrations();
     handle = new EnchantHandle(this, type, slots);
   }
 
-  public FtcEnchant(@NotNull NamespacedKey key, String name, Enchantment base) {
+  public CustomEnchantment(@NotNull NamespacedKey key, String name, Enchantment base) {
     this(key, name, base.getItemTarget(), base.getActiveSlots().toArray(new EquipmentSlot[0]));
   }
 

@@ -18,6 +18,9 @@ import net.forthecrown.nbt.paper.ItemNbtProvider;
 import net.forthecrown.nbt.paper.PaperNbt;
 import net.forthecrown.nbt.string.Snbt;
 import net.forthecrown.nbt.string.TagParseException;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.minecraft.util.datafix.DataFixers;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -81,6 +84,9 @@ public final class ItemStacks {
       return a.isSimilar(b);
     }
   };
+
+  public static final Style DEFAULT_LORE_STYLE
+      = Style.style(NamedTextColor.LIGHT_PURPLE, TextDecoration.ITALIC);
 
   /* ------------------------------- TAGS --------------------------------- */
 

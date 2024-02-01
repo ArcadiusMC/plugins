@@ -8,17 +8,16 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.time.Duration;
 import net.arcadiusmc.Cooldowns;
-import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.loader.MessageRender;
+import net.arcadiusmc.user.User;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Completions;
 import net.forthecrown.grenadier.GrenadierCommand;
 import net.forthecrown.grenadier.types.ArgumentTypes;
-import net.arcadiusmc.text.Text;
-import net.arcadiusmc.user.User;
-import net.kyori.adventure.text.format.NamedTextColor;
 
 public class CommandCooldown extends BaseCommand {
 
@@ -83,6 +82,12 @@ public class CommandCooldown extends BaseCommand {
     );
   }
 
+  static MessageRender noCooldown(User player, String category) {
+    return Messages.render("cmd.cooldown.error.noCooldown")
+        .addValue("player", player)
+        .addValue("category", category);
+  }
+
   private int showData(CommandContext<CommandSource> c) throws CommandSyntaxException {
     User user = Arguments.getUser(c, "user");
     String category = c.getArgument("category", String.class);
@@ -91,29 +96,20 @@ public class CommandCooldown extends BaseCommand {
     Duration duration = cds.getRemainingTime(user.getUniqueId(), category);
 
     if (duration == null) {
-      throw Exceptions.format("{0, user} is not on '{1}' cooldown",
-          user, category
-      );
+      throw noCooldown(user, category).exception(c.getSource());
     }
 
-    if (duration.getSeconds() < 0) {
-      c.getSource().sendMessage(
-          Text.format("&e{0, user}&r's '&e{1}&r' cooldown will never end",
-              NamedTextColor.GRAY,
-              user, category
-          )
-      );
-    } else {
-      c.getSource().sendMessage(
-          Text.format(
-              "&e{0, user}&r '&e{1}&r' cooldown "
-                  + "remaining: &e{2, time, -short -biggest}",
+    MessageRender render = Messages.render(
+        "cmd.cooldown.get." + (duration.getSeconds() < 0 ? "endless" : "finite")
+    );
 
-              NamedTextColor.GRAY,
-              user, category, duration
-          )
-      );
-    }
+    c.getSource().sendMessage(
+        render
+            .addValue("player", user)
+            .addValue("category", category)
+            .addValue("remaining", duration)
+            .create(c.getSource())
+    );
 
     return 0;
   }
@@ -135,24 +131,26 @@ public class CommandCooldown extends BaseCommand {
     var cds = Cooldowns.cooldowns();
 
     if (cds.onCooldown(user.getUniqueId(), category)) {
-      throw Exceptions.format("{0, user} is already on cooldown for {1}",
-          user, category
-      );
+      throw Messages.render("cmd.cooldown.error.alreadySet")
+          .addValue("player", user)
+          .addValue("category", category)
+          .exception(c.getSource());
     }
 
     cds.cooldown(user.getUniqueId(), category, length);
 
-    c.getSource().sendSuccess(
-        Text.format(
-            "Placed &e{0, user}&r into cooldown, "
-                + "category='&e{1}&r', "
-                + "length=&e{2, time, -short -biggest}&r",
-            NamedTextColor.GRAY,
-
-            user, category,
-            length == NO_END_COOLDOWN ? "Eternal" : length
-        )
+    MessageRender render = Messages.render(
+        "cmd.cooldown.set." + (length == NO_END_COOLDOWN ? "endless" : "finite")
     );
+
+    c.getSource().sendSuccess(
+        render
+            .addValue("time", Duration.ofMillis(length))
+            .addValue("player", user)
+            .addValue("category", category)
+            .create(c.getSource())
+    );
+
     return 0;
   }
 
@@ -162,17 +160,16 @@ public class CommandCooldown extends BaseCommand {
     var cds = Cooldowns.cooldowns();
 
     if (!cds.remove(user.getUniqueId(), category)) {
-      throw Exceptions.format("{0, user} is not on cooldown for {1}",
-          user, category
-      );
+      throw noCooldown(user, category).exception(c.getSource());
     }
 
     c.getSource().sendSuccess(
-        Text.format("&e{0, user}&r was removed from the '&e{1}&r' cooldown",
-            NamedTextColor.GRAY,
-            user, category
-        )
+        Messages.render("cmd.cooldown.remove")
+            .addValue("player", user)
+            .addValue("category", category)
+            .create(c.getSource())
     );
+
     return 0;
   }
 }

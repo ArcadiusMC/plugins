@@ -1,19 +1,9 @@
 package net.arcadiusmc.core;
 
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import com.sk89q.worldguard.internal.platform.WorldGuardPlatform;
-import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
-import com.sk89q.worldguard.protection.flags.StateFlag.State;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
-import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldguard.protection.regions.RegionContainer;
-import com.sk89q.worldguard.protection.regions.RegionQuery;
-import org.bukkit.Location;
-import org.bukkit.entity.Player;
+import net.arcadiusmc.utils.WgUtils;
 
 public final class CoreFlags {
 
@@ -28,5 +18,6 @@ public final class CoreFlags {
     registry.register(WILD_ALLOWED);
     registry.register(HEALTH_BARS);
     registry.register(DAMAGE_INDICATORS);
+    registry.register(WgUtils.PLAYER_TELEPORTING);
   }
 }

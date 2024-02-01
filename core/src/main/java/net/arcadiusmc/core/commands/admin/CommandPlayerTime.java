@@ -1,13 +1,13 @@
 package net.arcadiusmc.core.commands.admin;
 
 import static net.arcadiusmc.McConstants.TICKS_PER_DAY;
-import static net.kyori.adventure.text.Component.text;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.Arguments;
+import net.arcadiusmc.text.Messages;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
 import org.bukkit.entity.Player;
@@ -27,23 +27,34 @@ public class CommandPlayerTime extends BaseCommand {
     command
         .then(argument("user", Arguments.ONLINE_USER)
             .executes(c -> {
+              CommandSource source = c.getSource();
               Player player = get(c);
+
               long time = player.getPlayerTime();
               long days = time / 1000 / 24;
 
-              c.getSource().sendSuccess(
-                  text(player.getName() + "'s time: " + days + " days, absolute time: " + time)
+              source.sendMessage(
+                  Messages.render("cmd.ptime.get")
+                      .addValue("player", player)
+                      .addValue("time.days", days)
+                      .addValue("time", time)
+                      .create(source)
               );
               return 0;
             })
 
             .then(literal("reset")
                 .executes(c -> {
+                  CommandSource source = c.getSource();
                   Player player = get(c);
 
                   player.resetPlayerTime();
 
-                  c.getSource().sendSuccess(text("Reset " + player.getName() + "'s time"));
+                  source.sendSuccess(
+                      Messages.render("cmd.ptime.reset")
+                          .addValue("player", player)
+                          .create(source)
+                  );
                   return 0;
                 })
             )
@@ -90,9 +101,10 @@ public class CommandPlayerTime extends BaseCommand {
     player.setPlayerTime(time, false);
 
     source.sendSuccess(
-        text("Set time of ")
-            .append(player.displayName())
-            .append(text(" to " + time))
+        Messages.render("cmd.ptime.set")
+            .addValue("player", player)
+            .addValue("time", time)
+            .create(source)
     );
     return 0;
   }

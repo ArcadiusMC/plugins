@@ -19,16 +19,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import lombok.Getter;
 import lombok.Setter;
-import net.arcadiusmc.core.CoreConfig;
-import net.arcadiusmc.core.TabList;
-import net.arcadiusmc.core.commands.tpa.TpMessages;
-import net.arcadiusmc.core.commands.tpa.TpPermissions;
-import net.arcadiusmc.core.user.UserLookupImpl.UserLookupEntry;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.Permissions;
 import net.arcadiusmc.command.Commands;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.Grenadier;
+import net.arcadiusmc.core.CoreConfig;
+import net.arcadiusmc.core.commands.tpa.TpMessages;
+import net.arcadiusmc.core.commands.tpa.TpPermissions;
+import net.arcadiusmc.core.user.UserLookupImpl.UserLookupEntry;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.user.NameRenderFlags;
 import net.arcadiusmc.user.Properties;
@@ -45,7 +42,10 @@ import net.arcadiusmc.user.name.DisplayIntent;
 import net.arcadiusmc.user.name.UserNameFactory;
 import net.arcadiusmc.utils.ArrayIterator;
 import net.arcadiusmc.utils.Locations;
+import net.arcadiusmc.utils.PluginUtil;
 import net.arcadiusmc.utils.Time;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.Grenadier;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.luckperms.api.LuckPermsProvider;
@@ -236,6 +236,25 @@ public final class UserImpl implements User {
     other.ensureOnline();
 
     getPlayer().showPlayer(service.getPlugin(), other.getPlayer());
+  }
+
+  @Override
+  public boolean canSee(User user) {
+    Objects.requireNonNull(user, "Null user");
+
+    if (!user.isOnline()) {
+      return false;
+    }
+
+    if (isOnline()) {
+      return player.canSee(user.getPlayer());
+    }
+
+    if (!user.get(Properties.VANISHED)) {
+      return true;
+    }
+
+    return hasPermission(Permissions.VANISH_SEE);
   }
 
   @Override
@@ -615,6 +634,8 @@ public final class UserImpl implements User {
     ensureValid();
     ensureOnline();
 
+    service.getPlugin().getTabMenu().update();
+
     Set<NameRenderFlags> flags = EnumSet.allOf(NameRenderFlags.class);
     UserNameFactory factory = service.getNameFactory();
 
@@ -623,6 +644,10 @@ public final class UserImpl implements User {
 
     Component displayName = factory.formatDisplayName(this, ctx);
     player.playerListName(displayName);
+
+    if (!PluginUtil.isEnabled("NametagEdit")) {
+      return;
+    }
 
     Component prefix = factory.formatPrefix(this, ctx);
     Component suffix = factory.formatSuffix(this, ctx);
@@ -642,15 +667,13 @@ public final class UserImpl implements User {
           Text.LEGACY.serialize(suffix)
       );
     }
-
-    TabList.update();
   }
 
   @Override
   public Component checkTeleportMessage() {
     if (!canTeleport()) {
       if (isTeleporting()) {
-        return TpMessages.ALREADY_TELEPORTING;
+        return TpMessages.ALREADY_TELEPORTING.renderText(this);
       }
 
       return TpMessages.canTeleportIn(getTime(TimeField.NEXT_TELEPORT));

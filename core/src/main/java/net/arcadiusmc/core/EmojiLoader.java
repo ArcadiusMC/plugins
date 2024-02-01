@@ -39,8 +39,6 @@ public class EmojiLoader {
           .resultOrPartial(LOGGER::error)
 
           .ifPresent(map -> {
-            loadedNames.addAll(map.keySet());
-
             map.forEach((s, component) -> {
               if (ChatEmotes.TOKEN_2_EMOTE.containsKey(s)) {
                 LOGGER.error("Cannot register chat emote '{}', cannot override default", s);
@@ -48,6 +46,7 @@ public class EmojiLoader {
               }
 
               ChatEmotes.register(s, component);
+              loadedNames.add(s);
             });
           });
     });

@@ -55,10 +55,6 @@ public class UserArgument
     }
 
     User result = Users.get(entry.getUniqueId());
-    if (!result.isOnline() && !allowOffline) {
-      throw Exceptions.notOnline(result);
-    }
-
     return new UserParseResult(result, allowOffline);
   }
 

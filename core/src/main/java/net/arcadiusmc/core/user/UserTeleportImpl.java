@@ -46,9 +46,9 @@ public class UserTeleportImpl implements UserTeleport {
 
     // Send start message if we're not on silent lol
     if (!silent) {
-      user.sendMessage(Objects.requireNonNullElse(
+      user.sendMessage(Objects.requireNonNullElseGet(
           startMessage,
-          TpMessages.teleportStart(delay, type)
+          () -> TpMessages.userTeleportMessage(this, TpMessages.TELEPORT_FINISH)
       ));
     }
 
@@ -61,9 +61,9 @@ public class UserTeleportImpl implements UserTeleport {
 
   public void interrupt() {
     if (!silent) {
-      user.sendMessage(Objects.requireNonNullElse(
+      user.sendMessage(Objects.requireNonNullElseGet(
           interruptMessage,
-          TpMessages.TELEPORT_CANCELLED
+          () -> TpMessages.userTeleportMessage(this, TpMessages.TELEPORT_CANCELLED)
       ));
     }
 
@@ -73,9 +73,9 @@ public class UserTeleportImpl implements UserTeleport {
 
   public void complete() {
     if (!silent) {
-      user.sendMessage(Objects.requireNonNullElse(
+      user.sendMessage(Objects.requireNonNullElseGet(
           completeMessage,
-          TpMessages.teleportComplete(type)
+          () -> TpMessages.userTeleportMessage(this, TpMessages.TELEPORT_FINISH)
       ));
     }
 
@@ -104,7 +104,7 @@ public class UserTeleportImpl implements UserTeleport {
       }
     } else {
       // Tell user something went wrong, just in case
-      user.sendMessage(TpMessages.TELEPORT_ERROR);
+      user.sendMessage(TpMessages.userTeleportMessage(this, TpMessages.TELEPORT_FINISH));
     }
   }
 

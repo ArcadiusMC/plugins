@@ -1,8 +1,7 @@
 package net.arcadiusmc.core.listeners;
 
+import net.arcadiusmc.core.CoreMessages;
 import net.arcadiusmc.core.CorePlugin;
-import net.arcadiusmc.text.Text;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -35,7 +34,7 @@ public class HopperListener implements Listener {
 
     event.setCancelled(true);
     event.getPlayer().sendMessage(
-        Text.format("Too many hoppers in one chunk! &7(Max {0, number})", NamedTextColor.GRAY, max)
+        CoreMessages.HOPPER_WARNING.renderText(event.getPlayer())
     );
   }
 }

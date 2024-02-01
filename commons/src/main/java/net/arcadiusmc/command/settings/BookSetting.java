@@ -46,14 +46,15 @@ public abstract class BookSetting<C> {
   ) {
     Objects.requireNonNull(hover);
 
-    var builder = (toggle ? Messages.BUTTON_ACCEPT_TICK : Messages.BUTTON_DENY_CROSS).toBuilder();
+    Component button = (toggle ? Messages.BUTTON_ACCEPT_TICK : Messages.BUTTON_DENY_CROSS)
+        .renderText(null);
 
     if (current == toggle) {
-      builder.color(NamedTextColor.DARK_AQUA).hoverEvent(null);
+      button = button.color(NamedTextColor.DARK_AQUA).hoverEvent(null);
     } else {
-      builder.color(NamedTextColor.GRAY).hoverEvent(hover);
+      button = button.color(NamedTextColor.GRAY).hoverEvent(hover);
     }
 
-    return builder.clickEvent(event).build();
+    return button.clickEvent(event);
   }
 }

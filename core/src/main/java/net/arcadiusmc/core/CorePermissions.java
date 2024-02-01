@@ -48,10 +48,10 @@ public interface CorePermissions {
 
   Permission HAT                     = registerCmd("hat");
 
-  Permission GOD                     = register("ftc.godmode");
+  Permission GOD                     = register("arcadius.godmode");
   Permission GOD_OTHERS              = register(GOD, "others");
 
-  Permission FLY                     = register("ftc.flying");
+  Permission FLY                     = register("arcadius.flying");
   Permission FLY_OTHERS              = register(FLY, "others");
 
   Permission FEED                    = registerCmd("feed");
@@ -61,13 +61,13 @@ public interface CorePermissions {
 
   Permission PAY                     = registerCmd("pay");
 
-  Permission IP_QUERY                = register("ftc.users.iplookup");
+  Permission IP_QUERY                = register("arcadius.users.iplookup");
 
   Permission HOME                    = registerCmd("home");
   Permission HOME_OTHERS             = register(HOME, "others");
 
   TieredPermission MAX_HOMES = TieredPermission.builder()
-      .prefix("ftc.homes.")
+      .prefix("arcadius.homes.")
       .priority(TierPriority.HIGHEST)
       .allowUnlimited()
       .tiersBetween(1, 5)

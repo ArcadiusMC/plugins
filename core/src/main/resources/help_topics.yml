@@ -1,0 +1,30 @@
+#
+# Example section
+# This YML file is made of help topic sections, each section is different help topic viewable
+# with '/help' or a command of its own if configured so.
+#
+# If a value in the following Values section has a default value, it means it does not
+# have to be set
+#
+# Values:
+# - make-command:
+#     'true' or 'false' value that determines if this section is given its own dedicated entry
+#     Default: false
+# - aliases:
+#     Specifies an array of command aliases that can be used if 'make-command' is set to 'true'
+#     Default: [] (Empty array)
+# - short-text:
+#     The preview text shown for this entry. To get an idea of what preview text is, so
+#     '/help' each entry's preview text will be shown then
+#     Default: If not specified, causes an error
+# - full-text:
+#     A list of text values that are shown to players.
+#     Default: If not specified, causes an error
+#
+example:
+  aliases: ["alias-for-thing"]
+  make-command: true
+  short-text: "This does a thing :)"
+  full-text: [
+    "This explains what the thing that this does... does :("
+  ]

@@ -2,15 +2,14 @@ package net.arcadiusmc.core.commands.home;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.arcadiusmc.core.CoreExceptions;
-import net.arcadiusmc.core.CoreMessages;
-import net.arcadiusmc.core.CorePermissions;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.core.CorePermissions;
 import net.arcadiusmc.core.user.UserHomes;
-import net.arcadiusmc.events.WorldAccessTestEvent;
-import net.forthecrown.grenadier.GrenadierCommand;
 import net.arcadiusmc.user.User;
+import net.arcadiusmc.utils.WgUtils;
+import net.forthecrown.grenadier.GrenadierCommand;
+import org.bukkit.Location;
 import org.bukkit.Sound;
 
 public class CommandSetHome extends BaseCommand {
@@ -54,34 +53,39 @@ public class CommandSetHome extends BaseCommand {
   private int attemptHomeSetting(User user, String name)
       throws CommandSyntaxException
   {
-    var homes = user.getComponent(UserHomes.class);
-    var location = user.getLocation();
+    UserHomes homes = user.getComponent(UserHomes.class);
+    Location location = user.getLocation();
 
     boolean contains = homes.contains(name);
 
     if (!contains && !homes.canMakeMore()) {
-      throw CoreExceptions.overHomeLimit(user);
+      throw HomeMessages.LIMIT_REACHED.get()
+          .addValue("maxHomes", homes.getMaxHomes())
+          .addValue("homeCount", homes.size())
+          .exception(user);
     }
 
     // Test to make sure the user is allowed to make
     // a home in this world.
-    WorldAccessTestEvent.testOrThrow(
-        user.getPlayer(),
-        location.getWorld(),
-        CoreExceptions.CANNOT_SET_HOME
-    );
+    if (!WgUtils.testFlag(location, WgUtils.PLAYER_TELEPORTING, user.getPlayer())) {
+      throw HomeMessages.SET_FORBIDDEN.exception(user);
+    }
 
     homes.set(name, location);
 
     if (name.equals(UserHomes.DEFAULT)) {
       user.getPlayer().setBedSpawnLocation(location, true);
-      user.sendMessage(CoreMessages.HOMES_DEF_SET);
+      user.sendMessage(HomeMessages.SET_DEFAULT.renderText(user));
     } else {
-      user.sendMessage(CoreMessages.homeSet(name));
+      user.sendMessage(
+          HomeMessages.SET.get()
+              .addValue("home.name", name)
+              .addValue("home.location", location)
+              .create(user)
+      );
     }
 
     user.playSound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
-
     return 0;
   }
 }

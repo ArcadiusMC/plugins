@@ -14,6 +14,7 @@ import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
 import net.arcadiusmc.user.User;
 import org.bukkit.Sound;
+import org.bukkit.inventory.PlayerInventory;
 
 public class CommandWithdraw extends BaseCommand {
 
@@ -54,19 +55,19 @@ public class CommandWithdraw extends BaseCommand {
     int totalAmount = amount * itemAmount;
 
     if (!user.hasBalance(totalAmount)) {
-      throw Exceptions.cannotAfford(totalAmount);
+      throw Exceptions.cannotAfford(user, totalAmount);
     }
 
-    var inventory = user.getPlayer().getInventory();
+    PlayerInventory inventory = user.getPlayer().getInventory();
 
     if (inventory.firstEmpty() == -1) {
-      throw Exceptions.INVENTORY_FULL;
+      throw Exceptions.INVENTORY_FULL.exception(user);
     }
 
     inventory.addItem(Coins.makeCoins(amount, itemAmount, user));
 
     user.removeBalance(totalAmount);
-    user.sendMessage(CoreMessages.withdrew(itemAmount, totalAmount));
+    user.sendMessage(CoreMessages.withdrew(user, itemAmount, totalAmount));
     user.playSound(Sound.ENTITY_ITEM_PICKUP, 1, 1);
 
     return 0;

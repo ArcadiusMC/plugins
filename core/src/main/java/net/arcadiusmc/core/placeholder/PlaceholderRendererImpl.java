@@ -1,8 +1,10 @@
 package net.arcadiusmc.core.placeholder;
 
+import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.MatchResult;
@@ -15,6 +17,7 @@ import net.arcadiusmc.text.placeholder.TextPlaceholder;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -34,13 +37,28 @@ public class PlaceholderRendererImpl implements PlaceholderRenderer {
     addSource(selfList);
   }
 
+  Map<String, Object> createContext(Audience viewer, Map<String, Object> ctx) {
+    Map<String, Object> result;
+
+    if (ctx == null) {
+      result = new HashMap<>();
+    } else {
+      result = new HashMap<>(ctx);
+    }
+
+    result.put("server", Bukkit.getServer());
+    result.put("viewer", viewer);
+
+    return result;
+  }
+
   @Override
   public Component render(Component base, @Nullable Audience viewer, Map<String, Object> ctx) {
     if (service.getPlugin().getFtcConfig().placeholdersDisabled()) {
       return base;
     }
 
-    PlaceholderContext render = new PlaceholderContext(viewer, this, ctx);
+    PlaceholderContext render = new PlaceholderContext(viewer, this, createContext(viewer, ctx));
 
     TextReplacementConfig config = TextReplacementConfig.builder()
         .match(PATTERN)
@@ -74,13 +92,23 @@ public class PlaceholderRendererImpl implements PlaceholderRenderer {
       return text(result.group());
     }
 
-    Component rendered = placeholder.render(input, render);
+    Component rendered;
+
+    try {
+      rendered = placeholder.render(input, render);
+    } catch (Exception t) {
+      LOGGER.error("Error rendering placeholder! placeholder='{}' Skipping!", result.group(), t);
+      return text(result.group());
+    }
 
     if (rendered == null) {
       return text(result.group());
     }
 
-    return rendered;
+    // Do this wrapping to prevent accidental style overflow
+    // IE, stop the rendered text's color and decorations from
+    // flooding over to any following text
+    return empty().append(rendered);
   }
 
   @Override

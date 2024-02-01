@@ -1,45 +1,27 @@
 package net.arcadiusmc.user.event;
 
 import net.arcadiusmc.text.Messages;
-import net.arcadiusmc.text.Text;
-import net.arcadiusmc.user.NameRenderFlags;
 import net.arcadiusmc.user.User;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.event.player.PlayerQuitEvent.QuitReason;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface UserLogRenderer {
 
-  UserLogRenderer DEFAULT_JOIN = (user, viewer) -> {
-    return Messages.joinMessage(user.displayName(viewer));
-  };
+  UserLogRenderer DEFAULT_JOIN = (user, viewer) -> Messages.joinMessage(user).create(viewer);
 
   static UserLogRenderer defaultLeave(QuitReason reason) {
-    return (user, viewer) -> {
-      // Calling this method overrides the automatic addition of the USER_ONLINE flag,
-      // since during the quit event, the player is still online, but stuff like click
-      // events in the display name require the player to be marked as offline
-      return Messages.leaveMessage(
-          user.displayName(viewer, NameRenderFlags.ALLOW_NICKNAME),
-          reason
-      );
-    };
+    return (user, viewer) -> Messages.leaveMessage(user, reason).create(viewer);
   }
 
   static UserLogRenderer newNameJoin(String newName) {
-    return (user, viewer) -> {
-      return Messages.newNameJoinMessage(user.displayName(viewer), newName);
-    };
+    return (user, viewer) -> Messages.newNameJoinMessage(user, newName).create(viewer);
   }
 
   static UserLogRenderer firstJoin() {
-    return (user, viewer) -> {
-      return Text.vformat("Welcome &6{0, user}&r to the server!", NamedTextColor.YELLOW, user)
-          .create(viewer);
-    };
+    return (user, viewer) -> Messages.firstTimeJoin(user).create(viewer);
   }
 
   /**

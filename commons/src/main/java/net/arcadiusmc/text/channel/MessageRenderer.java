@@ -1,6 +1,5 @@
 package net.arcadiusmc.text.channel;
 
-import net.arcadiusmc.text.Messages;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 
@@ -8,12 +7,6 @@ import net.kyori.adventure.text.Component;
 public interface MessageRenderer {
 
   MessageRenderer DEFAULT = (viewer, baseMessage) -> baseMessage;
-
-  MessageRenderer FTC_PREFIX = prefixing(Messages.FTC_PREFIX);
-
-  static MessageRenderer prefixing(Component prefix) {
-    return (viewer, baseMessage) -> Component.textOfChildren(prefix, baseMessage);
-  }
 
   Component render(Audience viewer, Component baseMessage);
 

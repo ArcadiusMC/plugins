@@ -4,12 +4,11 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.help.UsageFactory;
 import net.arcadiusmc.text.Messages;
-import net.arcadiusmc.text.Text;
+import net.arcadiusmc.text.loader.MessageRender;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.currency.Currency;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
-import net.kyori.adventure.text.format.NamedTextColor;
 
 public class CurrencyCommand extends BaseCommand {
 
@@ -44,7 +43,7 @@ public class CurrencyCommand extends BaseCommand {
 
   @Override
   public void populateUsages(UsageFactory factory) {
-    String units = currency.name();
+    String units = currency.pluralName();
 
     factory.usage("")
         .addInfo("Shows you your " + units);
@@ -63,10 +62,6 @@ public class CurrencyCommand extends BaseCommand {
     factory.usage("remove <player> <amount: number>")
         .setPermission(getAdminPermission())
         .addInfo("Removes <amount> from the %s of <player>", units);
-
-    factory.usage("delete <player>")
-        .setPermission(getAdminPermission())
-        .addInfo("Deletes the <player>'s %s data", units);
   }
 
   @Override
@@ -93,17 +88,13 @@ public class CurrencyCommand extends BaseCommand {
                       var user = Arguments.getUser(c, "user");
                       int amount = c.getArgument("amount", Integer.class);
 
+                      int oldAmount = currency.get(user.getUniqueId());
                       currency.add(user.getUniqueId(), amount);
                       int newAmount = currency.get(user.getUniqueId());
 
                       c.getSource().sendSuccess(
-                          Text.format("Added &e{0}&r to &6{1, user}&r's {2}, new value: &e{3}&r.",
-                              NamedTextColor.GRAY,
-                              currency.format(amount),
-                              user,
-                              getName(),
-                              currency.format(newAmount)
-                          )
+                          editMessage("added", amount, oldAmount, newAmount, user)
+                              .create(c.getSource())
                       );
                       return 0;
                     })
@@ -121,17 +112,13 @@ public class CurrencyCommand extends BaseCommand {
                       var user = Arguments.getUser(c, "user");
                       int amount = c.getArgument("amount", Integer.class);
 
+                      int oldAmount = currency.get(user.getUniqueId());
                       currency.remove(user.getUniqueId(), amount);
                       int newAmount = currency.get(user.getUniqueId());
 
                       c.getSource().sendSuccess(
-                          Text.format("Subtracted &e{0}&r from &6{1, user}&r's {2}, new value: &e{3}&r.",
-                              NamedTextColor.GRAY,
-                              currency.format(amount),
-                              user,
-                              getName(),
-                              currency.format(newAmount)
-                          )
+                          editMessage("subtracted", amount, oldAmount, newAmount, user)
+                              .create(c.getSource())
                       );
                       return 0;
                     })
@@ -154,13 +141,8 @@ public class CurrencyCommand extends BaseCommand {
                       int newAmount = currency.get(user.getUniqueId());
 
                       c.getSource().sendSuccess(
-                          Text.format("Set &e{0, user}&r's {1} to &6{2}&r. &7(Was {3})",
-                              NamedTextColor.GRAY,
-                              user,
-                              getName(),
-                              currency.format(newAmount),
-                              currency.format(oldAmount)
-                          )
+                          editMessage("set", amount, oldAmount, newAmount, user)
+                              .create(c.getSource())
                       );
                       return 0;
                     })
@@ -169,14 +151,29 @@ public class CurrencyCommand extends BaseCommand {
         );
   }
 
+  private MessageRender editMessage(
+      String keySuffix,
+      int amount,
+      int old,
+      int newAmount,
+      User player
+  ) {
+    return Messages.render("unitEdit." + keySuffix)
+        .addValue("player",   player)
+        .addValue("currency", currency.pluralName())
+        .addValue("amount",   currency.format(amount))
+        .addValue("old",      currency.format(old))
+        .addValue("new",      currency.format(newAmount));
+  }
+
   private int lookup(CommandSource source, User user) {
     var val = currency.get(user.getUniqueId());
     var self = source.textName().equals(user.getName());
 
     if (self) {
-      source.sendMessage(Messages.unitQuerySelf(currency.format(val)));
+      source.sendMessage(Messages.unitQuerySelf(currency.format(val)).create(source));
     } else {
-      source.sendMessage(Messages.unitQueryOther(currency.format(val), user));
+      source.sendMessage(Messages.unitQueryOther(currency.format(val), user).create(source));
     }
 
     return 0;

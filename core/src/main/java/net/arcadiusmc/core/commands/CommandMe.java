@@ -1,14 +1,12 @@
 package net.arcadiusmc.core.commands;
 
-import static net.kyori.adventure.text.Component.space;
-import static net.kyori.adventure.text.Component.text;
-
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.help.UsageFactory;
-import net.arcadiusmc.text.Text;
+import net.arcadiusmc.core.CoreMessages;
 import net.arcadiusmc.text.ViewerAwareMessage;
 import net.arcadiusmc.text.channel.ChannelledMessage;
+import net.arcadiusmc.text.loader.MessageRef;
 import net.arcadiusmc.utils.Audiences;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
@@ -64,13 +62,18 @@ public class CommandMe extends BaseCommand {
                   .setBroadcast();
 
               channelled.setRenderer((viewer, baseMessage) -> {
-                var builder = text();
+                MessageRef ref;
 
                 if (!Audiences.equals(viewer, source)) {
-                  builder.append(text("* "), Text.sourceDisplayName(source, viewer), space());
+                  ref = CoreMessages.ME_OTHER;
+                } else {
+                  ref = CoreMessages.ME_SELF;
                 }
 
-                return builder.append(baseMessage).build();
+                return ref.get()
+                    .addValue("player", source)
+                    .addValue("message", message)
+                    .create(viewer);
               });
 
               channelled.send();

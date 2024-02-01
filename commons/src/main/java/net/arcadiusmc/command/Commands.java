@@ -5,6 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
 import java.lang.StackWalker.Option;
 import java.util.Collection;
+import java.util.Map;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.text.PlayerMessage;
 import net.arcadiusmc.text.page.PagedIterator;
@@ -48,7 +49,7 @@ public final class Commands {
     CommandDataLoader loader = CommandDataLoader.resources(caller.getClassLoader());
     ctx.addLoader(loader);
 
-    var variables = ctx.getVariables();
+    Map<String, Object> variables = ctx.getVariables();
 
     ArgumentModifier<UserParseResult, User> resultToUser = (context, input) -> {
       return input.get(context.getSource(), true);
@@ -110,7 +111,7 @@ public final class Commands {
       throws CommandSyntaxException
   {
     if (size == 0) {
-      throw Exceptions.NOTHING_TO_LIST;
+      throw Exceptions.NOTHING_TO_LIST.exception();
     }
 
     var max = PagedIterator.getMaxPage(pageSize, size);
@@ -202,6 +203,6 @@ public final class Commands {
   }
 
   public static void removeChild(CommandNode<?> node, String name) {
-    //node.removeCommand(name);
+    node.removeCommand(name);
   }
 }

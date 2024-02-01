@@ -15,12 +15,12 @@ maxNickLength = 16
 # Maximum amount of hoppers in a chunk
 hoppersInOneChunk = 128
 
-# Worlds people cannot set their homes to or TPA into
-illegalWorlds = [ "world_void", "world_test", "world_event", "void" ]
-
 # The time of day the day reset happens
 # In hh:mm:ss format
 dayUpdateTime = 00:00:01
+
+# Distance '/near' will look for players in
+nearCommandDistance = 200
 
 # Disables ALL placeholders used by FTC plugins,
 # this means every instance of '${placeholder}' will be left unrendered

@@ -1,10 +1,9 @@
 package net.arcadiusmc.core.commands.tpa;
 
-import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.Arguments;
-import net.forthecrown.grenadier.GrenadierCommand;
 import net.arcadiusmc.user.User;
+import net.forthecrown.grenadier.GrenadierCommand;
 
 public class CommandTpDeny extends BaseCommand {
 
@@ -29,7 +28,9 @@ public class CommandTpDeny extends BaseCommand {
               TeleportRequest request = TeleportRequests.getIncoming(user, sender);
 
               if (request == null) {
-                throw Exceptions.noIncoming(sender);
+                throw TpExceptions.NO_INCOMING_FROM.get()
+                    .addValue("player", sender)
+                    .exception(user);
               }
 
               request.deny();
@@ -42,7 +43,7 @@ public class CommandTpDeny extends BaseCommand {
           TeleportRequest first = TeleportRequests.latestIncoming(user);
 
           if (first == null) {
-            throw TpExceptions.NO_TP_REQUESTS;
+            throw TpExceptions.NO_INCOMING.exception(user);
           }
 
           first.deny();

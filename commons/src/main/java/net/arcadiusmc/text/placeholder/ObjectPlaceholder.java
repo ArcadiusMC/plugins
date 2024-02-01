@@ -1,0 +1,162 @@
+package net.arcadiusmc.text.placeholder;
+
+import static net.kyori.adventure.text.Component.text;
+
+import java.time.Duration;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+import net.arcadiusmc.Worlds;
+import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.PeriodFormat;
+import net.arcadiusmc.text.RomanNumeral;
+import net.arcadiusmc.text.Text;
+import net.arcadiusmc.user.User;
+import net.arcadiusmc.user.Users;
+import net.arcadiusmc.utils.Audiences;
+import net.arcadiusmc.utils.inventory.ItemStacks;
+import net.arcadiusmc.utils.math.Vectors;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.nbt.paper.PaperNbt;
+import org.bukkit.Location;
+import org.bukkit.Server;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+
+public interface ObjectPlaceholder<T> {
+
+  ObjectPlaceholder<Number> NUMBER = (value, fieldName, ctx) -> {
+    return switch (fieldName) {
+      case "floor" -> value.longValue();
+      case "roman" -> text(RomanNumeral.arabicToRoman(value.longValue()));
+      default -> Text.formatNumber(value);
+    };
+  };
+
+  ObjectPlaceholder<ItemStack> ITEM = (value, fieldName, ctx) -> {
+    return switch (fieldName) {
+      case "amount" -> value.getAmount();
+      case "nameAndAmount" -> Text.itemAndAmount(value);
+      case "nbt" -> PaperNbt.asComponent(ItemStacks.save(value));
+      default -> Text.itemDisplayName(value);
+    };
+  };
+
+  ObjectPlaceholder<World> WORLD = (value, fieldName, ctx) -> {
+    return switch (fieldName) {
+      case "minY"           -> value.getMinHeight();
+      case "maxY"           -> value.getMaxHeight();
+
+      case "raw"            -> value.getName();
+
+      case "directory"      -> value.getWorldFolder().toPath().toString();
+
+      case "gametime"       -> value.getGameTime();
+      case "fulltime"       -> value.getFullTime();
+      case "time"           -> value.getTime();
+      case "day",   "days"  -> value.getFullTime() / 1000 / 24;
+      case "year", "years"  -> value.getFullTime() / 1000 / 24 / 365;
+
+      default               -> text(Text.formatWorldName(value));
+    };
+  };
+
+  ObjectPlaceholder<Location> LOCATION = (value, fieldName, ctx) -> {
+    var viewer = ctx.viewer();
+    var player = Audiences.getPlayer(viewer);
+    boolean clickable = player != null && player.hasPermission("arcadius.commands.tpexact");
+
+    return switch (fieldName) {
+      case "x" -> value.x();
+      case "y" -> value.y();
+      case "z" -> value.z();
+
+      case "bx" -> Text.formatNumber(Math.floor(value.x()));
+      case "by" -> Text.formatNumber(Math.floor(value.y()));
+      case "bz" -> Text.formatNumber(Math.floor(value.z()));
+
+      case "chunkX" -> Vectors.toChunk(value.getBlockX());
+      case "chunkZ" -> Vectors.toChunk(value.getBlockZ());
+
+      case "yaw" -> Text.formatNumber(Math.floor(value.getYaw()));
+      case "pitch" -> Text.formatNumber(Math.floor(value.getPitch()));
+
+      case "world" -> value.getWorld();
+
+      case "worldIfNotDefault" -> {
+        boolean defaultWorld = Objects.equals(Worlds.overworld(), value.getWorld());
+        yield Messages.location(value, !defaultWorld, clickable);
+      }
+
+      default -> {
+        boolean sameWorld = player != null && Objects.equals(value.getWorld(), player.getWorld());
+        yield Messages.location(value, !sameWorld, clickable);
+      }
+    };
+  };
+
+  ObjectPlaceholder<User> USER = new UserObjectPlaceholder();
+
+  ObjectPlaceholder<Player> PLAYER = (value, fieldName, ctx) -> {
+    User user = Users.get(value);
+    return USER.lookup(user, fieldName, ctx);
+  };
+
+  ObjectPlaceholder<CommandSource> COMMAND_SOURCE = (value, fieldName, ctx) -> {
+    if (value.isPlayer()) {
+      return PLAYER.lookup(value.asPlayerOrNull(), fieldName, ctx);
+    }
+
+    return switch (fieldName) {
+      case "world" -> value.getWorld();
+      case "location" -> value.getLocation();
+      default -> value.displayName();
+    };
+  };
+
+  ObjectPlaceholder<Boolean> BOOLEAN = (value, fieldName, ctx) -> {
+    return switch (fieldName) {
+      case "onoff" -> text(value ? "on" : "off");
+      case "OnOff" -> text(value ? "On" : "Off");
+      case "state" -> text(value ? "Enabled" : "Disabled");
+      case "yesno" -> text(value ? "yes" : "no");
+      case "YesNo" -> text(value ? "Yes" : "No");
+      default -> text(value);
+    };
+  };
+
+  ObjectPlaceholder<Server> SERVER = (value, fieldName, ctx) -> {
+    return switch (fieldName) {
+      case "version" -> text(value.getMinecraftVersion());
+      case "bukkitVersion" -> text(value.getVersion());
+      case "maxPlayers" -> text(value.getMaxPlayers());
+
+      case "onlinePlayers" -> {
+        Set<User> onlineUsers = new HashSet<>(Users.getOnline());
+        User playerViewer = Audiences.getUser(ctx.viewer());
+
+        if (playerViewer != null) {
+          onlineUsers.removeIf(user -> !playerViewer.canSee(user));
+        }
+
+        yield onlineUsers.size();
+      }
+
+      default -> Messages.MESSAGE_LIST.renderText("server.name", ctx.viewer());
+    };
+  };
+
+  ObjectPlaceholder<Duration> DURATION = (value, fieldName, ctx) -> {
+    return switch (fieldName) {
+      case "seconds"  -> value.getSeconds();
+      case "minutes"  -> value.getSeconds() / 60;
+      case "hours"    -> value.getSeconds() / 60 / 60;
+      case "days"     -> value.getSeconds() / 60 / 60 / 24;
+      default -> PeriodFormat.of(value).asComponent();
+    };
+  };
+
+  Object lookup(@NotNull T value, @NotNull String fieldName, @NotNull PlaceholderContext ctx);
+}

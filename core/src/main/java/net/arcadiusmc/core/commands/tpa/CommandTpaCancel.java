@@ -1,10 +1,9 @@
 package net.arcadiusmc.core.commands.tpa;
 
-import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.Arguments;
-import net.forthecrown.grenadier.GrenadierCommand;
 import net.arcadiusmc.user.User;
+import net.forthecrown.grenadier.GrenadierCommand;
 
 public class CommandTpaCancel extends BaseCommand {
 
@@ -27,8 +26,11 @@ public class CommandTpaCancel extends BaseCommand {
               User target = Arguments.getUser(c, "user");
 
               TeleportRequest r = TeleportRequests.getOutgoing(user, target);
+
               if (r == null) {
-                throw Exceptions.noOutgoing(target);
+                throw TpExceptions.NO_OUTGOING_TO.get()
+                    .addValue("player", target)
+                    .exception(user);
               }
 
               r.cancel();
@@ -41,7 +43,7 @@ public class CommandTpaCancel extends BaseCommand {
           TeleportRequest r = TeleportRequests.latestOutgoing(user);
 
           if (r == null) {
-            throw TpExceptions.NO_TP_REQUESTS_OUT;
+            throw TpExceptions.NO_OUTGOING.exception(user);
           }
 
           r.cancel();

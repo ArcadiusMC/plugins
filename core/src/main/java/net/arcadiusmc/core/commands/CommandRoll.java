@@ -3,12 +3,14 @@ package net.arcadiusmc.core.commands;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import java.util.Random;
 import net.arcadiusmc.command.BaseCommand;
+import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.loader.MessageRef;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
-import net.arcadiusmc.text.Text;
-import net.kyori.adventure.text.format.NamedTextColor;
 
 public class CommandRoll extends BaseCommand {
+
+  static final MessageRef MESSAGE = Messages.MESSAGE_LIST.reference("commands.roll");
 
   private final Random random;
 
@@ -51,7 +53,9 @@ public class CommandRoll extends BaseCommand {
     int rolled = random.nextInt(Math.min(minI, maxI), Math.max(minI, maxI));
 
     source.sendMessage(
-        Text.format("Rolled number: &e{0, number}&r.", NamedTextColor.GRAY, rolled)
+        MESSAGE.get()
+            .addValue("number", rolled)
+            .create(source)
     );
 
     return 0;

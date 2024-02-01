@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import net.arcadiusmc.ArcadiusServer.LeaveCommandListener;
 import net.arcadiusmc.command.BaseCommand;
-import net.arcadiusmc.command.Exceptions;
+import net.arcadiusmc.text.Messages;
 import net.forthecrown.grenadier.GrenadierCommand;
 
 public class CommandLeave extends BaseCommand {
@@ -30,7 +30,7 @@ public class CommandLeave extends BaseCommand {
         }
       }
 
-      throw Exceptions.create("Not allowed to use here");
+      throw Messages.MESSAGE_LIST.exception("commands.leaveNotAllowed", user);
     });
   }
 }

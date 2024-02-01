@@ -16,10 +16,10 @@ import org.jetbrains.annotations.Nullable;
 
 class EnchantHandle extends Enchantment {
 
-  private final FtcEnchant wrapper;
+  private final CustomEnchantment wrapper;
 
   protected EnchantHandle(
-      FtcEnchant wrapper,
+      CustomEnchantment wrapper,
       EnchantmentTarget type,
       EquipmentSlot... slotTypes
   ) {

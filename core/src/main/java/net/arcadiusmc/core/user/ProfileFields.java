@@ -1,17 +1,18 @@
 package net.arcadiusmc.core.user;
 
+import static net.arcadiusmc.text.Messages.MESSAGE_LIST;
 import static net.kyori.adventure.text.Component.text;
 
 import com.google.common.base.Strings;
 import java.util.Collection;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.function.ToIntFunction;
-import net.arcadiusmc.core.CoreMessages;
 import net.arcadiusmc.Permissions;
+import net.arcadiusmc.core.CoreMessages;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.PeriodFormat;
 import net.arcadiusmc.text.TextWriter;
 import net.arcadiusmc.text.UnitFormat;
+import net.arcadiusmc.text.loader.MessageRef;
 import net.arcadiusmc.user.Properties;
 import net.arcadiusmc.user.TimeField;
 import net.arcadiusmc.user.User;
@@ -20,7 +21,6 @@ import net.arcadiusmc.user.name.DisplayContext;
 import net.arcadiusmc.user.name.FieldPlacement;
 import net.arcadiusmc.user.name.ProfileDisplayElement;
 import net.arcadiusmc.user.name.UserNameFactory;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.Location;
 
@@ -29,7 +29,7 @@ interface ProfileFields {
   ProfileDisplayElement UUID = new ProfileDisplayElement() {
     @Override
     public void write(TextWriter writer, User user, DisplayContext context) {
-      writer.field("UUID", user.getUniqueId());
+      writer.field(MESSAGE_LIST.render("profile.uuid"), user.getUniqueId());
     }
 
     @Override
@@ -43,20 +43,39 @@ interface ProfileFields {
       return;
     }
 
-    writer.field("Name", user.getName());
+    writer.field(MESSAGE_LIST.render("profile.realName"), user.getName());
   };
 
-  ProfileDisplayElement FIRST_JOIN = timestamp("First Join", TimeField.FIRST_JOIN);
+  ProfileDisplayElement FIRST_JOIN = timestamp("profile.firstJoin", TimeField.FIRST_JOIN);
 
-  ProfileDisplayElement BALANCE = unit(User::getBalance, UnitFormat.UNIT_CURRENCY, "Balance");
-  ProfileDisplayElement VOTES = unit(User::getTotalVotes, UnitFormat.UNIT_VOTE, "Votes");
+  ProfileDisplayElement BALANCE = (writer, user, context) -> {
+    int money = user.getBalance();
+
+    if (money <= 0) {
+      return;
+    }
+
+    writer.field(MESSAGE_LIST.render("profile.balances"), Messages.currency(money));
+  };
+
+  ProfileDisplayElement VOTES = (writer, user, context) -> {
+    int votes = user.getTotalVotes();
+
+    if (votes <= 0) {
+      return;
+    }
+
+    writer.field(MESSAGE_LIST.render("profile.votes"), UnitFormat.votes(votes));
+  };
 
   ProfileDisplayElement PLAYTIME = new ProfileDisplayElement() {
     @Override
     public void write(TextWriter writer, User user, DisplayContext context) {
       int playtime = user.getPlayTime();
-      long hours = TimeUnit.SECONDS.toHours(playtime);
-      writer.field("Playtime", UnitFormat.unit(hours, UnitFormat.UNIT_HOUR));
+      writer.field(
+          MESSAGE_LIST.render("profile.playtime"),
+          UnitFormat.playTime(playtime)
+      );
     }
 
     @Override
@@ -72,7 +91,7 @@ interface ProfileFields {
         return;
       }
 
-      writer.field("Profile Public", !user.get(Properties.PROFILE_PRIVATE));
+      writer.field(MESSAGE_LIST.render("profile.status"), !user.get(Properties.PROFILE_PRIVATE));
     }
 
     @Override
@@ -90,7 +109,7 @@ interface ProfileFields {
 
       long lastJoin = user.getTime(TimeField.LAST_LOGIN);
 
-      writer.field("Last Online",
+      writer.field(MESSAGE_LIST.render("profile.lastOnline"),
           PeriodFormat.between(lastJoin, System.currentTimeMillis())
               .retainBiggest()
       );
@@ -109,7 +128,8 @@ interface ProfileFields {
       return;
     }
 
-    writer.field("IP",
+    writer.field(
+        MESSAGE_LIST.render("profile.ip"),
         text(ip)
             .hoverEvent(text("Click to copy"))
             .clickEvent(ClickEvent.copyToClipboard(ip))
@@ -135,9 +155,9 @@ interface ProfileFields {
     writer.formattedField("Location", "{0, location, -c}", location);
   };
 
-  ProfileDisplayElement SEPARATED_USERS = blockedUsers(UserBlockList::getSeparated, "Separated");
+  ProfileDisplayElement SEPARATED_USERS = blockedUsers(UserBlockList::getSeparated, "separated");
 
-  ProfileDisplayElement IGNORED_USERS = blockedUsers(UserBlockList::getBlocked, "Blocked");
+  ProfileDisplayElement IGNORED_USERS = blockedUsers(UserBlockList::getBlocked, "blocked");
 
   static void registerAll(UserNameFactory factory) {
     factory.addProfileField("name", 0, REAL_NAME);
@@ -162,6 +182,9 @@ interface ProfileFields {
       Function<UserBlockList, Collection<java.util.UUID>> getter,
       String name
   ) {
+    MessageRef keyRef = MESSAGE_LIST.reference("profile." + name);
+    MessageRef formatRef = MESSAGE_LIST.reference("profile." + name + ".format");
+
     return new ProfileDisplayElement() {
       @Override
       public void write(TextWriter writer, User user, DisplayContext context) {
@@ -172,9 +195,15 @@ interface ProfileFields {
           return;
         }
 
-        var blocked = CoreMessages.joinIds(separated, text(name + ": "), context.viewer());
+        var blocked = CoreMessages.joinIds(separated, formatRef, context.viewer());
 
-        writer.field(name, text("[Hover to see]").hoverEvent(blocked));
+        writer.field(
+            keyRef.get(),
+
+            MESSAGE_LIST.render("profile.playerListButton")
+                .create(context.viewer())
+                .hoverEvent(blocked)
+        );
       }
 
       @Override
@@ -184,7 +213,7 @@ interface ProfileFields {
     };
   }
 
-  static ProfileDisplayElement timestamp(String name, TimeField field) {
+  static ProfileDisplayElement timestamp(String messageKey, TimeField field) {
     return (writer, user, context) -> {
       long value = user.getTime(field);
 
@@ -192,30 +221,7 @@ interface ProfileFields {
         return;
       }
 
-      writer.formattedField(name, "{0, date}", value);
-    };
-  }
-
-  static ProfileDisplayElement unit(ToIntFunction<User> getter, String unit, String name) {
-    return new ProfileDisplayElement() {
-      @Override
-      public void write(TextWriter writer, User user, DisplayContext context) {
-
-        int value = getter.applyAsInt(user);
-
-        if (value == 0) {
-          return;
-        }
-
-        Component text = UnitFormat.unit(value, unit);
-
-        writer.field(name, text);
-      }
-
-      @Override
-      public FieldPlacement placement() {
-        return FieldPlacement.ALL;
-      }
+      writer.formattedField(MESSAGE_LIST.render(messageKey), "{0, date}", value);
     };
   }
 }

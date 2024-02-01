@@ -2,18 +2,17 @@ package net.arcadiusmc.core.commands.help;
 
 import com.google.common.base.Strings;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.chars.Char2IntMap;
 import it.unimi.dsi.fastutil.chars.Char2IntOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectIntPair;
-import it.unimi.dsi.fastutil.objects.ObjectLists;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -26,36 +25,22 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import net.arcadiusmc.Loggers;
-import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.BaseCommand;
+import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.help.ArcadiusHelpList;
 import net.arcadiusmc.command.help.CommandHelpEntry;
 import net.arcadiusmc.command.help.HelpEntry;
 import net.arcadiusmc.command.help.Usage;
 import net.arcadiusmc.command.help.UsageFactory;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.Completions;
-import net.forthecrown.grenadier.Grenadier;
-import net.arcadiusmc.text.TextWriters;
 import net.arcadiusmc.text.ViewerAwareMessage;
-import net.arcadiusmc.text.page.Footer;
-import net.arcadiusmc.text.page.Header;
-import net.arcadiusmc.text.page.PageEntry;
-import net.arcadiusmc.text.page.PagedIterator;
-import net.arcadiusmc.text.page.PageFormat;
-import net.arcadiusmc.text.placeholder.Placeholders;
-import net.arcadiusmc.utils.context.Context;
-import net.arcadiusmc.utils.context.ContextOption;
-import net.arcadiusmc.utils.context.ContextSet;
 import net.arcadiusmc.utils.io.JsonUtils;
 import net.arcadiusmc.utils.io.JsonWrapper;
 import net.arcadiusmc.utils.io.PathUtil;
 import net.arcadiusmc.utils.io.PluginJar;
 import net.arcadiusmc.utils.io.SerializationHelper;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.Completions;
+import net.forthecrown.grenadier.Grenadier;
 import org.slf4j.Logger;
 
 public class HelpListImpl implements ArcadiusHelpList {
@@ -67,90 +52,23 @@ public class HelpListImpl implements ArcadiusHelpList {
   private static final Comparator<HelpEntry> ALPHABETIC_COMPARATOR
       = Comparator.comparing(HelpEntry::getMainLabel);
 
-  /** Map of all keywords, mapped to their bound values */
-  private final Map<String, Collection<HelpEntry>> keywordLookup
-      = new Object2ObjectOpenHashMap<>();
-
   /** Map of all existing commands, mapped to their name */
   private final Map<String, BaseCommand> existingCommands = new HashMap<>();
 
   private final List<HelpEntry> entries = new ObjectArrayList<>();
   private final List<LoadedHelpEntry> loadedEntries = new ObjectArrayList<>();
 
-  // Context used to pass data onto the page formatter
-  private final ContextSet contextSet = ContextSet.create();
-
-  private final ContextOption<CommandSource> sourceOption
-      = contextSet.newOption();
-
-  private final ContextOption<String> inputOption
-      = contextSet.newOption();
-
-  private final ContextOption<Integer> actualPageSize
-      = contextSet.newOption(5);
-
-  // Page format used to format entries for list-based display
-  private final PageFormat<HelpEntry> pageFormat = PageFormat.create();
-
-  private final PageFormat<Component> singleEntryPaginator
-      = PageFormat.create();
-
-  private final Path file;
+  private final Path topicsFile;
+  private final Path usagesFile;
 
   static {
     Comparator<ObjectIntPair<HelpEntry>> cmp = Comparator.comparingInt(ObjectIntPair::rightInt);
     COMPARATOR = cmp.thenComparing(pair -> pair.left().getMainLabel());
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
   public HelpListImpl() {
-    this.file = PathUtil.pluginPath("help_topics.json");
-
-    // Initialize the page format used to display help entries
-
-    // Footer format
-    var footer = Footer.create()
-        .setPageButton((viewerPage, pageSize, context) -> {
-          var s = context.get(inputOption);
-
-          return ClickEvent.runCommand(
-              String.format("/help '%s' %s %s",
-                  s == null ? "" : s,
-                  viewerPage, context.get(actualPageSize)
-              )
-          );
-        });
-
-    // Header format
-    Header header = Header.create();
-    header.title((it, writer, context) -> {
-      var s = context.get(inputOption);
-
-      if (Strings.isNullOrEmpty(s)) {
-        writer.write("Help");
-      } else {
-        writer.formatted("Results for: {0}", s);
-      }
-    });
-
-    // Entry format
-    PageEntry<HelpEntry> entry = PageEntry.create();
-    entry.setEntryDisplay((writer, entry1, viewerIndex, context, it) -> {
-      entry1.writeShort(writer, context.getOrThrow(sourceOption));
-    });
-
-    PageEntry<Component> singletonEntry = PageEntry.create();
-    singletonEntry.setIndex((viewerIndex, entry1, it) -> null);
-    singletonEntry.setEntryDisplay((writer, entry1, viewerIndex, context, it) -> {
-      writer.line(entry1);
-    });
-
-    singleEntryPaginator.setFooter(footer);
-    singleEntryPaginator.setHeader(header);
-    singleEntryPaginator.setEntry(singletonEntry);
-    pageFormat.setHeader(header);
-    pageFormat.setFooter(footer);
-    pageFormat.setEntry(entry);
+    this.topicsFile = PathUtil.pluginPath("help_topics.yml");
+    this.usagesFile = PathUtil.pluginPath("extra-command-help.yml");
   }
 
   /** Suggests help entry keywords */
@@ -181,29 +99,8 @@ public class HelpListImpl implements ArcadiusHelpList {
     return builder.buildFuture();
   }
 
-  /**
-   * Queries the help map for a message to show.
-   * <p>
-   * The result returned by this method may either be a list of valid results,
-   * or the text of a single result.
-   *
-   * @param tag The input data, may be null or empty
-   * @param page The page the user wishes to view
-   * @param pageSize The size of the page the user wishes to see
-   * @param source The source querying the help map, used for
-   *               permission testing
-   * @return The message to display to the given user
-   *
-   * @throws CommandSyntaxException If the query was invalid, or if the page
-   * number was invalid, relative to the amount of query results
-   */
   @Override
-  public Component query(
-      CommandSource source,
-      String tag,
-      int page,
-      int pageSize
-  ) throws CommandSyntaxException {
+  public List<HelpEntry> query(CommandSource source, String tag) {
     List<HelpEntry> entries = new ObjectArrayList<>();
 
     if (Strings.isNullOrEmpty(tag) || tag.equalsIgnoreCase("all")) {
@@ -218,58 +115,10 @@ public class HelpListImpl implements ArcadiusHelpList {
       lookupResult.stream().map(Pair::left).forEach(entries::add);
     }
 
-    var writer = TextWriters.newWriter();
-    writer.setFieldStyle(Style.style(NamedTextColor.YELLOW));
-    writer.placeholders(Placeholders.newRenderer().useDefaults());
-
-    Context context = contextSet.createContext()
-        .set(sourceOption, source)
-        .set(inputOption, tag)
-        .set(actualPageSize, pageSize);
-
-    // Single entry, write that 1 entry
-    if (entries.size() == 1) {
-      pageSize += 5;
-      var entry = entries.iterator().next();
-      var loreWriter = TextWriters.buffered();
-
-      loreWriter.setFieldStyle(Style.style(NamedTextColor.YELLOW));
-      entry.writeFull(loreWriter, source);
-
-      var text = loreWriter.getBuffer();
-
-      // Ensure list isn't empty and page number is valid
-      Commands.ensurePageValid(page, pageSize, text.size());
-
-      var it = PagedIterator.of(text, page, pageSize);
-      singleEntryPaginator.write(it, writer, context);
-
-      return writer.asComponent();
-    }
-
-    // Ensure list isn't empty and page number is valid
-    Commands.ensurePageValid(page, pageSize, entries.size());
-
-    // Format all results onto a page
-    var iterator = PagedIterator.of(entries, page, pageSize);
-
-    pageFormat.write(iterator, writer, context);
-    return writer.asComponent();
+    return entries;
   }
 
   private List<ObjectIntPair<HelpEntry>> lookup(String tag, CommandSource source) {
-    // Try just calling the keyword lookup
-    Collection<HelpEntry> entries = getEntries(tag);
-    entries.removeIf(entry -> !entry.test(source));
-
-    if (!entries.isEmpty()) {
-      List<ObjectIntPair<HelpEntry>> result = new ObjectArrayList<>();
-      for (HelpEntry entry : entries) {
-        result.add(ObjectIntPair.of(entry, 0));
-      }
-      return result;
-    }
-
     // Keyword lookup failed, loop through all keywords to find the ones
     // that match the most
     List<ObjectIntPair<HelpEntry>> result = new ObjectArrayList<>();
@@ -291,8 +140,6 @@ public class HelpListImpl implements ArcadiusHelpList {
           continue;
         }
 
-        // I STG If this condition ever returns true, I will throw
-        // someone or something out of a window
         if (dis == 0) {
           result = new ObjectArrayList<>();
           result.add(ObjectIntPair.of(v, dis));
@@ -370,14 +217,11 @@ public class HelpListImpl implements ArcadiusHelpList {
     return Collections.unmodifiableCollection(entries);
   }
 
+  @Override
   public Collection<HelpEntry> getEntries(String keyword) {
-    var list = keywordLookup.getOrDefault(keyword, ObjectLists.emptyList());
-
-    if (list.isEmpty()) {
-      return list;
-    }
-
-    return new ObjectArrayList<>(list);
+    return entries.stream()
+        .filter(entry -> entry.getKeywords().contains(keyword))
+        .toList();
   }
 
   public void addCommand(BaseCommand command) {
@@ -391,7 +235,6 @@ public class HelpListImpl implements ArcadiusHelpList {
    * properly index every keyword, alias and command label.
    */
   public void update() {
-    keywordLookup.clear();
     entries.removeIf(entry -> entry instanceof CommandHelpEntry);
 
     existingCommands.forEach((s, command) -> {
@@ -412,26 +255,13 @@ public class HelpListImpl implements ArcadiusHelpList {
       }
 
       command.populateUsages(factory);
-      entries.add(entry);
+      addEntry(entry);
     });
-
-    entries.forEach(this::placeInLookup);
   }
 
   @Override
   public void addEntry(HelpEntry entry) {
     entries.add(entry);
-    placeInLookup(entry);
-  }
-
-  private void placeInLookup(HelpEntry entry) {
-    entry.getKeywords().forEach(s -> {
-      Collection<HelpEntry> entries = keywordLookup.computeIfAbsent(
-          normalize(s), s1 -> new ObjectArrayList<>()
-      );
-
-      entries.add(entry);
-    });
   }
 
   private static String normalize(String s) {
@@ -445,10 +275,11 @@ public class HelpListImpl implements ArcadiusHelpList {
   }
 
   private void clearDynamicallyLoaded() {
-    keywordLookup.forEach((label, entries) -> {
-      entries.removeIf(entry -> entry instanceof LoadedHelpEntry);
+    entries.removeIf(entry -> {
+      return entry instanceof LoadedHelpEntry
+          || entry instanceof LoadedCommandEntry;
     });
-    entries.removeIf(entry -> entry instanceof LoadedHelpEntry);
+
     existingCommands.values().removeIf(cmd -> cmd instanceof LoadedEntryCommand);
 
     CommandDispatcher<CommandSource> dispatcher = Grenadier.dispatcher();
@@ -468,14 +299,45 @@ public class HelpListImpl implements ArcadiusHelpList {
   public void load() {
     clearDynamicallyLoaded();
 
-    PluginJar.saveResources("help_topics.json");
-    SerializationHelper.readJsonFile(file, this::loadFrom);
+    PluginJar.saveResources("help_topics.yml");
+    PluginJar.saveResources("extra-command-help.yml");
+
+    SerializationHelper.readAsJson(topicsFile, this::loadHelpEntriesFrom);
+
+    SerializationHelper.readAsJson(usagesFile, wrapper -> {
+      loadCommandEntriesFrom(wrapper.getSource());
+    });
   }
 
-  private void loadFrom(JsonWrapper json) {
+  private void loadCommandEntriesFrom(JsonObject obj) {
+    LoadedCommandEntry.MAP_CODEC.parse(JsonOps.INSTANCE, obj)
+        .mapError(string -> "Failed to load extra command help info: " + string)
+        .resultOrPartial(LOGGER::error)
+        .ifPresent(map -> {
+          for (Entry<String, LoadedCommandEntry> entry : map.entrySet()) {
+            LoadedCommandEntry loaded = entry.getValue();
+            String key = entry.getKey();
+
+            if (key.equals("example")) {
+              continue;
+            }
+
+            loaded.setLabel(key);
+
+            addEntry(loaded);
+          }
+        });
+  }
+
+  private void loadHelpEntriesFrom(JsonWrapper json) {
     for (Entry<String, JsonElement> entry : json.entrySet()) {
       if (!entry.getValue().isJsonObject()) {
         LOGGER.error("Help entry {} is not an object", entry.getKey());
+        continue;
+      }
+
+      // Ignore the example entry
+      if (entry.getKey().equals("example")) {
         continue;
       }
 
@@ -485,10 +347,10 @@ public class HelpListImpl implements ArcadiusHelpList {
       labels.add(entry.getKey());
       labels.addAll(entryJson.getList("aliases", JsonElement::getAsString));
 
-      ViewerAwareMessage shortText = entryJson.get("shortText", JsonUtils::readMessage);
-      ViewerAwareMessage fullText = entryJson.get("fullText", JsonUtils::readMessage);
+      ViewerAwareMessage shortText = entryJson.get("short-text", JsonUtils::readMessage);
+      ViewerAwareMessage fullText = entryJson.get("full-text", JsonUtils::readMessage);
 
-      boolean makeCommand = entryJson.getBool("make_command");
+      boolean makeCommand = entryJson.getBool("make-command");
 
       LoadedHelpEntry helpEntry = new LoadedHelpEntry(labels, entry.getKey(), shortText, fullText);
 

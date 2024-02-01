@@ -37,7 +37,7 @@ public class CommandReply extends BaseCommand {
           CommandSource source = user.getLastMessage();
 
           if (source == null || !sourceIsOnline(source)) {
-            throw CoreExceptions.NO_REPLY_TARGETS;
+            throw CoreExceptions.NO_REPLY_TARGETS.exception(source);
           }
 
           CommandTell.run(user.getCommandSource(), source, Arguments.getMessage(c, "message"));

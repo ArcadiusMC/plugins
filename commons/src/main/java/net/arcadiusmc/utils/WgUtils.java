@@ -10,13 +10,35 @@ import com.sk89q.worldguard.protection.flags.StateFlag.State;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import com.sk89q.worldguard.protection.regions.RegionQuery;
 import java.util.Objects;
+import net.arcadiusmc.user.User;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public final class WgUtils {
   private WgUtils() {}
+
+  /**
+   * State flag that can be used to block players teleporting in and out of special server areas
+   */
+  public static final StateFlag PLAYER_TELEPORTING = new StateFlag("player-tp-allowed", true);
+
+  /**
+   * Tests if a player has flag bypass permissions
+   * @param user Player
+   * @param world World context
+   * @return {@code true}, if player has flag override, {@code false} otherwise.
+   */
+  public static boolean hasBypass(User user, World world) {
+    LocalPlayer wgPlayer = WorldGuardPlugin.inst().wrapPlayer(user.getPlayer());
+
+    return WorldGuard.getInstance()
+        .getPlatform()
+        .getSessionManager()
+        .hasBypass(wgPlayer, BukkitAdapter.adapt(world));
+  }
 
   /**
    * Gets a World Guard flag's value at a location

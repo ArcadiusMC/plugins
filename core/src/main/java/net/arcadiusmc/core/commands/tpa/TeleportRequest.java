@@ -1,24 +1,26 @@
 package net.arcadiusmc.core.commands.tpa;
 
-import static net.arcadiusmc.core.commands.tpa.TpMessages.TPA_FORMAT_HERE;
-import static net.arcadiusmc.core.commands.tpa.TpMessages.TPA_FORMAT_NORMAL;
-import static net.arcadiusmc.core.commands.tpa.TpMessages.tpaCancelButton;
-import static net.arcadiusmc.core.commands.tpa.TpMessages.tpaTargetMessage;
-import static net.arcadiusmc.text.Messages.REQUEST_ACCEPTED;
-import static net.arcadiusmc.text.Messages.REQUEST_CANCELLED;
-import static net.arcadiusmc.text.Messages.REQUEST_DENIED;
-import static net.arcadiusmc.text.Messages.requestAccepted;
-import static net.arcadiusmc.text.Messages.requestCancelled;
-import static net.arcadiusmc.text.Messages.requestDenied;
-import static net.arcadiusmc.text.Messages.requestSent;
+import static net.arcadiusmc.core.commands.tpa.TpMessages.ACCEPTED_SENDER;
+import static net.arcadiusmc.core.commands.tpa.TpMessages.ACCEPTED_TARGET;
+import static net.arcadiusmc.core.commands.tpa.TpMessages.CANCELLED_SENDER;
+import static net.arcadiusmc.core.commands.tpa.TpMessages.CANCELLED_TARGET;
+import static net.arcadiusmc.core.commands.tpa.TpMessages.DENIED_SENDER;
+import static net.arcadiusmc.core.commands.tpa.TpMessages.DENIED_TARGET;
+import static net.arcadiusmc.core.commands.tpa.TpMessages.REQUEST_HERE_SENDER;
+import static net.arcadiusmc.core.commands.tpa.TpMessages.REQUEST_HERE_TARGET;
+import static net.arcadiusmc.core.commands.tpa.TpMessages.REQUEST_NORMAL_SENDER;
+import static net.arcadiusmc.core.commands.tpa.TpMessages.REQUEST_NORMAL_TARGET;
+import static net.arcadiusmc.core.commands.tpa.TpMessages.makeRequestMessage;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.time.Duration;
 import java.util.UUID;
 import lombok.Getter;
+import net.arcadiusmc.command.request.PlayerRequest;
+import net.arcadiusmc.command.request.RequestTable;
 import net.arcadiusmc.core.CoreConfig;
 import net.arcadiusmc.core.CorePlugin;
-import net.arcadiusmc.command.request.PlayerRequest;
+import net.arcadiusmc.text.loader.MessageRef;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.UserTeleport;
 import org.bukkit.Sound;
@@ -50,8 +52,8 @@ public class TeleportRequest extends PlayerRequest {
    *                way round
    */
   public static void run(User sender, User target, boolean tpaHere) throws CommandSyntaxException {
-    var request = new TeleportRequest(sender.getUniqueId(), target.getUniqueId(), tpaHere);
-    var table = TeleportRequests.getTable();
+    TeleportRequest request = new TeleportRequest(sender.getUniqueId(), target.getUniqueId(), tpaHere);
+    RequestTable<TeleportRequest> table = TeleportRequests.getTable();
     table.sendRequest(request);
   }
 
@@ -60,10 +62,11 @@ public class TeleportRequest extends PlayerRequest {
     var sender = getSender();
     var target = getTarget();
 
-    String targetFormat = tpaHere ? TPA_FORMAT_HERE : TPA_FORMAT_NORMAL;
+    MessageRef senderFormat = tpaHere ? REQUEST_HERE_SENDER : REQUEST_NORMAL_SENDER;
+    MessageRef targetFormat = tpaHere ? REQUEST_HERE_TARGET : REQUEST_NORMAL_TARGET;
 
-    sender.sendMessage(requestSent(target, tpaCancelButton(target)));
-    target.sendMessage(tpaTargetMessage(targetFormat, sender));
+    sender.sendMessage(makeRequestMessage(senderFormat, this, sender));
+    target.sendMessage(makeRequestMessage(targetFormat, this, target));
 
     sender.playSound(Sound.UI_TOAST_OUT, 2, 1.5f);
     target.playSound(Sound.UI_TOAST_IN, 2, 1.3f);
@@ -84,11 +87,11 @@ public class TeleportRequest extends PlayerRequest {
 
     super.accept();
 
-    var sender = getSender();
-    var target = getTarget();
+    User sender = getSender();
+    User target = getTarget();
 
-    sender.sendMessage(requestAccepted(target.displayName(sender)));
-    target.sendMessage(REQUEST_ACCEPTED);
+    sender.sendMessage(makeRequestMessage(ACCEPTED_SENDER, this, sender));
+    target.sendMessage(makeRequestMessage(ACCEPTED_TARGET, this, target));
 
     // If tpaHere, target is teleporting,
     // otherwise it's the opposite
@@ -108,8 +111,8 @@ public class TeleportRequest extends PlayerRequest {
     var sender = getSender();
     var target = getTarget();
 
-    sender.sendMessage(requestDenied(target.displayName(sender)));
-    target.sendMessage(REQUEST_DENIED);
+    sender.sendMessage(makeRequestMessage(DENIED_SENDER, this, sender));
+    target.sendMessage(makeRequestMessage(DENIED_TARGET, this, target));
 
     stop();
   }
@@ -121,8 +124,8 @@ public class TeleportRequest extends PlayerRequest {
     var sender = getSender();
     var target = getTarget();
 
-    sender.sendMessage(REQUEST_CANCELLED);
-    target.sendMessage(requestCancelled(sender.displayName(target)));
+    sender.sendMessage(makeRequestMessage(CANCELLED_SENDER, this, sender));
+    target.sendMessage(makeRequestMessage(CANCELLED_TARGET, this, target));
 
     stop();
   }

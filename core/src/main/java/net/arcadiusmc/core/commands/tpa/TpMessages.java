@@ -1,16 +1,17 @@
 package net.arcadiusmc.core.commands.tpa;
 
+import static net.arcadiusmc.core.commands.tpa.TpExceptions.makeRef;
+import static net.arcadiusmc.text.Messages.MESSAGE_LIST;
 import static net.arcadiusmc.text.Messages.crossButton;
 import static net.arcadiusmc.text.Messages.tickButton;
 import static net.arcadiusmc.text.Text.format;
-import static net.kyori.adventure.text.Component.text;
 
-import java.time.Duration;
+import net.arcadiusmc.text.loader.MessageRef;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.UserTeleport;
 import net.arcadiusmc.utils.Time;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 public interface TpMessages {
@@ -19,83 +20,62 @@ public interface TpMessages {
    * Message used by {@link UserTeleport} to tell users that the delayed teleport was cancelled,
    * most likely because they moved
    */
-  TextComponent TELEPORT_CANCELLED = text("Teleport cancelled!", NamedTextColor.GRAY);
+  MessageRef TELEPORT_CANCELLED = MESSAGE_LIST.reference("teleporting.cancelled");
 
   /**
    * Message shown to a user when the {@link UserTeleport#getDestination()} supplier throws an
    * error
    */
-  TextComponent TELEPORT_ERROR = text("Cannot teleport, error getting destination",
-      NamedTextColor.GRAY
-  );
+  MessageRef TELEPORT_ERROR = MESSAGE_LIST.reference("teleporting.destinationError");
+
+  MessageRef TELEPORT_START = MESSAGE_LIST.reference("teleporting.start");
+
+  MessageRef TELEPORT_FINISH = MESSAGE_LIST.reference("teleporting.complete");
 
   /**
    * Message stating the viewer is already teleporting
    */
-  TextComponent ALREADY_TELEPORTING = text("You are already teleporting!", NamedTextColor.GRAY);
+  MessageRef ALREADY_TELEPORTING = makeRef("error.teleporting");
 
   /**
    * Message stating the viewer denied all incoming TPA requests
    */
-  TextComponent TPA_DENIED_ALL = text("Denied all TPA requests", NamedTextColor.YELLOW);
+  MessageRef TPA_DENIED_ALL = makeRef("denyAll");
 
-  /**
-   * Message format for {@link #tpaTargetMessage(String, User)} for a <code>/tpahere</code> command
-   */
-  String TPA_FORMAT_HERE = "&e{0, user}&r has requested that you teleport to them. &e{1} &7{2}";
+  MessageRef REQUEST_NORMAL_SENDER = makeRef("request.normal.sender");
+  MessageRef REQUEST_NORMAL_TARGET = makeRef("request.normal.target");
+  MessageRef REQUEST_HERE_SENDER = makeRef("request.here.sender");
+  MessageRef REQUEST_HERE_TARGET = makeRef("request.here.target");
 
-  /**
-   * Message format for {@link #tpaTargetMessage(String, User)} for a <code>/tpa</code> command
-   */
-  String TPA_FORMAT_NORMAL = "&e{0, user}&r has requested to teleport to you. &e{1} &7{2}";
+  MessageRef ACCEPTED_TARGET = makeRef("accepted.target");
+  MessageRef ACCEPTED_SENDER = makeRef("accepted.sender");
 
-  /**
-   * Creates a message that tells the viewer that they will teleport in a given amount of time
-   *
-   * @param delay The teleportation delay, in milliseconds
-   * @param type  Teleportation type
-   * @return The formatted message
-   */
-  static Component teleportStart(Duration delay, UserTeleport.Type type) {
-    return format("{0} in &e{1, time}&r\nDon't move!",
-        NamedTextColor.GRAY,
-        type.getAction(), delay
-    );
+  MessageRef DENIED_SENDER = makeRef("denied.sender");
+  MessageRef DENIED_TARGET = makeRef("denied.target");
+
+  MessageRef CANCELLED_SENDER = makeRef("cancelled.sender");
+  MessageRef CANCELLED_TARGET = makeRef("cancelled.target");
+
+  static Component makeRequestMessage(MessageRef format, TeleportRequest request, Audience viewer) {
+    User sender = request.getSender();
+    User target = request.getTarget();
+
+    return format.get()
+        .addValue("sender", request.getSender())
+        .addValue("target", request.getTarget())
+        .addValue("here", request.isTpaHere())
+        .addValue("accept", tpaAcceptButton(sender))
+        .addValue("deny", tpaDenyButton(sender))
+        .addValue("cancel", tpaCancelButton(target))
+        .create(viewer);
   }
 
-  /**
-   * Message that tells the viewer they are teleporting, or performing
-   * {@link UserTeleport.Type#getAction()}
-   *
-   * @param type The teleportation type
-   * @return The formatted type
-   */
-  static Component teleportComplete(UserTeleport.Type type) {
-    return format("{0}...", NamedTextColor.GRAY, type.getAction());
-  }
-
-  /**
-   * Creates a tpa message that's sent to the target of the tpa request. This method supplies, 3
-   * arguments to the given <code>format</code> parameter, they are:
-   * <pre>
-   * 0: The sender
-   * 1: The TPA accept button
-   * 2: the TPA deny button
-   * </pre>
-   *
-   * @param format The message format to use, should be one of {@link #TPA_FORMAT_NORMAL} or
-   *               {@link #TPA_FORMAT_HERE}
-   * @param sender The sender of the message
-   * @return The formatted message
-   */
-  static Component tpaTargetMessage(String format, User sender) {
-    return format(format,
-        NamedTextColor.GOLD,
-        sender,
-
-        tpaAcceptButton(sender),
-        tpaDenyButton(sender)
-    );
+  static Component userTeleportMessage(UserTeleport teleport, MessageRef ref) {
+    return ref.get()
+        .addValue("type", teleport.getType())
+        .addValue("action", teleport.getType().getAction())
+        .addValue("delay", teleport.getDelay())
+        .create(teleport.getUser());
   }
 
   /**

@@ -71,7 +71,7 @@ public interface UserService {
    * <p>
    * The following currencies will always be present:
    * <pre>
-   * 1. 'rhines' Main server currency
+   * 1. 'balances' Main server currency
    * 2. 'gems' Cosmetics currency
    * </pre>
    * This registry will be frozen after the server has been loaded

@@ -1,9 +1,14 @@
 package net.arcadiusmc.command;
 
+import static net.arcadiusmc.text.Messages.MESSAGE_LIST;
+import static net.arcadiusmc.text.Messages.currency;
+
 import com.mojang.brigadier.ImmutableStringReader;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.Text;
+import net.arcadiusmc.text.loader.MessageRef;
 import net.arcadiusmc.user.User;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Grenadier;
@@ -110,11 +115,7 @@ public interface Exceptions {
   /**
    * Exception which states your inventory is full
    */
-  CommandSyntaxException INVENTORY_FULL = create("Your inventory is full.");
-
-  CommandSyntaxException NOT_ENOUGH_ROOM = create("Not enough space in your inventory");
-
-  CommandSyntaxException INVENTORY_EMPTY = create("Your inventory is empty.");
+  MessageRef INVENTORY_FULL = MESSAGE_LIST.reference("errors.inventoryFull");
 
   /**
    * Exception which states you must be holding any kind of item
@@ -125,15 +126,11 @@ public interface Exceptions {
    * Exception which states there's nothing to list. This is intentionally really vague as to allow
    * for maximum amount of usability
    */
-  CommandSyntaxException NOTHING_TO_LIST = create("Nothing to list!");
+  MessageRef NOTHING_TO_LIST = MESSAGE_LIST.reference("errors.emptyList");
 
   CommandSyntaxException NO_REGION_SELECTION = create("No region selection (//wand selection)");
 
   CommandSyntaxException NO_PERMISSION = create("You do not have permission to do this");
-
-  CommandSyntaxException NOTHING_CHANGED = create("Nothing changed");
-
-  CommandSyntaxException NOT_UNLOCKED = create("You haven't unlocked this yet.");
 
   /**
    * Creates an exception which says the given user is not online
@@ -141,8 +138,8 @@ public interface Exceptions {
    * @param user The user that isn't online
    * @return The created exception
    */
-  static CommandSyntaxException notOnline(User user) {
-    return format("{0, user} is not online", user);
+  static CommandSyntaxException notOnline(User user, Audience viewer) {
+    return create(Messages.notOnline(user).create(viewer));
   }
 
   /**
@@ -193,38 +190,9 @@ public interface Exceptions {
     return format("You can only do this every: {0, time}", millis);
   }
 
-  static CommandSyntaxException cooldownEndsIn(long millis) {
-    return format("You can do this again in {0, time}", millis);
-  }
-
-  static CommandSyntaxException alreadyExists(String name, Object value) {
-    return format("{0} named '{1}' already exists",
-        name, value
-    );
-  }
-
-  static CommandSyntaxException noIncoming(User user) {
-    return format("You haven't received any requests from {0, user}.", user);
-  }
-
-  static CommandSyntaxException noOutgoing(User user) {
-    return format("You haven't sent any requests to {0, user}.", user);
-  }
-
-  static CommandSyntaxException requestAlreadySent(User target) {
-    return format("You've already sent a request to {0, user}.", target);
-  }
-
-  static CommandSyntaxException invalidBounds(int start, int end) {
-    return format("Invalid bounds! Min ({0}) was larger than Max ({1})",
-        start, end
-    );
-  }
-
   static CommandSyntaxException unknownUser(StringReader reader, String name) {
     return unknown("user", reader, name);
   }
-
 
   /**
    * Creates an exception which states the user cannot afford the given amount of Rhines
@@ -232,7 +200,10 @@ public interface Exceptions {
    * @param amount The amount the user cannot afford
    * @return The created exception
    */
-  static CommandSyntaxException cannotAfford(Number amount) {
-    return format("Cannot afford {0, rhines}", amount);
+  static CommandSyntaxException cannotAfford(Audience viewer, Number amount) {
+    return MESSAGE_LIST.render("errors.cannotAfford")
+        .addValue("amountRaw", amount)
+        .addValue("amount", currency(amount))
+        .exception(viewer);
   }
 }

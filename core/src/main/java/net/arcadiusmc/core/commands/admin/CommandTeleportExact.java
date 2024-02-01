@@ -4,10 +4,12 @@ import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import java.util.Collection;
 import java.util.List;
-import net.arcadiusmc.core.CorePermissions;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.ExpandedEntityArgument;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.core.CorePermissions;
+import net.arcadiusmc.user.UserTeleport;
+import net.arcadiusmc.user.Users;
 import net.forthecrown.grenadier.GrenadierCommand;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.forthecrown.grenadier.types.EntitySelector;
@@ -15,9 +17,6 @@ import net.forthecrown.grenadier.types.options.ArgumentOption;
 import net.forthecrown.grenadier.types.options.Options;
 import net.forthecrown.grenadier.types.options.OptionsArgument;
 import net.forthecrown.grenadier.types.options.ParsedOptions;
-import net.arcadiusmc.user.UserTeleport;
-import net.arcadiusmc.user.Users;
-import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
@@ -78,23 +77,9 @@ public class CommandTeleportExact extends BaseCommand {
   public void populateUsages(UsageFactory factory) {
     factory.usage(
         "world=<world> x=<cord> y=<cord> z=<cord> "
-            + "[yaw=<value>] [pitch=<value>]"
+            + "[yaw=<value>] [pitch=<value>] [targets=<target selector>]"
         )
         .addInfo("Teleports you to the location specified in the parameters");
-  }
-
-  public static ClickEvent createLocationClick(Location location) {
-    String click = String.format(
-        "/tp_exact world=%s x=%s y=%s z=%s pitch=%s yaw=%s",
-        location.getWorld().getName(),
-        location.getX(),
-        location.getY(),
-        location.getZ(),
-        location.getPitch(),
-        location.getYaw()
-    );
-
-    return ClickEvent.runCommand(click);
   }
 
   @Override

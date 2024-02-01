@@ -6,12 +6,9 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 import lombok.Getter;
-import net.arcadiusmc.core.CorePermissions;
 import net.arcadiusmc.Loggers;
-import net.forthecrown.grenadier.Completions;
-import net.forthecrown.grenadier.Grenadier;
+import net.arcadiusmc.core.CorePermissions;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.user.ComponentName;
 import net.arcadiusmc.user.User;
@@ -19,20 +16,13 @@ import net.arcadiusmc.user.UserComponent;
 import net.arcadiusmc.utils.Locations;
 import net.arcadiusmc.utils.io.JsonUtils;
 import net.arcadiusmc.utils.io.JsonWrapper;
+import net.forthecrown.grenadier.Completions;
+import net.forthecrown.grenadier.Grenadier;
 import org.bukkit.Location;
 
 @ComponentName("homes")
 public class UserHomes implements UserComponent {
   /* ----------------------------- CONSTANTS ------------------------------ */
-
-  /**
-   * To make implementing region homes easy, I simply added an element with this key into the home
-   * JSON object.
-   * <p>
-   * The home region is serialized with this string as the key next to all the user's other named
-   * homes.
-   */
-  public static final String HOME_WAYPOINT_JSON_NAME = "user:home:waypoint";
 
   /**
    * Name of the default user home that, if given no home name, commands will default to using.
@@ -46,12 +36,6 @@ public class UserHomes implements UserComponent {
    */
   @Getter
   private final Map<String, Location> homes = new HashMap<>();
-
-  /**
-   * The ID of the user's home waypoint
-   */
-  @Getter
-  private UUID homeWaypoint;
 
   @Getter
   private final User user;
@@ -178,9 +162,6 @@ public class UserHomes implements UserComponent {
     }
 
     JsonWrapper json = JsonWrapper.create();
-    if (hasHomeWaypoint()) {
-      json.add(HOME_WAYPOINT_JSON_NAME, homeWaypoint.toString());
-    }
 
     for (Map.Entry<String, Location> e : homes.entrySet()) {
       json.addLocation(e.getKey(), e.getValue());
@@ -192,7 +173,6 @@ public class UserHomes implements UserComponent {
   @Override
   public void deserialize(JsonElement element) {
     homes.clear();
-    homeWaypoint = null;
 
     if (element == null) {
       return;
@@ -201,11 +181,6 @@ public class UserHomes implements UserComponent {
     JsonWrapper json = JsonWrapper.wrap(element.getAsJsonObject());
     // Remove legacy region home pos
     json.remove("user:home:region");
-
-    if (json.has(HOME_WAYPOINT_JSON_NAME)) {
-      this.homeWaypoint = json.getUUID(HOME_WAYPOINT_JSON_NAME);
-      json.remove(HOME_WAYPOINT_JSON_NAME);
-    }
 
     for (Map.Entry<String, JsonElement> e : json.entrySet()) {
       homes.put(e.getKey(), JsonUtils.readLocation(e.getValue().getAsJsonObject()));
@@ -230,14 +205,5 @@ public class UserHomes implements UserComponent {
         builder.suggest(name, Grenadier.toMessage(Text.prettyLocation(l, true)));
       }
     }
-  }
-
-  /**
-   * Gets whether the user has a set home region
-   *
-   * @return Whether the user has a home region.
-   */
-  public boolean hasHomeWaypoint() {
-    return getHomeWaypoint() != null;
   }
 }

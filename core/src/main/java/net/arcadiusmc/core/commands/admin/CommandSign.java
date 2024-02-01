@@ -19,6 +19,8 @@ import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.arguments.chat.MessageSuggestions;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.text.placeholder.PlaceholderRenderer;
+import net.arcadiusmc.text.placeholder.Placeholders;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Completions;
 import net.forthecrown.grenadier.GrenadierCommand;
@@ -90,8 +92,8 @@ public class CommandSign extends BaseCommand {
     prefixed.usage("clear", "Clears the sign of all text");
     prefixed.usage("copy", "Copies the sign's content");
     prefixed.usage("paste", "Pastes your copied sign contents onto a sign");
-    prefixed.usage("<line: number(1..4)> <text>", "Sets a sign's <line> to <text>");
-    prefixed.usage("<line: number(1..4)> -clear", "Clears <line>");
+    prefixed.usage("<line: number(1..4)> set <text>", "Sets a sign's <line> to <text>");
+    prefixed.usage("<line: number(1..4)> clear", "Clears <line>");
     prefixed.usage("type <type>", "Sets the sign's type");
     prefixed.usage("glow <true | false>", "Makes a sign glow/not glow");
     prefixed.usage("waxed <true | false>", "Sets a sign to be waxed or not");
@@ -266,6 +268,11 @@ public class CommandSign extends BaseCommand {
         );
   }
 
+  private Component renderText(Component signText) {
+    PlaceholderRenderer renderer = Placeholders.newRenderer().useDefaults();
+    return renderer.render(signText);
+  }
+
   private int set(CommandContext<CommandSource> c, Component text) throws CommandSyntaxException {
     int index = c.getArgument("index", Integer.class);
     SignInfo info = get(c);
@@ -278,7 +285,7 @@ public class CommandSign extends BaseCommand {
           Text.format("Cleared &e{0}&r line &e{1, number}&r.", info.displayName(), index)
       );
     } else {
-      sign.line(index - 1, text);
+      sign.line(index - 1, renderText(text));
 
       c.getSource().sendSuccess(
           Text.format("Set &e{0}&r line {1, number} to '&e{2}&r'", info.displayName(), index, text)

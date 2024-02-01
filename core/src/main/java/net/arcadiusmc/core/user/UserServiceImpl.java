@@ -16,16 +16,16 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import lombok.Getter;
+import net.arcadiusmc.Loggers;
 import net.arcadiusmc.core.CoreConfig;
 import net.arcadiusmc.core.CorePlugin;
-import net.arcadiusmc.Loggers;
 import net.arcadiusmc.core.user.PropertyImpl.BuilderImpl;
 import net.arcadiusmc.holograms.Leaderboards;
 import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.registry.Registries;
 import net.arcadiusmc.registry.Registry;
 import net.arcadiusmc.registry.RegistryListener;
-import net.arcadiusmc.text.UnitFormat;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.user.Properties;
 import net.arcadiusmc.user.TimeField;
 import net.arcadiusmc.user.User;
@@ -149,7 +149,20 @@ public class UserServiceImpl implements UserService {
     registerComponent(UserTimestamps.class);
     registerComponent(UserHomes.class);
 
-    currencies.register("rhines", Currency.wrap(UnitFormat.UNIT_CURRENCY, balances));
+    CurrencyImpl balances = new CurrencyImpl(this.balances,
+        Messages.MESSAGE_LIST.reference("units.currency.singular"),
+        Messages.MESSAGE_LIST.reference("units.currency.plural"),
+        Messages.MESSAGE_LIST.reference("units.display")
+    );
+
+    CurrencyImpl gems = new CurrencyImpl(this.gems,
+        Messages.MESSAGE_LIST.reference("units.gems.singular"),
+        Messages.MESSAGE_LIST.reference("units.gems.plural"),
+        Messages.MESSAGE_LIST.reference("units.display")
+    );
+
+    currencies.register("balances", balances);
+    currencies.register("gems", gems);
   }
 
   public void shutdown() {

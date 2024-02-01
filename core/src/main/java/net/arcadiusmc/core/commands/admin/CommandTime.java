@@ -7,11 +7,10 @@ import com.mojang.brigadier.context.CommandContext;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.text.Messages;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
 import net.forthecrown.grenadier.types.ArgumentTypes;
-import net.arcadiusmc.text.Text;
-import net.kyori.adventure.text.Component;
 import org.bukkit.World;
 
 public class CommandTime extends BaseCommand {
@@ -93,21 +92,10 @@ public class CommandTime extends BaseCommand {
   }
 
   private int timeInfo(CommandSource source, World world) {
-    long fullTime = world.getFullTime();
-    long day = fullTime / 1000 / 24;
-    long year = day / 365;
-
-    source.sendSuccess(
-        Text.format(
-            """
-                World times:
-                Full time: {0}
-                Time: {1}
-                Day: {2}
-                Year: {3}
-                """,
-            fullTime, world.getTime(), day, year
-        )
+    source.sendMessage(
+        Messages.render("cmd.time.get")
+            .addValue("world", world)
+            .create(source)
     );
     return 0;
   }
@@ -135,9 +123,9 @@ public class CommandTime extends BaseCommand {
     world.setFullTime(time);
 
     source.sendSuccess(
-        Component.text("Set time of ")
-            .append(Component.text(world.getName()))
-            .append(Component.text(" to " + time))
+        Messages.render("cmd.time.set")
+            .addValue("world", world)
+            .create(source)
     );
     return 0;
   }

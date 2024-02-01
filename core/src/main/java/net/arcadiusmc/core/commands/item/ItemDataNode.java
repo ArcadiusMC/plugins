@@ -9,6 +9,7 @@ import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.inventory.ItemStack;
 
 public class ItemDataNode extends ItemModifierNode {
 
@@ -51,15 +52,16 @@ public class ItemDataNode extends ItemModifierNode {
     command
         .then(literal("give_command")
             .executes(c -> {
-              var held = getHeld(c.getSource());
+              CommandSource source = c.getSource();
+              ItemStack held = getHeld(source);
 
               String nbt = ItemStacks.save(held).getCompound("tag").toString();
               String cmd = "/give @s " + held.getType().getKey() + nbt;
 
-              c.getSource().sendMessage(
+              source.sendMessage(
                   Component.text("[Click to copy /give command]", NamedTextColor.AQUA)
                       .clickEvent(ClickEvent.copyToClipboard(cmd))
-                      .hoverEvent(Messages.CLICK_ME)
+                      .hoverEvent(Messages.CLICK_ME.renderText(source))
               );
               return 0;
             })

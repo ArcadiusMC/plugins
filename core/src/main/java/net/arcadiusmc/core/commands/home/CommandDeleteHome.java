@@ -1,16 +1,17 @@
 package net.arcadiusmc.core.commands.home;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.arcadiusmc.core.CoreExceptions;
-import net.arcadiusmc.core.CoreMessages;
-import net.arcadiusmc.core.CorePermissions;
+import java.util.Objects;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.core.CorePermissions;
 import net.arcadiusmc.core.user.UserHomes;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.GrenadierCommand;
+import net.arcadiusmc.text.loader.MessageRef;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.GrenadierCommand;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Sound;
 
 public class CommandDeleteHome extends BaseCommand {
@@ -47,7 +48,7 @@ public class CommandDeleteHome extends BaseCommand {
           UserHomes homes = user.getComponent(UserHomes.class);
 
           if (!homes.contains(UserHomes.DEFAULT)) {
-            throw CoreExceptions.NO_DEF_HOME;
+            throw HomeMessages.NO_DEFAULT.exception(user);
           }
 
           return delHome(c.getSource(), HomeParseResult.DEFAULT);
@@ -63,11 +64,8 @@ public class CommandDeleteHome extends BaseCommand {
   }
 
   private int delHome(CommandSource source, HomeParseResult result) throws CommandSyntaxException {
-    // Because of how the HomeParseResult works, we need to actually
-    // get the home location for it to check permissions, because you
-    // might've inputted 'JulieWoolie:home' or something
     Home h = result.get(source, true);
-    var name = h.name();
+    String name = h.name();
 
     User user;
 
@@ -77,18 +75,37 @@ public class CommandDeleteHome extends BaseCommand {
       user = Users.get(result.getUser());
     }
 
-    boolean self = source.textName().equals(user.getName());
-    var homes = user.getComponent(UserHomes.class);
+    UserHomes homes = user.getComponent(UserHomes.class);
 
     homes.remove(name);
+    user.playSound(Sound.UI_TOAST_IN, 2, 1.3f);
+
+    boolean self = source.textName().equals(user.getName());
+    boolean defaultHome = Objects.equals(name, UserHomes.DEFAULT);
+
+    MessageRef message;
 
     if (self) {
-      user.sendMessage(CoreMessages.deletedHomeSelf(name));
+      message = defaultHome
+          ? HomeMessages.DELETED_DEF_SELF
+          : HomeMessages.DELETED_SELF;
     } else {
-      source.sendSuccess(CoreMessages.deletedHomeOther(user, name));
+      message = defaultHome
+          ? HomeMessages.DELETED_DEF_OTHER
+          : HomeMessages.DELETED_OTHER;
     }
 
-    user.playSound(Sound.UI_TOAST_IN, 2, 1.3f);
+    Component renderedMessage = message.get()
+        .addValue("home.name", name)
+        .addValue("home.location", h.location())
+        .addValue("player", user)
+        .create(source);
+
+    if (!self) {
+      source.sendSuccess(renderedMessage);
+    } else {
+      source.sendMessage(renderedMessage);
+    }
 
     return 0;
   }

@@ -1,16 +1,14 @@
 package net.arcadiusmc.core.announcer;
 
 import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.Component.textOfChildren;
 
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import net.arcadiusmc.core.PrefsBook;
-import net.arcadiusmc.text.channel.ChannelledMessage;
-import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.ViewerAwareMessage;
+import net.arcadiusmc.text.channel.ChannelledMessage;
 import net.arcadiusmc.text.channel.MessageRenderer;
 import net.arcadiusmc.text.placeholder.PlaceholderRenderer;
 import net.arcadiusmc.text.placeholder.Placeholders;
@@ -31,7 +29,7 @@ public class AutoAnnouncer implements Runnable {
   private final List<ViewerAwareMessage> messages = new ArrayList<>();
 
   private Duration interval = Duration.ofMinutes(5);
-  private Component format = textOfChildren(Messages.FTC_PREFIX, text(" ${message}"));
+  private Component format = text("${message}");
   private AnnouncementIterator iterator;
   private Order order = Order.INCREMENTING;
 

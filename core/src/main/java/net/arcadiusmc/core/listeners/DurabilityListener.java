@@ -1,13 +1,12 @@
 package net.arcadiusmc.core.listeners;
 
+import net.arcadiusmc.core.CoreMessages;
 import net.arcadiusmc.core.CorePlugin;
 import net.arcadiusmc.core.PrefsBook;
-import net.arcadiusmc.text.Text;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
 import net.arcadiusmc.utils.Cooldown;
 import net.kyori.adventure.sound.Sound;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -59,16 +58,18 @@ public class DurabilityListener implements Listener {
     user.showTitle(
         Title.title(
             // Title
-            Text.format("Your {0, item, -!amount} is about to break!",
-                NamedTextColor.RED,
-                item
-            ),
+            CoreMessages.DURABILITY_WARN_TITLE.get()
+                .addValue("item", item)
+                .addValue("durability", remaining)
+                .addValue("maxDurability", maxDurability)
+                .create(user),
 
             // Subtitle
-            Text.format("{0, number} / {1, number} durability left",
-                NamedTextColor.GOLD,
-                remaining, maxDurability
-            )
+            CoreMessages.DURABILITY_WARN_SUBTITLE.get()
+                .addValue("item", item)
+                .addValue("durability", remaining)
+                .addValue("maxDurability", maxDurability)
+                .create(user)
         )
     );
   }

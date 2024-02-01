@@ -20,7 +20,7 @@ public abstract class PlayerRequest {
   private final UUID targetId;
 
   BukkitTask expiryTask;
-  RequestTable table;
+  protected RequestTable table;
 
   public PlayerRequest(UUID senderId, UUID targetId) {
     Objects.requireNonNull(senderId);

@@ -1,0 +1,62 @@
+#
+# This file is used for adding additional help entries to /help. To be used for
+# external commands outside ArcadiusMC that don't interact with our help system.
+#
+
+#
+# Example for section to show how this is meant to be structured.
+#
+# Any value with a default value does not have to be specified unless
+# required.
+#
+# Values:
+# - aliases:
+#     Command aliases,
+#     Default: [] (Empty array)
+# - description:
+#     Sets the command's description
+#     Default: "" (No description)
+# - permission:
+#     Permission required for the command
+#     Default: "" (No permission)
+# - category:
+#     Value for the 'Category' field in /help,
+#     also used for command documentation generation
+#     to decide which doc file the command should be in
+#     Default: "general"
+# - usages:
+#     A list of usage texts that are displayed
+#     Default: [] (Empty array)
+#
+# Note, the command's name will be prepended to each of the
+# arguments in the usage list, so no need to repeat the
+# command name.
+#
+# Usages values:
+# - arguments:
+#     The arguments text displayed in yellow in '/help'
+# - info:
+#     Info text for the arguments
+#     Default: "" (Empty text)
+# - permission:
+#     Specifies a separate permission for the arguments
+#     Default: "" (No permission needed)
+#
+example:
+  aliases: ["alias1", "alias2"]
+  description: "Does a thing :)"
+  permission: "example.permission"
+
+  usages:
+    - arguments: "<player> add"
+      info: "Does a thing to a player"
+    - arguments: "<player> remove"
+      info: "Does another thing to a player"
+    - arguments: "admin <player> thing"
+      permission: "example.permission"
+      info: "Does an admin thing to a player"
+    - arguments: "multiline"
+      info: [
+        "This is a multiline",
+        "text :)"
+      ]

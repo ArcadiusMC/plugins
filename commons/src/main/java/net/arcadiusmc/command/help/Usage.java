@@ -11,7 +11,7 @@ import org.bukkit.permissions.Permission;
 
 @Getter
 @Accessors(chain = true)
-public class Usage {
+public class Usage implements Predicate<CommandSource> {
 
   private final String arguments;
 
@@ -20,16 +20,20 @@ public class Usage {
   @Setter
   private Predicate<CommandSource> condition = commandSource -> true;
 
+  private String permission;
+
   public Usage(String arguments) {
     this.arguments = arguments;
   }
 
   public Usage setPermission(Permission permission) {
-    return setCondition(source -> source.hasPermission(permission));
+    this.permission = permission == null ? null : permission.getName();
+    return this;
   }
 
   public Usage setPermission(String permission) {
-    return setCondition(source -> source.hasPermission(permission));
+    this.permission = permission;
+    return this;
   }
 
   public Usage addInfo(String info, Object... args) {
@@ -39,5 +43,16 @@ public class Usage {
 
   public String argumentsWithPrefix(String prefix) {
     return prefix + (Strings.isNullOrEmpty(arguments) ? "" : " " + arguments);
+  }
+
+  @Override
+  public boolean test(CommandSource source) {
+    if (!Strings.isNullOrEmpty(permission) && !source.hasPermission(permission)) {
+      return false;
+    }
+    if (condition == null) {
+      return true;
+    }
+    return condition.test(source);
   }
 }

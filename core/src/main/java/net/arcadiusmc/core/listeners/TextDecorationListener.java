@@ -105,7 +105,7 @@ public class TextDecorationListener implements Listener {
       if (upperCaseCount > half) {
         //1 and a half minute cooldown
         if (!Cooldown.containsOrAdd(source, "uppercase_warning", (60 + 30) * 20)) {
-          source.sendMessage(Messages.ALL_CAPS);
+          source.sendMessage(Messages.ALL_CAPS.renderText(source));
         }
 
         return;

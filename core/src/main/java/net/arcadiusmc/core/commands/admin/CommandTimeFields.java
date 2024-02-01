@@ -6,6 +6,7 @@ import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.Map;
 import net.arcadiusmc.command.arguments.RegistryArguments;
+import net.arcadiusmc.text.PeriodFormat;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.annotations.Argument;
 import net.forthecrown.grenadier.annotations.CommandFile;
@@ -57,8 +58,10 @@ public class CommandTimeFields {
 
     if (timestamp == -1) {
       writer.field(field.getKey(), "unset");
-    } else {
+    } else if (field != TimeField.AFK_TIME) {
       writer.field(field.getKey(), Text.formatDate(timestamp));
+    } else {
+      writer.field(field.getKey(), PeriodFormat.of(timestamp).asComponent());
     }
   }
 

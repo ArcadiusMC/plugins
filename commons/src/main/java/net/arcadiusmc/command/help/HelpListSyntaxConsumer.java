@@ -3,6 +3,7 @@ package net.arcadiusmc.command.help;
 import static net.arcadiusmc.command.help.AbstractHelpEntry.packageNameToCategory;
 
 import com.google.common.base.Joiner;
+import java.util.Collection;
 import java.util.function.Predicate;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.text.Text;
@@ -26,7 +27,7 @@ public class HelpListSyntaxConsumer implements SyntaxConsumer {
                      @Nullable Predicate<CommandSource> condition
   ) {
     var helpMap = ArcadiusHelpList.helpList();
-    var entries = helpMap.getEntries(node.getLiteral());
+    Collection<HelpEntry> entries = helpMap.getEntries(node.getLiteral());
 
     if (entries.size() > 1) {
       LOGGER.warn(

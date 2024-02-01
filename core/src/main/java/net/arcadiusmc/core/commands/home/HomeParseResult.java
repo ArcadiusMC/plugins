@@ -3,15 +3,14 @@ package net.arcadiusmc.core.commands.home;
 import com.mojang.brigadier.ImmutableStringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
-import net.arcadiusmc.core.CoreExceptions;
-import net.arcadiusmc.core.CorePermissions;
 import net.arcadiusmc.command.arguments.ParseResult;
+import net.arcadiusmc.core.CorePermissions;
 import net.arcadiusmc.core.user.UserHomes;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.Readers;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.UserLookup.LookupEntry;
 import net.arcadiusmc.user.Users;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.Readers;
 import org.bukkit.Location;
 
 @Getter
@@ -62,7 +61,7 @@ public class HomeParseResult implements ParseResult<Home> {
 
     if (l == null) {
       if (isDefaultHome()) {
-        throw CoreExceptions.NO_DEF_HOME;
+        throw HomeMessages.NO_DEFAULT.exception(sUser);
       } else {
         throw exception();
       }
@@ -72,6 +71,6 @@ public class HomeParseResult implements ParseResult<Home> {
   }
 
   private CommandSyntaxException exception() {
-    return CoreExceptions.unknownHome(reader, reader.getRemaining());
+    return HomeMessages.unknownHome(reader, reader.getRemaining());
   }
 }

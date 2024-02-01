@@ -1,22 +1,33 @@
 package net.arcadiusmc.core.commands.admin;
 
-import net.arcadiusmc.core.TabList;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.annotations.Argument;
-import net.forthecrown.grenadier.annotations.CommandFile;
+import net.arcadiusmc.core.CorePlugin;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.user.Properties;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.UserProperty;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.annotations.Argument;
+import net.forthecrown.grenadier.annotations.CommandFile;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 
 @CommandFile("commands/tab.gcn")
 public class CommandTab {
 
+  private final CorePlugin plugin;
+
+  public CommandTab(CorePlugin plugin) {
+    this.plugin = plugin;
+  }
+
   void update(CommandSource source) {
-    TabList.update();
-    source.sendSuccess(Component.text("Updated TAB menu for all players"));
+    plugin.getTabMenu().update();
+    source.sendSuccess(Messages.renderText("cmd.tab.updated", source));
+  }
+
+  void reload(CommandSource source) {
+    plugin.getTabMenu().load();
+    source.sendSuccess(Messages.renderText("cmd.tab.reloaded", source));
   }
 
   void setSuffix(CommandSource source, @Argument("user") User user, @Argument("text") Component text) {
@@ -36,47 +47,47 @@ public class CommandTab {
   }
 
   void setName(CommandSource source, @Argument("user") User user, @Argument("text") Component text) {
-    set(source, user, "display name", Properties.TAB_NAME, text);
+    set(source, user, "displayName", Properties.TAB_NAME, text);
   }
 
   void unsetName(CommandSource source, @Argument("user") User user) {
-    unset(source, user, "display name", Properties.TAB_NAME);
+    unset(source, user, "displayName", Properties.TAB_NAME);
   }
 
   void unset(
       CommandSource source,
       User user,
-      String name,
+      String messageKey,
       UserProperty<Component> property
   ) {
-    Component before = user.displayName(source);
     user.set(property, null);
 
     source.sendMessage(
-        Text.format("Removed &e{0}&r's tab {1}.", NamedTextColor.GRAY, before, name)
+        Messages.render("cmd.tab.unset." + messageKey)
+            .addValue("player", user)
+            .create(source)
     );
   }
 
   void set(
       CommandSource source,
       User user,
-      String name,
+      String messageKey,
       UserProperty<Component> property,
       Component text
   ) {
     if (Text.isDashClear(text)) {
-      unset(source, user, name, property);
+      unset(source, user, messageKey, property);
       return;
     }
 
-    Component before = user.displayName(source);
     user.set(property, text);
 
     source.sendMessage(
-        Text.format("Set &e{0}&r's tab {1} to &f{2}&r.",
-            NamedTextColor.GRAY,
-            before, name, text
-        )
+        Messages.render("cmd.tab.set", messageKey)
+            .addValue("player", user)
+            .addValue("value", text)
+            .create(source)
     );
   }
 }

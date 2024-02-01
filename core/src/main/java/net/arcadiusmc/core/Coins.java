@@ -1,28 +1,27 @@
 package net.arcadiusmc.core;
 
 import static net.arcadiusmc.text.Text.nonItalic;
-import static net.kyori.adventure.text.Component.text;
 
+import it.unimi.dsi.fastutil.objects.ObjectIntPair;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.regex.Pattern;
-import net.arcadiusmc.Worlds;
+import java.util.List;
 import net.arcadiusmc.events.CoinCreationEvent;
 import net.arcadiusmc.events.CoinDepositEvent;
-import net.arcadiusmc.text.RomanNumeral;
-import net.arcadiusmc.text.Text;
-import net.arcadiusmc.text.UnitFormat;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.inventory.ItemArrayList;
 import net.arcadiusmc.utils.inventory.ItemList;
 import net.arcadiusmc.utils.inventory.ItemStacks;
+import net.forthecrown.nbt.CompoundTag;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 /**
  * Class for server items, such as Royal Swords, Crowns and home of the great makeItem method
@@ -30,12 +29,13 @@ import org.bukkit.inventory.ItemStack;
 public final class Coins {
   private Coins() {}
 
+  public static final int TEXTURE_ID = 223423; // I hit keys randomly
   public static final Material COIN_MATERIAL = Material.SUNFLOWER;
+
+  public static final String NBT_TAG = "coin_worth";
 
   public static final Style NON_ITALIC_DARK_GRAY = Style.style(NamedTextColor.DARK_GRAY)
       .decoration(TextDecoration.ITALIC, false);
-
-  private static final Pattern WORTH_PATTERN = Pattern.compile("Worth ([-+]?[\\d,]+) Rhine(?:s|)");
 
   /**
    * Make some coins
@@ -46,19 +46,12 @@ public final class Coins {
    */
   public static ItemStack makeCoins(int amount, int itemAmount, User user) {
     var builder = ItemStacks.builder(COIN_MATERIAL, itemAmount)
-        .setNameRaw(
-            text(UnitFormat.UNIT_CURRENCY + "s", nonItalic(NamedTextColor.GOLD))
-        )
+        .setModelData(TEXTURE_ID)
+        .setNameRaw(Messages.currencyUnit(false).style(nonItalic(NamedTextColor.GOLD)));
 
-        .addLoreRaw(
-            text("Worth ", nonItalic(NamedTextColor.GOLD))
-                .append(UnitFormat.currency(amount))
-        )
-
-        .addLoreRaw(
-            text("Minted in the year " + getOverworldYear() + ".")
-                .style(NON_ITALIC_DARK_GRAY)
-        );
+    for (Component component : CoreMessages.coinLore(amount)) {
+      builder.addLoreRaw(component.applyFallbackStyle(NON_ITALIC_DARK_GRAY));
+    }
 
     CoinCreationEvent event = new CoinCreationEvent(builder, user, amount);
     event.callEvent();
@@ -67,94 +60,26 @@ public final class Coins {
   }
 
   public static boolean isCoin(ItemStack item) {
-    if (ItemStacks.isEmpty(item) || item.getType() != Coins.COIN_MATERIAL) {
+    if (ItemStacks.isEmpty(item) || item.getType() != COIN_MATERIAL) {
       return false;
     }
 
-    var meta = item.getItemMeta();
-    var lore = meta.lore();
-
-    if (lore == null || lore.isEmpty()) {
-      return false;
-    }
-
-    String plain = Text.plain(lore.get(0));
-
-    return WORTH_PATTERN.matcher(plain.trim()).matches();
+    CompoundTag unhandledTags = ItemStacks.getUnhandledTags(item.getItemMeta());
+    return unhandledTags.getNumberOptional(NBT_TAG).isPresent();
   }
-
-  public static int getSingleItemValue(ItemStack itemStack) {
-    try {
-      var lore = itemStack.lore();
-
-      if (lore == null || lore.isEmpty()) {
-        return -1;
-      }
-
-      Component component = lore.get(0);
-
-      String worth = Text.plain(component).replaceAll("\\D+", "").trim();
-      return Integer.parseInt(worth);
-    } catch (NumberFormatException e) {
-      return -1;
-    }
-  }
-
-  /*public static int _deposit(User user, Iterator<ItemStack> it, int maxCoins) {
-    int earned = 0;
-    int coins = 0;
-    int remaining = maxCoins;
-
-    while (it.hasNext()) {
-      var item = it.next();
-
-      if (!Coins.isCoin(item)) {
-        continue;
-      }
-
-      int singleValue = Coins.getSingleItemValue(item);
-
-      if (singleValue == -1) {
-        continue;
-      }
-
-      int amount = item.getAmount();
-
-      if (amount >= remaining && maxCoins != -1) {
-        item.subtract(remaining);
-        earned += remaining * singleValue;
-        coins += remaining;
-        break;
-      }
-
-      remaining -= amount;
-      earned += singleValue * amount;
-      coins += amount;
-
-      item.setAmount(0);
-    }
-
-    if (earned == 0) {
-      return 0;
-    }
-
-    user.addBalance(earned);
-    user.sendMessage(CoreMessages.deposit(coins, earned));
-    user.playSound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
-
-    return earned;
-  }*/
 
   public static int deposit(User user, Iterator<ItemStack> it, int maxCoins) {
-    ItemList allCoins  = collectCoins(it);
+    var allCoins  = collectCoins(it);
     ItemList deposited = new ItemArrayList();
 
     int trueMax = maxCoins == -1 ? Integer.MAX_VALUE : maxCoins;
     int coins   = 0;
     int earned  = 0;
 
-    for (ItemStack coin : allCoins) {
-      int singletonValue = getSingleItemValue(coin);
+    for (ObjectIntPair<ItemStack> coinValuePair : allCoins) {
+      int singletonValue = coinValuePair.rightInt();
+      ItemStack coin = coinValuePair.left();
+
       int coinAmount = coin.getAmount();
       int nCoins = coins + coinAmount;
 
@@ -199,33 +124,34 @@ public final class Coins {
     coins = event.getDepositedCoins();
 
     user.addBalance(earned);
-    user.sendMessage(CoreMessages.deposit(coins, earned));
+    user.sendMessage(CoreMessages.deposit(user, coins, earned));
     user.playSound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
 
     return earned;
   }
 
-  private static ItemList collectCoins(Iterator<ItemStack> it) {
-    ItemList list = new ItemArrayList();
+  private static List<ObjectIntPair<ItemStack>> collectCoins(Iterator<ItemStack> it) {
+    List<ObjectIntPair<ItemStack>> coins = new ArrayList<>();
 
     while (it.hasNext()) {
       var n = it.next();
 
-      if (!isCoin(n)) {
+      if (ItemStacks.isEmpty(n)) {
         continue;
       }
 
-      list.add(n);
+      ItemMeta meta = n.getItemMeta();
+      CompoundTag tags = ItemStacks.getUnhandledTags(meta);
+
+      var opt = tags.getNumberOptional(NBT_TAG);
+
+      if (opt.isEmpty()) {
+        continue;
+      }
+
+      coins.add(ObjectIntPair.of(n, opt.get().intValue()));
     }
 
-    return list;
-  }
-
-  private static String getOverworldYear() {
-    return RomanNumeral.arabicToRoman(worldTimeToYears(Worlds.overworld()));
-  }
-
-  public static long worldTimeToYears(World world) {
-    return ((world.getFullTime() / 1000) / 24) / 365;
+    return coins;
   }
 }

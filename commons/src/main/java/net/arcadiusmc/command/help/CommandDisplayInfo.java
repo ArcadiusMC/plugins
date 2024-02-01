@@ -130,7 +130,7 @@ public record CommandDisplayInfo(
     }
 
     if (source.hasPermission(Permissions.ADMIN_HELP_INFO)) {
-      writer.field("Permission", permission == null ? "unset" : permission);
+      writer.field("Permission", Strings.isNullOrEmpty(permission) ? "unset" : permission);
 
       if (!Strings.isNullOrEmpty(category)) {
         writer.field("Category", category);

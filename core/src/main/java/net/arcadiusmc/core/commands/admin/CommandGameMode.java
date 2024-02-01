@@ -1,15 +1,16 @@
 package net.arcadiusmc.core.commands.admin;
 
-import net.arcadiusmc.core.CoreMessages;
-import net.arcadiusmc.core.CorePermissions;
-import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.BaseCommand;
+import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.core.CorePermissions;
+import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.user.User;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
 import net.forthecrown.grenadier.types.ArgumentTypes;
-import net.arcadiusmc.user.User;
+import net.kyori.adventure.text.Component;
 import org.bukkit.GameMode;
 import org.bukkit.permissions.Permission;
 
@@ -69,18 +70,42 @@ public class CommandGameMode extends BaseCommand {
   }
 
   static void sendGameModeMessages(CommandSource source, User target, GameMode mode) {
+    Component modeName = gameModeName(mode);
+
     // If self, only tell sender they changed their game mode
     if (target.getName().equals(source.textName())) {
-      target.sendMessage(CoreMessages.gameModeChangedSelf(mode));
-    } else {
-      // If the target user cannot see the admin broadcast that
-      // their game mode was changed
-      if (!target.hasPermission(gamemodePermission(mode))) {
-        target.sendMessage(CoreMessages.gameModeChangedTarget(source, mode));
-      }
-
-      source.sendSuccess(CoreMessages.gameModeChangedOther(target, mode));
+      target.sendMessage(
+          Messages.MESSAGE_LIST.render("cmd.gameMode.changed.self")
+              .addValue("gamemode", modeName)
+              .create(target)
+      );
+      return;
     }
+
+    // If the target user cannot see the admin broadcast that
+    // their game mode was changed
+    if (!target.hasPermission(gamemodePermission(mode))) {
+      target.sendMessage(
+          Messages.MESSAGE_LIST.render("cmd.gameMode.changed.target")
+              .addValue("gamemode", modeName)
+              .addValue("target", target)
+              .addValue("sender", source)
+              .create(target)
+      );
+    }
+
+    source.sendSuccess(
+        Messages.MESSAGE_LIST.render("cmd.gameMode.changed.other")
+            .addValue("gamemode", modeName)
+            .addValue("target", target)
+            .addValue("sender", source)
+            .create(source)
+    );
+  }
+
+  static Component gameModeName(GameMode mode) {
+    String messageKey = "cmd.gameMode." + mode.name().toLowerCase();
+    return Messages.MESSAGE_LIST.renderText(messageKey, null);
   }
 
   static Permission gamemodePermission(GameMode mode) {

@@ -4,7 +4,6 @@ import com.google.common.base.Strings;
 import java.util.UUID;
 import net.arcadiusmc.core.CorePlugin;
 import net.arcadiusmc.core.JoinInfo;
-import net.arcadiusmc.core.TabList;
 import net.arcadiusmc.ArcadiusServer;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.core.user.UserImpl;
@@ -114,7 +113,7 @@ class PlayerLoggingListener implements Listener {
     JoinInfo joinInfo = plugin.getJoinInfo();
     joinInfo.show(user);
 
-    TabList.update();
+    plugin.getTabMenu().update();
   }
 
   @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -128,7 +127,7 @@ class PlayerLoggingListener implements Listener {
 
     service.onUserLeave(user, event.getReason(), true);
 
-    TabList.update();
+    plugin.getTabMenu().update();
   }
 
   boolean updateOnlineName(UserImpl user, String name) {

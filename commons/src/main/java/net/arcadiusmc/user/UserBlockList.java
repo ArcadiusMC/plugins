@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.Text;
+import net.arcadiusmc.text.loader.MessageRef;
 import net.forthecrown.grenadier.Grenadier;
 import net.forthecrown.grenadier.SyntaxExceptions;
 import net.kyori.adventure.text.Component;
@@ -37,13 +38,13 @@ public interface UserBlockList extends UserComponent {
    *                            sender
    * @return True, if either of the 2 users has blocked the other or have been
    * separated, false otherwise
-   * @see #testBlockedMessage(User, User, String, String)
+   * @see #testBlockedMessage(User, User, MessageRef, MessageRef)
    */
   static boolean testBlocked(
       User sender,
       User target,
-      String senderIgnoredFormat,
-      String targetIgnoredFormat
+      MessageRef senderIgnoredFormat,
+      MessageRef targetIgnoredFormat
   ) {
     var optional = testBlockedMessage(
         sender, target,
@@ -74,13 +75,13 @@ public interface UserBlockList extends UserComponent {
    *                            sender
    * @throws CommandSyntaxException If the two users were separated or if either
    *                                had blocked the other
-   * @see #testBlockedMessage(User, User, String, String)
+   * @see #testBlockedMessage(User, User, MessageRef, MessageRef)
    */
   static void testBlockedException(
       User sender,
       User target,
-      String senderIgnoredFormat,
-      String targetIgnoredFormat
+      MessageRef senderIgnoredFormat,
+      MessageRef targetIgnoredFormat
   ) throws CommandSyntaxException {
     var optional = testBlockedMessage(
         sender, target,
@@ -91,7 +92,7 @@ public interface UserBlockList extends UserComponent {
       return;
     }
 
-    throw Exceptions.format(optional.get(), target);
+    throw Exceptions.create(optional.get());
   }
 
   /**
@@ -115,19 +116,27 @@ public interface UserBlockList extends UserComponent {
    * @return Corresponding ignore message, empty, if not blocked or separated in
    * any way
    */
-  static Optional<String> testBlockedMessage(
+  static Optional<Component> testBlockedMessage(
       User sender,
       User target,
-      String senderIgnoredFormat,
-      String targetIgnoredFormat
+      MessageRef senderIgnoredFormat,
+      MessageRef targetIgnoredFormat
   ) {
-    var state = getIgnoreState(sender, target);
-    return switch (state) {
+    IgnoredState state = getIgnoreState(sender, target);
+
+    Optional<MessageRef> refOpt = switch (state) {
       case NONE -> Optional.empty();
       case SEPARATED -> Optional.of(Messages.SEPARATED_FORMAT);
       case SENDER_IGNORED_TARGET -> Optional.of(senderIgnoredFormat);
       case TARGET_IGNORED_SENDER -> Optional.of(targetIgnoredFormat);
     };
+
+    return refOpt.map(messageRef -> {
+      return messageRef.get()
+          .addValue("sender", sender)
+          .addValue("target", target)
+          .create(sender);
+    });
   }
 
   /**
@@ -173,8 +182,8 @@ public interface UserBlockList extends UserComponent {
       User sender,
       Collection<User> users,
       @Nullable UserProperty<Boolean> filterTest,
-      @Nullable String propertyFailMessage,
-      @Nullable Component selfRemovedMessage
+      @Nullable MessageRef propertyFailMessage,
+      @Nullable MessageRef selfRemovedMessage
   ) {
     if (filterTest != null) {
       Objects.requireNonNull(propertyFailMessage, "propertyFailMessage missing");
@@ -183,21 +192,32 @@ public interface UserBlockList extends UserComponent {
     // Only remove self if a self-removal message is set
     if (selfRemovedMessage != null) {
       boolean selfRemoved = users.size() == 1 && users.remove(sender);
+
       if (selfRemoved) {
-        return Optional.of(selfRemovedMessage);
+        return Optional.of(selfRemovedMessage.renderText(sender));
       }
     }
 
     if (users.size() == 1) {
-      var target = users.iterator().next();
-      var opt = testBlockedMessage(sender, target, Messages.BLOCKED_SENDER, Messages.BLOCKED_TARGET);
+      User target = users.iterator().next();
+
+      Optional<Component> opt = testBlockedMessage(
+          sender,
+          target,
+          Messages.BLOCKED_SENDER,
+          Messages.BLOCKED_TARGET
+      );
 
       if (opt.isPresent()) {
-        return opt.map(s -> Text.format(s, sender, target));
+        return opt;
       }
 
       if (filterTest != null && !target.get(filterTest)) {
-        return Optional.of(Text.format(propertyFailMessage, target));
+        return Optional.of(
+            propertyFailMessage.get()
+                .addValue("player", target)
+                .create(sender)
+        );
       }
 
       return Optional.empty();

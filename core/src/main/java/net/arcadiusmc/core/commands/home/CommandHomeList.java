@@ -1,19 +1,18 @@
 package net.arcadiusmc.core.commands.home;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.arcadiusmc.core.CoreMessages;
-import net.arcadiusmc.core.CorePermissions;
-import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.BaseCommand;
+import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.core.CoreMessages;
+import net.arcadiusmc.core.CorePermissions;
 import net.arcadiusmc.core.user.UserHomes;
+import net.arcadiusmc.text.loader.MessageRef;
+import net.arcadiusmc.user.User;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
-import net.arcadiusmc.text.Text;
-import net.arcadiusmc.user.User;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 
 public class CommandHomeList extends BaseCommand {
 
@@ -62,36 +61,34 @@ public class CommandHomeList extends BaseCommand {
       throws CommandSyntaxException
   {
     if (homes.isEmpty()) {
-      throw Exceptions.NOTHING_TO_LIST;
+      throw Exceptions.NOTHING_TO_LIST.exception(source);
     }
 
-    var user = homes.getUser();
-    var builder = Component.text();
+    User user = homes.getUser();
+    boolean unlimited = CorePermissions.MAX_HOMES.hasUnlimited(user);
+    MessageRef headerRef;
 
     if (self) {
-      builder.append(CoreMessages.HOMES_LIST_HEADER_SELF);
+      headerRef = unlimited
+          ? HomeMessages.LIST_HEADER_SELF_UNLIMITED
+          : HomeMessages.LIST_HEADER_SELF_LIMITED;
     } else {
-      builder.append(CoreMessages.homeListHeader(user));
+      headerRef = unlimited
+          ? HomeMessages.LIST_HEADER_OTHER_UNLIMITED
+          : HomeMessages.LIST_HEADER_OTHER_LIMITED;
     }
-
-    if (!CorePermissions.MAX_HOMES.hasUnlimited(user)) {
-      int max = user.getComponent(UserHomes.class).getMaxHomes();
-      int homeCount = homes.size();
-
-      builder.append(
-          Text.format("({0, number} / {1, number})",
-              NamedTextColor.YELLOW,
-              homeCount, max
-          )
-      );
-    }
-
-    builder.append(Component.text(": ", NamedTextColor.GOLD));
 
     String prefix = self ? "" : user.getName() + ":";
-    builder.append(CoreMessages.listHomes(homes, "/home " + prefix));
+    Component joinedHomes = CoreMessages.listHomes(homes, "/home " + prefix);
 
-    source.sendMessage(builder.build());
+    source.sendMessage(
+        headerRef.get()
+            .addValue("homeCount", homes.size())
+            .addValue("maxHomes", homes.getMaxHomes())
+            .addValue("player", user)
+            .addValue("homes", joinedHomes)
+            .create(source)
+    );
     return 0;
   }
 }

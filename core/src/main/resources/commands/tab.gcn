@@ -7,6 +7,11 @@ literal("update") {
   executes = update()
 }
 
+literal("reload") {
+  description = "Reloads the TAB list"
+  executes = reload()
+}
+
 literal("name").argument("user", user) {
   map_result = @result_to_user
 

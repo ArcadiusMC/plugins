@@ -1,5 +1,7 @@
 package net.arcadiusmc.core;
 
+import static net.arcadiusmc.text.Messages.MESSAGE_LIST;
+
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -15,10 +17,13 @@ import lombok.Getter;
 import net.arcadiusmc.Cooldowns;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.command.Exceptions;
+import net.arcadiusmc.text.loader.MessageRender;
+import net.arcadiusmc.user.Users;
 import net.arcadiusmc.utils.Time;
 import net.arcadiusmc.utils.io.JsonWrapper;
 import net.arcadiusmc.utils.io.PathUtil;
 import net.arcadiusmc.utils.io.SerializationHelper;
+import net.kyori.adventure.audience.Audience;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -137,7 +142,7 @@ public class CooldownsImpl implements Cooldowns {
     long endTime = map.getLong(uuid);
 
     if (endTime == NO_END_COOLDOWN) {
-      return Duration.ofSeconds(-1);
+      return Duration.ofSeconds(NO_END_COOLDOWN);
     }
 
     long until = Time.timeUntil(endTime);
@@ -213,16 +218,25 @@ public class CooldownsImpl implements Cooldowns {
       return;
     }
 
-    if (timeMillis == NO_END_COOLDOWN) {
-      throw Exceptions.format("This could only be done once");
+    MessageRender render;
+
+    Duration remaining = getRemainingTime(uuid, category);
+    assert remaining != null;
+
+    if (timeMillis == NO_END_COOLDOWN || remaining.isNegative()) {
+      render = MESSAGE_LIST.render("cooldowns.eternal");
+    } else {
+      boolean longCooldown = timeMillis > TimeUnit.MINUTES.toMillis(10);
+      render = MESSAGE_LIST.render(longCooldown ? "cooldowns.long" : "cooldowns.short");
     }
 
-    if (timeMillis > TimeUnit.MINUTES.toMillis(10)) {
-      Duration remaining = getRemainingTime(uuid, category);
-      throw Exceptions.format("You can do this in {0, time}", remaining);
-    }
+    Audience viewer = Users.get(uuid);
 
-    throw Exceptions.onCooldown(timeMillis);
+    throw render
+        .addValue("category", category)
+        .addValue("remaining", remaining)
+        .addValue("cooldown", Duration.ofMillis(timeMillis))
+        .exception(viewer);
   }
 
   /* --------------------------- SERIALIZATION ---------------------------- */

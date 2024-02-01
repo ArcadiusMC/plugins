@@ -1,18 +1,18 @@
 package net.arcadiusmc.core.commands.home;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.arcadiusmc.core.CoreExceptions;
-import net.arcadiusmc.core.CoreMessages;
-import net.arcadiusmc.core.CorePermissions;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.core.CorePermissions;
 import net.arcadiusmc.core.user.UserHomes;
-import net.arcadiusmc.events.WorldAccessTestEvent;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.GrenadierCommand;
+import net.arcadiusmc.text.loader.MessageRender;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.UserTeleport;
 import net.arcadiusmc.user.event.HomeCommandEvent;
+import net.arcadiusmc.utils.WgUtils;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.GrenadierCommand;
+import org.bukkit.Location;
 
 public class CommandHome extends BaseCommand {
 
@@ -49,7 +49,7 @@ public class CommandHome extends BaseCommand {
 
           //Check if they have default home
           if (!homes.contains(UserHomes.DEFAULT)) {
-            throw CoreExceptions.NO_DEF_HOME;
+            throw HomeMessages.NO_DEFAULT.exception(user);
           }
 
           return goHome(c.getSource(), false, user, HomeParseResult.DEFAULT);
@@ -70,7 +70,7 @@ public class CommandHome extends BaseCommand {
       throws CommandSyntaxException
   {
     Home home = result.get(source, true);
-    var l = home.location();
+    Location l = home.location();
 
     HomeCommandEvent event = new HomeCommandEvent(user, nameSet, home.name());
     event.callEvent();
@@ -79,23 +79,26 @@ public class CommandHome extends BaseCommand {
       return 0;
     }
 
-    WorldAccessTestEvent.testOrThrow(
-        source.asPlayer(),
-        l.getWorld(),
-        CoreExceptions.badWorldHome(home.name())
-    );
+    if (!WgUtils.testFlag(l, WgUtils.PLAYER_TELEPORTING, user.getPlayer())) {
+      throw HomeMessages.FORBIDDEN.exception(user);
+    }
 
     if (!user.checkTeleporting()) {
       return 0;
     }
 
-    var teleport = user.createTeleport(() -> l, UserTeleport.Type.HOME);
+    UserTeleport teleport = user.createTeleport(() -> l, UserTeleport.Type.HOME);
 
-    if (result.isDefaultHome()) {
-      teleport.setCompleteMessage(CoreMessages.TELEPORTING_HOME);
-    } else {
-      teleport.setCompleteMessage(CoreMessages.teleportingHome(result.getName()));
-    }
+    MessageRender render = result.isDefaultHome()
+        ? HomeMessages.TELEPORT_DEF.get()
+        : HomeMessages.TELEPORT_REG.get();
+
+    teleport.setCompleteMessage(
+        render
+            .addValue("home.name", home.name())
+            .addValue("home.location", l)
+            .create(source)
+    );
 
     teleport.start();
     return 0;

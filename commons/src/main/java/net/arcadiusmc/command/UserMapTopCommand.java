@@ -127,7 +127,7 @@ public class UserMapTopCommand extends BaseCommand {
 
   private int showPage(CommandSource source, int page, int pageSize) throws CommandSyntaxException {
     if (map.isEmpty()) {
-      throw Exceptions.NOTHING_TO_LIST;
+      throw Exceptions.NOTHING_TO_LIST.exception(source);
     }
 
     Commands.ensurePageValid(page, pageSize, map.size());

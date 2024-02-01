@@ -30,8 +30,12 @@ import org.jetbrains.annotations.Nullable;
  *   | '${' PlaceholderName ':' PlaceholderInput '}'
  *   ;
  *
- * PlaceholderName: [a-zA-Z0-9_$./-+]+
- * PlaceholderInput: A string that is terminated by a non-escaped '}' character
+ * PlaceholderName
+ *   : [a-zA-Z0-9_$./-+]+
+ *   ;
+ * PlaceholderInput
+ *   : A string that is terminated by a non-escaped '}' character
+ *   ;
  * </pre>
  *
  * @see TextPlaceholder

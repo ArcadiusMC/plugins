@@ -22,10 +22,10 @@ public class CommandTpDenyAll extends BaseCommand {
       User user = getUserSender(c);
 
       if (!TeleportRequests.clearIncoming(user)) {
-        throw TpExceptions.NO_TP_REQUESTS;
+        throw TpExceptions.NO_INCOMING.exception(user);
       }
 
-      user.sendMessage(TpMessages.TPA_DENIED_ALL);
+      user.sendMessage(TpMessages.TPA_DENIED_ALL.renderText(user));
       return 0;
     });
   }
