@@ -1,10 +1,46 @@
+#
 # Sets the main script
+#
+# The main script is the first script ran by the scripting plugin,
+# it's the entry point of the whole script pack
+#
 main-script = "main.js"
 
-required-plugins = [ "FTC-ExtendedItems" ]
+#
+# A list of plugins that must be loaded and enabled for this pack to be
+# activated.
+#
+# Defaults to an empty array
+#
+required-plugins = [ "PluginName" ]
 
-# A list of export name to implementation script
-# - 'script' Is a file path inside this pack's directory
+#
+# List of script packs that are required for this pack to be loaded.
+#
+# This pack will be loaded after all packs specified in this list have
+# been loaded. If a circular dependency is found, the pack is disabled
+#
+# Defaults to an empty array
+#
+required-packs = []
+
+#
+# A table of scripts that are exported as modules. These exported modules
+# can be used by other scripts with the 'import' keyword
+#
+# The name of each entry of this table becomes the exported module's name.
+#
+# Entry values:
+# - script:
+#     Specifies the file path leading to the script the module
+#     is located in
+# - values:
+#     String array of exported function/variable/constant names.
+#     Include a " as " in the strings to export the binding in question under
+#     a different name.
+#
+#     If not set, exports all values in the script file
+#
 [exports]
-json = { script = "exports/json", values = ["o_parse as parse", "stringify"]}
-example = "exports/example"
+json5 = { script = "exports/json5.js", values = ["o_parse as parse", "stringify"]}
+ex2   = { script = "exports/example.json", values = "*"}
