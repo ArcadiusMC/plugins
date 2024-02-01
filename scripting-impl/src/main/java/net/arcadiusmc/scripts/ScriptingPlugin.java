@@ -9,6 +9,9 @@ import net.arcadiusmc.scripts.commands.ScriptingCommand;
 import net.arcadiusmc.scripts.listeners.ScriptListeners;
 import net.arcadiusmc.BukkitServices;
 import net.arcadiusmc.command.Commands;
+import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.loader.MessageList;
+import net.arcadiusmc.text.loader.MessageLoader;
 import net.forthecrown.grenadier.annotations.AnnotatedCommandContext;
 import net.arcadiusmc.scripts.pack.PackManager;
 import net.arcadiusmc.scripts.preprocessor.PreProcessor;
@@ -20,6 +23,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 @Getter
 public class ScriptingPlugin extends JavaPlugin {
+
+  private final MessageList messageList = MessageList.create();
 
   private ScriptManager service;
   private PackManager packs;
@@ -37,6 +42,7 @@ public class ScriptingPlugin extends JavaPlugin {
     BukkitServices.register(ScriptService.class, service);
 
     ScriptPlaceholders.registerAll();
+    Messages.MESSAGE_LIST.addChild("scripts", messageList);
 
     // Commands
     AnnotatedCommandContext ctx = Commands.createAnnotationContext();
@@ -60,6 +66,7 @@ public class ScriptingPlugin extends JavaPlugin {
     }
 
     ScriptPlaceholders.removeAll();
+    Messages.MESSAGE_LIST.removeChild("scripts");
   }
 
   public void reload() {
@@ -76,6 +83,8 @@ public class ScriptingPlugin extends JavaPlugin {
         getDataFolder().toPath().resolve("config.toml"),
         this::loadConfigFrom
     );
+
+    MessageLoader.loadPluginMessages(this, messageList);
   }
 
   private void loadConfigFrom(JsonWrapper json) {

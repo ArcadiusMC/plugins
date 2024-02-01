@@ -1,0 +1,17 @@
+scripts:
+  reloaded.config:  "Reloaded scripting config"
+  reloaded.packs:   "Reloaded scripting packs"
+  loadFail:         "&cCouldn't compile script: ${error}"
+
+  closed:           "Closed script pack ${pack}"
+
+  list:
+    format:         "Loaded Scripts: ${list}"
+    active:         "&a${name}"
+    inactive:       "&7${name}"
+
+  executed:
+    _style: "gray"
+    noResult:       "Script executed."
+    regular:        "Script executed: &f${result}"
+    conversionFail: "[Failed to convert to text]"

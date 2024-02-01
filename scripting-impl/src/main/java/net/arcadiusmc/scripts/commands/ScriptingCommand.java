@@ -8,15 +8,6 @@ import java.util.Objects;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.arguments.RegistryArguments;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.annotations.Argument;
-import net.forthecrown.grenadier.annotations.CommandData;
-import net.forthecrown.grenadier.annotations.VariableInitializer;
-import net.forthecrown.grenadier.types.options.ArgumentOption;
-import net.forthecrown.grenadier.types.options.FlagOption;
-import net.forthecrown.grenadier.types.options.Options;
-import net.forthecrown.grenadier.types.options.OptionsArgument;
-import net.forthecrown.grenadier.types.options.ParsedOptions;
 import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.scripts.CachingScriptLoader;
 import net.arcadiusmc.scripts.ExecResult;
@@ -26,11 +17,20 @@ import net.arcadiusmc.scripts.ScriptService;
 import net.arcadiusmc.scripts.ScriptingPlugin;
 import net.arcadiusmc.scripts.Scripts;
 import net.arcadiusmc.scripts.pack.ScriptPack;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.utils.io.source.Source;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.annotations.Argument;
+import net.forthecrown.grenadier.annotations.CommandData;
+import net.forthecrown.grenadier.annotations.VariableInitializer;
+import net.forthecrown.grenadier.types.options.ArgumentOption;
+import net.forthecrown.grenadier.types.options.FlagOption;
+import net.forthecrown.grenadier.types.options.Options;
+import net.forthecrown.grenadier.types.options.OptionsArgument;
+import net.forthecrown.grenadier.types.options.ParsedOptions;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
 
@@ -73,12 +73,12 @@ public class ScriptingCommand {
 
   void configReload(CommandSource source) {
     plugin.reloadConfig();
-    source.sendSuccess(Component.text("Reloaded scripting config"));
+    source.sendSuccess(Messages.renderText("scripts.reloaded.config", source));
   }
 
   void scriptsReload(CommandSource source) {
     plugin.getPacks().reload();
-    source.sendSuccess(Component.text("Reloaded scripting config"));
+    source.sendSuccess(Messages.renderText("scripts.reloaded.packs", source));
   }
 
   void listActive(CommandSource source) {
@@ -94,7 +94,9 @@ public class ScriptingCommand {
     holder.getValue().close();
 
     source.sendSuccess(
-        Text.format("Removed script pack '&e{0}&r'", NamedTextColor.GRAY, holder.getKey())
+        Messages.render("scripts.closed")
+            .addValue("pack", holder.getKey())
+            .create(source)
     );
   }
 
@@ -129,7 +131,9 @@ public class ScriptingCommand {
     try {
       script.compile();
     } catch (ScriptLoadException exc) {
-      throw Exceptions.format("Couldn't compile script: {0}", exc.getMessage());
+      throw Messages.render("scripts.loadFail")
+          .addValue("error", exc.getMessage())
+          .exception(source);
     }
 
     script.put("source", source);
@@ -153,11 +157,13 @@ public class ScriptingCommand {
     }
 
     result.result().ifPresentOrElse(o -> {
-      source.sendSuccess(Text.format("Script execution finished: &f{0}",
-          NamedTextColor.GRAY, toText(o, source)
-      ));
+      source.sendSuccess(
+          Messages.render("scripts.executed.regular")
+              .addValue("result", toText(o, source))
+              .create(source)
+      );
     }, () -> {
-      source.sendSuccess(Text.format("Script execution finished", NamedTextColor.GRAY));
+      source.sendSuccess(Messages.renderText("scripts.executed.noResult", source));
     });
 
     if (!keepOpen) {
@@ -174,7 +180,7 @@ public class ScriptingCommand {
       }
     } catch (RuntimeException exc) {
       Loggers.getLogger().error("Error getting string from script object", exc);
-      return Component.text("[Failed to convert to text]");
+      return Messages.renderText("scripts.conversionFail", viewer);
     }
 
     return Text.valueOf(o, viewer);
