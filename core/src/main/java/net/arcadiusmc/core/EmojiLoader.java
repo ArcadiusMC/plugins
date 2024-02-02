@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.text.ChatEmotes;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.PathUtil;
 import net.arcadiusmc.utils.io.PluginJar;
 import net.arcadiusmc.utils.io.SerializationHelper;
@@ -20,7 +20,7 @@ public class EmojiLoader {
   private static final Logger LOGGER = Loggers.getLogger();
 
   private static Codec<Map<String, Component>> MAP_CODEC
-      = Codec.unboundedMap(FtcCodecs.KEY_CODEC, FtcCodecs.COMPONENT);
+      = Codec.unboundedMap(ExtraCodecs.KEY_CODEC, ExtraCodecs.COMPONENT);
 
   private final Set<String> loadedNames = new HashSet<>();
 

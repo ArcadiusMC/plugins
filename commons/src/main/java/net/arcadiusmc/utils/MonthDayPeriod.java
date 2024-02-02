@@ -20,7 +20,7 @@ import java.time.temporal.ChronoField;
 import java.util.List;
 import java.util.Objects;
 import lombok.Data;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.Results;
 import net.forthecrown.nbt.BinaryTag;
 import net.forthecrown.nbt.BinaryTags;
@@ -373,6 +373,6 @@ public class MonthDayPeriod {
             }
         );
 
-    CODEC = FtcCodecs.combine(recordCodec, arrayCodec, stringCodec);
+    CODEC = ExtraCodecs.combine(recordCodec, arrayCodec, stringCodec);
   }
 }

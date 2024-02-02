@@ -17,7 +17,7 @@ public class HopperListener implements Listener {
 
   @EventHandler(ignoreCancelled = true)
   public void onBlockPlace(BlockPlaceEvent event) {
-    int max = plugin.getFtcConfig().hoppersInOneChunk();
+    int max = plugin.getCoreConfig().hoppersInOneChunk();
 
     if (event.getBlock().getType() != Material.HOPPER || max == -1) {
       return;

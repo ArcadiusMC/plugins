@@ -20,7 +20,7 @@ public class AltLoginListener implements Listener {
 
   @EventHandler(ignoreCancelled = true)
   public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent event) {
-    AltJoinPrevention prevention = plugin.getFtcConfig().preventAltJoining();
+    AltJoinPrevention prevention = plugin.getCoreConfig().preventAltJoining();
 
     UUID id = event.getUniqueId();
     Optional<Component> denyReason = prevention.mayJoin(id, plugin.getUserService());

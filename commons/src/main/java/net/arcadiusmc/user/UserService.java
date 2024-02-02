@@ -29,7 +29,7 @@ public interface UserService {
   UserNameFactory getNameFactory();
 
   /**
-   * Begins an async load of ALL users known to the FTC plugin
+   * Begins an async load of ALL users known to the plugin
    * <p>
    * It is more suggestible to use {@link #executeOnAllUsers(Consumer)} for performing operations
    * on all known users
@@ -40,7 +40,7 @@ public interface UserService {
   CompletableFuture<Collection<User>> loadAllUsers();
 
   /**
-   * Executes a specified {@code operation} on ALL users known to the FTC plugin, both offline and
+   * Executes a specified {@code operation} on ALL users known to the plugin, both offline and
    * online.
    * <p>
    * Once all users have been iterated through, all offline users are unloaded
@@ -53,7 +53,7 @@ public interface UserService {
   void executeOnAllUsers(Consumer<User> operation);
 
   /**
-   * Executes a specified {@code operation} on ALL users known to the FTC plugin, both offline and
+   * Executes a specified {@code operation} on ALL users known to the plugin, both offline and
    * online. The iteration is executed on an async thread
    * <p>
    * Once all users have been iterated through, all offline users are unloaded

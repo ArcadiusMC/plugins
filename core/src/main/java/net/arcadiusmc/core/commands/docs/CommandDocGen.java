@@ -69,7 +69,7 @@ public class CommandDocGen extends BaseCommand {
   public CommandDocGen() {
     super("DocGen");
 
-    setDescription("Generates documentation of all FTC commands");
+    setDescription("Generates documentation of all ArcadiusMC commands");
     register();
   }
 

@@ -1,13 +1,13 @@
-name = "ftccore"
-description = "FTC-Core admin command"
+name = "arcadius"
+description = "ArcadiusMC admin command"
 
 literal("reload") {
-  description = "Reloads the FTC-Core plugin"
+  description = "Reloads the plugin"
   executes = reload()
 }
 
 literal("reload-config") {
-  description = "Reloads the FTC-Core config"
+  description = "Reloads the plugin config"
   executes = reloadConfig()
 }
 

@@ -8,7 +8,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.concurrent.CompletableFuture;
 import net.arcadiusmc.command.Exceptions;
-import net.arcadiusmc.command.FtcSuggestions;
+import net.arcadiusmc.command.ArcSuggestions;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
 import net.forthecrown.grenadier.CommandSource;
@@ -77,7 +77,7 @@ public class UserArgument
     }
 
     return parser.fillSuggestions(builder, builder1 -> {
-      FtcSuggestions.suggestPlayerNames(
+      ArcSuggestions.suggestPlayerNames(
           (CommandSource) context.getSource(),
           builder1,
           allowOffline

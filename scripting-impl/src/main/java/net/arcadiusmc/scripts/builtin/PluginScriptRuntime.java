@@ -10,7 +10,7 @@ import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
-public class FtcScriptRuntime {
+public class PluginScriptRuntime {
 
   static final Callable EXEC_CONSOLE = (cx, scope, thisObj, args) -> {
     return runString(Grenadier.createSource(Bukkit.getConsoleSender()), args,0);

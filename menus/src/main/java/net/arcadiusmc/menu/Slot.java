@@ -11,7 +11,7 @@ import com.mojang.serialization.codecs.PrimitiveCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
 import lombok.Getter;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.JsonWrapper;
 import net.arcadiusmc.utils.io.Results;
 import org.apache.commons.lang3.Validate;
@@ -246,7 +246,7 @@ public class Slot {
       @Override
       public <T> DataResult<Slot> read(DynamicOps<T> ops, T input) {
         return ops.getStringValue(input).flatMap(string -> {
-          return FtcCodecs.safeParse(string, reader -> {
+          return ExtraCodecs.safeParse(string, reader -> {
             reader.skipWhitespace();
             int x = reader.readInt();
             reader.skipWhitespace();
@@ -281,6 +281,6 @@ public class Slot {
             Slot::getIndex
         );
 
-    CODEC = FtcCodecs.combine(stringCodec, recordCodec, indexCodec);
+    CODEC = ExtraCodecs.combine(stringCodec, recordCodec, indexCodec);
   }
 }

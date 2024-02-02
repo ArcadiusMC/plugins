@@ -17,7 +17,7 @@ import net.forthecrown.grenadier.Grenadier;
 /**
  * Utility class for suggestions
  */
-public interface FtcSuggestions {
+public interface ArcSuggestions {
 
   SuggestionProvider<CommandSource> COMMAND_SUGGESTIONS 
       = Grenadier.suggestAllCommands();

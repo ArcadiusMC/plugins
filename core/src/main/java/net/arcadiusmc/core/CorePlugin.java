@@ -28,12 +28,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 @Getter
 public class CorePlugin extends JavaPlugin {
 
-  private CoreConfig ftcConfig;
+  private CoreConfig coreConfig;
   private PeriodicalSaver saver;
 
   private UserServiceImpl userService;
   private HelpListImpl helpList;
-  private ArcadiusServerImpl ftcServer;
+  private ArcadiusServerImpl serverImpl;
   private PlaceholderServiceImpl placeholderService;
   private DayChange dayChange;
   private AutoAnnouncer announcer;
@@ -54,7 +54,7 @@ public class CorePlugin extends JavaPlugin {
 
     helpList = new HelpListImpl();
     userService = new UserServiceImpl(this);
-    ftcServer = new ArcadiusServerImpl(this);
+    serverImpl = new ArcadiusServerImpl(this);
     dayChange = new DayChange();
     announcer = new AutoAnnouncer();
     placeholderService = new PlaceholderServiceImpl(this);
@@ -63,7 +63,7 @@ public class CorePlugin extends JavaPlugin {
     emojiLoader = new EmojiLoader();
     tabMenu = new TabMenu(this);
 
-    BukkitServices.register(ArcadiusServer.class, ftcServer);
+    BukkitServices.register(ArcadiusServer.class, serverImpl);
     BukkitServices.register(ArcadiusHelpList.class, helpList);
     BukkitServices.register(InventoryStorage.class, InventoryStorageImpl.getStorage());
     BukkitServices.register(Cooldowns.class, CooldownsImpl.getCooldowns());
@@ -75,9 +75,9 @@ public class CorePlugin extends JavaPlugin {
 
     CoreListeners.registerAll(this);
     CoreCommands.createCommands(this);
-    PrefsBook.init(ftcServer.getGlobalSettingsBook());
+    PrefsBook.init(serverImpl.getGlobalSettingsBook());
 
-    saver = PeriodicalSaver.create(this::save, () -> ftcConfig.autosaveInterval());
+    saver = PeriodicalSaver.create(this::save, () -> coreConfig.autosaveInterval());
 
     reloadAll();
   }
@@ -95,7 +95,7 @@ public class CorePlugin extends JavaPlugin {
 
   @Override
   public void reloadConfig() {
-    ftcConfig = TomlConfigs.loadPluginConfig(this, CoreConfig.class);
+    coreConfig = TomlConfigs.loadPluginConfig(this, CoreConfig.class);
     saver.start();
     dayChange.schedule();
 
@@ -114,7 +114,7 @@ public class CorePlugin extends JavaPlugin {
 
   public void save() {
     userService.save();
-    ftcServer.save();
+    serverImpl.save();
 
     InventoryStorageImpl.getStorage().save();
     CooldownsImpl.getCooldowns().save();
@@ -136,7 +136,7 @@ public class CorePlugin extends JavaPlugin {
 
     joinInfo.load();
     placeholderService.load();
-    ftcServer.load();
+    serverImpl.load();
     helpList.load();
     wild.load();
     emojiLoader.load();

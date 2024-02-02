@@ -41,7 +41,7 @@ import net.arcadiusmc.utils.Result;
 import net.arcadiusmc.utils.ScoreIntMap;
 import net.arcadiusmc.utils.ScoreIntMap.KeyValidator;
 import net.arcadiusmc.utils.Time;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.PathUtil;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.text.Component;
@@ -132,7 +132,7 @@ public class UserServiceImpl implements UserService {
   }
 
   public CoreConfig getConfig() {
-    return plugin.getFtcConfig();
+    return plugin.getCoreConfig();
   }
 
   @Override
@@ -365,7 +365,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public Builder<UUID> createUuidProperty() {
     ensureNotFrozen();
-    return new BuilderImpl<>(FtcCodecs.STRING_UUID).defaultValue(Identity.nil().uuid());
+    return new BuilderImpl<>(ExtraCodecs.STRING_UUID).defaultValue(Identity.nil().uuid());
   }
 
   @Override
@@ -377,13 +377,13 @@ public class UserServiceImpl implements UserService {
   @Override
   public Builder<Component> createTextProperty() {
     ensureNotFrozen();
-    return new BuilderImpl<>(FtcCodecs.COMPONENT);
+    return new BuilderImpl<>(ExtraCodecs.COMPONENT);
   }
 
   @Override
   public <E extends Enum<E>> Builder<E> createEnumProperty(Class<E> type) {
     ensureNotFrozen();
-    return new BuilderImpl<>(FtcCodecs.enumCodec(type));
+    return new BuilderImpl<>(ExtraCodecs.enumCodec(type));
   }
 
   @Override

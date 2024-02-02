@@ -1,5 +1,5 @@
 #
-# Specifies extra/custom ranks that the FTC plugin will load
+# Specifies extra/custom ranks that the plugin will load
 #
 # This file has to be made of sections, the name of each section being the ID
 # of a rank.

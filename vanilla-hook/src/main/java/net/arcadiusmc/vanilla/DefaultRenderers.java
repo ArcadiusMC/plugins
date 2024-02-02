@@ -14,7 +14,7 @@ import org.bukkit.entity.Player;
 
 public class DefaultRenderers {
 
-  static final NamespacedKey SIGN_KEY = new NamespacedKey("forthecrown", "render_placeholders");
+  static final NamespacedKey SIGN_KEY = new NamespacedKey("arcadius", "render_placeholders");
 
   static final SignRenderer SIGN_PLACEHOLDERS = new SignRenderer() {
     @Override

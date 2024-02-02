@@ -12,7 +12,7 @@ import lombok.Setter;
 import net.arcadiusmc.command.help.AbstractHelpEntry;
 import net.arcadiusmc.command.help.CommandDisplayInfo;
 import net.arcadiusmc.command.help.Usage;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.forthecrown.grenadier.CommandSource;
 import net.kyori.adventure.text.Component;
 
@@ -21,7 +21,7 @@ import net.kyori.adventure.text.Component;
 class LoadedCommandEntry extends AbstractHelpEntry {
 
   private static final Codec<String[]> INFO_CODEC
-      = Codec.either(Codec.STRING, FtcCodecs.arrayOf(Codec.STRING, String.class))
+      = Codec.either(Codec.STRING, ExtraCodecs.arrayOf(Codec.STRING, String.class))
       .xmap(
           either -> either.map(string -> new String[] {string}, strings -> strings),
           arr -> {
@@ -63,7 +63,7 @@ class LoadedCommandEntry extends AbstractHelpEntry {
             Codec.STRING.listOf().optionalFieldOf("aliases", List.of())
                 .forGetter(o -> o.aliases),
 
-            FtcCodecs.COMPONENT.optionalFieldOf("description", Component.empty())
+            ExtraCodecs.COMPONENT.optionalFieldOf("description", Component.empty())
                 .forGetter(o -> o.description),
 
             Codec.STRING.optionalFieldOf("permission", "")

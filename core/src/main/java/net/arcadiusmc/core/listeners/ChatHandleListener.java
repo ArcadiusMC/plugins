@@ -28,7 +28,7 @@ public class ChatHandleListener implements Listener {
     Player sender = event.getPlayer();
 
     ChatRenderer renderer = event.renderer() instanceof Default
-        ? FtcChatRenderer.INSTANCE
+        ? DefaultChatRenderer.INSTANCE
         : event.renderer();
 
     if (viewers.isEmpty()) {
@@ -52,7 +52,7 @@ public class ChatHandleListener implements Listener {
     });
   }
 
-  private enum FtcChatRenderer implements ChatRenderer {
+  private enum DefaultChatRenderer implements ChatRenderer {
     INSTANCE;
 
     @Override

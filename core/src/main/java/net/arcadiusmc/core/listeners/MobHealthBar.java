@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import net.arcadiusmc.core.CoreFlags;
 import net.arcadiusmc.core.CorePlugin;
-import net.arcadiusmc.Worlds;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.utils.PluginUtil;
 import net.arcadiusmc.utils.Tasks;
@@ -217,7 +216,7 @@ public class MobHealthBar implements Listener {
     }
 
     var finalDamage = event.getFinalDamage();
-    var config = plugin.getFtcConfig();
+    var config = plugin.getCoreConfig();
 
     var loc = event.getEntity().getLocation();
 

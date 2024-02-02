@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.placeholder.PlaceholderRenderer;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.Nullable;
@@ -15,11 +15,11 @@ record TabText(Component header, Component footer) {
   static final Codec<TabText> CODEC = RecordCodecBuilder.create(instance -> {
     return instance
         .group(
-            FtcCodecs.COMPONENT
+            ExtraCodecs.COMPONENT
                 .optionalFieldOf("header", Component.empty())
                 .forGetter(o -> o.header),
 
-            FtcCodecs.COMPONENT
+            ExtraCodecs.COMPONENT
                 .optionalFieldOf("footer", Component.empty())
                 .forGetter(o -> o.footer)
         )

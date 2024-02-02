@@ -38,9 +38,9 @@ subprojects {
   version = rootProject.version
 
   afterEvaluate {
-    val ftcExtension = this.extensions.findByType(ArcadiusExtension::class.java) ?: return@afterEvaluate
+    val arcExt = this.extensions.findByType(ArcadiusExtension::class.java) ?: return@afterEvaluate
 
-    if (ftcExtension.skipDependency || !ftcExtension.implementedBy.isNullOrEmpty()) {
+    if (arcExt.skipDependency || !arcExt.implementedBy.isNullOrEmpty()) {
       return@afterEvaluate
     }
 

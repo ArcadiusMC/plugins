@@ -8,12 +8,12 @@ import net.arcadiusmc.utils.TransformingSet;
 import org.intellij.lang.annotations.Language;
 
 /**
- * Class that provides registry constants for some features of FTC and also provides factory
+ * Class that provides registry constants for some features and also provides factory
  * methods.
  * <p>
  * Use {@link #newRegistry()} and {@link #newFreezable()} to create registries.
  * {@link #ofEnum(Class)} will create a registry of all enum constants in a given class and try to
- * either find a key from the enums, if they implemement {@link FtcKeyed} or simply use enum's name
+ * either find a key from the enums, if they implemement {@link KeyHolder} or simply use enum's name
  * in lowercase form
  *
  * @see #newRegistry()
@@ -65,8 +65,8 @@ public final class Registries {
   /**
    * Creates a frozen registry out of all enum constants in the given class.
    * <p>
-   * This will loop through each enum constant and test if its an instance of {@link FtcKeyed}, if
-   * it is, it uses the result of {@link FtcKeyed#getKey()} as the enum's key, else it just uses
+   * This will loop through each enum constant and test if its an instance of {@link KeyHolder}, if
+   * it is, it uses the result of {@link KeyHolder#getKey()} as the enum's key, else it just uses
    * {@link Enum#name()}. Each enum is also registered with its {@link Enum#ordinal()} as its ID
    *
    * @param enumClass The class to turn into a registry
@@ -79,7 +79,7 @@ public final class Registries {
     for (var e : enumClass.getEnumConstants()) {
       String key;
 
-      if (e instanceof FtcKeyed keyed) {
+      if (e instanceof KeyHolder keyed) {
         key = keyed.getKey();
       } else {
         key = e.name().toLowerCase();

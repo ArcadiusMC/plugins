@@ -49,7 +49,7 @@ public class CommandNear extends BaseCommand {
 
   private int getDefaultDistance() {
     CorePlugin plugin = CorePlugin.plugin();
-    return plugin.getFtcConfig().nearCommandDistance();
+    return plugin.getCoreConfig().nearCommandDistance();
   }
 
   @Override

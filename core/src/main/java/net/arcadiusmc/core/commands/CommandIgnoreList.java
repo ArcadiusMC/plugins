@@ -29,20 +29,6 @@ public class CommandIgnoreList extends BaseCommand {
     register();
   }
 
-  /*
-   * ----------------------------------------
-   * 			Command description:
-   * ----------------------------------------
-   *
-   * Valid usages of command:
-   * /<command> [user]
-   *
-   * Permissions used:
-   * ftc.commands.ignore
-   *
-   * Main Author: Julie
-   */
-
   @Override
   public void populateUsages(UsageFactory factory) {
     factory.usage("")

@@ -31,7 +31,7 @@ public class DurabilityListener implements Listener {
   @EventHandler(ignoreCancelled = true)
   public void onEntityDamageItem(PlayerItemDamageEvent event) {
     User user = Users.get(event.getPlayer());
-    var config = plugin.getFtcConfig();
+    var config = plugin.getCoreConfig();
 
     if (!user.get(PrefsBook.DURABILITY_WARNINGS) || config.durabilityWarningThreshold() <= 0) {
       return;

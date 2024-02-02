@@ -35,21 +35,6 @@ public class CommandLaunch extends BaseCommand {
     register();
   }
 
-  /*
-   * ----------------------------------------
-   * 			Command description:
-   * ----------------------------------------
-   * Launches entities with the given vector :3
-   *
-   * Valid usages of command:
-   * /launch <entities> <vector>
-   * /rocket <entities> <vector>
-   *
-   * Permissions used: ftc.admin
-   *
-   * Main Author: Julie
-   */
-
   @Override
   public void populateUsages(UsageFactory factory) {
     var prefix = factory.withPrefix("<entities>");

@@ -22,7 +22,7 @@ dayUpdateTime = 00:00:01
 # Distance '/near' will look for players in
 nearCommandDistance = 200
 
-# Disables ALL placeholders used by FTC plugins,
+# Disables ALL placeholders used in text rendering
 # this means every instance of '${placeholder}' will be left unrendered
 placeholdersDisabled = false
 

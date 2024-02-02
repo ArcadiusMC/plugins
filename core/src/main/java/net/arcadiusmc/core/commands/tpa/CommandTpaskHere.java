@@ -17,22 +17,6 @@ public class CommandTpaskHere extends BaseCommand {
     register();
   }
 
-  /*
-   * ----------------------------------------
-   * 			Command description:
-   * ----------------------------------------
-   * Allows players to ask another player to teleport to them.
-   *
-   * Valid usages of command:
-   * - /tpaskhere <player>
-   *
-   * Permissions used:
-   * - ftc.tpahere
-   *
-   * Main Author: Julie
-   * Edit by: Wout
-   */
-
   @Override
   public void populateUsages(UsageFactory factory) {
     factory.usage("<player>", "Asks a <player> to teleport to you");

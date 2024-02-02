@@ -7,7 +7,7 @@ import net.arcadiusmc.core.CorePlugin;
 import net.arcadiusmc.core.commands.admin.CommandAlts;
 import net.arcadiusmc.core.commands.admin.CommandBroadcast;
 import net.arcadiusmc.core.commands.admin.CommandCooldown;
-import net.arcadiusmc.core.commands.admin.CommandFtcCore;
+import net.arcadiusmc.core.commands.admin.CommandArcadiusCore;
 import net.arcadiusmc.core.commands.admin.CommandGameMode;
 import net.arcadiusmc.core.commands.admin.CommandGetOffset;
 import net.arcadiusmc.core.commands.admin.CommandGetPos;
@@ -124,7 +124,7 @@ public final class CoreCommands {
     AnnotatedCommandContext ctx = Commands.createAnnotationContext();
     ctx.registerCommand(new CommandTeleport());
     ctx.registerCommand(new CommandVanish(plugin));
-    ctx.registerCommand(new CommandFtcCore());
+    ctx.registerCommand(new CommandArcadiusCore());
     ctx.registerCommand(new CommandTab(plugin));
     ctx.registerCommand(new CommandAlts());
     ctx.registerCommand(new CommandTimeFields());

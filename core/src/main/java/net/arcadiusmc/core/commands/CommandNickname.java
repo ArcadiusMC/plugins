@@ -137,7 +137,7 @@ public class CommandNickname extends BaseCommand {
     public String parse(StringReader reader) throws CommandSyntaxException {
       String nick = reader.readUnquotedString();
 
-      CoreConfig config = CorePlugin.plugin().getFtcConfig();
+      CoreConfig config = CorePlugin.plugin().getCoreConfig();
       int maxLength = config.maxNickLength();
 
       if (nick.length() > maxLength) {

@@ -7,7 +7,7 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.PrimitiveCodec;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.arguments.Arguments;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.format.TextDecoration.State;
@@ -18,7 +18,7 @@ public enum StyleStringCodec implements PrimitiveCodec<Style> {
   @Override
   public <T> DataResult<Style> read(DynamicOps<T> ops, T input) {
     return ops.getStringValue(input).flatMap(string -> {
-      return FtcCodecs.safeParse(string, reader -> {
+      return ExtraCodecs.safeParse(string, reader -> {
         var builder = Style.style();
         parseStyle(reader, builder);
         return builder.build();

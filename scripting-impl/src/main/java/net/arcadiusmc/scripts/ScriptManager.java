@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import lombok.Getter;
 import net.arcadiusmc.Worlds;
-import net.arcadiusmc.scripts.builtin.FtcScriptRuntime;
+import net.arcadiusmc.scripts.builtin.PluginScriptRuntime;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.user.Users;
@@ -111,7 +111,7 @@ public class ScriptManager implements ScriptService {
       ScriptableObject.putConstProperty(topLevelScope, autoImportedClass.getSimpleName(), njc);
     }
 
-    FtcScriptRuntime.initStandardObjects(topLevelScope);
+    PluginScriptRuntime.initStandardObjects(topLevelScope);
 
     return topLevelScope;
   }

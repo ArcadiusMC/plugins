@@ -21,7 +21,7 @@ import net.arcadiusmc.user.User;
 import net.arcadiusmc.text.parse.ChatParseFlag;
 import net.arcadiusmc.text.parse.ChatParser;
 import net.arcadiusmc.text.parse.TextContext;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.Results;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
@@ -35,7 +35,7 @@ public class PlayerMessage implements ViewerAwareMessage {
   private static final String KEY_FLAGS = "flags";
 
   private static final Codec<ChatParseFlag> SINGLE_FLAG_CODEC
-      = FtcCodecs.enumCodec(ChatParseFlag.class);
+      = ExtraCodecs.enumCodec(ChatParseFlag.class);
 
   private static final Codec<Set<ChatParseFlag>> FLAG_SET_CODEC
       = SINGLE_FLAG_CODEC.listOf().xmap(ObjectOpenHashSet::new, ArrayList::new);

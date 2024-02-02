@@ -54,7 +54,7 @@ public class PlaceholderRendererImpl implements PlaceholderRenderer {
 
   @Override
   public Component render(Component base, @Nullable Audience viewer, Map<String, Object> ctx) {
-    if (service.getPlugin().getFtcConfig().placeholdersDisabled()) {
+    if (service.getPlugin().getCoreConfig().placeholdersDisabled()) {
       return base;
     }
 

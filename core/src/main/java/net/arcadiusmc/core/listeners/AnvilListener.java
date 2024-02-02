@@ -18,7 +18,7 @@ public class AnvilListener implements Listener {
 
   @EventHandler(ignoreCancelled = true)
   public void onPrepareAnvil(PrepareAnvilEvent event) {
-    if (plugin.getFtcConfig().allowHighLevelEnchantments()) {
+    if (plugin.getCoreConfig().allowHighLevelEnchantments()) {
       return;
     }
 

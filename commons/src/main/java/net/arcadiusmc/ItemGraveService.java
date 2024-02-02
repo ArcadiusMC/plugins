@@ -6,7 +6,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * An interface which allows FTC plugins to add an filter which is used to test every item in a
+ * An interface which allows plugins to add an filter which is used to test every item in a
  * player's inventory when they die. If any filter returns {@code true} on the item, that item will
  * remain in the player's inventory on death
  *

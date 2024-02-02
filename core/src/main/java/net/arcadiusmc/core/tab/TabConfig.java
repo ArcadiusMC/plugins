@@ -13,7 +13,7 @@ import lombok.experimental.Accessors;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.TextInfo;
 import net.arcadiusmc.text.loader.StyleStringCodec;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
@@ -44,7 +44,7 @@ class TabConfig {
                 .optionalFieldOf("adaptive-border", DynamicBorderConfig.DEFAULT)
                 .forGetter(o -> o.borderConfig),
 
-            FtcCodecs.DURATION
+            ExtraCodecs.DURATION
                 .optionalFieldOf("frame-rate", Duration.ZERO)
                 .forGetter(o -> o.animationSpeed),
 
@@ -124,7 +124,7 @@ class TabConfig {
               StyleStringCodec.CODEC.optionalFieldOf("style", DEFAULT_STYLE)
                   .forGetter(o -> o.style),
 
-              FtcCodecs.COLOR.listOf().optionalFieldOf("gradient", List.of())
+              ExtraCodecs.COLOR.listOf().optionalFieldOf("gradient", List.of())
                   .xmap(textColors -> textColors.toArray(TextColor[]::new), Arrays::asList)
                   .forGetter(o -> o.gradientColors)
           )

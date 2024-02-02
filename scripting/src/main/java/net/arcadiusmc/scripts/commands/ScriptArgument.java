@@ -50,20 +50,20 @@ public class ScriptArgument implements ArgumentType<Source> {
       return Sources.direct(str);
     }
 
-    String ftcKey = Arguments.RESOURCE_KEY.parse(reader);
+    String key = Arguments.RESOURCE_KEY.parse(reader);
     String pathString;
 
-    if (ftcKey.endsWith(".js")) {
-      pathString = ftcKey;
+    if (key.endsWith(".js")) {
+      pathString = key;
     } else {
-      pathString = ftcKey + ".js";
+      pathString = key + ".js";
     }
 
     Path scriptsDir = Scripts.getService().getScriptsDirectory();
     Path file = scriptsDir.resolve(pathString);
 
     if (!Files.exists(file)) {
-      throw Exceptions.format("Script file '{0}' does not exist", ftcKey);
+      throw Exceptions.format("Script file '{0}' does not exist", key);
     }
 
     return Sources.fromPath(file, scriptsDir);

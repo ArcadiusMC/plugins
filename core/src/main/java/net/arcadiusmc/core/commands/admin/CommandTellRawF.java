@@ -22,7 +22,7 @@ public class CommandTellRawF extends BaseCommand {
 
   public CommandTellRawF() {
     super("tellrawf");
-    setAliases("tellraw", "ftellraw", "ftc_tellraw");
+    setAliases("tellraw", "ftellraw");
     setDescription("ArcadiusMC's version of /tellraw with more lax text input");
     register();
   }

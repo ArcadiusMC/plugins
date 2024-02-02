@@ -3,7 +3,7 @@ package net.arcadiusmc.core.listeners;
 import java.util.Objects;
 import java.util.UUID;
 import net.arcadiusmc.Permissions;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
@@ -18,7 +18,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 public class SignOwnershipListener implements Listener {
 
-  public static final NamespacedKey SIGN_OWNER = new NamespacedKey("forthecrown", "sign_owner");
+  public static final NamespacedKey SIGN_OWNER = new NamespacedKey("arcadius", "sign_owner");
 
   public static final boolean ADMIN_BYPASS = true;
 
@@ -67,7 +67,7 @@ public class SignOwnershipListener implements Listener {
       return null;
     }
 
-    return FtcCodecs.uuidFromIntArray(intList);
+    return ExtraCodecs.uuidFromIntArray(intList);
   }
 
   void setOwner(Sign sign, UUID owner) {
@@ -78,7 +78,7 @@ public class SignOwnershipListener implements Listener {
       return;
     }
 
-    int[] savedUuid = FtcCodecs.uuidToIntArray(owner);
+    int[] savedUuid = ExtraCodecs.uuidToIntArray(owner);
     container.set(SIGN_OWNER, PersistentDataType.INTEGER_ARRAY, savedUuid);
   }
 }

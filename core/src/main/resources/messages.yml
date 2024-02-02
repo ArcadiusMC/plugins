@@ -353,7 +353,7 @@ cmd.invstore:
   swapped:            "Swapped ${player}'s items with stored inventory '${category}'"
   give:               "Gave ${player}'s items from '${category}'"
 
-cmd.ftccore:
+cmd.core:
   reload.plugin:      "Reloaded Arcadius plugin"
   reload.config:      "Reloaded Arcadius config"
   saved.config:       "Saved Arcadius plugin"

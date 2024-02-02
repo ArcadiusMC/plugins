@@ -54,7 +54,7 @@ class PlayerLoggingListener implements Listener {
       firstJoin = true;
 
       Location serverSpawn = ArcadiusServer.server().getServerSpawn();
-      Location firstTimeSpawn = plugin.getFtcConfig().firstTimeSpawn();
+      Location firstTimeSpawn = plugin.getCoreConfig().firstTimeSpawn();
 
       player.teleport(firstTimeSpawn);
       player.setBedSpawnLocation(serverSpawn, true);

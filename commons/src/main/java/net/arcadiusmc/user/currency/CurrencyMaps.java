@@ -8,7 +8,7 @@ import it.unimi.dsi.fastutil.objects.ObjectSets;
 import java.util.HashMap;
 import java.util.Map;
 import net.arcadiusmc.user.Users;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 
 public final class CurrencyMaps {
   private CurrencyMaps() {}
@@ -30,7 +30,7 @@ public final class CurrencyMaps {
   }
 
   public static <V> Codec<CurrencyMap<V>> createCodec(Codec<V> valueCodec) {
-    return Codec.unboundedMap(FtcCodecs.KEY_CODEC, valueCodec)
+    return Codec.unboundedMap(ExtraCodecs.KEY_CODEC, valueCodec)
         .xmap(
             stringVMap -> {
               CurrencyMap<V> map = newMap();

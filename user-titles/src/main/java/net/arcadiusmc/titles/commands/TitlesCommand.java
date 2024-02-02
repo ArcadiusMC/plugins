@@ -21,7 +21,7 @@ import net.arcadiusmc.titles.UserTitles;
 import net.arcadiusmc.user.User;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.annotations.Argument;
-import net.forthecrown.grenadier.annotations.CommandData;
+import net.forthecrown.grenadier.annotations.CommandFile;
 import net.forthecrown.grenadier.annotations.VariableInitializer;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.forthecrown.grenadier.types.ArrayArgument;
@@ -29,10 +29,10 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import org.bukkit.plugin.java.JavaPlugin;
 
-@CommandData("file = titles_command.gcn")
+@CommandFile("titles_command.gcn")
 public class TitlesCommand {
 
-  static final String ADMIN_PERMISSION = "ftc.commands.ranks.admin";
+  static final String ADMIN_PERMISSION = "arcadius.commands.ranks.admin";
 
   static final String ARG = "user";
   static final String TITLE = "title";

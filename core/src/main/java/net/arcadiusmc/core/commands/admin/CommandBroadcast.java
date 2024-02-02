@@ -21,23 +21,6 @@ public class CommandBroadcast extends BaseCommand {
     register();
   }
 
-  /*
-   * ----------------------------------------
-   * 			Command description:
-   * ----------------------------------------
-   * Broadcasts a message to the entire server
-   *
-   *
-   * Valid usages of command:
-   * - /broadcast
-   * - /bc
-   *
-   * Permissions used:
-   * - ftc.commands.broadcast
-   *
-   * Author: Wout
-   */
-
   @Override
   public void populateUsages(UsageFactory factory) {
     factory.usage("<message>", "Broadcasts a <message> to the entire server");

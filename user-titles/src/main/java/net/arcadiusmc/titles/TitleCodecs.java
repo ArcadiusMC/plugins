@@ -13,7 +13,7 @@ import net.arcadiusmc.menu.Slot;
 import net.arcadiusmc.titles.Tier.MenuDecoration;
 import net.arcadiusmc.user.currency.CurrencyMap;
 import net.arcadiusmc.user.currency.CurrencyMaps;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.Results;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Registry;
@@ -21,7 +21,7 @@ import org.bukkit.Registry;
 public class TitleCodecs {
 
   static final MapCodec<ImmutableList<Component>> DESC_MAP_CODEC
-      = Codec.either(FtcCodecs.COMPONENT, FtcCodecs.immutableList(FtcCodecs.COMPONENT))
+      = Codec.either(ExtraCodecs.COMPONENT, ExtraCodecs.immutableList(ExtraCodecs.COMPONENT))
       .xmap(either -> either.map(ImmutableList::of, components -> components), Either::right)
       .optionalFieldOf("description", ImmutableList.of());
 
@@ -29,7 +29,7 @@ public class TitleCodecs {
     return instance
         .group(
             Slot.CODEC.fieldOf("slot").forGetter(MenuDecoration::slot),
-            FtcCodecs.MATERIAL_CODEC.fieldOf("item").forGetter(MenuDecoration::material)
+            ExtraCodecs.MATERIAL_CODEC.fieldOf("item").forGetter(MenuDecoration::material)
         )
         .apply(instance, MenuDecoration::new);
   });
@@ -37,10 +37,10 @@ public class TitleCodecs {
   static final Codec<Tier> TIER = RecordCodecBuilder.create(instance -> {
     return instance
         .group(
-            FtcCodecs.COMPONENT.fieldOf("display-name")
+            ExtraCodecs.COMPONENT.fieldOf("display-name")
                 .forGetter(Tier::getDisplayName),
 
-            FtcCodecs.registryCodec(Registry.MATERIAL)
+            ExtraCodecs.registryCodec(Registry.MATERIAL)
                 .fieldOf("display-item")
                 .forGetter(Tier::getDisplayItem),
 
@@ -61,7 +61,7 @@ public class TitleCodecs {
         });
   });
 
-  static final Codec<Map<String, Tier>> TIER_MAP = Codec.unboundedMap(FtcCodecs.KEY_CODEC, TIER);
+  static final Codec<Map<String, Tier>> TIER_MAP = Codec.unboundedMap(ExtraCodecs.KEY_CODEC, TIER);
 
   static final Codec<CurrencyMap<Integer>> PRICE_CODEC = CurrencyMaps.createCodec(Codec.INT);
 
@@ -71,10 +71,10 @@ public class TitleCodecs {
             Tiers.REGISTRY.registryCodec().fieldOf("tier")
                 .forGetter(Title::getTier),
 
-            FtcCodecs.COMPONENT.fieldOf("prefix")
+            ExtraCodecs.COMPONENT.fieldOf("prefix")
                 .forGetter(Title::getTruncatedPrefix),
 
-            FtcCodecs.KEY_CODEC.optionalFieldOf("gender-equivalent", "")
+            ExtraCodecs.KEY_CODEC.optionalFieldOf("gender-equivalent", "")
                 .forGetter(Title::getGenderEquivalentKey),
 
             Slot.CODEC.optionalFieldOf("slot")
@@ -139,5 +139,5 @@ public class TitleCodecs {
       );
 
   static final Codec<Map<String, Title>> RANK_MAP
-      = Codec.unboundedMap(FtcCodecs.KEY_CODEC, RANK_CODEC);
+      = Codec.unboundedMap(ExtraCodecs.KEY_CODEC, RANK_CODEC);
 }

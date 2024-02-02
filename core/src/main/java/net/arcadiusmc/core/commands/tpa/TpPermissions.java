@@ -12,8 +12,8 @@ public final class TpPermissions {
   public static final Permission TPA = registerCmd("tpa");
 
   public static final TieredPermission TP_DELAY = TieredPermission.builder()
-      .prefix("ftc.teleport.delay.")
-      .unlimitedPerm("ftc.teleport.bypass")
+      .prefix("arcadius.teleport.delay.")
+      .unlimitedPerm("arcadius.teleport.delay.bypass")
       .priority(TierPriority.LOWEST)
       .allowUnlimited()
       .tiersFrom1To(5)

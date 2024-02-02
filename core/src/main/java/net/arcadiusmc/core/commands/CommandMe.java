@@ -14,26 +14,12 @@ import net.forthecrown.grenadier.GrenadierCommand;
 public class CommandMe extends BaseCommand {
 
   public CommandMe() {
-    super("ftc_me");
+    super("arcadius_me");
 
     setAliases("me");
     setDescription("Command that everyone uses to make people think they died");
     register();
   }
-
-  /*
-   * ----------------------------------------
-   * 			Command description:
-   * ----------------------------------------
-   *
-   * Valid usages of command:
-   * /me <action>
-   *
-   * Permissions used:
-   * ftc.default
-   *
-   * Main Author: Julie
-   */
 
   @Override
   public void populateUsages(UsageFactory factory) {

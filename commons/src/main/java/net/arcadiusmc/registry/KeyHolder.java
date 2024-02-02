@@ -10,7 +10,7 @@ import org.intellij.lang.annotations.Pattern;
  * @see Registry
  * @see Registry#register(String, Object)
  */
-public interface FtcKeyed {
+public interface KeyHolder {
 
   /**
    * Gets the registry-applicable key of this object. The returned key must adhere to the

@@ -21,7 +21,7 @@ public class DepositListener implements Listener {
 
   @EventHandler
   public void onPlayerInteract(PlayerInteractEvent event) {
-    if (event.getHand() != EquipmentSlot.HAND || !plugin.getFtcConfig().rightClickDeposits()) {
+    if (event.getHand() != EquipmentSlot.HAND || !plugin.getCoreConfig().rightClickDeposits()) {
       return;
     }
 

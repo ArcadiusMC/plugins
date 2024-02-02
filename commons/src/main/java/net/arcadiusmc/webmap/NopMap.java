@@ -12,7 +12,7 @@ class NopMap implements WebMap {
   static final NopMap NOP = new NopMap();
 
   static <T> Result<T> noOpRes() {
-    return Result.error("NO-OP implementation (FTC-Webmap not installed or was disabled)");
+    return Result.error("NO-OP implementation (web-map service plugin not installed or was disabled)");
   }
 
   @Override

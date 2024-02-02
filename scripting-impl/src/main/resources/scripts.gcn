@@ -1,7 +1,7 @@
 name        = "scripts"
 aliases     = 'script'
-permission  = 'ftc.commands.scripts'
-description = "Command that provides access to FTC's scripting engine"
+permission  = 'arcadius.commands.scripts'
+description = "Command that provides access to plugin's scripting engine"
 
 literal("reload-config") {
   executes = configReload()

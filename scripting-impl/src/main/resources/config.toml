@@ -3,7 +3,6 @@
 # These can be used inside javascript imports by putting an '@' infront of the placeholder name,
 # for example: 'import Files from "@nio.file.Files";'
 [importPlaceholders]
-ftc         = "net.forthecrown"
 fastutil    = "it.unimi.dsi.fastutil"
 bukkit      = "org.bukkit"
 nio         = "java.nio"

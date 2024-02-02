@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.arcadiusmc.core.CorePermissions;
 import net.arcadiusmc.Loggers;
-import net.arcadiusmc.command.FtcSuggestions;
+import net.arcadiusmc.command.ArcSuggestions;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Completions;
 import net.arcadiusmc.user.User;
@@ -284,7 +284,7 @@ public class UserLookupImpl implements UserLookup {
     }
 
     for (var e : identified.values()) {
-      var hover = FtcSuggestions.uuidTooltip(e.getUniqueId());
+      var hover = ArcSuggestions.uuidTooltip(e.getUniqueId());
 
       if (tokenMatches(e.getNickname(), token)) {
         builder.suggest(e.getNickname(), hover);

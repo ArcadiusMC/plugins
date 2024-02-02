@@ -17,22 +17,6 @@ public class CommandTpask extends BaseCommand {
     register();
   }
 
-  /*
-   * ----------------------------------------
-   * 			Command description:
-   * ----------------------------------------
-   * Allows players to teleport to another player by asking them.
-   *
-   * Valid usages of command:
-   * - /tpask <player>
-   *
-   * Permissions used:
-   * - ftc.commands.tpa
-   *
-   * Main Author: Julie
-   * Edit by: Wout
-   */
-
   @Override
   public void populateUsages(UsageFactory factory) {
     factory.usage("<player>").addInfo("Asks to teleport to a <player>");

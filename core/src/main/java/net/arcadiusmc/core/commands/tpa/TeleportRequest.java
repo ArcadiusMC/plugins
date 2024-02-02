@@ -74,7 +74,7 @@ public class TeleportRequest extends PlayerRequest {
 
   @Override
   protected Duration getExpiryDuration() {
-    CoreConfig config = CorePlugin.plugin().getFtcConfig();
+    CoreConfig config = CorePlugin.plugin().getCoreConfig();
     return config.tpaExpireTime();
   }
 

@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 public interface WebMap {
 
   /**
-   * Gets the current WebMap implementation, (Implemented by the 'FTC-Webmap' plugin), or
+   * Gets the current WebMap implementation, (Implemented by the web-map plugin), or
    * a no-op implementation in case the map plugin was disabled or failed to initalize
    *
    * @return WebMap implementation

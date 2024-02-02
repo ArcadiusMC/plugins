@@ -8,7 +8,7 @@ import java.util.concurrent.CompletableFuture;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.arcadiusmc.Loggers;
-import net.arcadiusmc.command.FtcSuggestions;
+import net.arcadiusmc.command.ArcSuggestions;
 import net.arcadiusmc.text.ChatEmotes;
 import net.arcadiusmc.text.parse.ChatParseFlag;
 import net.arcadiusmc.command.arguments.SuggestionFunction;
@@ -130,7 +130,7 @@ public class MessageSuggestions {
 
   private void suggestHex(final int start, String prefix) {
     suggest(start, (builder, source) -> {
-      FtcSuggestions.suggest(builder, FormatSuggestions.HEX_2_NAME);
+      ArcSuggestions.suggest(builder, FormatSuggestions.HEX_2_NAME);
     });
 
     // Skip the 6 hex digits, if possible
@@ -261,11 +261,11 @@ public class MessageSuggestions {
       return;
     }
 
-    FtcSuggestions.suggest(builder, FormatSuggestions.FORMAT_SUGGESTIONS);
+    ArcSuggestions.suggest(builder, FormatSuggestions.FORMAT_SUGGESTIONS);
   }
 
   private void suggestPlayers(SuggestionsBuilder builder, CommandSource source) {
-    FtcSuggestions.suggestPlayerNames(source, builder, false);
+    ArcSuggestions.suggestPlayerNames(source, builder, false);
   }
 
   private void suggest(int cursor, SuggestionFunction... suggestions) {

@@ -261,7 +261,7 @@ public final class JsonUtils {
   }
 
   public static Duration readDuration(JsonElement element) {
-    return FtcCodecs.DURATION.decode(new Dynamic<>(JsonOps.INSTANCE, element))
+    return ExtraCodecs.DURATION.decode(new Dynamic<>(JsonOps.INSTANCE, element))
         .map(Pair::getFirst)
         .getOrThrow(false, string -> {});
   }

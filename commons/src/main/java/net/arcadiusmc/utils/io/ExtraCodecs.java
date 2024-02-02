@@ -48,7 +48,7 @@ import org.bukkit.Registry;
 import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 
-public @UtilityClass class FtcCodecs {
+public @UtilityClass class ExtraCodecs {
 
   /* ----------------------------------------------------------- */
 
