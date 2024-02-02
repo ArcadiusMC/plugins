@@ -1,5 +1,6 @@
 package net.arcadiusmc.titles;
 
+import java.util.Optional;
 import net.arcadiusmc.text.placeholder.Placeholders;
 import net.arcadiusmc.text.placeholder.TextPlaceholder;
 
@@ -11,9 +12,8 @@ public class TitlePlaceholders {
       return null;
     }
 
-    var rankOpt = UserRanks.REGISTRY.get(match);
-    return rankOpt.map(UserRank::getTruncatedPrefix).orElse(null);
-
+    Optional<Title> rankOpt = Titles.REGISTRY.get(match);
+    return rankOpt.map(Title::getTruncatedPrefix).orElse(null);
   };
 
   static void registerAll() {

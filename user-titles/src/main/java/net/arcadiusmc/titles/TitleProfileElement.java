@@ -11,14 +11,14 @@ public class TitleProfileElement implements ProfileDisplayElement {
   @Override
   public void write(TextWriter writer, User user, DisplayContext context) {
     UserTitles component = user.getComponent(UserTitles.class);
-    UserRank rank = component.getTitle();
-    RankTier tier = component.getTier();
+    Title rank = component.getTitle();
+    Tier tier = component.getTier();
 
-    if (tier.ordinal() >= RankTier.TIER_1.ordinal()) {
-      writer.field("Tier", tier.getDisplayName());
+    if (tier != Tiers.DEFAULT) {
+      writer.field("Tier", tier.displayName());
     }
 
-    if (rank != UserRanks.DEFAULT) {
+    if (rank != Titles.DEFAULT) {
       writer.field("Rank", rank.asComponent());
     }
   }

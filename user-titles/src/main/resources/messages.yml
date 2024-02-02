@@ -1,0 +1,46 @@
+_styles:
+  normal: "gray"
+  err: "red"
+
+cmd.ranks:
+  _style: $normal
+
+  error:
+    _style: $err
+    titleAlreadySet:  "${title} is already ${player}'s title."
+    tierAlreadySet:   "${tier} is already ${player}'s tier"
+    alreadyOwned:     "${player} already has the title ${title}."
+    notOwned:         "${player} doesn't have the title ${title}."
+    defaultTitle:     "${title} is a tier-default title and cannot be removed/added."
+
+  reloaded:           "Reloaded user ranks."
+  set:                "Set ${title} as ${player}'s title."
+  added.single:       "Gave ${player} the ${title}."
+  added.multiple:     "Gave ${player} ${titles} titles."
+  removed.single:     "Removed title ${title} from ${player}."
+  removed.multiple:   "Removed ${titles} titles from ${player}."
+
+  tier.set:           "Set ${tier} as ${player}'s tier."
+
+ranksmenu:
+  _style: $normal
+
+  error:
+    _style: $err
+    titleNotOwned:    "You don't have this title"
+    titleAlreadySet:  "This is already your title"
+    confirmPurchase:  "&7Are you sure you want to buy ${title}? &aShift-Click to confirm"
+    purchaseNoTier:   "Cannot purchase this rank, You do not have ${tier}"
+
+  extras:
+    title:            "&fExtra ${tier} ranks"
+    button.name:      "&eSee all your extra ranks"
+    button.lore:      "&7You have ${extras} non-default ranks."
+
+  prices.header:      "&7Prices:"
+  prices.format:      "&7- &e${amount}"
+
+  clickToSet:         "&7Click to set as your rank."
+  activeTitle:        "&aYour active title!"
+  boughtTitle:        "&7Bough &f${title}&7 for &6${price}&r."
+  set:                "&7Set your rank to &f${title}&r!"

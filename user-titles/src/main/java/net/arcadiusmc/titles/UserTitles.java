@@ -4,15 +4,18 @@ package net.arcadiusmc.titles;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import com.mojang.serialization.JsonOps;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
 import lombok.Getter;
-import net.arcadiusmc.titles.events.TierPostChangeEvent;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.registry.Ref;
 import net.arcadiusmc.registry.Ref.KeyRef;
 import net.arcadiusmc.registry.Registries;
+import net.arcadiusmc.titles.events.TierPostChangeEvent;
 import net.arcadiusmc.user.ComponentName;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.UserComponent;
@@ -20,15 +23,14 @@ import net.arcadiusmc.user.UserOfflineException;
 import net.arcadiusmc.utils.TransformingSet;
 import net.arcadiusmc.utils.io.JsonUtils;
 import net.arcadiusmc.utils.io.JsonWrapper;
-import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 /**
  * Data and functions relating to tiers and titles a user can have.
  *
- * @see UserRank
- * @see RankTier
+ * @see Title
+ * @see Tier
  * @see #ensureSynced()
  */
 @ComponentName("rankData")
@@ -46,19 +48,19 @@ public class UserTitles implements UserComponent {
   /**
    * The user's currently active title
    */
-  private KeyRef<UserRank> title = UserRanks.DEFAULT_REF;
+  private KeyRef<Title> title = Titles.DEFAULT_REF;
 
   /**
    * The user's current tier
    */
   @Getter
-  private RankTier tier = RankTier.NONE;
+  private Tier tier = Tiers.DEFAULT;
 
   /**
    * All non-default titles available to this user
    */
-  private final TransformingSet<String, UserRank> available
-      = Registries.keyBackedSet(UserRanks.REGISTRY);
+  private final TransformingSet<String, Title> available
+      = Registries.keyBackedSet(Titles.REGISTRY);
 
   /* ----------------------------- CONSTRUCTORS ------------------------------ */
 
@@ -73,12 +75,12 @@ public class UserTitles implements UserComponent {
    *
    * @return The user's non-default titles
    */
-  public Set<UserRank> getAvailable() {
+  public Set<Title> getAvailable() {
     return available;
   }
 
-  public UserRank getTitle() {
-    return title.orElse(UserRanks.REGISTRY, UserRanks.DEFAULT);
+  public Title getTitle() {
+    return title.orElse(Titles.REGISTRY, Titles.DEFAULT);
   }
 
   /* ----------------------------- TITLES ------------------------------ */
@@ -86,14 +88,14 @@ public class UserTitles implements UserComponent {
   /**
    * Tests if this user has the given title
    * <p>
-   * If the given title is a 'default' title, then this will call {@link #hasTier(RankTier)} with
+   * If the given title is a 'default' title, then this will call {@link #hasTier(Tier)} with
    * the given title's tier.
    *
    * @param title The title to test for
    * @return True, if the user has this title
-   * @see UserRank#isDefaultTitle()
+   * @see Title#isDefaultTitle()
    */
-  public boolean hasTitle(UserRank title) {
+  public boolean hasTitle(Title title) {
     if (title.isDefaultTitle()) {
       return hasTier(title.getTier());
     }
@@ -113,12 +115,12 @@ public class UserTitles implements UserComponent {
   /**
    * Adds the given title to this user.
    * <p>
-   * Delegate for: {@link #addTitle(UserRank, boolean)} with the boolean parameter as true
+   * Delegate for: {@link #addTitle(Title, boolean)} with the boolean parameter as true
    *
    * @param title The title to add
-   * @see #addTitle(UserRank, boolean)
+   * @see #addTitle(Title, boolean)
    */
-  public void addTitle(UserRank title) {
+  public void addTitle(Title title) {
     addTitle(title, true);
   }
 
@@ -127,7 +129,7 @@ public class UserTitles implements UserComponent {
    * if the given title's tier is higher than the current tier.
    * <p>
    * The difference between the second and third parameters is that <code>givePermissions</code> is
-   * passed onto {@link #setTier(RankTier)} if the given title has a higher tier than the
+   * passed onto {@link #setTier(Tier)} if the given title has a higher tier than the
    * user's current tier, and
    * <code>setTier</code> determines if the tier check should
    * be done at all.
@@ -135,7 +137,7 @@ public class UserTitles implements UserComponent {
    * @param title           The title to add
    * @param setTier         True, to test if the user's tier should be changed if it's higher
    */
-  public void addTitle(UserRank title, boolean setTier) {
+  public void addTitle(Title title, boolean setTier) {
     if (!title.isDefaultTitle()) {
       available.add(title);
 
@@ -154,7 +156,7 @@ public class UserTitles implements UserComponent {
    *
    * @param title The title to remove
    */
-  public void removeTitle(UserRank title) {
+  public void removeTitle(Title title) {
     if (title.isDefaultTitle()) {
       return;
     }
@@ -175,8 +177,8 @@ public class UserTitles implements UserComponent {
    *
    * @param title The title to set
    */
-  public void setTitle(UserRank title) {
-    var titleKey = UserRanks.REGISTRY.getKey(title).orElseThrow();
+  public void setTitle(Title title) {
+    var titleKey = Titles.REGISTRY.getKey(title).orElseThrow();
     this.title = Ref.key(titleKey);
 
     if (!user.isOnline()) {
@@ -194,24 +196,24 @@ public class UserTitles implements UserComponent {
    * @param tier The tier to test against
    * @return True, if the user's current tier is higher than or equal to the given tier
    */
-  public boolean hasTier(RankTier tier) {
-    return getTier().ordinal() >= tier.ordinal();
+  public boolean hasTier(Tier tier) {
+    return this.tier.isGreaterThan(tier) || this.tier.getPriority() == tier.getPriority();
   }
 
   /**
    * Adds the given tier to this user.
    * <p>
-   * This method works by testing the given tier with {@link #hasTier(RankTier)}. If that returns
-   * true, this function does nothing, else it calls {@link #setTier(RankTier)}
+   * This method works by testing the given tier with {@link #hasTier(Tier)}. If that returns
+   * true, this function does nothing, else it calls {@link #setTier(Tier)}
    * <p>
    * Exists so that a user's tier is never accidentally assigned to a lower tier by accident and
    * makes the aforementioned possible without having to write this function manually everytime
    *
    * @param tier The tier to add
-   * @see #hasTier(RankTier)
-   * @see #setTier(RankTier)
+   * @see #hasTier(Tier)
+   * @see #setTier(Tier)
    */
-  public void addTier(RankTier tier) {
+  public void addTier(Tier tier) {
     if (hasTier(tier)) {
       return;
     }
@@ -228,28 +230,28 @@ public class UserTitles implements UserComponent {
    *
    * @param tier                   The tier to set
    */
-  public void setTier(RankTier tier) {
+  public void setTier(Tier tier) {
     Objects.requireNonNull(tier);
 
     if (this.tier == tier) {
       return;
     }
 
-    if (getTier() != RankTier.NONE) {
+    if (getTier() != Tiers.DEFAULT) {
       Commands.executeConsole("lp user %s parent remove %s",
-          user.getName(), getTier().getLuckPermsGroup()
+          user.getName(), getTier().getPermissionGroup()
       );
     }
 
-    if (tier != RankTier.NONE) {
+    if (tier != Tiers.DEFAULT) {
       Commands.executeConsole("lp user %s parent add %s",
-          user.getName(), tier.getLuckPermsGroup()
+          user.getName(), tier.getPermissionGroup()
       );
     }
 
-    var title = getTitle();
-    if (title.getTier().ordinal() > tier.ordinal()) {
-      setTitle(UserRanks.DEFAULT);
+    Title currentTitle = getTitle();
+    if (currentTitle.getTier().isGreaterThan(tier)) {
+      setTitle(Titles.DEFAULT);
     }
 
     // This is a sin, but it has to fire after the tier has been changed
@@ -260,7 +262,7 @@ public class UserTitles implements UserComponent {
   }
 
   /**
-   * Ensures the user's {@link RankTier} is synced to the user's permission
+   * Ensures the user's {@link Tier} is synced to the user's permission
    * group and that the user's permission group is synced to the user's tier.
    * <p>
    * If the user has a permission group of a higher tier than the one they
@@ -272,11 +274,11 @@ public class UserTitles implements UserComponent {
   public void ensureSynced() throws UserOfflineException {
     user.ensureOnline();
 
-    var values = RankTier.values();
-    ArrayUtils.reverse(values);
+    ArrayList<Tier> values = new ArrayList<>(Tiers.REGISTRY.values());
+    values.sort(Comparator.naturalOrder());
 
-    for (RankTier tier : values) {
-      if (user.hasPermission("group." + tier.getLuckPermsGroup())) {
+    for (Tier tier : values) {
+      if (user.hasPermission("group." + tier.getPermissionGroup())) {
         if (hasTier(tier)) {
           continue;
         }
@@ -287,12 +289,12 @@ public class UserTitles implements UserComponent {
         return;
       } else if (hasTier(tier)) {
         LOGGER.info("Adding group {} to {}, due to title/group sync",
-            tier.getLuckPermsGroup(), user.getName()
+            tier.getPermissionGroup(), user.getName()
         );
 
         Commands.executeConsole(
             "lp user %s parent add %s",
-            user.getName(), tier.getLuckPermsGroup()
+            user.getName(), tier.getPermissionGroup()
         );
         return;
       }
@@ -301,13 +303,13 @@ public class UserTitles implements UserComponent {
 
   /**
    * Clears all available titles, sets the active title to
-   * {@link UserRanks#DEFAULT} and the current
-   * tier to {@link RankTier#NONE}
+   * {@link Titles#DEFAULT} and the current
+   * tier to {@link Tiers#DEFAULT}
    */
   public void clear() {
     available.clear();
-    title = UserRanks.DEFAULT_REF;
-    tier = RankTier.NONE;
+    title = Titles.DEFAULT_REF;
+    tier = Tiers.DEFAULT;
   }
 
   /* ----------------------------- SERIALIZATION ------------------------------ */
@@ -321,7 +323,15 @@ public class UserTitles implements UserComponent {
 
     var json = JsonWrapper.wrap(element.getAsJsonObject());
 
-    tier = json.getEnum(KEY_TIER, RankTier.class, RankTier.NONE);
+    if (json.has(KEY_TIER)) {
+      tier = Tiers.REGISTRY.decode(JsonOps.INSTANCE, json.get(KEY_TIER))
+          .mapError(s -> "Couldn't load tier " + s)
+          .resultOrPartial(LOGGER::error)
+          .orElse(Tiers.DEFAULT);
+    } else {
+      LOGGER.error("Missing 'tier' value, defaulting to 'none'");
+      tier = Tiers.DEFAULT;
+    }
 
     if (json.has(KEY_TITLE)) {
       this.title = Ref.key(json.getString(KEY_TITLE));
@@ -339,11 +349,14 @@ public class UserTitles implements UserComponent {
   public @Nullable JsonElement serialize() {
     var json = JsonWrapper.create();
 
-    if (tier != RankTier.NONE) {
-      json.addEnum(KEY_TIER, tier);
+    if (tier != Tiers.DEFAULT) {
+      Tiers.REGISTRY.encode(JsonOps.INSTANCE, tier)
+          .mapError(s -> "Failed to save tier: " + s)
+          .resultOrPartial(LOGGER::error)
+          .ifPresent(element -> json.add(KEY_TIER, element));
     }
 
-    if (!title.key().equalsIgnoreCase(UserRanks.DEFAULT_NAME)) {
+    if (!title.key().equalsIgnoreCase(Titles.DEFAULT_NAME)) {
       json.add(KEY_TITLE, title.key());
     }
 

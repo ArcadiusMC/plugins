@@ -1,7 +1,7 @@
 package net.arcadiusmc.titles.events;
 
 import lombok.Getter;
-import net.arcadiusmc.titles.RankTier;
+import net.arcadiusmc.titles.Tier;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.event.UserEvent;
 import org.bukkit.event.HandlerList;
@@ -13,21 +13,21 @@ public class TierPostChangeEvent extends UserEvent {
   @Getter
   private static final HandlerList handlerList = new HandlerList();
 
-  private final RankTier from;
-  private final RankTier to;
+  private final Tier from;
+  private final Tier to;
 
-  public TierPostChangeEvent(User user, RankTier from, RankTier to) {
+  public TierPostChangeEvent(User user, Tier from, Tier to) {
     super(user);
     this.from = from;
     this.to = to;
   }
 
   public boolean isDemotion() {
-    return to.ordinal() < from.ordinal();
+    return to.isLesserThan(from);
   }
 
   public boolean isPromotion() {
-    return to.ordinal() > from.ordinal();
+    return to.isGreaterThan(from);
   }
 
   @Override

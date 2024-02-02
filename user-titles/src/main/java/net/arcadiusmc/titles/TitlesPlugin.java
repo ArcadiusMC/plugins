@@ -1,16 +1,22 @@
 package net.arcadiusmc.titles;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.JsonOps;
 import java.nio.file.Path;
-import lombok.Getter;
+import java.util.Map;
 import net.arcadiusmc.ArcadiusServer;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.command.Commands;
-import net.arcadiusmc.registry.Registries;
+import net.arcadiusmc.events.Events;
+import net.arcadiusmc.registry.Registry;
+import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.loader.MessageList;
+import net.arcadiusmc.text.loader.MessageLoader;
 import net.arcadiusmc.titles.commands.TitlesCommand;
+import net.arcadiusmc.titles.listener.PlayerJoinListener;
 import net.arcadiusmc.user.UserService;
 import net.arcadiusmc.user.Users;
 import net.arcadiusmc.user.name.UserNameFactory;
-import net.arcadiusmc.utils.TomlConfigs;
 import net.arcadiusmc.utils.io.PluginJar;
 import net.arcadiusmc.utils.io.SerializationHelper;
 import net.forthecrown.grenadier.annotations.AnnotatedCommandContext;
@@ -21,19 +27,29 @@ public class TitlesPlugin extends JavaPlugin {
 
   private static final Logger LOGGER = Loggers.getLogger();
 
-  @Getter
-  private TitlesConfig titlesConfig;
+  private final MessageList messageList = MessageList.create();
+
+  private Path ranksFile;
+  private Path tiersFile;
 
   @Override
   public void onEnable() {
+    Path dataFolder = getDataFolder().toPath();
+    ranksFile = dataFolder.resolve("ranks.yml");
+    tiersFile = dataFolder.resolve("tiers.yml");
+
+    Messages.MESSAGE_LIST.addChild("titles", messageList);
+
     UserService service = Users.getService();
     service.registerComponent(UserTitles.class);
     addNameElements(service.getNameFactory());
 
-    loadTitles();
+    load();
 
     AnnotatedCommandContext ctx = Commands.createAnnotationContext();
     ctx.registerCommand(new TitlesCommand());
+
+    Events.register(new PlayerJoinListener());
 
     ArcadiusServer server = ArcadiusServer.server();
     TitleSettings.add(server.getGlobalSettingsBook());
@@ -45,6 +61,8 @@ public class TitlesPlugin extends JavaPlugin {
 
   @Override
   public void onDisable() {
+    Messages.MESSAGE_LIST.removeChild("titles");
+
     var nameFactory = Users.getService().getNameFactory();
     nameFactory.removePrefix("title_prefix");
     nameFactory.removeField("title");
@@ -53,7 +71,7 @@ public class TitlesPlugin extends JavaPlugin {
 
   @Override
   public void reloadConfig() {
-    titlesConfig = TomlConfigs.loadPluginConfig(this, TitlesConfig.class);
+    MessageLoader.loadPluginMessages(this, messageList);
   }
 
   void addNameElements(UserNameFactory factory) {
@@ -62,14 +80,14 @@ public class TitlesPlugin extends JavaPlugin {
     factory.addPrefix("title_prefix", 1, (user, context) -> {
       // Don't display rank prefix if the user has disabled it,
       // only in certain circumstances though
-      if (!UserRanks.showRank(context)) {
+      if (!Titles.showRank(context)) {
         return null;
       }
 
       UserTitles titles = user.getComponent(UserTitles.class);
-      UserRank rank = titles.getTitle();
+      Title rank = titles.getTitle();
 
-      if (rank == UserRanks.DEFAULT) {
+      if (rank == Titles.DEFAULT) {
         return null;
       }
 
@@ -77,38 +95,40 @@ public class TitlesPlugin extends JavaPlugin {
     });
   }
 
-  public void loadTitles() {
-    UserRanks.clearNonConstants();
-    PluginJar.saveResources("ranks.toml", ranksFile());
+  public void load() {
+    clearNonConstants(Titles.REGISTRY);
+    clearNonConstants(Tiers.REGISTRY);
 
-    SerializationHelper.readAsJson(ranksFile(), wrapper -> {
-      for (var e : wrapper.entrySet()) {
-        if (!Registries.isValidKey(e.getKey())) {
-          LOGGER.warn("{} is an invalid registry key", e.getKey());
-          continue;
-        }
+    PluginJar.saveResources("ranks.yml", ranksFile);
+    PluginJar.saveResources("tiers.yml", tiersFile);
 
-        if (!(e.getValue().isJsonObject())) {
-          LOGGER.warn("Expected {} to be JSON object, was {}",
-              e.getKey(), e.getValue()
-          );
-          continue;
-        }
+    loadToRegistry(tiersFile, "tiers", Tiers.REGISTRY, TitleCodecs.TIER_MAP);
+    loadToRegistry(ranksFile, "ranks", Titles.REGISTRY, TitleCodecs.RANK_MAP);
+  }
 
-        // IDK if it matters, but even though there's an init call in
-        // Bootstrap, this is at the moment, the first call to this class
-        // during startup, meaning this call loads the class
-        UserRanks.deserialize(e.getValue())
-            .apply(s -> {
-              LOGGER.warn("Couldn't parse rank at {}: {}", e.getKey(), s);
-            }, rank -> {
-              UserRanks.REGISTRY.register(e.getKey(), rank);
+  static <R> void loadToRegistry(
+      Path path,
+      String errorPrefix,
+      Registry<R> registry,
+      Codec<Map<String, R>> codec
+  ) {
+    SerializationHelper.readAsJson(path, wrapper -> {
+      codec.parse(JsonOps.INSTANCE, wrapper.getSource())
+          .mapError(s -> "Failed to load " + errorPrefix + ": " + s)
+          .resultOrPartial(LOGGER::error)
+          .ifPresent(map -> {
+            map.forEach((s, r) -> {
+              if (s.equals("example")) {
+                return;
+              }
+
+              registry.register(s, r);
             });
-      }
+          });
     });
   }
 
-  private Path ranksFile() {
-    return getDataFolder().toPath().resolve("ranks.toml");
+  static <R extends ReloadableElement> void clearNonConstants(Registry<R> registry) {
+    registry.removeIf(rHolder -> rHolder.getValue().isReloadable());
   }
 }

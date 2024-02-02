@@ -5,27 +5,26 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import net.arcadiusmc.titles.RankMenu;
 import net.arcadiusmc.command.Commands;
-import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.arguments.RegistryArguments;
+import net.arcadiusmc.registry.Holder;
+import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.TextJoiner;
+import net.arcadiusmc.text.TextWriters;
+import net.arcadiusmc.titles.RankMenu;
+import net.arcadiusmc.titles.Tier;
+import net.arcadiusmc.titles.Tiers;
+import net.arcadiusmc.titles.Title;
+import net.arcadiusmc.titles.Titles;
+import net.arcadiusmc.titles.TitlesPlugin;
+import net.arcadiusmc.titles.UserTitles;
+import net.arcadiusmc.user.User;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.annotations.Argument;
 import net.forthecrown.grenadier.annotations.CommandData;
 import net.forthecrown.grenadier.annotations.VariableInitializer;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.forthecrown.grenadier.types.ArrayArgument;
-import net.arcadiusmc.registry.Holder;
-import net.arcadiusmc.text.Text;
-import net.arcadiusmc.text.TextJoiner;
-import net.arcadiusmc.text.TextWriters;
-import net.arcadiusmc.titles.RankTier;
-import net.arcadiusmc.titles.TitlesPlugin;
-import net.arcadiusmc.titles.UserRank;
-import net.arcadiusmc.titles.UserRanks;
-import net.arcadiusmc.titles.UserTitles;
-import net.arcadiusmc.user.User;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -42,12 +41,17 @@ public class TitlesCommand {
 
   @VariableInitializer
   void createVars(Map<String, Object> map) {
-    map.put("tier", ArgumentTypes.enumType(RankTier.class));
+    map.put("tier",
+        ArgumentTypes.map(
+            new RegistryArguments<>(Tiers.REGISTRY, "Tier"),
+            Holder::getValue
+        )
+    );
 
-    ArgumentType<Holder<UserRank>> rankType = new RegistryArguments<>(UserRanks.REGISTRY, "Rank");
+    ArgumentType<Holder<Title>> rankType = new RegistryArguments<>(Titles.REGISTRY, "Rank");
 
-    ArgumentType<UserRank> mapped = ArgumentTypes.map(rankType, Holder::getValue);
-    ArrayArgument<UserRank> array = ArgumentTypes.array(mapped);
+    ArgumentType<Title> mapped = ArgumentTypes.map(rankType, Holder::getValue);
+    ArrayArgument<Title> array = ArgumentTypes.array(mapped);
 
     map.put("title", mapped);
     map.put("titles", array);
@@ -60,9 +64,11 @@ public class TitlesCommand {
 
   void reloadPlugin(CommandSource source) {
     TitlesPlugin plugin = JavaPlugin.getPlugin(TitlesPlugin.class);
-    plugin.reloadConfig();
 
-    source.sendSuccess(Component.text("Reloaded user ranks"));
+    plugin.reloadConfig();
+    plugin.load();
+
+    source.sendSuccess(Messages.renderText("cmd.ranks.reloaded", source));
   }
 
   void showTitlesInfo(CommandSource source, @Argument(ARG) User user) {
@@ -74,12 +80,12 @@ public class TitlesCommand {
     writer.formatted("{0, user}'s rank tier and titles:", user);
     writer.field("Tier", titles.getTier().getDisplayName());
 
-    UserRank title = titles.getTitle();
-    if (title != UserRanks.DEFAULT) {
+    Title title = titles.getTitle();
+    if (title != Titles.DEFAULT) {
       writer.field("Title", title);
     }
 
-    Set<UserRank> available = titles.getAvailable();
+    Set<Title> available = titles.getAvailable();
     if (!available.isEmpty()) {
       writer.field("Available", TextJoiner.onComma().add(available));
     }
@@ -87,38 +93,44 @@ public class TitlesCommand {
     source.sendMessage(writer.asComponent());
   }
 
-  void setTitle(CommandSource source, @Argument(ARG) User user, @Argument(TITLE) UserRank rank)
+  void setTitle(CommandSource source, @Argument(ARG) User user, @Argument(TITLE) Title rank)
       throws CommandSyntaxException
   {
     UserTitles titles = user.getComponent(UserTitles.class);
 
     if (titles.getTitle().equals(rank)) {
-      throw Exceptions.format("{0} is already {1, user}'s title", rank, user);
+      throw Messages.render("cmd.ranks.error.titleAlreadySet")
+          .addValue("player", user)
+          .addValue("title", rank.asComponent())
+          .exception(source);
     }
 
     titles.setTitle(rank);
 
     source.sendSuccess(
-        Text.format("Set &f{0}&r as &e{1, user}&r's active title.",
-            NamedTextColor.GRAY,
-            rank, user
-        )
+        Messages.render("cmd.ranks.set")
+            .addValue("player", user)
+            .addValue("title", rank.asComponent())
+            .create(source)
     );
   }
 
   void addTitles(
       CommandSource source,
       @Argument(ARG) User user,
-      @Argument(TITLES) Collection<UserRank> ranks
+      @Argument(TITLES) Collection<Title> ranks
   ) throws CommandSyntaxException {
 
     UserTitles titles = user.getComponent(UserTitles.class);
 
-    for (UserRank rank : ranks) {
+    for (Title rank : ranks) {
       ensureNotDefault(rank);
 
       if (titles.hasTitle(rank)) {
-        throw Exceptions.format("{0, user} already has the title {1}", user, rank);
+        throw Messages.render("cmd.ranks.error.alreadyOwned")
+            .addValue("player", user)
+            .addValue("title", rank.asComponent())
+            .exception(source);
       }
     }
 
@@ -126,15 +138,17 @@ public class TitlesCommand {
 
     if (ranks.size() == 1) {
       source.sendSuccess(
-          Text.format("Gave &e{0, user}&r the &f{1}&r title.",
-              user, ranks.iterator().next()
-          )
+          Messages.render("cmd.ranks.added.single")
+              .addValue("player", user)
+              .addValue("title", ranks.iterator().next().asComponent())
+              .create(source)
       );
     } else {
       source.sendSuccess(
-          Text.format("Gave &e{0, user}&r &f{1, number}&r titles.",
-              user, ranks.size()
-          )
+          Messages.render("cmd.ranks.added.multiple")
+              .addValue("player", user)
+              .addValue("titles", ranks.size())
+              .create(source)
       );
     }
   }
@@ -142,15 +156,18 @@ public class TitlesCommand {
   void removeTitles(
       CommandSource source,
       @Argument(ARG) User user,
-      @Argument(TITLES) Collection<UserRank> ranks
+      @Argument(TITLES) Collection<Title> ranks
   ) throws CommandSyntaxException {
     UserTitles titles = user.getComponent(UserTitles.class);
 
-    for (UserRank rank : ranks) {
+    for (Title rank : ranks) {
       ensureNotDefault(rank);
 
       if (!titles.hasTitle(rank)) {
-        throw Exceptions.format("{0, user} already doesn't have the title {1}", user, rank);
+        throw Messages.render("cmd.ranks.error.notOwned")
+            .addValue("player", user)
+            .addValue("title", rank.asComponent())
+            .exception(source);
       }
     }
 
@@ -158,44 +175,50 @@ public class TitlesCommand {
 
     if (ranks.size() == 1) {
       source.sendSuccess(
-          Text.format("Removed the &f{1}&r title from &e{0, user}&r.",
-              user, ranks.iterator().next()
-          )
+          Messages.render("cmd.ranks.removed.single")
+              .addValue("player", user)
+              .addValue("title", ranks.iterator().next().asComponent())
+              .create(source)
       );
     } else {
       source.sendSuccess(
-          Text.format("Removed &f{1}&r titles from &e{0, user}&r.",
-              user, ranks.size()
-          )
+          Messages.render("cmd.ranks.removed.multiple")
+              .addValue("player", user)
+              .addValue("titles", ranks.size())
+              .create(source)
       );
     }
   }
 
-  void setTier(CommandSource source, @Argument(ARG) User user, @Argument(TIER) RankTier tier)
+  void setTier(CommandSource source, @Argument(ARG) User user, @Argument(TIER) Tier tier)
       throws CommandSyntaxException
   {
     UserTitles titles = user.getComponent(UserTitles.class);
 
     if (titles.getTier() == tier) {
-      throw Exceptions.format("{0} is already {1, user}'s rank tier", tier.getDisplayName(), user);
+      throw Messages.render("cmd.ranks.error.tierAlreadySet")
+          .addValue("tier", tier.displayName())
+          .addValue("player", user)
+          .exception(source);
     }
 
     titles.setTier(tier);
 
     source.sendSuccess(
-        Text.format("Set &e{0, user}&r's rank tier to {1}",
-            user, tier.getDisplayName()
-        )
+        Messages.render("cmd.ranks.tier.set")
+            .addValue("tier", tier.displayName())
+            .addValue("player", user.displayName())
+            .create(source)
     );
   }
 
-  static void ensureNotDefault(UserRank rank) throws CommandSyntaxException {
+  static void ensureNotDefault(Title rank) throws CommandSyntaxException {
     if (!rank.isDefaultTitle()) {
       return;
     }
 
-    throw Exceptions.format("{0} is a tier-default title, these cannot be removed or added",
-        rank
-    );
+    throw Messages.render("cmd.ranks.error.defaultTitle")
+        .addValue("title", rank.asComponent())
+        .exception();
   }
 }

@@ -1,0 +1,47 @@
+#
+# Specifies a list of Rank Tiers that can be used in 'ranks.yml'. This file
+# will be loaded before that one.
+#
+
+#
+# Example section to show how sections are meant to be structured
+#
+# Values:
+# - permission-group:
+#     Luck perms permission group, this will be the permission
+#     group given to the player when they get this tier.
+#     Default: If not set, error
+#
+# - display-name:
+#     The display name of the tier. Used only as text displayed
+#     to players
+#     Default: If not set, error
+#
+# - display-item:
+#     Item used in the /ranks GUI to show players the ranks
+#     that belong to this tier.
+#     Default: If not set, error
+#
+# - description:
+#     Description of the Tier. Only shown in the /ranks GUI
+#     Default: "" (Empty text)
+#
+# - priority:
+#     Tier order priority. Higher priority means this rank is
+#     considered higher than others
+#     Default: 0
+#
+example:
+  permission-group: "default"
+  priority: 1
+
+  display-item: "minecraft:stone"
+
+  display-name: "Example Tier"
+  description: "This is a description :)"
+
+  menu-decorations:
+    - slot: 1,2
+      item: "minecraft:stone"
+    - slot: 1,3
+      item: "minecraft:glowstone"
