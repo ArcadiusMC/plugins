@@ -1,5 +1,6 @@
 package net.arcadiusmc.utils.io;
 
+import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
@@ -41,6 +42,7 @@ import net.minecraft.nbt.NbtOps;
 import org.bukkit.Bukkit;
 import org.bukkit.Keyed;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.World;
@@ -231,7 +233,13 @@ public @UtilityClass class FtcCodecs {
       Object::toString
   );
 
+  public static final Codec<Material> MATERIAL_CODEC = registryCodec(Registry.MATERIAL);
+
   /* ----------------------------------------------------------- */
+
+  public static <V> Codec<ImmutableList<V>> immutableList(Codec<V> baseType) {
+    return baseType.listOf().xmap(ImmutableList::copyOf, Function.identity());
+  }
 
   public static <V> Codec<V[]> arrayOf(Codec<V> baseType, Class<V> arrayValueType) {
     return baseType.listOf().xmap(
