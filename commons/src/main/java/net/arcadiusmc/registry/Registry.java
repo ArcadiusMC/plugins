@@ -852,6 +852,15 @@ public class Registry<V> implements Iterable<V> {
     };
   }
 
+  public <S> DataResult<S> encode(DynamicOps<S> ops, V value) {
+    return getKey(value)
+        .map(ops::createString)
+        .map(Results::success)
+        .orElseGet(() -> {
+          return Results.error("Unregistered value: %s", value);
+        });
+  }
+
   public <S> DataResult<V> decode(DynamicOps<S> ops, S value) {
     return decode(new Dynamic<>(ops, value));
   }
