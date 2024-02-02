@@ -36,7 +36,7 @@ class PlayerLoggingListener implements Listener {
     this.plugin = plugin;
   }
 
-  @EventHandler(ignoreCancelled = true)
+  @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
   public void onPlayerJoin(PlayerJoinEvent event) {
     Player player = event.getPlayer();
 
