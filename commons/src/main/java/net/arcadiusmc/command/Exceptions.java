@@ -10,6 +10,7 @@ import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.loader.MessageRef;
 import net.arcadiusmc.user.User;
+import net.arcadiusmc.user.currency.Currency;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Grenadier;
 import net.forthecrown.grenadier.SyntaxExceptions;
@@ -204,6 +205,13 @@ public interface Exceptions {
     return MESSAGE_LIST.render("errors.cannotAfford")
         .addValue("amountRaw", amount)
         .addValue("amount", currency(amount))
+        .exception(viewer);
+  }
+
+  static CommandSyntaxException cannotAfford(Audience viewer, Number amount, Currency currency) {
+    return MESSAGE_LIST.render("errors.cannotAfford")
+        .addValue("amountRaw", amount)
+        .addValue("amount", currency.format(amount.intValue()))
         .exception(viewer);
   }
 }
