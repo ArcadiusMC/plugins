@@ -1,9 +1,14 @@
 package net.arcadiusmc.user.currency;
 
+import com.mojang.serialization.Codec;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.fastutil.objects.ObjectSets;
+import java.util.HashMap;
+import java.util.Map;
 import net.arcadiusmc.user.Users;
+import net.arcadiusmc.utils.io.FtcCodecs;
 
 public final class CurrencyMaps {
   private CurrencyMaps() {}
@@ -22,6 +27,24 @@ public final class CurrencyMaps {
       return emptyMap();
     }
     return new UnmodifiableMap<>(map);
+  }
+
+  public static <V> Codec<CurrencyMap<V>> createCodec(Codec<V> valueCodec) {
+    return Codec.unboundedMap(FtcCodecs.KEY_CODEC, valueCodec)
+        .xmap(
+            stringVMap -> {
+              CurrencyMap<V> map = newMap();
+              stringVMap.forEach(map::putCurrency);
+              return map;
+            },
+            vCurrencyMap -> {
+              Map<String, V> map = new HashMap<>();
+              for (Entry<String, V> entry : vCurrencyMap.idEntrySet()) {
+                map.put(entry.getKey(), entry.getValue());
+              }
+              return map;
+            }
+        );
   }
 
   public static <T> CurrencyMap<T> newMap() {
