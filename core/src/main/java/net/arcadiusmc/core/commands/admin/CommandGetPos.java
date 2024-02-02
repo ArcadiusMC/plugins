@@ -98,7 +98,7 @@ public class CommandGetPos extends BaseCommand {
     return String.format(format,
         l.getWorld().getName(),
         round ? Math.floor(l.getX()) + 0.5D : l.getX(),
-        l.getY(),
+        round ? Math.floor(l.getY()) : l.getY(),
         round ? Math.floor(l.getZ()) + 0.5D : l.getZ(),
         round ? roundRotation(l.getYaw()) : l.getYaw(),
         round ? roundRotation(l.getPitch()) : l.getPitch()
