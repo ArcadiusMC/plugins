@@ -32,7 +32,7 @@ public class Slot {
 
   /* ----------------------------- CONSTANTS ------------------------------ */
 
-  static final Codec<Slot> CODEC;
+  public static final Codec<Slot> CODEC;
 
   /**
    * The size of possible column positions (x coordinates) in an inventory, basically max column pos
