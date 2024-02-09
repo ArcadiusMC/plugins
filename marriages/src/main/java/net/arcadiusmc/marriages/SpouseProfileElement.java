@@ -1,0 +1,36 @@
+package net.arcadiusmc.marriages;
+
+import net.arcadiusmc.text.TextWriter;
+import net.arcadiusmc.user.User;
+import net.arcadiusmc.user.name.DisplayContext;
+import net.arcadiusmc.user.name.FieldPlacement;
+import net.arcadiusmc.user.name.ProfileDisplayElement;
+
+public class SpouseProfileElement implements ProfileDisplayElement {
+
+  @Override
+  public void write(TextWriter writer, User user, DisplayContext context) {
+    if (!context.profileViewable()) {
+      return;
+    }
+
+    var spouse = Marriages.getSpouse(user);
+
+    if (spouse == null) {
+      return;
+    }
+
+    var factory = context.factory();
+    DisplayContext ctx
+        = factory.createContext(spouse, context.viewer(), spouse.defaultRenderFlags())
+        .withIntent(context.intent());
+
+    var displayName = factory.formatDisplayName(spouse, ctx);
+    writer.field("Spouse", displayName);
+  }
+
+  @Override
+  public FieldPlacement placement() {
+    return FieldPlacement.ALL;
+  }
+}
