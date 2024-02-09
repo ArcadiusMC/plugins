@@ -27,6 +27,7 @@ import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.utils.PluginUtil;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
@@ -204,5 +205,55 @@ public final class Commands {
 
   public static void removeChild(CommandNode<?> node, String name) {
     node.removeCommand(name);
+  }
+
+  /**
+   * Replaces command placeholders in the specified {@code command}.
+   * <p>
+   *
+   * Placeholders: <table>
+   *  <tr><th>Placeholder</th><th>Description</th></tr>
+   *  <tr><td>%player</td> - Player's name</td></tr>
+   *  <tr><td>%player.block</td> <td>Player's block position, eg: 1 2 3</td></tr>
+   *  <tr><td>%player.pos</td> <td>Player's position, eg: 1.3242 1.421 5.2300023</td></tr>
+   *  <tr><td>%player.worldkey</td> <td>Key of the player's world, eg: minecraft:overworld</td></tr>
+   *  <tr><td>%player.world</td> <td>Name of the player's world, eg: world_the_end</td></tr>
+   *  <tr><td>%player.x</td> <td>Player's X coordinate, eg: 1.343452</td></tr>
+   *  <tr><td>%player.y</td> <td>Player's Y coordinate, eg: 1.000564</td></tr>
+   *  <tr><td>%player.z</td> <td>Player's Z coordinate, eg: -546.59674</td></tr>
+   *  <tr><td>%player.bx</td> <td>Player's X block coordinate, eg: 1</td></tr>
+   *  <tr><td>%player.by</td> <td>Player's X block coordinate, eg: 546</td></tr>
+   *  <tr><td>%player.bz</td> <td>Player's X block coordinate, eg: 25551</td></tr>
+   *  <tr><td>%player.yaw</td> <td>Player's yaw rotation, eg: 90</td></tr>
+   *  <tr><td>%player.pitch</td> <td>Player's pitch rotation, eg: 90</td></tr>
+   *  <tr><td>%player.uuid</td> <td>Player's UUID, eg: ff09eaf1-b01e-4a17-a6f9-81468ce42f3a</td></tr>
+   * </table>
+   *
+   * @param command Base command string
+   * @param player Player
+   *
+   * @return Formatted command string
+   */
+  public static String replaceCommandPlaceholders(String command, Player player) {
+    Location l = player.getLocation();
+
+    String block = String.format("%s %s %s", l.getBlockX(), l.getBlockY(), l.getBlockZ());
+    String position = String.format("%s %s %s", l.getX(), l.getY(), l.getZ());
+
+    return command
+        .replace("%player", player.getName())
+        .replace("%player.block", block)
+        .replace("%player.pos", position)
+        .replace("%player.worldkey", l.getWorld().getKey() + "")
+        .replace("%player.world", l.getWorld().getName())
+        .replace("%player.x", l.getX() + "")
+        .replace("%player.y", l.getY() + "")
+        .replace("%player.z", l.getZ() + "")
+        .replace("%player.bx", l.getBlockX() + "")
+        .replace("%player.by", l.getBlockY() + "")
+        .replace("%player.bz", l.getBlockZ() + "")
+        .replace("%player.yaw", l.getYaw() + "")
+        .replace("%player.pitch", l.getPitch() + "")
+        .replace("%player.uuid", player.getUniqueId() + "");
   }
 }
