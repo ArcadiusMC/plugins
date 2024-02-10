@@ -1,9 +1,9 @@
 package net.arcadiusmc.utils.inventory;
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -71,15 +71,19 @@ public abstract class ItemBuilder<T extends ItemBuilder<T>> implements Cloneable
   /* -------------------------------- LORE -------------------------------- */
 
   public T addLore(String lore) {
-    return addLoreRaw(Text.stringToItemText(lore));
+    return addLore(Text.renderString(lore));
   }
 
   public T addLore(Component lore) {
-    return addLoreRaw(Text.wrapForItems(lore));
+    Text.splitNewlines(lore).forEach(component -> addLoreRaw(Text.wrapForItems(component)));
+    return getThis();
   }
 
   public T addLore(Iterable<Component> lore) {
-    return addLoreRaw(Iterables.transform(lore, Text::wrapForItems));
+    for (Component component : lore) {
+      addLore(component);
+    }
+    return getThis();
   }
 
   public T setLore(Iterable<Component> lores) {
@@ -87,7 +91,9 @@ public abstract class ItemBuilder<T extends ItemBuilder<T>> implements Cloneable
   }
 
   public T setLore(Stream<Component> stream) {
-    return setLoreRaw(stream.map(Text::wrapForItems));
+    List<Component> lore = new ArrayList<>();
+    stream.forEach(component -> lore.addAll(Text.splitNewlines(Text.wrapForItems(component))));
+    return setLoreRaw(lore);
   }
 
   public T addLoreRaw(Component lore) {
