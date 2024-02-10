@@ -2,6 +2,7 @@ package net.arcadiusmc.core.user;
 
 import com.google.common.base.Preconditions;
 import com.google.common.reflect.Reflection;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.lang.management.ManagementFactory;
@@ -17,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import lombok.Getter;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.core.CoreConfig;
 import net.arcadiusmc.core.CorePlugin;
 import net.arcadiusmc.core.user.PropertyImpl.BuilderImpl;
@@ -26,6 +28,7 @@ import net.arcadiusmc.registry.Registries;
 import net.arcadiusmc.registry.Registry;
 import net.arcadiusmc.registry.RegistryListener;
 import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.ViewerAwareMessage;
 import net.arcadiusmc.user.Properties;
 import net.arcadiusmc.user.TimeField;
 import net.arcadiusmc.user.User;
@@ -43,6 +46,7 @@ import net.arcadiusmc.utils.ScoreIntMap.KeyValidator;
 import net.arcadiusmc.utils.Time;
 import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.PathUtil;
+import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
@@ -365,25 +369,29 @@ public class UserServiceImpl implements UserService {
   @Override
   public Builder<UUID> createUuidProperty() {
     ensureNotFrozen();
-    return new BuilderImpl<>(ExtraCodecs.STRING_UUID).defaultValue(Identity.nil().uuid());
+    return new BuilderImpl<>(ExtraCodecs.STRING_UUID, ArgumentTypes.uuid())
+        .defaultValue(Identity.nil().uuid());
   }
 
   @Override
   public Builder<Boolean> createBooleanProperty() {
     ensureNotFrozen();
-    return new BuilderImpl<>(Codec.BOOL);
+    return new BuilderImpl<>(Codec.BOOL, BoolArgumentType.bool());
   }
 
   @Override
   public Builder<Component> createTextProperty() {
     ensureNotFrozen();
-    return new BuilderImpl<>(ExtraCodecs.COMPONENT);
+    return new BuilderImpl<>(
+        ExtraCodecs.COMPONENT,
+        ArgumentTypes.map(Arguments.CHAT, ViewerAwareMessage::asComponent)
+    );
   }
 
   @Override
   public <E extends Enum<E>> Builder<E> createEnumProperty(Class<E> type) {
     ensureNotFrozen();
-    return new BuilderImpl<>(ExtraCodecs.enumCodec(type));
+    return new BuilderImpl<>(ExtraCodecs.enumCodec(type), ArgumentTypes.enumType(type));
   }
 
   @Override

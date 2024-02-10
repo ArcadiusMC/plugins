@@ -1,5 +1,6 @@
 package net.arcadiusmc.core.user;
 
+import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.serialization.Codec;
 import java.util.Objects;
 import lombok.Getter;
@@ -18,6 +19,7 @@ public class PropertyImpl<T> implements UserProperty<T> {
   private final PropertyEditCallback<T> callback;
 
   private final Codec<T> codec;
+  private final ArgumentType<T> argumentType;
 
   int id = -1;
   String key;
@@ -25,11 +27,13 @@ public class PropertyImpl<T> implements UserProperty<T> {
   public PropertyImpl(
       T defaultValue,
       PropertyEditCallback<T> callback,
-      Codec<T> codec
+      Codec<T> codec,
+      ArgumentType<T> type
   ) {
     this.defaultValue = defaultValue;
     this.callback = callback;
     this.codec = codec;
+    this.argumentType = type;
   }
 
   @Setter @Accessors(chain = true, fluent = true)
@@ -40,9 +44,11 @@ public class PropertyImpl<T> implements UserProperty<T> {
     private T defaultValue;
 
     private final Codec<T> codec;
+    private final ArgumentType<T> type;
 
-    public BuilderImpl(Codec<T> codec) {
+    public BuilderImpl(Codec<T> codec, ArgumentType<T> type) {
       this.codec = codec;
+      this.type = type;
     }
 
     public Builder<T> key(String key) {
@@ -63,7 +69,7 @@ public class PropertyImpl<T> implements UserProperty<T> {
       Objects.requireNonNull(key, "No key set");
       Objects.requireNonNull(defaultValue, "No default value set");
 
-      PropertyImpl<T> property = new PropertyImpl<>(defaultValue, callback, codec);
+      PropertyImpl<T> property = new PropertyImpl<>(defaultValue, callback, codec, type);
       Registry<UserProperty<?>> registry = Users.getService().getUserProperties();
       registry.register(key, property);
       return property;

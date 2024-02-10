@@ -1,5 +1,6 @@
 package net.arcadiusmc.user;
 
+import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.serialization.Codec;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,6 +37,12 @@ public interface UserProperty<T> {
    * @return Value codec
    */
   Codec<T> getCodec();
+
+  /**
+   * Get the argument type that's used to parse this property's value
+   * @return Value parser
+   */
+  ArgumentType<T> getArgumentType();
 
   /**
    * Property's ID number
