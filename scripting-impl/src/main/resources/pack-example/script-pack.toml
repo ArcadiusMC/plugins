@@ -25,6 +25,19 @@ required-plugins = [ "PluginName" ]
 required-packs = []
 
 #
+# Changes whether scripts loaded in this pack are compiled or interpreted.
+#
+# If set to true, then all loaded scripts from this pack are compiled to
+# Java bytecode and Java classes. If false, then scripts are compiled to
+# an internal bytecode and interpreted inside java.
+#
+# Compiled scripts run faster, but if the script is reloaded, then the
+# script's java classes will be kept in memory along with the reloaded
+# classes, producing garbage memory.
+#
+compile-scripts = false
+
+#
 # A table of scripts that are exported as modules. These exported modules
 # can be used by other scripts with the 'import' keyword
 #
