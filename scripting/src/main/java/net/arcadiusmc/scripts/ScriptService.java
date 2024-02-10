@@ -13,7 +13,7 @@ public interface ScriptService extends ScriptLoader {
 
   CachingScriptLoader newLoader();
 
-  CachingScriptLoader newLoader(Path workingDirectory);
+  CachingScriptLoader newLoader(Path workingDirectory, boolean compile);
 
   CachingScriptLoader getGlobalLoader();
 

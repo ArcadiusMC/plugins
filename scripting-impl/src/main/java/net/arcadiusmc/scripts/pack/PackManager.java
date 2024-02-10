@@ -1,16 +1,22 @@
 package net.arcadiusmc.scripts.pack;
 
+import com.google.common.base.Joiner;
 import com.google.gson.JsonElement;
+import com.mojang.datafixers.util.Unit;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import lombok.Getter;
-import net.arcadiusmc.scripts.ScriptManager;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.registry.Registries;
 import net.arcadiusmc.registry.Registry;
+import net.arcadiusmc.registry.RegistryListener;
+import net.arcadiusmc.scripts.ScriptManager;
 import net.arcadiusmc.scripts.ScriptService;
+import net.arcadiusmc.utils.Result;
 import net.arcadiusmc.utils.io.PathUtil;
 import net.arcadiusmc.utils.io.PluginJar;
 import net.arcadiusmc.utils.io.SerializationHelper;
@@ -25,25 +31,69 @@ public class PackManager {
   private final ScriptService service;
 
   private final Registry<ScriptPack> packs = Registries.newRegistry();
+  private final List<Holder<ScriptPack>> loadOrder = new ArrayList<>();
 
   public boolean started = false;
 
   public PackManager(ScriptManager service, Path directory) {
     this.service = service;
     this.directory = directory;
+
+    packs.setListener(new RegistryListener<>() {
+      @Override
+      public void onRegister(Holder<ScriptPack> value) {
+        sortLoadOrder();
+      }
+
+      @Override
+      public void onUnregister(Holder<ScriptPack> value) {
+        sortLoadOrder();
+      }
+    });
+  }
+
+  private void sortLoadOrder() {
+    List<Holder<ScriptPack>> unsorted = new ArrayList<>();
+
+    outer: for (Holder<ScriptPack> entry : packs.entries()) {
+      List<String> dependsOn = entry.getValue().getMeta().getRequiredScripts();
+
+      for (String s : dependsOn) {
+        if (packs.contains(s)) {
+          continue;
+        }
+
+        LOGGER.error("Cannot place script pack '{}' into load order! Missing dependency '{}'",
+            entry.getKey(), s
+        );
+
+        continue outer;
+      }
+
+      unsorted.add(entry);
+    }
+
+    List<Holder<ScriptPack>> sorted = TopologicalSort.sort(unsorted);
+
+    loadOrder.clear();
+    loadOrder.addAll(sorted);
   }
 
   public void activate() {
     LOGGER.info("Activating script packs");
     started = true;
 
-    for (Holder<ScriptPack> entry : packs.entries()) {
+    for (Holder<ScriptPack> entry : loadOrder) {
       activate(entry);
     }
   }
 
   private boolean activate(Holder<ScriptPack> entry) {
-    var result = entry.getValue().activate();
+    if (!testDependents(entry)) {
+      return false;
+    }
+
+    Result<Unit> result = entry.getValue().activate();
 
     result.apply(string -> {
       LOGGER.error("Failed to activate script pack '{}': {}", entry.getKey(), string);
@@ -53,6 +103,43 @@ public class PackManager {
     });
 
     return !result.isError();
+  }
+
+  private boolean testDependents(Holder<ScriptPack> holder) {
+    List<String> dependsOn = holder.getValue().getMeta().getRequiredScripts();
+
+    if (dependsOn.isEmpty()) {
+      return true;
+    }
+
+    List<String> missing = new ArrayList<>(dependsOn.size());
+
+    for (String s : dependsOn) {
+      Optional<ScriptPack> opt = packs.get(s);
+
+      if (opt.isEmpty()) {
+        missing.add(s);
+        continue;
+      }
+
+      var pack = opt.get();
+
+      if (pack.isActivated()) {
+        continue;
+      }
+
+      missing.add(s);
+    }
+
+    if (missing.isEmpty()) {
+      return true;
+    }
+
+    LOGGER.error("Cannot activate pack '{}': Missing script packs: {}",
+        holder.getKey(), Joiner.on(", ").join(missing)
+    );
+
+    return false;
   }
 
   public void reload() {
@@ -86,11 +173,11 @@ public class PackManager {
     }
 
     SerializationHelper.readAsJson(metaFile, json -> {
-      loadPackFromMeta(json.getSource(), file, fName);
+      loadPackFromMeta(json, file, fName);
     });
   }
 
-  public void loadPackFromMeta(JsonElement element, Path directory, String key) {
+  private void loadPackFromMeta(JsonElement element, Path directory, String key) {
     if (packs.contains(key)) {
       LOGGER.error("Duplicate definition of script pack '{}'", key);
       return;

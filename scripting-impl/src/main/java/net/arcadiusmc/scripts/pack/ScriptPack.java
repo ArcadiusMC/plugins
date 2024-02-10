@@ -41,7 +41,7 @@ public class ScriptPack {
   public ScriptPack(PackMeta meta, ScriptService service) {
     this.meta = meta;
     this.service = service;
-    this.loader = service.newLoader(meta.getDirectory());
+    this.loader = service.newLoader(meta.getDirectory(), meta.isCompileScripts());
   }
 
   public void close() {

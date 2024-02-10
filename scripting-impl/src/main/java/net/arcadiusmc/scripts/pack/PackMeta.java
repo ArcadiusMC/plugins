@@ -12,6 +12,10 @@ public class PackMeta {
   private Path mainScript;
   private Path directory;
 
+  private boolean compileScripts = false;
+
   private final List<String> requiredPlugins = new ArrayList<>();
+  private final List<String> requiredScripts = new ArrayList<>();
+
   private final List<PackExport> exports = new ArrayList<>();
 }

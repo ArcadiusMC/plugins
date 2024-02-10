@@ -122,8 +122,8 @@ public class ScriptManager implements ScriptService {
   }
 
   @Override
-  public CachingScriptLoader newLoader(Path workingDirectory) {
-    return new CachingLoaderImpl(this, workingDirectory);
+  public CachingScriptLoader newLoader(Path workingDirectory, boolean compile) {
+    return new CachingLoaderImpl(this, workingDirectory, compile);
   }
 
   @Override

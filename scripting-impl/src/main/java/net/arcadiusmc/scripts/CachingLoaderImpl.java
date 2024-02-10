@@ -12,14 +12,16 @@ public class CachingLoaderImpl implements CachingScriptLoader {
 
   private final ScriptService service;
   private final Path workingDir;
+  private final boolean compile;
 
   public CachingLoaderImpl(ScriptService service) {
-    this(service, service.getScriptsDirectory());
+    this(service, service.getScriptsDirectory(), false);
   }
 
-  public CachingLoaderImpl(ScriptService service, Path workingDirectory) {
+  public CachingLoaderImpl(ScriptService service, Path workingDirectory, boolean compile) {
     this.service = service;
     this.workingDir = workingDirectory;
+    this.compile = compile;
   }
 
   @Override
@@ -39,6 +41,7 @@ public class CachingLoaderImpl implements CachingScriptLoader {
 
     script = service.newScript(this, source);
     script.setWorkingDirectory(workingDir);
+    script.setClassGen(compile);
 
     map.put(source, script);
 

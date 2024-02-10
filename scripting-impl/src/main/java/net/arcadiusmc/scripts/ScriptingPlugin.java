@@ -1,6 +1,7 @@
 package net.arcadiusmc.scripts;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import java.nio.file.Path;
 import java.util.Map;
 import lombok.Getter;
@@ -87,7 +88,9 @@ public class ScriptingPlugin extends JavaPlugin {
     MessageLoader.loadPluginMessages(this, messageList);
   }
 
-  private void loadConfigFrom(JsonWrapper json) {
+  private void loadConfigFrom(JsonObject obj) {
+    JsonWrapper json = JsonWrapper.wrap(obj);
+
     if (json.has("importPlaceholders")) {
       Map<String, String> importPlaceholders = json.getMap(
           "importPlaceholders",

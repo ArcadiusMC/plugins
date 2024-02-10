@@ -66,6 +66,7 @@ public class PackLoader {
     PackMeta meta = new PackMeta();
     meta.setMainScript(main.getOrThrow(false, null));
     meta.setDirectory(context.directory());
+    meta.setCompileScripts(json.getBool("compile-scripts", false));
 
     if (json.has("exports")) {
       DataResult<List<PackExport>> exports = loadExports(json.get("exports"), context.directory());
