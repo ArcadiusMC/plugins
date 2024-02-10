@@ -1,13 +1,16 @@
 package net.arcadiusmc.text.placeholder;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import net.arcadiusmc.BukkitServices;
 import net.arcadiusmc.text.PlayerMessage;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
-import net.arcadiusmc.BukkitServices;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.ItemMeta;
 
 /**
  * Placeholder-related utility class
@@ -29,6 +32,39 @@ public final class Placeholders {
 
   public static PlaceholderRenderer newRenderer() {
     return getService().newRenderer();
+  }
+
+
+  public static void replaceItemPlaceholders(
+      PlaceholderRenderer renderer,
+      ItemMeta meta,
+      User viewer
+  ) {
+    replaceItemPlaceholders(renderer, meta, viewer, null);
+  }
+
+  public static void replaceItemPlaceholders(
+      PlaceholderRenderer renderer,
+      ItemMeta meta,
+      User viewer,
+      Map<String, Object> context
+  ) {
+    if (meta.hasLore()) {
+      List<Component> lore = meta.lore();
+      assert lore != null;
+
+      List<Component> renderedLore = lore.stream()
+          .map(component -> renderer.render(component, viewer, context))
+          .toList();
+
+      meta.lore(renderedLore);
+    }
+
+    if (meta.hasDisplayName()) {
+      var baseName = meta.displayName();
+      assert baseName != null;
+      meta.displayName(renderer.render(baseName, viewer, context));
+    }
   }
 
   public static Component renderString(String str, Audience viewer) {
