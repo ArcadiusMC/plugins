@@ -143,9 +143,7 @@ public class MessageLoader {
       }
 
       case "toml", "json" -> {
-        SerializationHelper.readAsJson(path, jsonWrapper -> {
-          loadFromJson(jsonWrapper.getSource(), target);
-        });
+        SerializationHelper.readAsJson(path, json -> loadFromJson(json, target));
       }
 
       case "properties" -> {
