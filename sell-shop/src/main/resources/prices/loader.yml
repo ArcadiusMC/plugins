@@ -1,0 +1,33 @@
+#
+# Controls what price files are loaded and for what purpose.
+# Any price files loaded are accessible in the sellshop pages
+# like so:
+# - slot: 1,1
+#   sell: <price map name>:<material>
+#
+# Example:
+# - slot: 1,1
+#   sell: example:quartz
+#
+
+#
+# Example entry explaining formatting options
+#
+# Values:
+# - file (Required):
+#     Name of the file to load the full prices from
+#     (File type not needed)
+# - global (Optional, defaults to false):
+#     Determines if the prices specified in this entry
+#     are used globally. This means (most of the time)
+#     That the prices in the file are used in the generic
+#     /shop, accessible to all, and when calculating
+#     earnings from auto sold items.
+#
+example:
+  file: "file/path"
+  global: true
+
+minerals-common:
+  file: "minerals"
+  global: true

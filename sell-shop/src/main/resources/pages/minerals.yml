@@ -1,0 +1,23 @@
+title: "Minerals"
+extends: "generic"
+header-item: "amethyst_shard"
+description: ["Minerals, ores and ingots"]
+
+items:
+  - slot: 2,2
+    sell: "minerals-common:coal"
+
+  - slot: 3,2
+    sell: "minerals-common:emerald"
+
+  - slot: 4,2
+    sell: "minerals-common:amethyst_shard"
+
+  - slot: 5,2
+    sell: "minerals-common:lapis_lazuli"
+
+  - slot: 6,2
+    sell: "minerals-common:redstone"
+
+  - slot: 2,3
+    sell: "minerals-common:quartz"

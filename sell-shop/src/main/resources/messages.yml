@@ -1,0 +1,74 @@
+_styles:
+  normal: "gray"
+  "err": "red"
+
+cmd.autosell:
+  _style: $normal
+  added:              "Added &e${material}&r to &6${player}&r's auto-sell materials."
+  removed:            "Removed &e${material}&r from &6${player}&r's auto-sell materials."
+  cleared:            "Cleared &e${player}&r's auto-sell materials"
+  list:               "&e${player}&r's auto sell materials: ${list}"
+
+cmd.earnings:
+  _style: $normal
+  cleared:            "Removed all ${material} earnings from ${player}."
+  cleared.all:        "Cleared ${player}'s earnings"
+  set:                "Set ${player}'s ${material} earnings to ${value}"
+  removed:            "Removed ${value} from ${material} earnings of ${player}, now ${newValue}"
+  added:              "Added ${value} to ${material} earnings of ${player}, now ${newValue}"
+
+sellshop:
+  mainPageMissing:    "&cInternal Error! &8Main Shop page not set!"
+  priceDrop:          "&7Price for &e${material}&7 dropped from &6${before}&7 to &e${after}&7."
+  sold.single:        "&7Sold &e${item}&7 for &6${earned}&7."
+  sold.total:         "&7Sold a total of &e${item}&7 for &6${earned}&7."
+
+  errors:
+    _style: $err
+    notSellable:      "${material} is not sellable."
+    noItems:          "Not enough items to sell."
+    cannotSellMore:   "Cannot sell more, price would drop to 0."
+
+  autoSell:
+    noPermission:     "&cCannot toggle auto sell! Donators only!"
+    prompt.on:        "&7Shift-Click to start auto-selling this item."
+    prompt.off:       "&7Shift-Click to stop auto-selling this item."
+
+  item:
+    value:            "&eValue: ${price} per item."
+    originalPrice:    "&7Original price: ${originalPrice}."
+    valuePerStack:    "&6Value per stack (${stackSize}): ${valuePerStack}."
+    limitedSellsLeft: "&&Can only sell ${until0} until price drops to 0."
+    priceWillDrop:    "&7Price will drop after selling ${itemsUntilDrop} items."
+
+  filters:
+    lore:             "&7Click to switch"
+    named.on:         "&eSelling named items"
+    named.off:        "&eIgnoring named items"
+    lored.on:         "&eSelling items with lore"
+    lored.off:        "&eIgnoring items with lore"
+
+  compact:
+    name:             "&eToggle compact selling"
+    lore:             "&7Compact items are the block forms of items\nExample: Diamond and Diamond Block\n&8Click to toggle"
+    state.on:         "&7Currently selling compact items."
+    state.off:        "&7Currently not selling compact items."
+
+  sellAmount:
+    info:             "&7Amount you will sell: ${sellAmount}."
+    change:           "&7Change the amount you sell on the right."
+
+    option:           "&7Sets the amount of items\n&7you will sell per click."
+
+    sellPer:
+      per_1:          "Sell per 1"
+      per_16:         "Sell per 16"
+      per_64:         "Sell per 64"
+      all:            "Sell all"
+
+    names:
+      per_1:          "1"
+      per_16:         "16"
+      per_64:         "64"
+      all:            "All"
+
