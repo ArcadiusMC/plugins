@@ -58,7 +58,7 @@ public class TabMenu {
 
   public void load() {
     PluginJar.saveResources(plugin, "tab.yml", path);
-    SerializationHelper.readAsJson(path, wrapper -> loadFrom(wrapper.getSource()));
+    SerializationHelper.readAsJson(path, this::loadFrom);
   }
 
   private void loadFrom(JsonObject obj) {
