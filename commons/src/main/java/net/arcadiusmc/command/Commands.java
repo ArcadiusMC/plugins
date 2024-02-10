@@ -31,6 +31,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
 public final class Commands {
   private Commands() {}
@@ -182,7 +183,10 @@ public final class Commands {
   }
 
   /**
-   * Executes a specified command as the server's console
+   * Executes a specified command as the server's console. If this function is called
+   * from an async context, then the bukkit scheduler is used to run the command
+   * synchronously
+   *
    * @param format The command format
    * @param args Arguments to format
    */
@@ -213,7 +217,7 @@ public final class Commands {
    *
    * Placeholders: <table>
    *  <tr><th>Placeholder</th><th>Description</th></tr>
-   *  <tr><td>%player</td> - Player's name</td></tr>
+   *  <tr><td>%player</td>Player's name</td></tr>
    *  <tr><td>%player.block</td> <td>Player's block position, eg: 1 2 3</td></tr>
    *  <tr><td>%player.pos</td> <td>Player's position, eg: 1.3242 1.421 5.2300023</td></tr>
    *  <tr><td>%player.worldkey</td> <td>Key of the player's world, eg: minecraft:overworld</td></tr>
@@ -234,7 +238,7 @@ public final class Commands {
    *
    * @return Formatted command string
    */
-  public static String replaceCommandPlaceholders(String command, Player player) {
+  public static String replacePlaceholders(@NotNull String command, @NotNull Player player) {
     Location l = player.getLocation();
 
     String block = String.format("%s %s %s", l.getBlockX(), l.getBlockY(), l.getBlockZ());
