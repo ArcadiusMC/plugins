@@ -18,6 +18,7 @@ public class Tiers {
       "default",
       Integer.MIN_VALUE,
       List.of(),
+      true,
       false
   );
 

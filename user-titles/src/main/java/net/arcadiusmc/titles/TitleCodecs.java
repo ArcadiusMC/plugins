@@ -54,10 +54,13 @@ public class TitleCodecs {
 
             DECORATION_CODEC.listOf()
                 .optionalFieldOf("menu-decorations", List.of())
-                .forGetter(Tier::getDecorations)
+                .forGetter(Tier::getDecorations),
+
+            Codec.BOOL.optionalFieldOf("permission-sync", true)
+                .forGetter(Tier::isPermissionSync)
         )
-        .apply(instance, (displayName, item, desc, permissionGroup, priority, decorations) -> {
-          return new Tier(displayName, item, desc, permissionGroup, priority, decorations, true);
+        .apply(instance, (name, item, desc, group, prio, decos, sync) -> {
+          return new Tier(name, item, desc, group, prio, decos, sync, true);
         });
   });
 

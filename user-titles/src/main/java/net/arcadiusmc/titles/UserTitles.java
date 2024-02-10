@@ -237,13 +237,13 @@ public class UserTitles implements UserComponent {
       return;
     }
 
-    if (getTier() != Tiers.DEFAULT) {
+    if (getTier() != Tiers.DEFAULT && getTier().isPermissionSync()) {
       Commands.executeConsole("lp user %s parent remove %s",
           user.getName(), getTier().getPermissionGroup()
       );
     }
 
-    if (tier != Tiers.DEFAULT) {
+    if (tier != Tiers.DEFAULT && tier.isPermissionSync()) {
       Commands.executeConsole("lp user %s parent add %s",
           user.getName(), tier.getPermissionGroup()
       );
@@ -278,6 +278,10 @@ public class UserTitles implements UserComponent {
     values.sort(Comparator.naturalOrder());
 
     for (Tier tier : values) {
+      if (!tier.isPermissionSync()) {
+        continue;
+      }
+
       if (user.hasPermission("group." + tier.getPermissionGroup())) {
         if (hasTier(tier)) {
           continue;

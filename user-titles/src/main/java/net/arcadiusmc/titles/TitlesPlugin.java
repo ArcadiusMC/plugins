@@ -112,8 +112,8 @@ public class TitlesPlugin extends JavaPlugin {
       Registry<R> registry,
       Codec<Map<String, R>> codec
   ) {
-    SerializationHelper.readAsJson(path, wrapper -> {
-      codec.parse(JsonOps.INSTANCE, wrapper.getSource())
+    SerializationHelper.readAsJson(path, json -> {
+      codec.parse(JsonOps.INSTANCE, json)
           .mapError(s -> "Failed to load " + errorPrefix + ": " + s)
           .resultOrPartial(LOGGER::error)
           .ifPresent(map -> {

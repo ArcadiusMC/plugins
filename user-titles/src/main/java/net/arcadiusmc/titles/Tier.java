@@ -27,6 +27,7 @@ public class Tier implements ReloadableElement, Comparable<Tier> {
   private final String permissionGroup;
   private final int priority;
   private final List<MenuDecoration> decorations;
+  private final boolean permissionSync;
 
   private final boolean reloadable;
 
