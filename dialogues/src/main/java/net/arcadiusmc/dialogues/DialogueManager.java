@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import lombok.Getter;
 import net.arcadiusmc.registry.Registries;
 import net.arcadiusmc.registry.Registry;
+import net.arcadiusmc.utils.io.JsonWrapper;
 import net.arcadiusmc.utils.io.PathUtil;
 import net.arcadiusmc.utils.io.PluginJar;
 import net.arcadiusmc.utils.io.SerializationHelper;
@@ -31,7 +32,7 @@ public class DialogueManager {
       var str = relative.toString().replace(".json", "");
 
       SerializationHelper.readAsJson(path, json -> {
-        var entry = Dialogue.deserialize(json);
+        var entry = Dialogue.deserialize(JsonWrapper.wrap(json));
         registry.register(str, entry);
       });
     });
