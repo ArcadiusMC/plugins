@@ -347,6 +347,19 @@ public final class PathUtil {
     return DataResult.success(arr[0]);
   }
 
+  public static String getFileKey(Path directory, Path file) {
+    String fileName = directory.relativize(file).toString();
+
+    // Cut off '.json' extension
+    int extensionIndex = fileName.indexOf('.');
+    if (extensionIndex != -1) {
+      fileName = fileName.substring(0, extensionIndex);
+    }
+
+    // Windows bruh
+    return fileName.replace('\\', '/');
+  }
+
   public static void ensureParentExists(Path file) throws IOException {
     if (Files.exists(file)) {
       return;
