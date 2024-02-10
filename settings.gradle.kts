@@ -15,4 +15,6 @@ include("extended-items")
 include("user-titles")
 include("server-list")
 include("dialogues")
+
 include("webmap")
+include("vault-hook")
