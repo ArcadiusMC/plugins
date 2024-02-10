@@ -501,3 +501,12 @@ cmd.vanish:
 cmd.sudo:
   _style: $normal
   command:            "Forced &e${player}&r to execute '&f${command}&r'"
+
+cmd.setuserproperty:
+  _style: $normal
+  set:                "Set &e${player}&r's property &6${property}&r to '&f${value}&r'"
+
+cmd.closeinv:
+  _style: $normal
+  closed:             "Closed &e${player}&r's inventory."
+  closed.reason:      "Closed &e${player}&r's inventory, reason: &e${reason}&r."
