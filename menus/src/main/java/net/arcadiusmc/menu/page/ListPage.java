@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import lombok.Getter;
 import net.arcadiusmc.command.Exceptions;
+import net.arcadiusmc.menu.CommonItems;
 import net.arcadiusmc.menu.MenuBuilder;
 import net.arcadiusmc.menu.MenuNode;
 import net.arcadiusmc.menu.Slot;
@@ -244,9 +245,9 @@ public abstract class ListPage<T> extends MenuPage {
             return null;
           }
 
-          return ItemStacks.builder(Material.PAPER)
-              .setName("&e" + (modifier == -1 ? "< Previous" : "> Next") + " Page")
-              .build();
+          return modifier == -1
+              ? CommonItems.previousPage()
+              : CommonItems.nextPage();
         })
 
         .setRunnable((user, context, click) -> {

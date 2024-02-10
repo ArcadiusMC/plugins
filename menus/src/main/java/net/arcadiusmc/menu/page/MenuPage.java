@@ -3,6 +3,7 @@ package net.arcadiusmc.menu.page;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.arcadiusmc.menu.CommonItems;
 import net.arcadiusmc.menu.Menu;
 import net.arcadiusmc.menu.MenuBuilder;
 import net.arcadiusmc.menu.MenuNode;
@@ -34,7 +35,7 @@ public abstract class MenuPage implements MenuNode {
     addBorder(builder);
 
     if (parentButton && parent != null) {
-      builder.add(Slot.ZERO, parent);
+      builder.add(Slot.ZERO, CommonItems.goBack());
     }
 
     var header = createHeader();
