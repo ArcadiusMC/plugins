@@ -2,7 +2,6 @@ package net.arcadiusmc.text;
 
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.regex.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.text.placeholder.PlaceholderRenderer;
@@ -33,11 +32,6 @@ public abstract class AbstractTextWriter implements ComponentLike, TextWriter {
    * Default field separator: ': '
    */
   private static final Component DEF_FIELD_SEPARATOR = Component.text(": ");
-
-  /**
-   * New line pattern
-   */
-  public static final Pattern NEW_LINE_PATTERN = Pattern.compile("\n");
 
   /**
    * True, if the current line is empty, false otherwise
@@ -130,7 +124,7 @@ public abstract class AbstractTextWriter implements ComponentLike, TextWriter {
       component = renderer.render(component, viewer);
     }
 
-    Iterator<Component> it = Text.split(NEW_LINE_PATTERN, component).iterator();
+    Iterator<Component> it = Text.splitNewlines(component).iterator();
 
     while (it.hasNext()) {
       var next = it.next();

@@ -107,6 +107,8 @@ public final class Text {
   static final Pattern URL_SCHEME_PATTERN
       = Pattern.compile("^[a-z][a-z0-9+\\-.]*:");
 
+  public static final Pattern NEW_LINE_PATTERN = Pattern.compile("\n");
+
   /* ----------------------------- UTILITY METHODS ------------------------------ */
 
   public static ClickEvent openUrl(String url) {
@@ -872,6 +874,15 @@ public final class Text {
 
     return pattern.matcher(plain)
         .matches();
+  }
+
+  /**
+   * Recursively splits the given text along '\n' characters
+   * @param component Text to split
+   * @return Split result
+   */
+  public static @NotNull List<Component> splitNewlines(@NotNull Component component) {
+    return split(NEW_LINE_PATTERN, component);
   }
 
   /**
