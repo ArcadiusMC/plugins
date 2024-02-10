@@ -1,6 +1,5 @@
 package net.arcadiusmc.webmap;
 
-import net.arcadiusmc.Permissions;
 import net.arcadiusmc.command.settings.Setting;
 import net.arcadiusmc.command.settings.SettingAccess;
 import net.arcadiusmc.command.settings.SettingsBook;
@@ -30,14 +29,7 @@ public class HideSetting {
         .setDisplayName("Dynmap Hide")
         .setToggle("N{1} hidden on Dynmap")
         .setToggleDescription("{Enable} being hidden on Dynmap")
-        .setDescription("Toggles being visible on the server's Dynmap")
-
-        .createCommand(
-            "dynmaphide",
-            Permissions.DEFAULT,
-            Permissions.ADMIN,
-            "dynmaptoggle"
-        );
+        .setDescription("Toggles being visible on the server's Dynmap");
 
     settingsBook.getSettings().add(setting.toBookSettng());
   }

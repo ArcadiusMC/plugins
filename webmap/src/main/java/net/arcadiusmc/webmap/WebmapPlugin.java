@@ -1,7 +1,7 @@
 package net.arcadiusmc.webmap;
 
 import net.arcadiusmc.BukkitServices;
-import net.arcadiusmc.FtcServer;
+import net.arcadiusmc.ArcadiusServer;
 import net.arcadiusmc.events.Events;
 import net.arcadiusmc.utils.PluginUtil;
 import net.arcadiusmc.webmap.bluemap.BlueWebmap;
@@ -21,7 +21,7 @@ public class WebmapPlugin extends JavaPlugin {
     if (blumap && dynmap) {
       getSLF4JLogger().warn(
           "Both BlueMap and Dynmap found, only BlueMap will be kept in sync "
-              + "plugin-induced map changes"
+              + "with plugin-induced map changes"
       );
     }
 
@@ -39,7 +39,7 @@ public class WebmapPlugin extends JavaPlugin {
     }
 
     BukkitServices.register(WebMap.class, implementation);
-    HideSetting.createSetting(FtcServer.server().getGlobalSettingsBook());
+    HideSetting.createSetting(ArcadiusServer.server().getGlobalSettingsBook());
     Events.register(new GameModeListener());
   }
 
