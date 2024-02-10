@@ -303,10 +303,7 @@ public class HelpListImpl implements ArcadiusHelpList {
     PluginJar.saveResources("extra-command-help.yml");
 
     SerializationHelper.readAsJson(topicsFile, this::loadHelpEntriesFrom);
-
-    SerializationHelper.readAsJson(usagesFile, wrapper -> {
-      loadCommandEntriesFrom(wrapper.getSource());
-    });
+    SerializationHelper.readAsJson(usagesFile, this::loadCommandEntriesFrom);
   }
 
   private void loadCommandEntriesFrom(JsonObject obj) {
@@ -329,7 +326,7 @@ public class HelpListImpl implements ArcadiusHelpList {
         });
   }
 
-  private void loadHelpEntriesFrom(JsonWrapper json) {
+  private void loadHelpEntriesFrom(JsonObject json) {
     for (Entry<String, JsonElement> entry : json.entrySet()) {
       if (!entry.getValue().isJsonObject()) {
         LOGGER.error("Help entry {} is not an object", entry.getKey());
