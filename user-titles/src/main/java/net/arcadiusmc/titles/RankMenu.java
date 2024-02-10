@@ -136,6 +136,7 @@ public final class RankMenu {
       tier.getRanks()
           .stream()
           .filter(rank -> rank.getMenuSlot() != null)
+          .filter(rank -> rank != Titles.DEFAULT)
           .forEach(rank -> {
             builder.add(rank.getMenuSlot(), rank.getMenuNode());
           });
