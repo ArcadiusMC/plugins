@@ -9,6 +9,34 @@
 # - slot: 1,1
 #   sell: example:quartz
 #
+# -------------------------------------------------------------------
+# JSON price files format
+# -------------------------------------------------------------------
+# Price files are JSON array files, where each element in the array
+# is a price entry.
+#
+# Entry values:
+# - material (Required):
+#     Material, eg: "minecraft:stone"
+#
+# - price (Required):
+#     Base price of the material
+#
+# - compact-material (Optional):
+#     Material used when the "material"
+#     compacts
+#
+# - compact-multiplier (Optional, unless 'compact-material' has been set):
+#     Specifies the base price multiplier
+#     for the compact material
+#
+# - max-earnings (Optional, defaults to the value specified in the plugin config):
+#     Specifies the maximum amount that can
+#     be earned from the material
+#
+#
+# See example.json for an example file.
+#
 
 #
 # Example entry explaining formatting options
@@ -26,8 +54,4 @@
 #
 example:
   file: "file/path"
-  global: true
-
-minerals-common:
-  file: "minerals"
   global: true
