@@ -27,6 +27,8 @@ import net.arcadiusmc.core.commands.admin.CommandTellRawF;
 import net.arcadiusmc.core.commands.admin.CommandTime;
 import net.arcadiusmc.core.commands.admin.CommandTimeFields;
 import net.arcadiusmc.core.commands.admin.CommandTop;
+import net.arcadiusmc.core.commands.tools.CommandCloseInventory;
+import net.arcadiusmc.core.commands.tools.CommandUserProperty;
 import net.arcadiusmc.core.commands.admin.CommandVanish;
 import net.arcadiusmc.core.commands.admin.CommandWorld;
 import net.arcadiusmc.core.commands.docs.CommandDocGen;
@@ -86,6 +88,10 @@ public final class CoreCommands {
     new CommandDocGen();
     new CommandTellRawF();
     new CommandSudo();
+
+    // Tool commands
+    new CommandUserProperty(plugin);
+    new CommandCloseInventory();
 
     new CommandSay();
     new CommandNickname();
