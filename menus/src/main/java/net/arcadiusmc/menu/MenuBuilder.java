@@ -82,6 +82,11 @@ public class MenuBuilder {
    */
   public MenuBuilder add(int index, MenuNode node) {
     Slot.validateSlot(index);
+
+    if (index >= size) {
+      throw new IndexOutOfBoundsException("Slot " + index + " out of bounds for size " + size);
+    }
+
     nodes.put(index, node);
     return this;
   }
