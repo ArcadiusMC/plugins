@@ -16,6 +16,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.slf4j.Logger;
 import org.tomlj.Toml;
+import org.tomlj.TomlParseResult;
 import org.tomlj.TomlTable;
 
 public final class SerializationHelper {
@@ -42,6 +43,8 @@ public final class SerializationHelper {
 
     return config;
   };
+
+  public static IoReader<JsonObject> AS_JSON = SerializationHelper::readAsJson;
 
   public static <T> DataResult<T> readFileObject(Path file, IoReader<T> reader) {
     if (!Files.exists(file)) {
@@ -111,31 +114,30 @@ public final class SerializationHelper {
     });
   }
 
-  public static boolean readAsJson(Path file, Consumer<JsonWrapper> callback) {
+  public static boolean readAsJson(Path file, Consumer<JsonObject> callback) {
+    return readFile(file, AS_JSON, callback);
+  }
+
+  public static JsonObject readAsJson(Path file) throws IOException {
     String fName = file.getFileName().toString();
 
     if (fName.endsWith(".yml") || fName.endsWith(".yaml")) {
-      return readFile(file, YML_READER, section -> {
-        JsonObject json;
-
-        try {
-          json = FormatConversions.ymlToJson(section).getAsJsonObject();
-        } catch (IllegalStateException exc) {
-          LOGGER.error("Error during YML->JSON conversion", exc);
-          return;
-        }
-
-        callback.accept(JsonWrapper.wrap(json));
-      });
-    } else if (fName.endsWith(".toml")) {
-      return readTomlFile(file, table -> {
-        JsonObject obj = FormatConversions.tomlToJson(table);
-        JsonWrapper json = JsonWrapper.wrap(obj);
-        callback.accept(json);
-      });
-    } else {
-      return readJsonFile(file, callback);
+      ConfigurationSection section = YML_READER.apply(file);
+      return FormatConversions.ymlToJson(section).getAsJsonObject();
     }
+
+    if (fName.endsWith(".toml")) {
+      TomlParseResult result = Toml.parse(file);
+
+      if (!result.errors().isEmpty()) {
+        String combined = result.errors().toString();
+        throw new IOException(combined);
+      }
+
+      return FormatConversions.tomlToJson(result);
+    }
+
+    return JsonUtils.readFileObject(file);
   }
 
   public static boolean readJsonFile(Path file, Consumer<JsonWrapper> loadCallback) {

@@ -1,6 +1,7 @@
 package net.arcadiusmc.core;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -59,7 +60,7 @@ public class JoinInfo {
     SerializationHelper.readAsJson(path, this::load);
   }
 
-  private void load(JsonWrapper json) {
+  private void load(JsonObject json) {
     for (Entry<String, JsonElement> entry : json.entrySet()) {
       var sectionResult = loadSection(entry.getValue());
 

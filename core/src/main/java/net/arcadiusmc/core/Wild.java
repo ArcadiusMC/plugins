@@ -2,6 +2,7 @@ package net.arcadiusmc.core;
 
 import static net.arcadiusmc.text.Messages.MESSAGE_LIST;
 
+import com.google.gson.JsonObject;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
@@ -168,7 +169,9 @@ public class Wild {
     SerializationHelper.readAsJson(path, this::load);
   }
 
-  private void load(JsonWrapper json) {
+  private void load(JsonObject obj) {
+    JsonWrapper json = JsonWrapper.wrap(obj);
+
     maxRange = json.getInt("spawn_range", 15_000);
     maxAttempts = json.getInt("max_attempts", 1024);
 

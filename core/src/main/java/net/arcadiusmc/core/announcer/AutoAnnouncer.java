@@ -2,6 +2,7 @@ package net.arcadiusmc.core.announcer;
 
 import static net.kyori.adventure.text.Component.text;
 
+import com.google.gson.JsonObject;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -47,7 +48,9 @@ public class AutoAnnouncer implements Runnable {
     SerializationHelper.readAsJson(path, this::loadFrom);
   }
 
-  private void loadFrom(JsonWrapper json) {
+  private void loadFrom(JsonObject obj) {
+    JsonWrapper json = JsonWrapper.wrap(obj);
+
     interval = json.get("interval", JsonUtils::readDuration);
     messages.addAll(json.getList("messages", JsonUtils::readMessage));
     format = json.getComponent("format");

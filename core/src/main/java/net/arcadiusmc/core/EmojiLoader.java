@@ -34,7 +34,7 @@ public class EmojiLoader {
     }
 
     SerializationHelper.readAsJson(file, json -> {
-      MAP_CODEC.parse(JsonOps.INSTANCE, json.getSource())
+      MAP_CODEC.parse(JsonOps.INSTANCE, json)
           .mapError(s -> "Failed to load emojis: " + s)
           .resultOrPartial(LOGGER::error)
 

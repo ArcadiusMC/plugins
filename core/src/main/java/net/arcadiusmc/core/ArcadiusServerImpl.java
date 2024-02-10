@@ -34,7 +34,7 @@ public class ArcadiusServerImpl implements ArcadiusServer {
 
   public void load() {
     SerializationHelper.readAsJson(spawnJson(), json -> {
-      Location loc = JsonUtils.readLocation(json.getSource());
+      Location loc = JsonUtils.readLocation(json);
       setServerSpawn(loc);
     });
   }

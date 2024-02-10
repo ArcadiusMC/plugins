@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -12,6 +13,9 @@ import com.mojang.serialization.Decoder;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Encoder;
 import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.MapLike;
+import com.mojang.serialization.RecordBuilder;
 import com.mojang.serialization.codecs.PrimitiveCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.lang.reflect.Array;
@@ -24,6 +28,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import lombok.experimental.UtilityClass;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.registry.Registries;
@@ -237,6 +242,19 @@ public @UtilityClass class ExtraCodecs {
 
   /* ----------------------------------------------------------- */
 
+  public static <V> Codec<List<V>> listOrValue(Codec<V> codec) {
+    return Codec.either(codec.listOf(), codec)
+        .xmap(
+            vListEither -> vListEither.map(Function.identity(), List::of),
+            vs -> {
+              if (vs.size() == 1) {
+                return Either.right(vs.get(0));
+              }
+              return Either.left(vs);
+            }
+        );
+  }
+
   public static <V> Codec<ImmutableList<V>> immutableList(Codec<V> baseType) {
     return baseType.listOf().xmap(ImmutableList::copyOf, Function.identity());
   }
@@ -250,6 +268,45 @@ public @UtilityClass class ExtraCodecs {
         },
         Arrays::asList
     );
+  }
+
+  @SafeVarargs
+  public static <V> MapCodec<V> combineMap(MapCodec<V>... codecs) {
+    return new MapCodec<>() {
+      @Override
+      public <T> Stream<T> keys(DynamicOps<T> ops) {
+        return Arrays.stream(codecs)
+            .map(vMapCodec -> vMapCodec.keys(ops))
+            .reduce(Stream.empty(), Stream::concat);
+      }
+
+      @Override
+      public <T> DataResult<V> decode(DynamicOps<T> ops, MapLike<T> input) {
+        DataResult<V> result = null;
+
+        for (MapCodec<V> codec : codecs) {
+          var res = codec.decode(ops, input);
+
+          if (res.result().isPresent()) {
+            return res;
+          }
+
+          if (result == null) {
+            result = res;
+            continue;
+          }
+
+          result = result.apply2((v, o) -> o, res);
+        }
+
+        return result;
+      }
+
+      @Override
+      public <T> RecordBuilder<T> encode(V input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
+        return null;
+      }
+    };
   }
 
   public static <V> Codec<V> combine(List<Codec<V>> codecs) {
@@ -296,7 +353,30 @@ public @UtilityClass class ExtraCodecs {
 
       @Override
       public <T> DataResult<T> encode(V input, DynamicOps<T> ops, T prefix) {
-        return encoder.encode(input, ops, prefix);
+        // Try to use the user-defined encoder, however, if that fails, try
+        // to use the encoding of any codec provided
+
+        var encodeResult = encoder.encode(input, ops, prefix);
+
+        if (encodeResult.result().isPresent()) {
+          return encodeResult;
+        }
+
+        for (int i = 0; i < codecs.size(); i++) {
+          if (i == encoderIndex) {
+            continue;
+          }
+
+          var res = codecs.get(i).encode(input, ops, prefix);
+
+          if (res.result().isPresent()) {
+            return res;
+          }
+
+          encodeResult = encodeResult.apply2((t, o) -> o, res);
+        }
+
+        return encodeResult;
       }
     };
   }
