@@ -224,7 +224,7 @@ public class Slot {
 
   @Override
   public String toString() {
-    return "(x=" + x + ", y=" + y + ", index=" + index + ")";
+    return x + "," + y;
   }
 
   static {
