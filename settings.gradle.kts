@@ -4,6 +4,7 @@ include("class-loader-tools")
 include("commons")
 include("core")
 include("menus")
+include("sell-shop")
 
 include("scripting-impl")
 include("scripting")
