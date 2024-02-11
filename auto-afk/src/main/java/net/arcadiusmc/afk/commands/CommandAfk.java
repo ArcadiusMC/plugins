@@ -1,13 +1,12 @@
 package net.arcadiusmc.afk.commands;
 
-import net.arcadiusmc.Permissions;
 import net.arcadiusmc.afk.Afk;
-import net.arcadiusmc.command.FtcCommand;
+import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.help.UsageFactory;
-import net.forthecrown.grenadier.GrenadierCommand;
 import net.arcadiusmc.text.PlayerMessage;
 import net.arcadiusmc.user.User;
+import net.forthecrown.grenadier.GrenadierCommand;
 
 public class CommandAfk extends BaseCommand {
 
@@ -15,7 +14,6 @@ public class CommandAfk extends BaseCommand {
     super("afk");
 
     setDescription("Marks or un-marks you as AFK");
-    setPermission(Permissions.DEFAULT);
     setAliases("away");
 
     register();
@@ -33,10 +31,10 @@ public class CommandAfk extends BaseCommand {
         .executes(c -> afk(getUserSender(c), null))
 
         .then(literal("-other")
-            .requires(s -> s.hasPermission(Permissions.ADMIN))
+            .requires(s -> s.hasPermission(getAdminPermission()))
 
             .then(argument("user", Arguments.ONLINE_USER)
-                .requires(s -> s.hasPermission(Permissions.ADMIN))
+                .requires(s -> s.hasPermission(getAdminPermission()))
 
                 .executes(c -> afk(
                     Arguments.getUser(c, "user"),
