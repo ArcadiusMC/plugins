@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.Getter;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.PlayerMessage;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.ViewerAwareMessage;
@@ -16,7 +17,6 @@ import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.Audiences;
 import net.arcadiusmc.utils.Time;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.Nullable;
 
 public final class Afk {
@@ -82,26 +82,15 @@ public final class Afk {
         .setChannelName("afk");
 
     channelled.setRenderer((viewer, baseMessage) -> {
-      Component displayName;
+      String messageKey = "afk."
+          + (Audiences.equals(viewer, user) ? "self" : "other")
+          + "."
+          + (Text.isEmpty(baseMessage) ? "noMessage" : "message");
 
-      if (Audiences.equals(viewer, user)) {
-        displayName = Component.text("You are");
-      } else {
-        displayName = Component.text()
-            .append(user.displayName(viewer))
-            .append(Component.text(" is"))
-            .build();
-      }
-
-      Component suffix;
-
-      if (Text.isEmpty(baseMessage)) {
-        suffix = Component.text(".");
-      } else {
-        suffix = Component.text(": ").append(baseMessage);
-      }
-
-      return Text.format("{0} now AFK{1}", NamedTextColor.GRAY, displayName, suffix);
+      return Messages.render(messageKey)
+          .addValue("player", user)
+          .addValue("message", baseMessage)
+          .create(viewer);
     });
 
     channelled.setHandler(MessageHandler.EMPTY_IF_VIEWER_WAS_REMOVED);
@@ -115,22 +104,11 @@ public final class Afk {
     setAfk(user, false, null);
 
     ChannelledMessage.announce(viewer -> {
-      Component displayName;
+      String messageKey = "afk.unafk." + (Audiences.equals(user, viewer) ? "self" : "other");
 
-      if (Audiences.equals(user, viewer)) {
-        displayName = Component.text("You are");
-      } else {
-        displayName = Component.text()
-            .append(user.displayName(viewer))
-            .append(Component.text(" is"))
-            .build();
-      }
-
-      return Component.text()
-          .color(NamedTextColor.GRAY)
-          .append(displayName)
-          .append(Component.text(" no longer AFK."))
-          .build();
+      return Messages.render(messageKey)
+          .addValue("player", user)
+          .create(viewer);
     });
   }
 

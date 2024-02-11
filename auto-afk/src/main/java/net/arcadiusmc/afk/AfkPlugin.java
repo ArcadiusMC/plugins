@@ -3,14 +3,23 @@ package net.arcadiusmc.afk;
 import net.arcadiusmc.afk.commands.CommandAfk;
 import net.arcadiusmc.afk.listeners.AfkListener;
 import net.arcadiusmc.events.Events;
+import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.loader.MessageList;
+import net.arcadiusmc.text.loader.MessageLoader;
 import net.arcadiusmc.user.Users;
 import net.arcadiusmc.user.name.UserNameFactory;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class AfkPlugin extends JavaPlugin {
 
+  private final MessageList messageList = MessageList.create();
+
   @Override
   public void onEnable() {
+    Messages.MESSAGE_LIST.addChild("afk", messageList);
+
+    reloadConfig();
+
     new CommandAfk();
     Events.register(new AfkListener());
 
@@ -24,5 +33,12 @@ public class AfkPlugin extends JavaPlugin {
     UserNameFactory factory = Users.getService().getNameFactory();
     factory.removeSuffix("afk.suffix");
     factory.removeField("afk.reason");
+
+    Messages.MESSAGE_LIST.removeChild("afk");
+  }
+
+  @Override
+  public void reloadConfig() {
+    MessageLoader.loadPluginMessages(this, messageList);
   }
 }

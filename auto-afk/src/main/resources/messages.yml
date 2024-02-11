@@ -1,0 +1,14 @@
+afk:
+  _style: "gray"
+
+  suffix:           " [AFK]"
+  profileField:     "AFK"
+
+  self.noMessage:   "You are now AFK."
+  self.message:     "You are AFK: ${message}"
+
+  other.noMessage:  "${player} is now AFK."
+  other.message:    "${player} is now AFK: ${message}"
+
+  unafk.self:       "You are no longer AFK."
+  unafk.other:      "${player} is no longer AFK."
