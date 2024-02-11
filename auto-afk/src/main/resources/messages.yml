@@ -12,3 +12,5 @@ afk:
 
   unafk.self:       "You are no longer AFK."
   unafk.other:      "${player} is no longer AFK."
+
+  autoAfkReason:    "Automatic, has not moved for longer than ${time}"

@@ -1,5 +1,6 @@
 package net.arcadiusmc.afk;
 
+import lombok.Getter;
 import net.arcadiusmc.afk.commands.CommandAfk;
 import net.arcadiusmc.afk.listeners.AfkListener;
 import net.arcadiusmc.events.Events;
@@ -8,11 +9,19 @@ import net.arcadiusmc.text.loader.MessageList;
 import net.arcadiusmc.text.loader.MessageLoader;
 import net.arcadiusmc.user.Users;
 import net.arcadiusmc.user.name.UserNameFactory;
+import net.arcadiusmc.utils.TomlConfigs;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class AfkPlugin extends JavaPlugin {
 
+  @Getter
+  private AfkConfig afkConfig;
+
   private final MessageList messageList = MessageList.create();
+
+  static AfkPlugin plugin() {
+    return getPlugin(AfkPlugin.class);
+  }
 
   @Override
   public void onEnable() {
@@ -40,5 +49,6 @@ public class AfkPlugin extends JavaPlugin {
   @Override
   public void reloadConfig() {
     MessageLoader.loadPluginMessages(this, messageList);
+    afkConfig = TomlConfigs.loadPluginConfig(this, AfkConfig.class);
   }
 }

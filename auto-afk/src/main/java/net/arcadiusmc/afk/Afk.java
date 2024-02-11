@@ -2,61 +2,76 @@ package net.arcadiusmc.afk;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.Getter;
+import net.arcadiusmc.afk.AfkConfig.AfkPunishment;
 import net.arcadiusmc.text.Messages;
-import net.arcadiusmc.text.PlayerMessage;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.ViewerAwareMessage;
 import net.arcadiusmc.text.channel.ChannelledMessage;
 import net.arcadiusmc.text.channel.MessageHandler;
+import net.arcadiusmc.text.loader.MessageRender;
 import net.arcadiusmc.user.TimeField;
 import net.arcadiusmc.user.User;
+import net.arcadiusmc.user.Users;
 import net.arcadiusmc.utils.Audiences;
+import net.arcadiusmc.utils.Tasks;
 import net.arcadiusmc.utils.Time;
 import net.kyori.adventure.text.Component;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
 
 public final class Afk {
 
   private static final Map<UUID, AfkState> stateMap = new Object2ObjectOpenHashMap<>();
 
-  private static Optional<AfkState> getState(User user) {
+  public static Optional<AfkState> getState(User user) {
     return Optional.ofNullable(stateMap.get(user.getUniqueId()));
   }
 
   public static boolean isAfk(User user) {
-    return getState(user).map(afkState -> afkState.state).orElse(false);
+    return getState(user).map(afkState -> afkState.afk).orElse(false);
   }
 
-  public static Optional<PlayerMessage> getAfkReason(User user) {
+  public static Optional<ViewerAwareMessage> getAfkReason(User user) {
     return getState(user).map(AfkState::getReason);
   }
 
-  public static void setAfk(User user, boolean afk, PlayerMessage reason) {
-    AfkState state = stateMap.computeIfAbsent(user.getUniqueId(), uuid -> new AfkState());
+  public static AfkState getOrCreateEntry(User user) {
+    return stateMap.computeIfAbsent(user.getUniqueId(), AfkState::new);
+  }
+
+  public static void setAfk(User user, boolean afk, ViewerAwareMessage reason) {
+    AfkState state = getOrCreateEntry(user);
 
     if (afk) {
-      if (!state.state) {
+      if (!state.afk) {
         user.setTimeToNow(TimeField.AFK_START);
       }
 
       state.reason = reason;
+
+      state.cancelAutoAfk();
+      state.schedulePunishTask();
     } else {
-      if (state.state) {
+      if (state.afk) {
         logAfkTime(user);
       }
 
       state.reason = null;
+
+      state.cancelPunishTask();
+      state.scheduleAutoAfk();
     }
 
-    state.state = afk;
+    state.afk = afk;
     user.updateTabName();
   }
 
-  private static void logAfkTime(User user) {
+  public static void logAfkTime(User user) {
     long startTime = user.getTime(TimeField.AFK_START);
 
     if (startTime != -1) {
@@ -66,7 +81,7 @@ public final class Afk {
     }
   }
 
-  public static void afk(User user, @Nullable PlayerMessage reason) {
+  public static void afk(User user, @Nullable ViewerAwareMessage reason) {
     user.ensureOnline();
     Preconditions.checkState(!isAfk(user), "User is already AFK");
 
@@ -112,9 +127,96 @@ public final class Afk {
     });
   }
 
+  public static void delayAutoAfk(User user) {
+    getState(user).ifPresent(afkState -> {
+      if (afkState.afk) {
+        return;
+      }
+
+      afkState.scheduleAutoAfk();
+    });
+  }
+
   @Getter
-  private static class AfkState {
-    boolean state;
-    PlayerMessage reason;
+  public static class AfkState {
+    final UUID playerId;
+
+    boolean afk;
+    ViewerAwareMessage reason;
+
+    BukkitTask autoAfkTask;
+    BukkitTask autoPunishTask;
+
+    public AfkState(UUID playerId) {
+      this.playerId = playerId;
+    }
+
+    public void cancelPunishTask() {
+      autoPunishTask = Tasks.cancel(autoPunishTask);
+    }
+
+    public void schedulePunishTask() {
+      cancelPunishTask();
+
+      AfkConfig config = AfkPlugin.plugin().getAfkConfig();
+
+      if (!config.isAutoAFkEnabled()) {
+        return;
+      }
+
+      Duration untilPunish = config.getAllowedAfkTime();
+      autoPunishTask = Tasks.runLater(this::punish, untilPunish);
+    }
+
+    private void punish() {
+      User user = Users.get(playerId);
+
+      if (!user.isOnline() || !afk) {
+        return;
+      }
+
+      AfkConfig config = AfkPlugin.plugin().getAfkConfig();
+      AfkPunishment punishment = config.getAllowedTimeSurpassed();
+
+      if (punishment == null || punishment == AfkPunishment.NONE) {
+        return;
+      }
+
+      punishment.punish(user, config);
+    }
+
+    public void cancelAutoAfk() {
+      autoAfkTask = Tasks.cancel(autoAfkTask);
+    }
+
+    public void scheduleAutoAfk() {
+      cancelAutoAfk();
+
+      AfkConfig config = AfkPlugin.plugin().getAfkConfig();
+
+      if (!config.isAutoAFkEnabled()) {
+        return;
+      }
+
+      Duration untilAfk = config.getAutoAfkDelay();
+
+      autoAfkTask = Tasks.runLater(this::autoAfk, untilAfk);
+    }
+
+    private void autoAfk() {
+      User user = Users.get(playerId);
+
+      if (user.isOnline() || !afk) {
+        return;
+      }
+
+      AfkConfig config = AfkPlugin.plugin().getAfkConfig();
+
+      MessageRender reason = Messages.render("afk.autoAfkReason")
+          .addValue("time", config.getAutoAfkDelay())
+          .addValue("player", user);
+
+      afk(user, reason);
+    }
   }
 }

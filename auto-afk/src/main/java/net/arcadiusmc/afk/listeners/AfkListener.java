@@ -1,7 +1,9 @@
 package net.arcadiusmc.afk.listeners;
 
 import net.arcadiusmc.afk.Afk;
+import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
+import net.arcadiusmc.user.event.UserJoinEvent;
 import net.arcadiusmc.user.event.UserLeaveEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,16 +21,33 @@ public class AfkListener implements Listener {
   }
 
   public static void checkUnafk(Player player) {
-    var user = Users.get(player);
+    User user = Users.get(player);
+
     if (!Afk.isAfk(user)) {
+      Afk.delayAutoAfk(user);
       return;
     }
+
     Afk.unafk(user);
   }
 
   @EventHandler(ignoreCancelled = true)
-  public void onUserLeave(UserLeaveEvent event) {
+  public void onUserJoin(UserJoinEvent event) {
     Afk.setAfk(event.getUser(), false, null);
+  }
+
+  @EventHandler(ignoreCancelled = true)
+  public void onUserLeave(UserLeaveEvent event) {
+    User user = event.getUser();
+
+    Afk.getState(user).ifPresent(afkState -> {
+      if (afkState.isAfk()) {
+        Afk.logAfkTime(user);
+      }
+
+      afkState.cancelAutoAfk();
+      afkState.cancelPunishTask();
+    });
   }
 
   @EventHandler(ignoreCancelled = true)
