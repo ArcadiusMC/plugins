@@ -1,5 +1,6 @@
 package net.arcadiusmc.afk;
 
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.TextWriter;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.name.DisplayContext;
@@ -10,7 +11,10 @@ public class AfkProfileField implements ProfileDisplayElement {
   @Override
   public void write(TextWriter writer, User user, DisplayContext context) {
     Afk.getAfkReason(user).ifPresent(message -> {
-      writer.field("AFK", message);
+      writer.field(
+          Messages.renderText("afk.profileField", context.viewer()),
+          message
+      );
     });
   }
 }

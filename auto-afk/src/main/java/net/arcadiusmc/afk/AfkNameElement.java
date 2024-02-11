@@ -1,11 +1,11 @@
 package net.arcadiusmc.afk;
 
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.name.DisplayContext;
 import net.arcadiusmc.user.name.DisplayIntent;
 import net.arcadiusmc.user.name.NameElement;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.Nullable;
 
 public class AfkNameElement implements NameElement {
@@ -19,6 +19,6 @@ public class AfkNameElement implements NameElement {
       return null;
     }
 
-    return Component.text(" [AFK]", NamedTextColor.GRAY);
+    return Messages.renderText("afk.suffix", context.viewer());
   }
 }
