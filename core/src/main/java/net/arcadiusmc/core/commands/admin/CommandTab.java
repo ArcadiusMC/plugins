@@ -62,7 +62,7 @@ public class CommandTab {
   ) {
     user.set(property, null);
 
-    source.sendMessage(
+    source.sendSuccess(
         Messages.render("cmd.tab.unset." + messageKey)
             .addValue("player", user)
             .create(source)
@@ -83,7 +83,7 @@ public class CommandTab {
 
     user.set(property, text);
 
-    source.sendMessage(
+    source.sendSuccess(
         Messages.render("cmd.tab.set", messageKey)
             .addValue("player", user)
             .addValue("value", text)
