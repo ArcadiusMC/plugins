@@ -1,44 +1,42 @@
 package net.arcadiusmc.sellshop;
 
-import static net.arcadiusmc.text.Text.format;
-import static net.kyori.adventure.text.Component.translatable;
-
-import net.arcadiusmc.text.Text;
+import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.UnitFormat;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 public interface SellMessages {
 
-  static Component soldItems(SellResult result, Material material) {
-    return soldItems(result.getSold(), result.getEarned(), material);
+  static Component soldItems(Audience viewer, SellResult result, Material material) {
+    return soldItems(viewer, result.getSold(), result.getEarned(), material);
   }
 
-  static Component soldItemsTotal(int sold, int earned, Material material) {
-    return format("Sold a total of &e{0}&r for &6{1, rhines}&r.",
-        NamedTextColor.GRAY,
-
-        Text.itemAndAmount(new ItemStack(material), sold),
-        earned
-    );
+  static Component soldItemsTotal(Audience viewer, int sold, int earned, Material material) {
+    return Messages.render("sellshop.sold.single")
+        .addValue("item", new ItemStack(material, sold))
+        .addValue("earned", UnitFormat.currency(earned))
+        .addValue("sold", sold)
+        .addValue("material", material)
+        .create(viewer);
   }
 
-  static Component soldItems(int sold, int earned, Material material) {
-    return format("Sold &e{0}&r for &6{1, rhines}&r.",
-        NamedTextColor.GRAY,
-
-        Text.itemAndAmount(new ItemStack(material), sold),
-        earned
-    );
+  static Component soldItems(Audience viewer, int sold, int earned, Material material) {
+    return Messages.render("sellshop.sold.single")
+        .addValue("item", new ItemStack(material, sold))
+        .addValue("earned", UnitFormat.currency(earned))
+        .addValue("sold", sold)
+        .addValue("material", material)
+        .create(viewer);
   }
 
-  static Component priceDropped(Material material, int before, int after) {
-    return format("Your price for &e{0}&r dropped from &6{1, rhines}&r to &e{2, rhines}&r.",
-        NamedTextColor.GRAY,
-        translatable(material),
-        before, after
-    );
+  static Component priceDropped(Audience viewer, Material material, int before, int after) {
+    return Messages.render("sellshop.priceDrop")
+        .addValue("material", material)
+        .addValue("before", UnitFormat.currency(before))
+        .addValue("after", UnitFormat.currency(after))
+        .create(viewer);
   }
 
 }

@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.command.Exceptions;
+import net.arcadiusmc.sellshop.data.ItemSellData;
 import net.arcadiusmc.sellshop.event.ItemSellEvent;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.inventory.ItemList;
@@ -77,10 +78,7 @@ public final class ItemSeller {
 
     SellResult result = sell.sell();
 
-    ItemSellEvent event = new ItemSellEvent(
-        player, result.getSold(), result.getEarned(), material, result.getFailure()
-    );
-
+    ItemSellEvent event = new ItemSellEvent(player, result.getSold(), result.getEarned(), material);
     event.callEvent();
 
     // If the amount is 0, that means
@@ -92,7 +90,7 @@ public final class ItemSeller {
       // this might need to send the message to the actionbar
       // of the given seller instead
 
-      Exceptions.handleSyntaxException(player, result.getFailure());
+      Exceptions.handleSyntaxException(player, result.getFailure().exception(player));
       return result;
     }
 
@@ -113,13 +111,13 @@ public final class ItemSeller {
     }
 
     if (send) {
-      player.sendMessage(SellMessages.soldItems(result, material));
+      player.sendMessage(SellMessages.soldItems(player, result, material));
       player.playSound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
     }
 
     // If price dropped
     if (afterPrice < beforePrice) {
-      player.sendMessage(SellMessages.priceDropped(material, beforePrice, afterPrice));
+      player.sendMessage(SellMessages.priceDropped(player, material, beforePrice, afterPrice));
     }
 
     return result;
@@ -210,13 +208,7 @@ public final class ItemSeller {
    * @param item The item being picked up
    * @return The created seller
    */
-  public static ItemSeller itemPickup(User user, ItemStack item) {
-    // Holy molly, that getter chain
-    var price = SellShopPlugin.getPlugin()
-        .getSellShop()
-        .getPriceMap()
-        .get(item.getType());
-
+  public static ItemSeller itemPickup(User user, ItemStack item, ItemSellData price) {
     ItemSell sell = new ItemSell(
         item.getType(),
         price,

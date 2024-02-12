@@ -2,6 +2,7 @@ package net.arcadiusmc.sellshop;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
+import net.arcadiusmc.text.loader.MessageRef;
 
 /**
  * The result of a {@link ItemSell#sell()} call.
@@ -32,9 +33,9 @@ public class SellResult {
    * A potential failure exception thrown in the selling process, may be null, if the selling was
    * successful
    */
-  private final CommandSyntaxException failure;
+  private final MessageRef failure;
 
-  public SellResult(ItemSell sell, CommandSyntaxException failure) {
+  public SellResult(ItemSell sell, MessageRef failure) {
     this.sold = sell.getSold();
     this.earned = sell.getEarned();
     this.target = sell.getTarget();

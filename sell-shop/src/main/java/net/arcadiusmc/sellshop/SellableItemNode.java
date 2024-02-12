@@ -3,17 +3,16 @@ package net.arcadiusmc.sellshop;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.menu.ClickContext;
 import net.arcadiusmc.menu.MenuNode;
+import net.arcadiusmc.sellshop.data.ItemSellData;
 import net.arcadiusmc.text.BufferedTextWriter;
-import net.arcadiusmc.text.Text;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.TextWriters;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.context.Context;
 import net.arcadiusmc.utils.inventory.DefaultItemBuilder;
 import net.arcadiusmc.utils.inventory.ItemStacks;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
@@ -26,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 public class SellableItemNode implements MenuNode {
 
   private final ItemSellData data;
+  private final boolean autoSellToggleAllowed;
 
   @Override
   public void onClick(User user, Context ctx, ClickContext context)
@@ -51,8 +51,12 @@ public class SellableItemNode implements MenuNode {
   private void toggleAutoSell(User user, Material material, ClickContext context)
       throws CommandSyntaxException
   {
+    if (!autoSellToggleAllowed) {
+      return;
+    }
+
     if (!user.hasPermission(SellPermissions.AUTO_SELL)) {
-      throw Exceptions.format("Cannot toggle auto sell! Donators only");
+      throw Messages.render("sellshop.autoSell.noPermission").exception(user);
     }
 
     var autoSelling = user.getComponent(UserShopData.class)
@@ -69,11 +73,11 @@ public class SellableItemNode implements MenuNode {
 
   @Override
   public @Nullable ItemStack createItem(@NotNull User user, @NotNull Context context) {
-    boolean compacted = user.get(SellProperties.COMPACTED)
-        && data.canBeCompacted();
+    boolean compacted = user.get(SellProperties.COMPACTED) && data.canBeCompacted();
 
     UserShopData earnings = user.getComponent(UserShopData.class);
     Material material = compacted ? data.getCompactMaterial() : data.getMaterial();
+
     int amount = user.get(SellProperties.SELL_AMOUNT).getItemAmount();
     int mod = compacted ? data.getCompactMultiplier() : 1;
     int originalPrice = mod * data.getPrice();
@@ -82,14 +86,15 @@ public class SellableItemNode implements MenuNode {
 
     BufferedTextWriter writer = TextWriters.buffered();
 
-    writer.formattedLine("Value: {0, rhines} per item.",
-        NamedTextColor.YELLOW, price
+    writer.line(
+        Messages.render("sellshop.item.value")
+            .addValue("price", Messages.currency(price))
     );
 
     if (originalPrice < price) {
-      writer.formattedLine("Original value: {0, rhines}",
-          NamedTextColor.GRAY,
-          originalPrice
+      writer.line(
+          Messages.render("sellshop.item.originalValue")
+              .addValue("originalPrice", originalPrice)
       );
     }
 
@@ -99,25 +104,27 @@ public class SellableItemNode implements MenuNode {
     writer.newLine();
     writer.newLine();
 
-    writer.formattedLine("Amount you will sell: {0}",
-        NamedTextColor.GRAY,
-        user.get(SellProperties.SELL_AMOUNT).amountText()
+    writer.line(
+        Messages.render("sellshop.sellAmount.info")
+            .addValue("sellAmount", user.get(SellProperties.SELL_AMOUNT).amountText())
     );
 
-    writer.line("Change the amount you sell on the right", NamedTextColor.GRAY);
+    writer.line(
+        Messages.render("sellshop.sellAmount.change")
+    );
 
     DefaultItemBuilder builder = ItemStacks.builder(material)
         .setAmount(amount);
 
-    if (user.hasPermission(SellPermissions.AUTO_SELL)) {
+    if (user.hasPermission(SellPermissions.AUTO_SELL) && autoSellToggleAllowed) {
       if (earnings.getAutoSelling().contains(material)) {
         builder
             .addEnchant(Enchantment.BINDING_CURSE, 1)
             .setFlags(ItemFlag.HIDE_ENCHANTS);
 
-        writer.line("&7Shift-Click to stop auto selling this item");
+        writer.line(Messages.render("sellshop.autoSell.prompt.off"));
       } else {
-        writer.line("&7Shift-Click to start auto selling this item");
+        writer.line(Messages.render("sellshop.autoSell.prompt.on"));
       }
     }
 
@@ -131,23 +138,19 @@ public class SellableItemNode implements MenuNode {
       UserShopData earnings
   ) {
     SellResult stackResult = ItemSell.calculateValue(
-        material,
-        data,
-        earnings,
-        material.getMaxStackSize()
+        material, this.data, earnings, material.getMaxStackSize()
     );
 
-    writer.formattedLine("Value per stack ({0}): {1, rhines}",
-        NamedTextColor.GOLD,
-        material.getMaxStackSize(),
-        stackResult.getEarned()
+    writer.line(
+        Messages.render("sellshop.item.valuePerStack")
+            .addValue("stackSize", material.getMaxStackSize())
+            .addValue("valuePerStack", stackResult.getEarned())
     );
 
     if (stackResult.getSold() < material.getMaxStackSize()) {
-      writer.formattedLine("Can only sell {0} until price drops to {1, rhines}",
-          NamedTextColor.GRAY,
-          stackResult.getSold(),
-          0
+      writer.line(
+          Messages.render("sellshop.item.limitedSellsLeft")
+              .addValue("until0", stackResult.getSold())
       );
     }
   }
@@ -169,11 +172,9 @@ public class SellableItemNode implements MenuNode {
 
     itemsUntilPriceDrop = Math.max(1, itemsUntilPriceDrop);
 
-    writer.formattedLine(
-        "Price will drop after selling {0, number} item{1}",
-        NamedTextColor.GRAY,
-        itemsUntilPriceDrop,
-        Text.conditionalPlural(itemsUntilPriceDrop)
+    writer.line(
+        Messages.render("sellshop.item.priceWillDrop")
+            .addValue("itemsUntilDrop", itemsUntilPriceDrop)
     );
   }
 }

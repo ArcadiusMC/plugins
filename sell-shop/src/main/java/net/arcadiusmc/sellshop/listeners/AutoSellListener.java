@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 import net.arcadiusmc.sellshop.ItemSeller;
 import net.arcadiusmc.sellshop.SellMessages;
 import net.arcadiusmc.sellshop.SellResult;
+import net.arcadiusmc.sellshop.SellShopPlugin;
 import net.arcadiusmc.sellshop.UserShopData;
+import net.arcadiusmc.sellshop.data.ItemSellData;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
 import net.arcadiusmc.utils.Tasks;
@@ -25,6 +27,12 @@ class AutoSellListener implements Listener {
   // static 'You sold X for Y' message that doesn't change
   private static final Map<UUID, AutoSellSession> SESSIONS = new Object2ObjectOpenHashMap<>();
   public static final int SESSION_TIMEOUT = 20 * 5; // 5 seconds
+
+  private final SellShopPlugin plugin;
+
+  public AutoSellListener(SellShopPlugin plugin) {
+    this.plugin = plugin;
+  }
 
   @EventHandler(ignoreCancelled = true)
   public void onEntityPickupItem(EntityPickupItemEvent event) {
@@ -46,7 +54,13 @@ class AutoSellListener implements Listener {
       return;
     }
 
-    SellResult result = ItemSeller.itemPickup(user, stack)
+    ItemSellData price = this.plugin.getDataSource().getGlobalPrices().getData(mat);
+
+    if (price == null) {
+      return;
+    }
+
+    SellResult result = ItemSeller.itemPickup(user, stack, price)
         .run(false);
 
     if (result.getSold() <= 0) {
@@ -81,7 +95,7 @@ class AutoSellListener implements Listener {
       finalSession.expire();
     }, SESSION_TIMEOUT);
 
-    player.sendActionBar(SellMessages.soldItems(session.amount, session.earned, mat));
+    player.sendActionBar(SellMessages.soldItems(player, session.amount, session.earned, mat));
 
     // Play sound
     player.playSound(
@@ -113,7 +127,7 @@ class AutoSellListener implements Listener {
 
     public void expire() {
       ItemSeller.log(user, material, amount, earned);
-      user.sendMessage(SellMessages.soldItemsTotal(amount, earned, material));
+      user.sendMessage(SellMessages.soldItemsTotal(user, amount, earned, material));
     }
   }
 }

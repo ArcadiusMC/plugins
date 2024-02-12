@@ -1,9 +1,12 @@
 package net.arcadiusmc.sellshop.loader;
 
+import java.util.Stack;
+import net.arcadiusmc.menu.CommonItems;
 import net.arcadiusmc.menu.MenuBuilder;
 import net.arcadiusmc.menu.MenuNode;
 import net.arcadiusmc.menu.Menus;
 import net.arcadiusmc.menu.page.MenuPage;
+import net.arcadiusmc.sellshop.SellShop;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.context.Context;
 import net.arcadiusmc.utils.inventory.ItemStacks;
@@ -15,38 +18,39 @@ import org.jetbrains.annotations.Nullable;
 
 public class SellShopPage extends MenuPage {
 
-  private final ItemStack borderItem;
-  private final int size;
+  static final MenuNode PARENT_BUTTON = MenuNode.builder()
+      .setItem((user, context) -> {
+        Stack<SellShopPage> stack = context.get(SellShop.PAGE_STACK);
+        return stack != null && !stack.isEmpty() ? CommonItems.goBack() : null;
+      })
+      .setRunnable((user, context, click) -> {
+        Stack<SellShopPage> stack = context.get(SellShop.PAGE_STACK);
 
-  private final boolean commandAccessible;
+        if (stack == null || stack.isEmpty()) {
+          return;
+        }
 
-  private final Component title;
-  private final Component[] desc;
-  private final Material headerItem;
+        SellShopPage parent = stack.peek();
 
-  private final MenuNode[] nodes;
+        click.shouldReloadMenu(false);
 
-  public SellShopPage(
-      MenuPage parent,
-      ItemStack borderItem,
-      int size,
-      Component title,
-      Component[] desc,
-      Material headerItem,
-      MenuNode[] nodes,
-      boolean commandAccessible
-  ) {
-    super(parent);
-    this.borderItem = borderItem;
-    this.size = size;
-    this.title = title;
-    this.desc = desc;
-    this.headerItem = headerItem;
-    this.nodes = nodes;
-    this.commandAccessible = commandAccessible;
+        parent.onClick(user, context, click);
+        stack.pop();
+      })
+      .build();
+
+  int size;
+  Component title;
+  Component[] desc;
+  Material headerItem;
+  ItemStack border;
+  MenuNode[] nodes;
+
+  public SellShopPage() {
+
   }
 
-  public void initiate() {
+  public void initialize() {
     var builder = Menus.builder(size, title);
     initMenu(builder, true);
   }
@@ -81,19 +85,22 @@ public class SellShopPage extends MenuPage {
 
   @Override
   protected void addBorder(MenuBuilder builder) {
-    if (ItemStacks.isEmpty(borderItem)) {
+    if (ItemStacks.isEmpty(border)) {
       return;
     }
-    builder.addBorder(borderItem);
+
+    builder.addBorder(border);
   }
 
   @Override
   protected void createMenu(MenuBuilder builder) {
     for (int i = 0; i < nodes.length; i++) {
       MenuNode node = nodes[i];
+
       if (node == null) {
         continue;
       }
+
       builder.add(i, node);
     }
   }

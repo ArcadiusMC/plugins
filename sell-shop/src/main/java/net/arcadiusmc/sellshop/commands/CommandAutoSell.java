@@ -1,19 +1,18 @@
 package net.arcadiusmc.sellshop.commands;
 
-import static net.arcadiusmc.text.Text.format;
-
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.arcadiusmc.command.Exceptions;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.annotations.Argument;
-import net.forthecrown.grenadier.annotations.CommandData;
 import net.arcadiusmc.sellshop.UserShopData;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.TextJoiner;
 import net.arcadiusmc.user.User;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.annotations.Argument;
+import net.forthecrown.grenadier.annotations.CommandFile;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 
-@CommandData("file = commands/auto_sell.gcn")
+@CommandFile("commands/auto_sell.gcn")
 public class CommandAutoSell {
 
   void listOther(CommandSource source, @Argument("player") User user)
@@ -22,19 +21,21 @@ public class CommandAutoSell {
     UserShopData data = user.getComponent(UserShopData.class);
 
     if (data.getAutoSelling().isEmpty()) {
-      throw Exceptions.NOTHING_TO_LIST;
+      throw Exceptions.NOTHING_TO_LIST.exception(user);
     }
 
     source.sendMessage(
-        format("{0, user}'s auto sell materials: {1}",
-            user,
-            TextJoiner.onComma()
-                .add(data.getAutoSelling()
-                    .stream()
-                    .map(material -> Component.text(material.name().toLowerCase()))
-                )
-                .asComponent()
-        )
+        Messages.render("cmd.autosell.list")
+            .addValue("player", user)
+            .addValue("list",
+                TextJoiner.onComma()
+                    .add(data.getAutoSelling()
+                        .stream()
+                        .map(material -> Component.text(material.name().toLowerCase()))
+                    )
+                    .asComponent()
+            )
+            .create(source)
     );
   }
 
@@ -45,7 +46,13 @@ public class CommandAutoSell {
   ) {
     var earnings = user.getComponent(UserShopData.class);
     earnings.getAutoSelling().add(material);
-    source.sendSuccess(format("Added {0} to {1, user}'s auto sell list", material, user));
+
+    source.sendSuccess(
+        Messages.render("cmd.autosell.added")
+            .addValue("player", user)
+            .addValue("material", material)
+            .create(source)
+    );
   }
 
   void remove(
@@ -55,12 +62,23 @@ public class CommandAutoSell {
   ) {
     var earnings = user.getComponent(UserShopData.class);
     earnings.getAutoSelling().remove(material);
-    source.sendSuccess(format("Removed {0} from {1, user}'s auto sell list", material, user));
+
+    source.sendSuccess(
+        Messages.render("cmd.autosell.removed")
+            .addValue("player", user)
+            .addValue("material", material)
+            .create(source)
+    );
   }
 
   void clear(CommandSource source, @Argument("player") User user) {
     UserShopData data = user.getComponent(UserShopData.class);
     data.getAutoSelling().clear();
-    source.sendSuccess(format("Cleared {0, user}'s auto sell materials", user));
+
+    source.sendSuccess(
+        Messages.render("cmd.autosell.cleared")
+            .addValue("player", user)
+            .create(source)
+    );
   }
 }

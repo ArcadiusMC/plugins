@@ -1,20 +1,23 @@
 package net.arcadiusmc.sellshop.commands;
 
-import net.arcadiusmc.command.FtcCommand;
-import net.forthecrown.grenadier.GrenadierCommand;
+import java.util.Optional;
+import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.sellshop.SellPermissions;
 import net.arcadiusmc.sellshop.SellShop;
 import net.arcadiusmc.sellshop.SellShopPlugin;
-import net.kyori.adventure.text.Component;
+import net.arcadiusmc.sellshop.loader.SellShopPage;
+import net.arcadiusmc.text.Messages;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.GrenadierCommand;
 
-public class CommandsShop extends FtcCommand {
+public class CommandsShop extends BaseCommand {
 
-  private final SellShop shop;
+  private final SellShopPlugin plugin;
 
-  public CommandsShop(SellShop shop) {
+  public CommandsShop(SellShopPlugin plugin) {
     super("shop");
 
-    this.shop = shop;
+    this.plugin = plugin;
 
     setAliases("sellshop");
     setDescription("Opens the server's sell shop");
@@ -27,7 +30,20 @@ public class CommandsShop extends FtcCommand {
   public void createCommand(GrenadierCommand command) {
     command
         .executes(c -> {
-          shop.getMainMenu().open(getUserSender(c));
+          CommandSource source = c.getSource();
+
+          String mainPageName = this.plugin.getShopConfig().mainPageName();
+          SellShop shop = this.plugin.getSellShop();
+
+          Optional<SellShopPage> pageOpt = shop.getPages().get(mainPageName);
+
+          if (pageOpt.isEmpty()) {
+            throw Messages.render("sellshop.mainPageMissing").exception(source);
+          }
+
+          SellShopPage page = pageOpt.get();
+          page.getMenu().open(getUserSender(c), SellShop.SET.createContext());
+
           return 0;
         })
 
@@ -36,7 +52,7 @@ public class CommandsShop extends FtcCommand {
 
             .executes(c -> {
               SellShopPlugin.getPlugin().reloadConfig();
-              c.getSource().sendSuccess(Component.text("Reloaded SellShop plugin"));
+              c.getSource().sendSuccess(Messages.renderText("sellshop.reloaded", c.getSource()));
               return 0;
             })
         );

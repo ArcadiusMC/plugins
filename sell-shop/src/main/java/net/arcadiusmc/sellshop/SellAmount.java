@@ -1,36 +1,34 @@
 package net.arcadiusmc.sellshop;
 
-import static net.kyori.adventure.text.Component.text;
-
-import com.google.gson.JsonElement;
 import lombok.Getter;
-import net.arcadiusmc.utils.io.JsonUtils;
+import net.arcadiusmc.text.Messages;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 
 @Getter
 public enum SellAmount {
-  PER_1(1, "Sell per 1"),
-  PER_16(16, "Sell per 16"),
-  PER_64(64, "Sell per stack"),
-  ALL(-1, "Sell all");
+
+  PER_1(1),
+  PER_16(16),
+  PER_64(64),
+  ALL(-1);
 
   private final byte value;
-  private final String sellPerText;
 
-  SellAmount(int i, String text) {
-    value = (byte) i;
-    this.sellPerText = text;
+  SellAmount(int i) {
+    this.value = (byte)i;
   }
 
   public int getItemAmount() {
     return Math.max(1, getValue());
   }
 
-  public Component amountText() {
-    return text(value == -1 ? "All" : (value + ""));
+  public Component getSellPerText() {
+    return Messages.renderText("sellshop.sellAmount.sellPer." + this.name().toLowerCase(), (Audience)null);
   }
 
-  public JsonElement serialize() {
-    return JsonUtils.writeEnum(this);
+  public Component amountText() {
+    return Messages.renderText("sellshop.sellAmount.names." + this.name().toLowerCase(), (Audience)null);
   }
+
 }

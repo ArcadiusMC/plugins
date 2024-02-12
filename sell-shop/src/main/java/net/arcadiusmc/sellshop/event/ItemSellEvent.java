@@ -1,6 +1,5 @@
 package net.arcadiusmc.sellshop.event;
 
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.event.UserEvent;
@@ -19,20 +18,16 @@ public class ItemSellEvent extends UserEvent {
 
   private final Material material;
 
-  private final CommandSyntaxException failure;
-
   public ItemSellEvent(
       User user,
       int sold,
       int earned,
-      Material material,
-      CommandSyntaxException failure
+      Material material
   ) {
     super(user);
     this.sold = sold;
     this.earned = earned;
     this.material = material;
-    this.failure = failure;
   }
 
   @Override

@@ -4,15 +4,14 @@ import static net.arcadiusmc.text.Text.format;
 
 import com.google.common.collect.Streams;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import java.util.Collection;
-import java.util.Locale;
 import net.arcadiusmc.command.Exceptions;
+import net.arcadiusmc.sellshop.UserShopData;
+import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.TextJoiner;
+import net.arcadiusmc.user.User;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.annotations.Argument;
 import net.forthecrown.grenadier.annotations.CommandData;
-import net.arcadiusmc.sellshop.UserShopData;
-import net.arcadiusmc.text.TextJoiner;
-import net.arcadiusmc.user.User;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 
@@ -25,36 +24,51 @@ public class CommandEarnings {
     var earnings = user.getComponent(UserShopData.class);
 
     if (earnings.isEmpty()) {
-      throw Exceptions.NOTHING_TO_LIST;
+      throw Exceptions.NOTHING_TO_LIST.exception(user);
     }
 
-    source.sendMessage(
-        format("{0, user}'s earned data:\n{1}",
-            user,
-            TextJoiner.onNewLine()
-                .add(
-                    Streams.stream(earnings)
-                        .map(entry -> format("&7{0}&8:&r {1, rhines}",
-                            entry.getMaterial(),
-                            entry.getValue()
-                        ))
-                )
-        )
+    source.sendSuccess(
+        Messages.render("cmd.earnings.list")
+            .addValue("player", user)
+            .addValue("list",
+                TextJoiner.onNewLine()
+                    .add(
+                        Streams.stream(earnings)
+                            .map(entry -> format("&7{0}&8:&r {1, rhines}",
+                                entry.getMaterial(),
+                                entry.getValue()
+                            ))
+                    )
+            )
+            .create(source)
     );
   }
 
-  void clearEarnings(CommandSource source, @Argument("players") Collection<User> users) {
-    for (User user : users) {
-      var earnings = user.getComponent(UserShopData.class);
-      earnings.clear();
-    }
+  Component message(
+      CommandSource source,
+      String suffix,
+      User user,
+      Material material,
+      int amount,
+      int newAmount
+  ) {
+    return Messages.render("cmd.earnings", suffix)
+        .addValue("material", material)
+        .addValue("player", user)
+        .addValue("value", amount)
+        .addValue("newValue", newAmount)
+        .create(source);
+  }
 
-    if (users.size() == 1) {
-      var user = users.iterator().next();
-      source.sendSuccess(format("Cleared {0, user}'s earnings", user));
-    } else {
-      source.sendSuccess(format("Cleared {0, number} users' earnings", users.size()));
-    }
+  void clearEarnings(CommandSource source, @Argument("player") User user) {
+    var earnings = user.getComponent(UserShopData.class);
+    earnings.clear();
+
+    source.sendSuccess(
+        Messages.render("cmd.earnings.cleared.all")
+            .addValue("player", user)
+            .create(source)
+    );
   }
 
   void addEarnings(
@@ -68,10 +82,7 @@ public class CommandEarnings {
 
     earnings.set(material, newAmount);
 
-    source.sendSuccess(format(
-        "Added {0, rhines} to {1} earnings of {2, user}, now {3, rhines}",
-        amount, material, user, newAmount
-    ));
+    source.sendSuccess(message(source, "added", user, material, amount, newAmount));
   }
 
   void removeEarnings(
@@ -85,10 +96,7 @@ public class CommandEarnings {
 
     earnings.set(material, newAmount);
 
-    source.sendSuccess(format(
-        "Removed {0, rhines} from {1} earnings of {2, user}, now {3, rhines}",
-        amount, material, user, newAmount
-    ));
+    source.sendSuccess(message(source, "removed", user, material, amount, newAmount));
   }
 
   void setEarnings(
@@ -101,14 +109,9 @@ public class CommandEarnings {
     earnings.set(material, amount);
 
     if (amount == 0) {
-      source.sendSuccess(removedMessage(material, user));
+      source.sendSuccess(message(source, "cleared", user, material, 0, 0));
     } else {
-      source.sendSuccess(
-          format("Set {0} earnings of {1, user} to {2, rhines}",
-              material.name().toLowerCase(Locale.ROOT),
-              user, amount
-          )
-      );
+      source.sendSuccess(message(source, "set", user, material, amount, amount));
     }
   }
 

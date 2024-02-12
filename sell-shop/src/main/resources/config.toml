@@ -22,3 +22,8 @@ logSelling = true
 
 # Log auto-sold items only when the selling 'session' has ended
 logAutoSellOnlyWhenEnds = true
+
+#
+# Main page name of the shop
+#
+mainPageName = "main"

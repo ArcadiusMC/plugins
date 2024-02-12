@@ -21,4 +21,6 @@ public class SellShopConfig {
   private boolean logSelling = true;
 
   private boolean logAutoSellOnlyWhenEnds = true;
+
+  private String mainPageName = "main";
 }

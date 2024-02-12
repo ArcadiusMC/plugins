@@ -8,9 +8,9 @@ literal("get").argument("player", user) {
   executes = getEarnings()
 }
 
-literal("clear").argument("players", users) {
-  map_result = @result_to_users
-  description = "Clears players' earnings"
+literal("clear").argument("player", user) {
+  map_result = @result_to_user
+  description = "Clears a player's earnings"
   executes = clearEarnings()
 }
 

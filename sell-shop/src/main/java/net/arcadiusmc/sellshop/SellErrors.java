@@ -1,12 +1,9 @@
 package net.arcadiusmc.sellshop;
 
-import static net.arcadiusmc.command.Exceptions.create;
-
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.loader.MessageRef;
 
 public interface SellErrors {
-
-  CommandSyntaxException NO_ITEM_TO_SELL = create("Not enough items to sell");
-
-  CommandSyntaxException CANNOT_SELL_MORE = create("Cannot sell more, price would drop to 0");
+  MessageRef NO_ITEM_TO_SELL = Messages.reference("sellshop.noItems");
+  MessageRef CANNOT_SELL_MORE = Messages.reference("sellshop.cannotSellMore");
 }

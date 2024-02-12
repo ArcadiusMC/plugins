@@ -7,20 +7,20 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.concurrent.CompletableFuture;
-import net.arcadiusmc.command.Exceptions;
+import net.arcadiusmc.sellshop.data.ItemDataMap;
+import net.arcadiusmc.sellshop.data.ItemSellData;
+import net.arcadiusmc.text.Messages;
 import net.forthecrown.grenadier.Completions;
 import net.forthecrown.grenadier.types.ArgumentTypes;
-import net.arcadiusmc.sellshop.ItemPriceMap;
-import net.arcadiusmc.sellshop.ItemSellData;
 import org.bukkit.Material;
 import org.bukkit.Registry;
 
 public class SellMaterialArgument implements ArgumentType<Material> {
 
-  private final ItemPriceMap map;
+  private final ItemDataMap map;
   private final ArgumentType<Material> matParser;
 
-  public SellMaterialArgument(ItemPriceMap map) {
+  public SellMaterialArgument(ItemDataMap map) {
     this.map = map;
     this.matParser = ArgumentTypes.registry(Registry.MATERIAL, "Material");
   }
@@ -30,11 +30,14 @@ public class SellMaterialArgument implements ArgumentType<Material> {
     int start = reader.getCursor();
 
     Material material = matParser.parse(reader);
-    ItemSellData data = map.get(material);
+    ItemSellData data = map.getData(material);
 
     if (data == null) {
       reader.setCursor(start);
-      throw Exceptions.formatWithContext("Material {0} is not sellable", reader, material);
+      
+      throw Messages.render("sellshop.errors.notSellable")
+          .addValue("material", material)
+          .exception();
     }
 
     return material;

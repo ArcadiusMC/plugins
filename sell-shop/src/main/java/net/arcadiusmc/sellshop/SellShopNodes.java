@@ -1,17 +1,14 @@
 package net.arcadiusmc.sellshop;
 
-import static net.arcadiusmc.text.Messages.CLICK_ME;
-import static net.kyori.adventure.text.Component.newline;
-import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.event.ClickEvent.openUrl;
-
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import net.arcadiusmc.menu.MenuNode;
 import net.arcadiusmc.menu.Slot;
+import net.arcadiusmc.sellshop.data.ItemSellData;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.user.UserProperty;
+import net.arcadiusmc.utils.inventory.DefaultItemBuilder;
 import net.arcadiusmc.utils.inventory.ItemStacks;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
@@ -55,91 +52,31 @@ public final class SellShopNodes {
       .build();
 
   /**
-   * Node which shows the web-store link
-   */
-  public static final MenuNode WEBSTORE = MenuNode.builder()
-      .setItem(
-          ItemStacks.builder(Material.EMERALD_BLOCK)
-              .setName("&bWebstore")
-              .build()
-      )
-
-      .setRunnable((user, context) -> {
-        var link = SellShopPlugin.getPlugin().getShopConfig().webstoreLink();
-
-        user.sendMessage(
-            text("Our webstore", NamedTextColor.GRAY)
-                .append(newline())
-                .append(
-                    text(link, NamedTextColor.AQUA)
-                        .hoverEvent(CLICK_ME)
-                        .clickEvent(openUrl(link))
-                )
-        );
-        context.shouldClose(true);
-      })
-
-      .build();
-
-  public static final MenuNode INFO = MenuNode.builder()
-      .setItem(
-          ItemStacks.builder(Material.BOOK)
-              .setName("&eInfo")
-
-              .addLore("&7Here you can sell items to earn &eRhines&7!")
-              .addLore("")
-              .addLore("&7If you sell a lot of items, their prices will drop.")
-              .addLore("&7The bigger the item's initial price, the faster")
-              .addLore("&7the price drops")
-              .addLore("")
-              .addLore("&7Item prices will recover over time")
-
-              .build()
-      )
-      .build();
-
-  /**
    * Node to toggle selling compacted items
    */
   public static final MenuNode COMPACT_TOGGLE = MenuNode.builder()
       .setItem((user, context) -> {
         boolean compacted = user.get(SellProperties.COMPACTED);
 
-        var builder = ItemStacks.builder(
-            compacted ? Material.IRON_BLOCK : Material.IRON_INGOT
-        );
-
-        builder.setName("Toggle compact selling")
-            .addLore("&7Compact items are the block forms of items")
-            .addLore("&7Example: Diamonds and DiamondBlocks")
-            .addLore("&8Click to toggle");
+        DefaultItemBuilder builder = ItemStacks.builder(compacted ? Material.IRON_BLOCK : Material.IRON_INGOT)
+            .setName(Messages.renderText("sellshop.compact.name", user))
+            .addLore(Messages.renderText("sellshop.compact.lore", user));
 
         if (compacted) {
-          builder.addLore("Currently selling compact items");
+          builder.addLore(Messages.renderText("sellshop.compact.state.on", user));
         } else {
-          builder.addLore("Not currently selling compact items");
+          builder.addLore(Messages.renderText("sellshop.compact.state.off", user));
         }
 
         return builder.build();
       })
-
       .setRunnable((user, context) -> {
         user.flip(SellProperties.COMPACTED);
         context.shouldReloadMenu(true);
       })
-
       .build();
 
   /* ----------------------------- STATICS ------------------------------ */
-
-  public static MenuNode previousPage(SellShop shop) {
-    return MenuNode.builder()
-        .setItem((user, context) -> PREVIOUS_PAGE_ITEM)
-        .setRunnable((user, context) -> {
-          shop.getMainMenu().open(user);
-        })
-        .build();
-  }
 
   private static MenuNode toggleProperty(String name, UserProperty<Boolean> property) {
     return MenuNode.builder()
@@ -202,14 +139,9 @@ public final class SellShopNodes {
    * @param data The data to create the node for
    * @return The created node
    */
-  static MenuNode sellNode(ItemSellData data) {
-    var node = new SellableItemNode(data);
 
-    return MenuNode.builder()
-        .setItem(node)
-        .setRunnable(node)
-
-        .setPlaySound(false)
-        .build();
+  public static MenuNode sellNode(ItemSellData data, boolean autoSellAllowed) {
+    SellableItemNode node = new SellableItemNode(data, autoSellAllowed);
+    return MenuNode.builder().setItem(node).setRunnable(node).setPlaySound(false).build();
   }
 }

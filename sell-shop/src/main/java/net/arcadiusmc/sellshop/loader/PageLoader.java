@@ -95,7 +95,7 @@ public class PageLoader {
 
   private void compileLoaded() {
     loadedPages.forEach((s, page) -> {
-      if (page.abstractPage) {
+      if (page.abstractPage || page.size == UNSET_SIZE) {
         return;
       }
 
@@ -111,22 +111,21 @@ public class PageLoader {
       Entry<String, LoadingPage> entry = it.next();
       LoadingPage page = entry.getValue();
 
-      if (Strings.isNullOrEmpty(page.extendsName)) {
-        continue;
+      if (!Strings.isNullOrEmpty(page.extendsName)) {
+        LoadingPage parent = loadedPages.get(page.extendsName);
+
+        if (parent == null) {
+          LOGGER.error("Cannot load page '{}': No menu '{}' found for 'extends' value",
+              entry.getKey(), page.extendsName
+          );
+
+          it.remove();
+          continue;
+        }
+
+        page.extend(parent);
+        LOGGER.debug("Page '{}' is extending '{}'", entry.getKey(), page.extendsName);
       }
-
-      LoadingPage parent = loadedPages.get(page.extendsName);
-
-      if (parent == null) {
-        LOGGER.error("Cannot load page '{}': No menu '{}' found for 'extends' value",
-            entry.getKey(), page.extendsName
-        );
-
-        it.remove();
-        continue;
-      }
-
-      page.extend(parent);
 
       if (page.size == UNSET_SIZE) {
         LOGGER.error("Page '{}' has unset size", entry.getKey());

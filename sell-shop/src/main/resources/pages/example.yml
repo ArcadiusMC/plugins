@@ -73,6 +73,8 @@ border: true
 # For example, the most top left slot is 0,0 and the slot in the
 # top right is 8,0.
 #
+# Slots here are just randomly assigned for the purpose of example
+#
 # Default: [] (No items)
 #
 items:

@@ -1,6 +1,7 @@
 package net.arcadiusmc.sellshop;
 
 import lombok.Getter;
+import net.arcadiusmc.sellshop.data.ItemSellData;
 import org.bukkit.Material;
 
 /**
