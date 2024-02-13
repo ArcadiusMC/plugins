@@ -19,11 +19,14 @@ import java.util.function.Function;
 import net.arcadiusmc.menu.Menus;
 import net.arcadiusmc.sellshop.loader.PageLoader.LoadingPage;
 import net.arcadiusmc.text.Text;
+import net.arcadiusmc.text.loader.StyleStringCodec;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.Results;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
 import org.bukkit.Material;
 import org.bukkit.Registry;
 import org.bukkit.inventory.ItemStack;
@@ -99,15 +102,20 @@ final class SellShopCodecs {
                 .forGetter((o) -> o.abstractPage),
 
             Codec.STRING.optionalFieldOf("extends", "")
-                .forGetter((o) -> o.extendsName)
+                .forGetter((o) -> o.extendsName),
+
+            StyleStringCodec.CODEC
+                .optionalFieldOf("header-name-style", Style.style(NamedTextColor.YELLOW))
+                .forGetter(o -> o.nameStyle)
         )
-        .apply(instance, (size, title, desc, header, border, abstractPage, ext) -> {
+        .apply(instance, (size, title, desc, header, border, abstractPage, ext, nameStyle) -> {
           LoadingPage page = new LoadingPage();
           page.size = size;
           page.border = border;
           page.abstractPage = abstractPage;
           page.extendsName = ext;
           page.headerItem = header;
+          page.nameStyle = nameStyle;
 
           title.ifPresent((component) -> {
             page.title = component;
@@ -160,7 +168,7 @@ final class SellShopCodecs {
               .map(Text::wrapForItems)
               .forEach(lores::add);
 
-          meta.lore(lore);
+          meta.lore(lores);
           item.setItemMeta(meta);
 
           return item;

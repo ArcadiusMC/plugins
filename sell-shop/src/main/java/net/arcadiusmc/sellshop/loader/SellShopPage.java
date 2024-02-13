@@ -5,12 +5,14 @@ import net.arcadiusmc.menu.CommonItems;
 import net.arcadiusmc.menu.MenuBuilder;
 import net.arcadiusmc.menu.MenuNode;
 import net.arcadiusmc.menu.Menus;
+import net.arcadiusmc.menu.Slot;
 import net.arcadiusmc.menu.page.MenuPage;
 import net.arcadiusmc.sellshop.SellShop;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.context.Context;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.Style;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -21,7 +23,12 @@ public class SellShopPage extends MenuPage {
   static final MenuNode PARENT_BUTTON = MenuNode.builder()
       .setItem((user, context) -> {
         Stack<SellShopPage> stack = context.get(SellShop.PAGE_STACK);
-        return stack != null && !stack.isEmpty() ? CommonItems.goBack() : null;
+
+        if (stack == null || stack.isEmpty()) {
+          return null;
+        }
+
+        return CommonItems.goBack();
       })
       .setRunnable((user, context, click) -> {
         Stack<SellShopPage> stack = context.get(SellShop.PAGE_STACK);
@@ -34,8 +41,8 @@ public class SellShopPage extends MenuPage {
 
         click.shouldReloadMenu(false);
 
-        parent.onClick(user, context, click);
         stack.pop();
+        parent.onClick(user, context, click);
       })
       .build();
 
@@ -45,6 +52,7 @@ public class SellShopPage extends MenuPage {
   Material headerItem;
   ItemStack border;
   MenuNode[] nodes;
+  Style nameStyle;
 
   public SellShopPage() {
 
@@ -52,7 +60,7 @@ public class SellShopPage extends MenuPage {
 
   public void initialize() {
     var builder = Menus.builder(size, title);
-    initMenu(builder, true);
+    initMenu(builder, false);
   }
 
   @Override
@@ -61,7 +69,7 @@ public class SellShopPage extends MenuPage {
       return null;
     }
     var builder = ItemStacks.builder(headerItem);
-    builder.setName(title);
+    builder.setName(title.applyFallbackStyle(nameStyle));
 
     if (desc != null) {
       for (Component component : desc) {
@@ -77,7 +85,7 @@ public class SellShopPage extends MenuPage {
 
   @Override
   protected MenuNode createHeader() {
-    if (headerItem == null) {
+    if (headerItem == null || headerItem.isAir()) {
       return null;
     }
     return super.createHeader();
@@ -94,6 +102,8 @@ public class SellShopPage extends MenuPage {
 
   @Override
   protected void createMenu(MenuBuilder builder) {
+    builder.add(Slot.ZERO, PARENT_BUTTON);
+
     for (int i = 0; i < nodes.length; i++) {
       MenuNode node = nodes[i];
 

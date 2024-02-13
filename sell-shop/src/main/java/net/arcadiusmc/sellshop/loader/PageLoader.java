@@ -36,6 +36,8 @@ import net.arcadiusmc.utils.io.PathUtil;
 import net.arcadiusmc.utils.io.Results;
 import net.arcadiusmc.utils.io.SerializationHelper;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -428,6 +430,7 @@ public class PageLoader {
           })
           .setRunnable((user, context, click) -> {
             Optional<SellShopPage> opt = pages.get(menuName);
+
             if (opt.isEmpty()) {
               LOGGER.warn("Couldn't find page named '{}'", menuName);
               return;
@@ -473,12 +476,15 @@ public class PageLoader {
     ItemStack border;
     Node[] nodes = new Node[Menus.MAX_INV_SIZE];
 
+    Style nameStyle = Style.style(NamedTextColor.YELLOW);
+
     SellShopPage build(PageLoader loader) {
       SellShopPage page = new SellShopPage();
       page.size = size;
       page.title = title;
       page.border = border;
       page.headerItem = headerItem;
+      page.nameStyle = nameStyle;
 
       if (desc == null) {
         page.desc = new Component[0];
