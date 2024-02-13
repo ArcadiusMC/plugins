@@ -42,9 +42,16 @@
 # Example entry explaining formatting options
 #
 # Values:
-# - file (Required):
-#     Name of the file to load the full prices from
-#     (File type not needed)
+# - sources (Required):
+#     Array of file names that contain price data for
+#     materials. This file is relative to this loader's
+#     directory. (File type not needed)
+#
+#     All files loaded under this entry are accessible with the
+#     entry's key, so in this example's case, all materials loaded
+#     can be accessed like so: "example:<material name>",
+#     Without the < > (Why the fuck do I have to specify that)
+#
 # - global (Optional, defaults to false):
 #     Determines if the prices specified in this entry
 #     are used globally. This means (most of the time)
@@ -53,5 +60,5 @@
 #     earnings from auto sold items.
 #
 example:
-  file: "file/path"
+  sources: ["filename"]
   global: true

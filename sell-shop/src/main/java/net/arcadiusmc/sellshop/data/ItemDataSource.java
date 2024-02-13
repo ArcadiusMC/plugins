@@ -100,8 +100,8 @@ public class ItemDataSource {
     });
   }
 
-  private void loadEntries(Map<String, PriceFileEntry> map) {
-    for (Entry<String, PriceFileEntry> entry : map.entrySet()) {
+  private void loadEntries(Map<String, PriceFileEntry> entries) {
+    for (Entry<String, PriceFileEntry> entry : entries.entrySet()) {
       String id = entry.getKey();
       PriceFileEntry value = entry.getValue();
 
@@ -109,39 +109,57 @@ public class ItemDataSource {
         continue;
       }
 
-      Path file = directory.resolve(value.fileName() + ".json");
+      SimpleDataMap map = new SimpleDataMap();
+      boolean failed = false;
 
-      if (!Files.exists(file)) {
-        LOGGER.error("{}: file {} doesn't exist", id, file);
+      for (String fileName : value.files()) {
+        failed = !loadInto(id, fileName, map);
+      }
+
+      if (failed) {
         continue;
       }
 
-      JsonElement pricesElement;
+      registry.register(id, map);
 
-      try {
-        pricesElement = JsonUtils.readFile(file);
-      } catch (IOException exc) {
-        LOGGER.error("{}: IO exception reading price file {}", id, file);
-        continue;
-      }
-
-      Optional<SimpleDataMap> opt = Codecs.PRICE_MAP.parse(JsonOps.INSTANCE, pricesElement)
-          .mapError(s -> id + ": Failed to load prices from file " + file + ": " + s)
-          .resultOrPartial(LOGGER::error);
-
-      if (opt.isEmpty()) {
-        continue;
-      }
-
-      SimpleDataMap priceMap = opt.get();
-
-      registry.register(id, priceMap);
+      LOGGER.debug("Registered price source '{}'", id);
 
       if (value.global()) {
-        globalPrices.addSource(priceMap);
+        globalPrices.addSource(map);
       }
-
-      LOGGER.debug("Loaded price source '{}' from file {}", id, file);
     }
+  }
+
+  private boolean loadInto(String id, String fileName, SimpleDataMap map) {
+    Path file = directory.resolve(fileName + ".json");
+
+    if (!Files.exists(file)) {
+      LOGGER.error("{}: file {} doesn't exist", id, file);
+      return false;
+    }
+
+    JsonElement pricesElement;
+
+    try {
+      pricesElement = JsonUtils.readFile(file);
+    } catch (IOException exc) {
+      LOGGER.error("{}: IO exception reading price file {}", id, file);
+      return false;
+    }
+
+    Optional<SimpleDataMap> opt = Codecs.PRICE_MAP.parse(JsonOps.INSTANCE, pricesElement)
+        .mapError(s -> id + ": Failed to load prices from file " + file + ": " + s)
+        .resultOrPartial(LOGGER::error);
+
+    if (opt.isEmpty()) {
+      return false;
+    }
+
+    SimpleDataMap priceMap = opt.get();
+    map.addAll(priceMap);
+
+    LOGGER.debug("Loaded price source '{}' from file {}", id, file);
+
+    return true;
   }
 }
