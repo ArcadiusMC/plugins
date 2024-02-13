@@ -53,6 +53,12 @@ size: 4rows
 header-item: "minecraft:stone"
 
 #
+# Style of the item name of the menu header
+# Default: "yellow"
+#
+header-name-style: "yellow"
+
+#
 # Description shown in the menu header
 #
 # Default: [] (Empty description)
