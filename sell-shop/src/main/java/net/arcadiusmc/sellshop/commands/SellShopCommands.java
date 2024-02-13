@@ -11,6 +11,7 @@ public final class SellShopCommands {
     SellMaterialArgument arg = new SellMaterialArgument(plugin.getDataSource().getGlobalPrices());
 
     new CommandsShop(plugin);
+    new CommandOpenPage(plugin);
 
     AnnotatedCommandContext ctx = Commands.createAnnotationContext();
     ctx.getVariables().put("material", arg);
