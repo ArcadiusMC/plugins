@@ -23,8 +23,11 @@ title: "Example Inventory"
 extends: "other-menu-name"
 
 #
+# Marks this menu as a 'template'
+#
 # Template inventories are never registered as standalone menus, but are only
-# used for the purpose of being extended by another menu.
+# used for the purpose of being extended by another menu and are disposed after
+# menu loading has been completed.
 #
 # Default: false
 #
@@ -34,27 +37,27 @@ template: false
 # Size of the inventory, can be a number (In which case it must be a multiple
 # of 9 and less than 55) or a row number.
 #
-# Examples: 9, 18, 27, 36, 1row, 2rows, 5rows, 6rows
+# Examples: 9, 18, 27, 36, 1row, 2rows, 3rows, 4rows
+#
+# 6rows (or 54) is the maximum allowed value.
 #
 # Default: 9, aka, 1row
 #
 size: 4rows
 
 #
-# Description shown in the menu header item and when the menu is shown in other
-# menus
-#
-# Default: [] (Empty description)
-#
-description: [ "This is an example menu :)" ]
-
-#
-# Item type that's shown at the very top of the menu, and is also used as the
-# button for the inventory
+# Item type that's shown at the very top middle of the menu.
 #
 # Default: "minecraft:stone" lol
 #
 header-item: "minecraft:stone"
+
+#
+# Description shown in the menu header
+#
+# Default: [] (Empty description)
+#
+description: [ "This is an example menu :)" ]
 
 #
 # Sets whether the inventory has a border around the edge slots
@@ -74,6 +77,13 @@ border: true
 # top right is 8,0.
 #
 # Slots here are just randomly assigned for the purpose of example
+#
+# Each entry, alongside the 'slot' value, must have a node value,
+# this is EITHER 'hardcoded', 'open-menu', 'sell' or 'item', these
+# values cannot be mixed and are mutually exclusive.
+#
+# Each node value will generate an item to take up the slot and
+# handle click actions on their own.
 #
 # Default: [] (No items)
 #
@@ -100,6 +110,9 @@ items:
   #
   # Menu names are determined by their file name (without the . suffix)
   #
+  # The item used to represent the menu in this inventory is the header-item
+  # of the specified inventory
+  #
   - slot: 1,2
     open-menu: "other-menu-name"
 
@@ -113,7 +126,7 @@ items:
   # stone, you would reference that entry like so: "common:stone"
   #
   - slot: 1,3
-    sell: "prices-file:material_name"
+    sell: "prices-file:stone"
 
   #
   # Direct item reference
