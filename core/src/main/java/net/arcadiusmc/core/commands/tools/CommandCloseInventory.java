@@ -61,20 +61,22 @@ public class CommandCloseInventory extends BaseCommand {
 
     MessageRender message;
 
-    if (reason == null) {
-      player.closeInventory();
-      message = Messages.render("cmd.closeinv.closed");
-    } else {
-      player.closeInventory(reason);
-      message = Messages.render("cmd.closeinv.closed.reason")
-          .addValue("reason", reason);
-    }
+    if (source.isPlayer()) {
+      if (reason == null) {
+        player.closeInventory();
+        message = Messages.render("cmd.closeinv.closed");
+      } else {
+        player.closeInventory(reason);
+        message = Messages.render("cmd.closeinv.closed.reason")
+            .addValue("reason", reason);
+      }
 
-    source.sendSuccess(
-        message
-            .addValue("player", player)
-            .create(source)
-    );
+      source.sendSuccess(
+          message
+              .addValue("player", player)
+              .create(source)
+      );
+    }
 
     return 0;
   }
