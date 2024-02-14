@@ -2,9 +2,11 @@ package net.arcadiusmc.utils.math;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.arcadiusmc.utils.io.JsonUtils;
 import net.forthecrown.nbt.BinaryTag;
 import net.forthecrown.nbt.IntArrayTag;
-import net.arcadiusmc.utils.io.JsonUtils;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.util.BoundingBox;
@@ -15,6 +17,15 @@ import org.spongepowered.math.vector.Vector3i;
 public class Bounds3i extends AbstractBounds3i<Bounds3i> implements Iterable<Vector3i> {
 
   public static final Bounds3i EMPTY = of(Vector3i.ZERO, Vector3i.ZERO);
+
+  public static final Codec<Bounds3i> CODEC = RecordCodecBuilder.create(instance -> {
+    return instance
+        .group(
+            Vectors.V3I_CODEC.fieldOf("min").forGetter(AbstractBounds3i::min),
+            Vectors.V3I_CODEC.fieldOf("max").forGetter(AbstractBounds3i::max)
+        )
+        .apply(instance, Bounds3i::of);
+  });
 
   public Bounds3i(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
     super(minX, minY, minZ, maxX, maxY, maxZ);
