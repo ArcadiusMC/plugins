@@ -20,7 +20,9 @@ import com.mojang.serialization.codecs.PrimitiveCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.lang.reflect.Array;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -239,6 +241,28 @@ public @UtilityClass class ExtraCodecs {
   );
 
   public static final Codec<Material> MATERIAL_CODEC = registryCodec(Registry.MATERIAL);
+
+  public static final Codec<Instant> INSTANT = combine(
+      Codec.STRING.flatXmap(
+          s -> {
+            try {
+              return Results.success(JsonUtils.DATE_FORMAT.parse(s))
+                  .map(date -> Instant.ofEpochMilli(date.getTime()));
+            } catch (Exception e) {
+              return Results.error(e.getMessage());
+            }
+          },
+          o -> {
+            try {
+              return Results.success(JsonUtils.DATE_FORMAT.format(new Date(o.toEpochMilli())));
+            } catch (Exception e) {
+              return Results.error(e.getMessage());
+            }
+          }
+      ),
+
+      Codec.LONG.xmap(Instant::ofEpochMilli, Instant::toEpochMilli)
+  );
 
   /* ----------------------------------------------------------- */
 
