@@ -8,6 +8,7 @@ import net.arcadiusmc.command.settings.SettingsBook;
 import net.arcadiusmc.core.commands.CommandLeave;
 import net.arcadiusmc.text.ViewerAwareMessage;
 import net.arcadiusmc.text.channel.ChannelledMessage;
+import net.arcadiusmc.text.channel.MessageRenderer;
 import net.arcadiusmc.text.placeholder.Placeholders;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.io.JsonUtils;
@@ -65,6 +66,11 @@ public class ArcadiusServerImpl implements ArcadiusServer {
   @Override
   public @NotNull SettingsBook<User> getGlobalSettingsBook() {
     return globalSettings;
+  }
+
+  @Override
+  public MessageRenderer getAnnouncementRenderer() {
+    return plugin.getAnnouncer().renderer(Placeholders.newRenderer().useDefaults());
   }
 
   @Override

@@ -2,6 +2,7 @@ package net.arcadiusmc;
 
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.ViewerAwareMessage;
+import net.arcadiusmc.text.channel.MessageRenderer;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.command.settings.SettingsBook;
 import net.kyori.adventure.text.ComponentLike;
@@ -21,6 +22,8 @@ public interface ArcadiusServer {
 
   @NotNull
   SettingsBook<User> getGlobalSettingsBook();
+
+  MessageRenderer getAnnouncementRenderer();
 
   void announce(ViewerAwareMessage message);
 
