@@ -57,6 +57,13 @@ import org.bukkit.inventory.ItemStack;
 
 public @UtilityClass class ExtraCodecs {
 
+  public static Function<BinaryTag, DataResult<CompoundTag>> TAG_TO_COMPOUND = binaryTag -> {
+    if (binaryTag == null || !binaryTag.isCompound()) {
+      return Results.error("Not a compound tag: %s", binaryTag);
+    }
+    return Results.success(binaryTag.asCompound());
+  };
+
   /* ----------------------------------------------------------- */
 
   public final Codec<World> WORLD_CODEC = Codec.STRING.comapFlatMap(s -> {
