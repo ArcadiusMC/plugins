@@ -20,6 +20,7 @@ import net.arcadiusmc.user.Users;
 import net.arcadiusmc.utils.PluginUtil;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.Grenadier;
 import net.forthecrown.grenadier.Readers;
 import net.forthecrown.grenadier.annotations.AnnotatedCommandContext;
 import net.forthecrown.grenadier.annotations.AnnotatedCommandContext.DefaultExecutionRule;
@@ -191,18 +192,31 @@ public final class Commands {
    * @param args Arguments to format
    */
   public static void executeConsole(String format, Object... args) {
-    String formattedCmd = String.format(format, args);
+    execute(Grenadier.createSource(Bukkit.getConsoleSender()), format, args);
+  }
+
+  /**
+   * Executes a specified command as the specified sender. If this function is called
+   * from an async context, then the bukkit scheduler is used to run the command
+   * synchronously
+   *
+   * @param source The source executing the command
+   * @param format The command format
+   * @param args Arguments to format
+   */
+  public static void execute(CommandSource source, String format, Object... args) {
+    String command = String.format(format, args);
 
     if (Bukkit.isPrimaryThread()) {
       try {
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), formattedCmd);
+        Grenadier.dispatch(source, command);
       } catch (Throwable t) {
-        Loggers.getLogger().error("Error executing command '{}'", formattedCmd, t);
+        Loggers.getLogger().error("Error executing command '{}'", command, t);
       }
     } else {
       Plugin plugin = PluginUtil.getCallingPlugin();
       Bukkit.getScheduler().runTask(plugin, () -> {
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), formattedCmd);
+        Grenadier.dispatch(source, command);
       });
     }
   }
