@@ -1,0 +1,34 @@
+#
+# Enables/disables forwarding logger calls to Discord
+#
+forwardingEnabled = true
+
+#
+# Message level required for a message to be forwarded
+# to the discord server
+#
+forwarderLevel = "ERROR"
+
+#
+# Name of the channel to forward logger output to.
+#
+# This must be a channel name set in DiscordSRV's
+# config, not an actual channel name
+#
+forwardingChannel = "error-log"
+
+#
+# ID number of the channel that is treated as the
+# 'updates' channel
+#
+updateChannelId = 0
+
+#
+# Enables/disables discord announcements (Messages sent
+# in the 'updateChannelId' server) being also announced
+# on the in game server.
+#
+# In game, they will just show up as "New announcement
+# in Discord"
+#
+forwardDiscordAnnouncementsToServer = true

@@ -16,6 +16,7 @@ include("webmap")
 include("vault-hook")
 include("class-loader-tools")
 include("early-shutdown")
+include("discord")
 
 // Regular plugins
 include("extended-items")

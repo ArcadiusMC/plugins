@@ -1,0 +1,22 @@
+#
+# Simple file which allows commands to be ran (as console) when a
+# member of the discord stops or starts boosting the server.
+#
+# Use "%player" as a placeholder for the player's name.
+#
+
+#
+# List of commands executed when a player starts boosting
+# the server's discord.
+#
+on-boosting-begin: [
+  "ranks add %player booster"
+]
+
+#
+# List of commands executed when a player stops boosting
+# the server's discord.
+#
+on-boosting-end: [
+  "ranks remove %player booster"
+]
