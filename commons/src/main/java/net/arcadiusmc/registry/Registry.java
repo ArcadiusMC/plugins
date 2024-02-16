@@ -18,23 +18,29 @@ import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import it.unimi.dsi.fastutil.objects.ObjectCollections;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.fastutil.objects.ObjectSets;
+import java.util.AbstractSet;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.ListIterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import lombok.Getter;
 import net.arcadiusmc.Loggers;
-import net.forthecrown.nbt.BinaryTag;
-import net.forthecrown.nbt.BinaryTags;
-import net.forthecrown.nbt.StringTag;
 import net.arcadiusmc.utils.AbstractListIterator;
 import net.arcadiusmc.utils.ArrayIterator;
 import net.arcadiusmc.utils.io.Results;
+import net.forthecrown.nbt.BinaryTag;
+import net.forthecrown.nbt.BinaryTags;
+import net.forthecrown.nbt.StringTag;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.intellij.lang.annotations.Pattern;
 import org.jetbrains.annotations.NotNull;
@@ -822,6 +828,14 @@ public class Registry<V> implements Iterable<V> {
   }
 
   /**
+   * Gets an unmodifiable map mirroring this registry
+   * @return Registry map
+   */
+  public @NotNull Map<String, V> toMap() {
+    return new RegistryMap();
+  }
+
+  /**
    * Gets an immutable iterator for iterating through the values contained in this registry
    *
    * @return immutable registry iterator
@@ -1090,6 +1104,126 @@ public class Registry<V> implements Iterable<V> {
     @Override
     protected int size() {
       return Registry.this.size();
+    }
+  }
+
+  private class RegistryMap implements Map<String, V> {
+
+    @Override
+    public int size() {
+      return Registry.this.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return Registry.this.isEmpty();
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+      if (key instanceof String str) {
+        return Registry.this.contains(str);
+      }
+      if (key instanceof Integer integer) {
+        return Registry.this.contains(integer);
+      }
+      return false;
+    }
+
+    @Override
+    public boolean containsValue(Object value) {
+      return Registry.this.byValue.containsKey(value);
+    }
+
+    @Override
+    public V get(Object key) {
+      if (key instanceof String str) {
+        return Registry.this.orNull(str);
+      }
+      if (key instanceof Integer integer) {
+        return Registry.this.orNull(integer);
+      }
+      return null;
+    }
+
+    @Nullable
+    @Override
+    public V put(String key, V value) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public V remove(Object key) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void putAll(@NotNull Map<? extends String, ? extends V> m) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void clear() {
+      throw new UnsupportedOperationException();
+    }
+
+    @NotNull
+    @Override
+    public Set<String> keySet() {
+      return Registry.this.keys();
+    }
+
+    @NotNull
+    @Override
+    public Collection<V> values() {
+      return Registry.this.values();
+    }
+
+    @NotNull
+    @Override
+    public Set<Entry<String, V>> entrySet() {
+      return new MapEntrySet();
+    }
+  }
+
+  class MapEntrySet extends AbstractSet<Entry<String, V>> {
+
+    @Override
+    public Iterator<Entry<String, V>> iterator() {
+      return new Iterator<Entry<String, V>>() {
+        final Iterator<Holder<V>> holderIterator = Registry.this.byKey.values().iterator();
+        final MapEntry entry = new MapEntry();
+
+        @Override
+        public boolean hasNext() {
+          return holderIterator.hasNext();
+        }
+
+        @Override
+        public Entry<String, V> next() {
+          var holder = holderIterator.next();
+          entry.key = holder.getKey();
+          entry.value = holder.getValue();
+          return entry;
+        }
+      };
+    }
+
+    @Override
+    public int size() {
+      return Registry.this.size();
+    }
+  }
+
+  @Getter
+  class MapEntry implements Entry<String, V> {
+
+    String key;
+    V value;
+
+    @Override
+    public V setValue(V value) {
+      throw new UnsupportedOperationException();
     }
   }
 }
