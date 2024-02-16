@@ -1,0 +1,137 @@
+_styles:
+  normal: "gray"
+  err: "red"
+
+badLangauge:
+  _style: $err
+  text:               "Mind your tongue, wench >:("
+
+punishTypes:
+  mute:               "Mute"
+  mute.endingEd:      "Muted"
+  softmute:           "Softmute"
+  softmute.endingEd:  "Softmuted"
+  jail:               "Jail"
+  jail.endingEd:      "Jailed"
+  kick:               "Kick"
+  kick.endingEd:      "Kicked"
+  ban:                "Ban"
+  ban.endingEd:       "Banned"
+  ipban:              "Ip-Ban"
+  ipban.endingEd:     "Ip-Banned"
+
+muted:
+  _style: $err
+  generic:            "You are muted!"
+  withReason:         "You are muted: ${reason}"
+
+jails:
+  _style: $err
+  commands:           "Cannot use commands while jailed"
+  invalidSpawn:       "Jail spawn point (The place you're standing at) isn't inside the cell (WorldEdit selection)"
+
+eavesDropper:
+  _style: $normal
+  format:             "&8[&7ED&8] &r${message}"
+  prefix.softmute:    "(Softmuted)"
+  prefix.mute:        "(Muted)"
+  sign.placed:        "&e${player}&r placed a sign at &e${position}&r, text:\n&f${signText}"
+  sign.edited:        "&e${player}&r edited a sign at &e${position}&r, text:\n&f${signText}"
+  veins:              "${player} found &e${veinSize} ${veinType}&r at &6${position}&r."
+
+punishments:
+  _style: $normal
+  generic:            "${punished} &6${player}&r."
+  generic.reason:     "${punished} &6${player}&r, reason: '&f${reason}&r'"
+  jailed:             "${punished} &6${player}&r in cell &e${cell}&r."
+  jailed.reason:      "${punished} &6${player}&r in cell &e${cell}&r, reason: '&f${reason}&r'"
+  pardoned:           "Pardoned ${player}'s ${punishment}."
+  expired:            "${player}'s ${punishment} ended."
+
+  broadcast.player:   "${text: content='[AG]' hover='Anti Grief'} ${source} &8>> &f${message}"
+  broadcast:          "${text: content='[AG]' hover='Anti Grief'} &f${message}"
+
+  errors:
+    _style: $err
+    cannotPunish:     "Cannot punish ${player}."
+    cannotPardon:     "You do not have permission to pardon ${player}'s ${punishment}"
+    noPermission:     "No permission to use ${punishment}"
+    alreadyPunished:  "${player} has already been ${punished}"
+
+staffNotes:
+  noNotes:            "&c${player} has no staff-notes"
+  meta:               "Note by ${writer}, written: ${date}"
+  list.header:        "${player}'s staff-notes:"
+  list.format:        "&e${index}) &f${note}"
+
+  cmd:
+    _style: $normal
+    added:            "Added staff-note to &e${player}&r: &f${note}"
+    removed:          "Removed staff-note from &e${player}&r: &f${note}"
+
+  menu:
+    noNotes:          "&cNo notes to view!"
+    lore:             "&7Notes added by staff members"
+
+punishMenu:
+  past:               "&ePast ${punishments}"
+  active:             "&eActive ${punishments}"
+
+
+settings:
+  spyMuted:
+    name:             "Spy on muted"
+    description:      "Toggles spying on muted players' chat messages."
+    on:               "Now spying on muted players."
+    off:              "No longer spying on muted players."
+    toggledesc.on:    "Enable spying on muted."
+    toggledesc.off:   "Disable spying on muted."
+
+  spyDms:
+    name:             "Spy on DMs"
+    description:      "Toggles spying on players' /msg messages."
+    on:               "Now spying on DMs."
+    off:              "No longer spying on DMs."
+    toggledesc.on:    "Spy on DMs."
+    toggledesc.off:   "Stop spying on DMs"
+
+  spySigns:
+    name:             "Spy on signs"
+    description:      "Toggles spying on what people write on signs."
+    on:               "Now spying on signs."
+    off:              "No longer spying on signs."
+    toggledesc.on:    "Start spying on signs."
+    toggledesc.off:   "Stop spying on signs."
+
+  spyMchat:
+    name:             "Spy on mchat"
+    description:      "Toggles spying on marriage chat."
+    on:               "Now spying on marriage chat."
+    off:              "No longer spying on marriage chat."
+    toggledesc.on:    "Spy on marriage chat."
+    toggledesc.off:   "Stop spying on marriage chat."
+
+  miningSpy:
+    name:             "Mining spy"
+    description:      "Toggles being notified when players mine veins"
+    on:               "Enabled mining notifications"
+    off:              "Disabled mining notifications"
+    toggledesc.on:    "Get notified when players mine veins"
+    toggledesc.off:   "Don't get notified when players mine veins"
+
+  showStaffNotes:
+    name:             "Staff-Notes"
+    description:      "Show staff-notes each time a player joins."
+    on:               "Showing staff-notes for joining players."
+    off:              "No longer showing staff-notes for joining players."
+    toggledesc.on:    "Show staff-notes"
+    toggledesc.off:   "Don't show staff notes"
+
+ipBanMotd:
+  motd.generic:       "You are IP-Banned from this server."
+  motd.reason:        "You are IP-Banned from this server.\n${reason}"
+
+cmd.separate:
+  _style: $normal
+  separated:          "Separated &e${player1}&r and &e${player2}&r."
+  unseparated:        "Unseparated &e${player1}&r and &e${player2}&r."

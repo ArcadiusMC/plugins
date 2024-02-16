@@ -4,6 +4,7 @@ rootProject.name = "arcadius-plugins"
 include("commons")
 include("core")
 include("menus")
+include("punishments")
 
 // Scripting
 include("scripting-impl")

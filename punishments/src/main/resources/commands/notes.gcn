@@ -1,0 +1,21 @@
+name = "notes"
+aliases = "staff-notes"
+permission = PERMISSION
+
+literal("list").argument("user", user) {
+  description = "Lists all of a player's staff notes"
+  map_result = @result_to_user
+  executes = listNotes()
+}
+
+literal("add").argument("user", user).argument("text", greedy_string) {
+  description = "Adds a staff-note to a specified player"
+  map_result("user") = @result_to_user
+  executes = addNote()
+}
+
+literal("remove").argument("user", user).argument("index", int(min=1)) {
+  description = "Removes a staff-note from a player"
+  map_result("user") = @result_to_user
+  executes = removeNote()
+}

@@ -1,0 +1,13 @@
+name = "tempjail"
+description = "Temporarily jails a player"
+permission = PERMISSION
+
+argument("player", user).argument("cell", @cell_arg).argument("length", time) {
+  executes = imprison()
+  description = "Imprisons a player for a specified length of time"
+
+  argument("reason", greedy_string) {
+    executes = imprison()
+    description = "Temporarily imprisons a player for a specified reason"
+  }
+}

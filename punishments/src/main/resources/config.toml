@@ -1,0 +1,49 @@
+
+#
+# Sets whether a punishment (such as temp muting, temp jailing, temp banning)
+# expiring is announced.
+#
+# Note: All /kick, /ban and other punishment commands announce the punishment
+# to all players with the aracdius.punish.announcements permission.
+#
+announcePunishmentExpirations = true
+
+#
+# Controls if a player's taff-notes are broadcast to all valid players or
+# not when they join the server.
+#
+# valid players meaning all players with the arcadius.staffnotes permission
+#
+broadcastNotesOnJoin = true
+
+#
+# Overrides the MOTD shown in the server list for players if the player in
+# question has been IP banned from the server.
+#
+# The text that's displayed when this override is triggered is set in
+# messages.yml, under the 'ipBanMotd' section
+#
+overrideIpBannedMotd = true
+
+#
+# List of materials that, when mined, trigger the ore-vein-mine reporter
+#
+oreMinerMaterials = [
+  # "COAL_ORE",
+  # "COPPER_ORE",
+  # "GOLD_ORE",
+  # "IRON_ORE",
+  # "LAPIS_ORE",
+  # "DEEPSLATE_COAL_ORE",
+  # "DEEPSLATE_COPPER_ORE",
+  # "DEEPSLATE_GOLD_ORE",
+  # "DEEPSLATE_IRON_ORE",
+  # "DEEPSLATE_LAPIS_ORE",
+  "DIAMOND_ORE",
+  "EMERALD_ORE",
+  "REDSTONE_ORE",
+  "DEEPSLATE_DIAMOND_ORE",
+  "DEEPSLATE_EMERALD_ORE",
+  "DEEPSLATE_REDSTONE_ORE",
+  "NETHERITE_SCRAP"
+]

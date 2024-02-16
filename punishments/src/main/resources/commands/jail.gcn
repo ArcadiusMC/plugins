@@ -1,0 +1,16 @@
+name = "jail"
+aliases = "imprison"
+description = "Jails a player"
+permission = PERMISSION
+
+argument("player", user).argument("cell", @cell_arg) {
+  map_result("player") = @result_to_user
+
+  executes = imprison()
+  description = "Jails a player"
+
+  argument("reason", greedy_string) {
+    executes = imprison()
+    description = "Jails a player for a specific reason"
+  }
+}

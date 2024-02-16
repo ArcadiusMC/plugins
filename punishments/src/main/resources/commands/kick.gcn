@@ -1,0 +1,14 @@
+name = "kick"
+permission = PERMISSION
+description = "Kicks a player from the game"
+
+argument("player", user) {
+  map_result = @result_to_user
+  executes = kick()
+  description = "Kicks a player"
+
+  argument("reason", greedy_string) {
+    executes = kick()
+    description = "Kicks a player for a specific reason"
+  }
+}
