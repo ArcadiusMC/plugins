@@ -35,7 +35,12 @@ public abstract class MenuPage implements MenuNode {
     addBorder(builder);
 
     if (parentButton && parent != null) {
-      builder.add(Slot.ZERO, CommonItems.goBack());
+      builder.add(Slot.ZERO,
+          MenuNode.builder()
+              .setItem(CommonItems.goBack())
+              .setRunnable(parent)
+              .build()
+      );
     }
 
     var header = createHeader();
