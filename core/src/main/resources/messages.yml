@@ -85,8 +85,8 @@ units:
   playtime.plural:    "Hours"
   gems.singular:      "Gem"
   gems.plural:        "Gems"
-  currency.singular:  "Denari"
-  currency.plural:    "Denari"
+  currency.singular:  "Denarius"
+  currency.plural:    "Denarii"
 
 unitEdit:
   _style: $normal
@@ -207,6 +207,68 @@ profile:
   separated:          "Separated from"
   blocked.format:     "Blocked: ${players}"
   separated.format:   "Separated: ${players}"
+
+settings:
+  errors:
+    updateOther:      "Couldn't update setting '${name}' for ${player}: ${reason}"
+
+  updatedOther:       "Changed setting ${name} for ${player} to ${value}"
+
+  fly:
+    name:             "Flying"
+    description:      "Toggles being able to fly."
+    on:               "Flying enabled."
+    off:              "Flying disabled."
+    toggledesc.on:    "Enable flying."
+    toggledesc.off:   "Disable flying."
+
+  god:
+    name:             "Godmode"
+    description:      "Toggles godmode (Invulnerable to all damage)"
+    on:               "Godmode enabled."
+    off:              "Godmode disabled."
+    toggledesc.on:    "Turn on godmode."
+    toggledesc.off:   "Turn off godmode."
+
+  tpa:
+    name:             "TPA"
+    description:      "Toggles being able to send and recieve TPA requests."
+    on:               "Enabled TPA requests."
+    off:              "Disabled TPA requests."
+    toggledesc.on:    "Enable TPA requests."
+    toggledesc.off:   "Disable TPA requests."
+
+  profilePrivate:
+    name:             "Private Profile"
+    description:      "Toggles other players being able to see your /profile."
+    on:               "Set your profile to private."
+    off:              "Set your profile to public."
+    toggledesc.on:    "Set to private."
+    toggledesc.off:   "Set to public."
+
+  showAnnouncements:
+    name:             "Broadcasts"
+    description:      "Hides/shows automatic announcements."
+    on:               "Auto-announcements shown."
+    off:              "Auto-announcements hidden."
+    toggledesc.on:    "Show auto-announcements."
+    toggledesc.off:   "Hide auto-announcements."
+
+  paying:
+    name:             "Paying"
+    description:      "Disables/enables being able to send and recieve money from players."
+    on:               "Enabled payments."
+    off:              "Disabled payments."
+    toggledesc.on:    "Enable payments."
+    toggledesc.off:   "Disable payments."
+
+  durabilityWarn:
+    name:             "Durability"
+    description:      "Toggles seeing item breaking warnings."
+    on:               "Enabled item durability warnings."
+    off:              "Disabled item durability warnings."
+    toggledesc.on:    "Enable item durability warnings."
+    toggledesc.off:   "Disable item durability warnings."
 
 cmd.near:
   empty:              "No one nearby"

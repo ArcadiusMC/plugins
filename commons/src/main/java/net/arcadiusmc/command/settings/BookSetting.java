@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.text.Messages;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEventSource;
@@ -18,9 +19,9 @@ public abstract class BookSetting<C> {
 
   private SettingsBook<C> book;
 
-  public abstract Component displayName();
+  public abstract Component displayName(Audience viewer);
 
-  public abstract Component createButtons(C context);
+  public abstract Component createButtons(C context, Audience viewer);
 
   public abstract boolean shouldInclude(C context);
 

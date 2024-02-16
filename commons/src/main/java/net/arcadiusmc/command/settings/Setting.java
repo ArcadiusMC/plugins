@@ -1,7 +1,5 @@
 package net.arcadiusmc.command.settings;
 
-import static net.kyori.adventure.text.Component.text;
-
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.time.Duration;
 import java.util.Objects;
@@ -13,8 +11,9 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.text.Messages;
-import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.UserClickCallback;
+import net.arcadiusmc.text.loader.MessageList;
+import net.arcadiusmc.text.loader.MessageRender;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.UserProperty;
 import net.forthecrown.grenadier.CommandSource;
@@ -23,6 +22,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickCallback;
 import net.kyori.adventure.text.event.ClickCallback.Options;
 import net.kyori.adventure.text.event.ClickEvent;
+import org.bukkit.permissions.Permission;
 
 @Getter
 @Setter
@@ -33,11 +33,7 @@ public class Setting {
   private final SettingAccess access;
 
   private SettingValidator validator = SettingValidator.NOP;
-  private String displayName;
-  private String description = "";
-  private String enableDescription = "Enables this setting";
-  private String disableDescription = "Disables this setting";
-  private String toggle = "{0} this setting";
+  private String messageKey;
 
   @Setter(AccessLevel.PRIVATE)
   @Getter(AccessLevel.PRIVATE)
@@ -61,22 +57,57 @@ public class Setting {
     return createInverted(SettingAccess.property(property));
   }
 
-  public Setting setToggleDescription(String base) {
-    return setEnableDescription(formatToggle(base, "start", "enable"))
-        .setDisableDescription(formatToggle(base, "stop", "disable"));
+  public Setting setPermission(String permission) {
+    this.permission = permission;
+    return this;
   }
 
-  private static String formatToggle(String base, String startStop, String enableDisable) {
-    return base
-        .replace("{start}", startStop)
-        .replace("{Start}", Text.capitalizeFully(startStop))
-        .replace("{enable}", enableDisable)
-        .replace("{Enable}", Text.capitalizeFully(enableDisable));
+  public Setting setPermission(Permission permission) {
+    return setPermission(permission.getName());
   }
 
   public void toggleState(User user) throws CommandSyntaxException {
     boolean newState = !access.getState(user);
     setState(user, newState);
+  }
+
+  private MessageRender getToggleMessage(boolean state) {
+    MessageList list = Messages.MESSAGE_LIST;
+    String stateSuffix = state ? "on" : "off";
+
+    if (list.hasMessage(messageKey + "." + stateSuffix)) {
+      return Messages.render(messageKey, stateSuffix);
+    }
+
+    return Messages.render(messageKey + ".toggle");
+  }
+
+  public Component displayName(Audience viewer) {
+    Component text = Messages.renderText(messageKey + ".name", viewer);
+
+    if (Messages.MESSAGE_LIST.hasMessage(messageKey + ".description")) {
+      text = text.hoverEvent(Messages.renderText(messageKey + ".description", viewer));
+    }
+
+    return text;
+  }
+
+  public Component getButtonDescription(Audience viewer, boolean state) {
+    String stateSuffix = state ? "on" : "off";
+    String messageKey = this.messageKey + ".toggledesc";
+
+    MessageList list = Messages.MESSAGE_LIST;
+
+    if (list.hasMessage(messageKey + "." + stateSuffix)) {
+      return list.renderText(messageKey + "." + stateSuffix, viewer);
+    }
+
+    return list.render(messageKey)
+        .addValue("state", state)
+        .addValue("onoff", state ? "on" : "off")
+        .addValue("enable", state ? "enable" : "disable")
+        .addValue("Enable", state ? "Enable" : "Disable")
+        .create(viewer);
   }
 
   public void setState(User user, boolean newState) throws CommandSyntaxException {
@@ -86,7 +117,13 @@ public class Setting {
 
     access.setState(user, newState);
 
-    Component message = Messages.toggleMessage(toggle, newState);
+    Component message = getToggleMessage(newState)
+        .addValue("now", newState ? "ow" : "o longer")
+        .addValue("inow", newState ? "o longer" : "ow")
+        .addValue("state", newState ? "Enabled" : "Disabled")
+        .addValue("istate", newState ? "Disabled" : "Enabled")
+        .create(user);
+
     user.sendMessage(message);
   }
 
@@ -102,11 +139,11 @@ public class Setting {
       try {
         validator.test(target, newState);
       } catch (CommandSyntaxException exc) {
-
-        Component newMessage = Text.format(
-            "Couldn't update setting for {0, user}: '{1}'",
-            target, Exceptions.message(exc)
-        );
+        Component newMessage = Messages.render("settings.errors.updateOther")
+            .addValue("player", target)
+            .addValue("reason", Exceptions.message(exc))
+            .addValue("name", displayName(source))
+            .create(source);
 
         throw Exceptions.create(newMessage);
       }
@@ -114,7 +151,12 @@ public class Setting {
 
     access.setState(target, newState);
 
-    Component message = Messages.toggleOther(getDisplayName(), target, newState);
+    Component message = Messages.render("settings.updatedOther")
+        .addValue("player", target)
+        .addValue("name", displayName(source))
+        .addValue("value", newState)
+        .create(source);
+
     source.sendSuccess(message);
   }
 
@@ -126,7 +168,7 @@ public class Setting {
   }
 
   public BookSetting<User> toBookSettng() {
-    Objects.requireNonNull(displayName, "displayName not set");
+    Objects.requireNonNull(messageKey, "messageKey not set");
 
     if (setting != null) {
       return setting;
@@ -143,21 +185,21 @@ public class Setting {
           .build();
 
       @Override
-      public Component displayName() {
-        return text(getDisplayName()).hoverEvent(text(getDescription()));
+      public Component displayName(Audience viewer) {
+        return Setting.this.displayName(viewer);
       }
 
       @Override
-      public Component createButtons(User context) {
+      public Component createButtons(User context, Audience viewer) {
         boolean state = access.getState(context);
 
         if (enableCallback == null) {
-          var callback = createCallback(true, getBook());
+          ClickCallback<Audience> callback = createCallback(true, getBook());
           this.enableCallback = ClickEvent.callback(callback, options);
         }
 
         if (disableCallback == null) {
-          var callback = createCallback(false, getBook());
+          ClickCallback<Audience> callback = createCallback(false, getBook());
           this.disableCallback = ClickEvent.callback(callback, options);
         }
 
@@ -165,14 +207,14 @@ public class Setting {
             true,
             state,
             enableCallback,
-            text(enableDescription)
+            getButtonDescription(viewer, true)
         );
 
         Component disable = createButton(
             false,
             state,
             disableCallback,
-            text(disableDescription)
+            getButtonDescription(viewer, false)
         );
 
         return Component.textOfChildren(enable, Component.space(), disable);

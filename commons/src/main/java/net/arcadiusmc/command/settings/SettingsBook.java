@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.BookBuilder;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.text.Component;
 
@@ -25,13 +26,14 @@ public class SettingsBook<C> {
       s.setBook(this);
     }
 
-    var book = createBook(c, title, settings);
+    var book = createBook(c, title, user, settings);
     user.openBook(book);
   }
 
   public static <C> Book createBook(
       C context,
       Component title,
+      Audience viewer,
       Collection<? extends BookSetting<C>> settings
   ) {
     BookBuilder builder = new BookBuilder()
@@ -45,8 +47,8 @@ public class SettingsBook<C> {
         continue;
       }
 
-      Component header = option.displayName().append(text(":"));
-      Component options = option.createButtons(context);
+      Component header = option.displayName(viewer).append(text(":"));
+      Component options = option.createButtons(context, viewer);
 
       builder.addField(header, options);
     }

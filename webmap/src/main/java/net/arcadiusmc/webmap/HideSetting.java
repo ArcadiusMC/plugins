@@ -26,10 +26,11 @@ public class HideSetting {
 
   static void createSetting(SettingsBook<User> settingsBook) {
     var setting = Setting.createInverted(VISIBLE)
-        .setDisplayName("Dynmap Hide")
-        .setToggle("N{1} hidden on Dynmap")
-        .setToggleDescription("{Enable} being hidden on Dynmap")
-        .setDescription("Toggles being visible on the server's Dynmap");
+        .setMessageKey("settings.dynmaphide");
+        //.setDisplayName("Dynmap Hide")
+        //.setToggle("N{1} hidden on Dynmap")
+        //.setToggleDescription("{Enable} being hidden on Dynmap")
+        //.setDescription("Toggles being visible on the server's Dynmap");
 
     settingsBook.getSettings().add(setting.toBookSettng());
   }

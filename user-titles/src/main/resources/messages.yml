@@ -44,3 +44,12 @@ ranksmenu:
   activeTitle:        "&aYour active title!"
   boughtTitle:        "&7Bough &f${title}&7 for &6${price}&r."
   set:                "&7Set your rank to &f${title}&r!"
+
+settings:
+  rankchat:
+    name:             "Ranked Chat"
+    description:      "Toggles player ranks in being shown/hidden chat"
+    on:               "Ranked Chat enabled"
+    off:              "Ranked Chat disabled"
+    toggledesc.on:    "Show ranks in chat"
+    toggledesc.off:   "Hide ranks in chat"
