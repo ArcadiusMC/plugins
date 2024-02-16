@@ -7,15 +7,18 @@ import java.lang.StackWalker.Option;
 import java.util.Collection;
 import java.util.Map;
 import net.arcadiusmc.Loggers;
-import net.arcadiusmc.text.PlayerMessage;
-import net.arcadiusmc.text.page.PagedIterator;
-import net.arcadiusmc.user.User;
-import net.arcadiusmc.user.Users;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.arguments.ExpandedEntityArgument;
 import net.arcadiusmc.command.arguments.UserParseResult;
 import net.arcadiusmc.command.arguments.chat.MessageArgument.Result;
 import net.arcadiusmc.command.help.HelpListSyntaxConsumer;
+import net.arcadiusmc.registry.Holder;
+import net.arcadiusmc.text.PlayerMessage;
+import net.arcadiusmc.text.page.PagedIterator;
+import net.arcadiusmc.user.User;
+import net.arcadiusmc.user.Users;
+import net.arcadiusmc.utils.PluginUtil;
+import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Readers;
 import net.forthecrown.grenadier.annotations.AnnotatedCommandContext;
@@ -23,9 +26,6 @@ import net.forthecrown.grenadier.annotations.AnnotatedCommandContext.DefaultExec
 import net.forthecrown.grenadier.annotations.ArgumentModifier;
 import net.forthecrown.grenadier.annotations.CommandDataLoader;
 import net.forthecrown.grenadier.annotations.TypeRegistry;
-import net.arcadiusmc.registry.Holder;
-import net.arcadiusmc.utils.PluginUtil;
-import net.arcadiusmc.utils.inventory.ItemStacks;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -212,6 +212,18 @@ public final class Commands {
   }
 
   /**
+   * Delegate for {@link #replacePlaceholders(String, User)}
+   *
+   * @param command Base command string
+   * @param player Player
+   *
+   * @return Formatted command string
+   */
+  public static String replacePlaceholders(@NotNull String command, @NotNull Player player) {
+    return replacePlaceholders(command, Users.get(player));
+  }
+
+  /**
    * Replaces command placeholders in the specified {@code command}.
    * <p>
    *
@@ -238,7 +250,7 @@ public final class Commands {
    *
    * @return Formatted command string
    */
-  public static String replacePlaceholders(@NotNull String command, @NotNull Player player) {
+  public static String replacePlaceholders(@NotNull String command, @NotNull User player) {
     Location l = player.getLocation();
 
     String block = String.format("%s %s %s", l.getBlockX(), l.getBlockY(), l.getBlockZ());
