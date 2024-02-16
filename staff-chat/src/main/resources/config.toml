@@ -1,0 +1,12 @@
+#
+# Name of the Discord channel that is treated as the staff chat mirror
+#
+# In-game messages are forwarded to this channel, and discord messages
+# to this channel are forwarded back in-game.
+#
+# Note: The name inputted here has to correspond to a name in
+# DiscordSRV's config
+#
+# Set to "" to disable mirroring
+#
+discordChannel = ""

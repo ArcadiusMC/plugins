@@ -1,14 +1,20 @@
-package net.arcadiusmc.antigrief.listeners;
+package net.arcadiusmc.staffchat;
 
-import static net.arcadiusmc.antigrief.StaffChat.COOL_CLUB;
-
+import com.google.common.base.Strings;
 import github.scarsz.discordsrv.api.Subscribe;
 import github.scarsz.discordsrv.api.events.DiscordGuildMessageReceivedEvent;
-import net.arcadiusmc.antigrief.StaffChat;
-import net.arcadiusmc.discord.FtcDiscord;
+import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
+import java.util.Optional;
+import net.arcadiusmc.discord.DiscordHook;
 import net.arcadiusmc.text.PlayerMessage;
 
 class StaffChatDiscordListener {
+
+  private final StaffChatPlugin plugin;
+
+  public StaffChatDiscordListener(StaffChatPlugin plugin) {
+    this.plugin = plugin;
+  }
 
   @Subscribe
   public void onMessage(DiscordGuildMessageReceivedEvent event) {
@@ -22,7 +28,12 @@ class StaffChatDiscordListener {
       return;
     }
 
-    var coolClub = FtcDiscord.findChannel(COOL_CLUB);
+    String channelName = plugin.getScConfig().getDiscordChannel();
+    if (Strings.isNullOrEmpty(channelName)) {
+      return;
+    }
+
+    Optional<TextChannel> coolClub = DiscordHook.findChannel(channelName);
 
     if (coolClub.isEmpty() || !coolClub.get().equals(channel)) {
       return;

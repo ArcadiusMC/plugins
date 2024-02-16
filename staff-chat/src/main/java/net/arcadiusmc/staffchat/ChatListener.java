@@ -1,11 +1,11 @@
 package net.arcadiusmc.staffchat;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
+import net.arcadiusmc.text.PlayerMessage;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 
 public class ChatListener implements Listener {
 

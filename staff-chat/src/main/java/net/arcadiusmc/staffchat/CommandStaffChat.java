@@ -1,21 +1,19 @@
-package net.arcadiusmc.antigrief.commands;
+package net.arcadiusmc.staffchat;
 
-import net.arcadiusmc.antigrief.GriefPermissions;
-import net.arcadiusmc.antigrief.StaffChat;
-import net.arcadiusmc.command.FtcCommand;
+import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.help.UsageFactory;
-import net.forthecrown.grenadier.GrenadierCommand;
 import net.arcadiusmc.text.ViewerAwareMessage;
+import net.forthecrown.grenadier.GrenadierCommand;
 import org.bukkit.command.ConsoleCommandSender;
 
-public class CommandStaffChat extends FtcCommand {
+public class CommandStaffChat extends BaseCommand {
 
   public CommandStaffChat() {
-    super("sc");
+    super("staffchat");
 
-    setPermission(GriefPermissions.STAFF_CHAT);
-    setAliases("staffchat");
+    setPermission(StaffChat.PERMISSION);
+    setAliases("sc");
     setDescription("Sends a message to the staff chat");
 
     register();

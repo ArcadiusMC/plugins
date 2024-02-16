@@ -1,0 +1,13 @@
+staffchat:
+  format:           "&8[Staff] &7${source} &8&l»&f ${message}"
+  prefix.vanish:    "&8[Vanish]"
+  prefix.discord:   "&8[Discord]"
+  
+settings:
+  staffchatToggle:
+    name:           "SC Toggle"
+    description:    "Toggles all chat messages going to Staff-Chat."
+    on:             "All chat messages will now go to Staff-Chat."
+    off:            "Staff-Chat toggle disabled."
+    toggledesc.on:  "Enable Staff-Chat toggle."
+    toggledesc.off: "Disable Staff-Chat toggle."
