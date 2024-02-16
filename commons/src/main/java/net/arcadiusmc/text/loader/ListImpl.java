@@ -114,6 +114,12 @@ class ListImpl implements MessageList {
   }
 
   @Override
+  public boolean hasMessage(String key) {
+    Objects.requireNonNull(key, "Null key");
+    return findRef(key) != null;
+  }
+
+  @Override
   public MessageList addChild(@NotNull String childKey, @NotNull MessageList childList) {
     Objects.requireNonNull(childKey, "Null key");
     Objects.requireNonNull(childList, "Null child list");

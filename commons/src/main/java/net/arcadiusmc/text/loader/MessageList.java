@@ -36,6 +36,8 @@ public interface MessageList {
     return render(key).exception(viewer);
   }
 
+  boolean hasMessage(String key);
+
   void clear();
 
   MessageList addChild(@NotNull String childKey, @NotNull MessageList childList);
