@@ -17,6 +17,7 @@ import net.arcadiusmc.core.commands.admin.CommandMemory;
 import net.arcadiusmc.core.commands.admin.CommandPlayerTime;
 import net.arcadiusmc.core.commands.admin.CommandSign;
 import net.arcadiusmc.core.commands.admin.CommandSkull;
+import net.arcadiusmc.core.commands.admin.CommandSmite;
 import net.arcadiusmc.core.commands.admin.CommandSpecificGameMode;
 import net.arcadiusmc.core.commands.admin.CommandSpeed;
 import net.arcadiusmc.core.commands.admin.CommandSudo;
@@ -88,6 +89,7 @@ public final class CoreCommands {
     new CommandDocGen();
     new CommandTellRawF();
     new CommandSudo();
+    new CommandSmite();
 
     // Tool commands
     new CommandUserProperty(plugin);

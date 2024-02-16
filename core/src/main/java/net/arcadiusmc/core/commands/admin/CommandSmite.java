@@ -1,22 +1,18 @@
-package net.arcadiusmc.antigrief.commands;
+package net.arcadiusmc.core.commands.admin;
 
 
-import net.arcadiusmc.Permissions;
-import net.arcadiusmc.command.FtcCommand;
+import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.help.UsageFactory;
-import net.forthecrown.grenadier.GrenadierCommand;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.user.User;
+import net.forthecrown.grenadier.GrenadierCommand;
 
-public class CommandSmite extends FtcCommand {
+public class CommandSmite extends BaseCommand {
 
   public CommandSmite() {
     super("smite");
-
-    setPermission(Permissions.ADMIN);
     setDescription("Smites a user lol. This command will deal damage");
-
     register();
   }
 
