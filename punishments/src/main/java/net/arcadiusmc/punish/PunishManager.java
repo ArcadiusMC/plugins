@@ -20,6 +20,7 @@ public class PunishManager {
   private static final Logger LOGGER = Loggers.getLogger();
 
   private final Map<UUID, PunishEntry> entries = new HashMap<>();
+  private boolean serverStarted = false;
 
   private final Path file;
 
@@ -54,7 +55,10 @@ public class PunishManager {
       throw new IllegalArgumentException("Dual entry addition, id=" + entry.getPlayerId());
     }
 
-    entry.validate();
+    if (serverStarted) {
+      entry.validate();
+    }
+
     entries.put(entry.getPlayerId(), entry);
   }
 
@@ -64,6 +68,11 @@ public class PunishManager {
     }
 
     entries.clear();
+  }
+
+  public void onServerStarted() {
+    serverStarted = true;
+    entries.forEach((uuid, entry) -> entry.validate());
   }
 
   public void save() {
