@@ -61,8 +61,11 @@ public class PunishPlugin extends JavaPlugin {
   @Override
   public void onDisable() {
     save();
-    saver.stop();
     Messages.MESSAGE_LIST.removeChild(getName());
+
+    if (saver != null) {
+      saver.stop();
+    }
   }
 
   @Override
