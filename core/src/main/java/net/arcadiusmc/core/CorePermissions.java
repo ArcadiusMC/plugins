@@ -49,10 +49,7 @@ public interface CorePermissions {
   Permission HAT                     = registerCmd("hat");
 
   Permission GOD                     = register("arcadius.godmode");
-  Permission GOD_OTHERS              = register(GOD, "others");
-
   Permission FLY                     = register("arcadius.flying");
-  Permission FLY_OTHERS              = register(FLY, "others");
 
   Permission FEED                    = registerCmd("feed");
   Permission HEAL                    = registerCmd("heal");
@@ -70,6 +67,6 @@ public interface CorePermissions {
       .prefix("arcadius.homes.")
       .priority(TierPriority.HIGHEST)
       .allowUnlimited()
-      .tiersBetween(1, 5)
+      .tiersBetween(1, 20)
       .build();
 }
