@@ -18,7 +18,6 @@ pluginYml {
   main = "net.arcadiusmc.discord.DiscordPlugin"
 
   depends {
-    required("DiscordSRV")
-    optional("project:user-titles")
+    optional("DiscordSRV")
   }
 }

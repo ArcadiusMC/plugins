@@ -9,6 +9,7 @@ import net.arcadiusmc.discord.listener.AnnouncementForwardingListener;
 import net.arcadiusmc.discord.listener.ServerLoadListener;
 import net.arcadiusmc.events.Events;
 import net.arcadiusmc.user.Users;
+import net.arcadiusmc.utils.PluginUtil;
 import net.arcadiusmc.utils.TomlConfigs;
 import net.arcadiusmc.utils.io.PathUtil;
 import net.arcadiusmc.utils.io.PluginJar;
@@ -28,6 +29,13 @@ public class DiscordPlugin extends JavaPlugin {
 
   @Override
   public void onEnable() {
+    if (!PluginUtil.isEnabled("DiscordSRV")) {
+      getSLF4JLogger().error("DiscordSRV not found, disabling self...");
+      getServer().getPluginManager().disablePlugin(this);
+
+      return;
+    }
+
     reloadConfig();
 
     new AppenderCommand();
