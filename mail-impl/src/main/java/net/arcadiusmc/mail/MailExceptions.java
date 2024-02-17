@@ -1,25 +1,27 @@
 package net.arcadiusmc.mail;
 
-import static net.arcadiusmc.command.Exceptions.create;
-import static net.arcadiusmc.command.Exceptions.format;
-
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.time.Instant;
+import net.arcadiusmc.text.Messages;
+import net.kyori.adventure.audience.Audience;
 
 public interface MailExceptions {
 
-  CommandSyntaxException CLAIM_NOT_ALLOWED = create("Not allowed to claim mail");
+  static CommandSyntaxException claimNotAllowed(Audience viewer) {
+    return Messages.render("mail.errors.claimForbidden").exception(viewer);
+  }
 
-  CommandSyntaxException ALREADY_CLAIMED = create("Mail items already claimed");
+  static CommandSyntaxException alreadyClaimed(Audience viewer) {
+    return Messages.render("mail.errors.alreadyClaimed").exception(viewer);
+  }
 
-  static CommandSyntaxException attachmentExpired(Instant expirationDate) {
+  static CommandSyntaxException attachmentExpired(Audience viewer, Instant expirationDate) {
     if (expirationDate == null) {
-      return create("Rewards expired");
+      return Messages.render("mail.errors.expired.dateMissing").exception(viewer);
     }
 
-    return format(
-        "Rewards expired on {0, date} ({0, time, -biggest -timestamp} ago",
-        expirationDate
-    );
+    return Messages.render("mail.errors.expired")
+        .addValue("date", expirationDate)
+        .exception(viewer);
   }
 }

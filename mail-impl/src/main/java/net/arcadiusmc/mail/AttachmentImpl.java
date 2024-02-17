@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.mail.event.MailClaimEvent;
 import net.arcadiusmc.scripts.Scripts;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.TextJoiner;
 import net.arcadiusmc.text.TextWriter;
@@ -33,7 +34,7 @@ import net.arcadiusmc.utils.Result;
 import net.arcadiusmc.utils.inventory.ItemList;
 import net.arcadiusmc.utils.inventory.ItemLists;
 import net.arcadiusmc.utils.inventory.ItemStacks;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.JsonWrapper;
 import net.arcadiusmc.utils.io.source.Source;
 import net.kyori.adventure.text.Component;
@@ -48,14 +49,11 @@ class AttachmentImpl implements Attachment {
   static final String KEY_TAGS = "tags";
   static final String KEY_ITEMS = "items";
   static final String KEY_SCRIPT = "claim_script";
-  static final String KEY_GAIN_MULTIPLIER = "use_currency_multiplier";
 
   private final CurrencyMap<Integer> currencyRewards;
   private final List<String> tags;
   private final ItemList items;
   private final Source claimScript;
-
-  private final boolean useGainMultiplier;
 
   public ItemList getItems() {
     return ItemLists.cloneAllItems(items);
@@ -82,15 +80,9 @@ class AttachmentImpl implements Attachment {
       json.remove(KEY_TAGS);
     }
 
-    if (json.has(KEY_GAIN_MULTIPLIER)) {
-      boolean state = json.getBool(KEY_GAIN_MULTIPLIER);
-      json.remove(KEY_GAIN_MULTIPLIER);
-      builder.useGainMultiplier(state);
-    }
-
     if (json.has(KEY_ITEMS)) {
       DataResult<ItemList> itemListRes
-          = FtcCodecs.ITEM_LIST_CODEC.decode(JsonOps.INSTANCE, json.get(KEY_ITEMS))
+          = ExtraCodecs.ITEM_LIST_CODEC.decode(JsonOps.INSTANCE, json.get(KEY_ITEMS))
           .map(Pair::getFirst);
 
       if (itemListRes.error().isPresent()) {
@@ -132,7 +124,7 @@ class AttachmentImpl implements Attachment {
 
     if (!items.isEmpty()) {
       var list
-          = FtcCodecs.ITEM_LIST_CODEC.encodeStart(JsonOps.INSTANCE, items)
+          = ExtraCodecs.ITEM_LIST_CODEC.encodeStart(JsonOps.INSTANCE, items)
           .getOrThrow(false, s -> {});
 
       json.add(KEY_ITEMS, list);
@@ -149,16 +141,7 @@ class AttachmentImpl implements Attachment {
       }
     }
 
-    if (useGainMultiplier) {
-      json.add(KEY_GAIN_MULTIPLIER, true);
-    }
-
     return json.getSource();
-  }
-
-  @Override
-  public boolean useGainMultiplier() {
-    return useGainMultiplier;
   }
 
   @Override
@@ -181,7 +164,7 @@ class AttachmentImpl implements Attachment {
       Component reason = event.getDenyReason();
 
       if (reason == null) {
-        throw MailExceptions.CLAIM_NOT_ALLOWED;
+        throw MailExceptions.claimNotAllowed(player);
       }
 
       throw Exceptions.create(reason);
@@ -191,7 +174,7 @@ class AttachmentImpl implements Attachment {
       var inventory = player.getInventory();
 
       if (!ItemStacks.hasRoom(inventory, items)) {
-        throw Exceptions.INVENTORY_FULL;
+        throw Exceptions.INVENTORY_FULL.exception(player);
       }
 
       for (ItemStack item : items) {
@@ -200,15 +183,7 @@ class AttachmentImpl implements Attachment {
     }
 
     currencyRewards.forEach((currency, integer) -> {
-      int amount;
-
-      if (useGainMultiplier) {
-        amount = (int) (currency.getGainMultiplier(id) * integer);
-      } else {
-        amount = integer;
-      }
-
-      currency.add(id, amount);
+      currency.add(id, integer);
     });
 
     if (claimScript == null) {
@@ -242,12 +217,7 @@ class AttachmentImpl implements Attachment {
     }
 
     currencyRewards.forEach((currency, integer) -> {
-      if (useGainMultiplier) {
-        float mod = currency.getGainMultiplier(player.getUniqueId());
-        joiner.add(currency.format(integer, mod));
-      } else {
-        joiner.add(currency.format(integer));
-      }
+      joiner.add(currency.format(integer));
     });
 
     return joiner.asComponent();
@@ -255,7 +225,7 @@ class AttachmentImpl implements Attachment {
 
   public void write(TextWriter writer) {
     currencyRewards.forEach((currency, integer) -> {
-      writer.field(currency.name(), Text.formatNumber(integer));
+      writer.field(currency.pluralName(), Text.formatNumber(integer));
     });
 
     if (items.isEmpty()) {
@@ -263,14 +233,14 @@ class AttachmentImpl implements Attachment {
     }
 
     if (items.size() > 1) {
-      writer.field("Items");
+      writer.field(Messages.render("mail.meta.attachment.items"));
       var prefixed = writer.withPrefix(text("- "));
 
       for (ItemStack item : items) {
         prefixed.line(Text.itemAndAmount(item));
       }
     } else {
-      writer.field("Item", Text.itemAndAmount(items.get(0)));
+      writer.field(Messages.render("mail.meta.attachment.item"), Text.itemAndAmount(items.get(0)));
     }
   }
 
@@ -282,8 +252,7 @@ class AttachmentImpl implements Attachment {
     if (!(o instanceof AttachmentImpl that)) {
       return false;
     }
-    return useGainMultiplier == that.useGainMultiplier
-        && Objects.equals(currencyRewards, that.currencyRewards)
+    return Objects.equals(currencyRewards, that.currencyRewards)
         && Objects.equals(tags, that.tags)
         && Objects.equals(items, that.items)
         && Objects.equals(claimScript, that.claimScript);
@@ -291,7 +260,7 @@ class AttachmentImpl implements Attachment {
 
   @Override
   public int hashCode() {
-    return Objects.hash(currencyRewards, tags, items, claimScript, useGainMultiplier);
+    return Objects.hash(currencyRewards, tags, items, claimScript);
   }
 
   static class BuilderImpl implements Builder {
@@ -301,14 +270,6 @@ class AttachmentImpl implements Attachment {
     private final List<String> tags = new ArrayList<>();
 
     private Source claimScript;
-
-    private boolean useGainMultiplier;
-
-    @Override
-    public Builder useGainMultiplier(boolean useMultiplier) {
-      this.useGainMultiplier = useMultiplier;
-      return this;
-    }
 
     @Override
     public Builder currency(String currencyName, int reward) {
@@ -364,8 +325,7 @@ class AttachmentImpl implements Attachment {
           CurrencyMaps.unmodifiable(currencyMap),
           Collections.unmodifiableList(tags),
           ItemLists.cloneAllItems(items),
-          claimScript,
-          useGainMultiplier
+          claimScript
       );
     }
   }

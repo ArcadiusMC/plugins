@@ -5,7 +5,7 @@ import org.bukkit.permissions.Permission;
 
 public interface MailPermissions {
 
-  Permission MAIL = Permissions.register("ftc.mail");
+  Permission MAIL = Permissions.register("arcadius.mail");
   Permission MAIL_OTHERS = Permissions.register(MAIL, "others");
   Permission MAIL_ITEMS = Permissions.register(MAIL, "items");
   Permission MAIL_ADMIN = Permissions.register(MAIL, "admin");

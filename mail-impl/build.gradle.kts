@@ -15,15 +15,15 @@ dependencies {
   implementation(project(":mail"))
 
   compileOnly(project(":discord"))
-  compileOnly("com.discordsrv:discordsrv:1.27.0-SNAPSHOT")
+  compileOnly("com.discordsrv:discordsrv:1.27.1-SNAPSHOT")
 }
 
 pluginYml {
   name = "Mail"
   main = "net.arcadiusmc.mail.MailPlugin"
 
-  loadAfter {
-    regular("project:guilds")
+  depends {
+    optional("project:discord")
   }
 }
 

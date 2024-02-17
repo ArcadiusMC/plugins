@@ -11,6 +11,6 @@ dependencies {
   compileOnly(project(":scripting"))
 }
 
-ftc {
-  implementedBy("mail-impl")
+arcadius {
+  implementedBy = "mail-impl"
 }

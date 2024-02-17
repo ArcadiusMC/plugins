@@ -1,15 +1,11 @@
 package net.arcadiusmc.mail;
 
-import static net.kyori.adventure.text.Component.newline;
-import static net.kyori.adventure.text.Component.text;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
-import java.sql.Date;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.EqualsAndHashCode;
@@ -21,20 +17,21 @@ import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.PlayerMessage;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.TextJoiner;
+import net.arcadiusmc.text.TextWriter;
 import net.arcadiusmc.text.TextWriters;
 import net.arcadiusmc.text.ViewerAwareMessage;
 import net.arcadiusmc.text.ViewerAwareMessage.WrappedComponent;
-import net.arcadiusmc.text.format.TextFormatTypes;
+import net.arcadiusmc.text.loader.MessageRender;
+import net.arcadiusmc.text.page.Footer;
 import net.arcadiusmc.text.placeholder.PlaceholderRenderer;
 import net.arcadiusmc.text.placeholder.Placeholders;
+import net.arcadiusmc.user.Users;
 import net.arcadiusmc.utils.Result;
 import net.arcadiusmc.utils.io.JsonUtils;
 import net.arcadiusmc.utils.io.JsonWrapper;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.entity.Player;
 
 @Getter
@@ -266,6 +263,30 @@ class MailImpl implements Mail {
         : MessageType.REGULAR;
   }
 
+  MessageRender mailMessage(String key) {
+    MessageRender render = Messages.render(key);
+
+    if (sentDate != null) {
+      render.addValue("sent_date", sentDate);
+    }
+
+    if (readDate != null) {
+      render.addValue("read_date", readDate);
+    }
+
+    if (attachmentExpiry != null) {
+      render.addValue("attach_expire", attachmentExpiry);
+    }
+
+    if (sender != null) {
+      render.addValue("sender", Users.get(sender));
+    }
+
+    render.addValue("target", Users.get(target));
+
+    return render;
+  }
+
   @Override
   public Component displayText(Audience viewer, Page page) {
     TextJoiner firstLineJoiner = TextJoiner.onSpace();
@@ -281,24 +302,28 @@ class MailImpl implements Mail {
     Component firstLine  = firstLineJoiner.asComponent();
     Component secondLine = formatMessage(viewer);
 
-    return Component.textOfChildren(firstLine, newline(), secondLine);
+    return mailMessage("mail.display")
+        .addValue("header", firstLine)
+        .addValue("message", secondLine)
+        .create(viewer);
   }
 
   @Override
   public Component deleteButton(Audience viewer, Page page) {
     if (deleted) {
-      return text("[Deleted]", NamedTextColor.DARK_GRAY)
-          .hoverEvent(text("This message has already been deleted"));
+      return mailMessage("mail.buttons.deleted").create(viewer)
+          .hoverEvent(mailMessage("mail.buttons.deleted.hover").create(viewer));
     }
 
-    return text("[Delete]", NamedTextColor.RED)
-        .hoverEvent(text("Click to delete this from your inbox"))
+    return mailMessage("mail.buttons.delete").create(viewer)
+        .hoverEvent(mailMessage("mail.buttons.delete.hover").create(viewer))
         .clickEvent(ClickEvent.runCommand(MailCommands.getDeleteCommand(this, page)));
   }
 
   @Override
   public Component infoButton(Audience viewer) {
-    return text("[Info]").hoverEvent(metadataText(viewer));
+    return mailMessage("mail.buttons.info").create(viewer)
+        .hoverEvent(metadataText(viewer));
   }
 
   @Override
@@ -310,27 +335,28 @@ class MailImpl implements Mail {
     AttachmentState attachState = getAttachmentState();
     AttachmentImpl attach = getAttachment();
 
-    TextColor color;
-    String text;
-    String hover;
+    String textKey;
+    String hoverKey;
 
     switch (attachState) {
       case CLAIMED -> {
-        color = NamedTextColor.GRAY;
-        text = "Already claimed";
-        hover = "Already claimed rewards";
+        textKey = "mail.buttons.claim.taken";
+        hoverKey = textKey + ".hover";
       }
 
       case UNCLAIMED -> {
-        color = NamedTextColor.AQUA;
-        text = "Claim Rewards";
-        hover = "Click to claim rewards!";
+        textKey = "mail.buttons.claim.regular";
+
+        if (attach != null && attachmentExpiry != null) {
+          hoverKey = "mail.buttons.claim.limited.hover";
+        } else {
+          hoverKey = textKey + ".hover";
+        }
       }
 
       case EXPIRED -> {
-        color = TextColor.color(157, 107, 107);
-        text = "Rewards Expired";
-        hover = "Rewards expired on " + Text.DATE_FORMAT.format(Date.from(attachmentExpiry));
+        textKey = "mail.buttons.claim.expired";
+        hoverKey = textKey + ".hover";
       }
 
       default -> {
@@ -339,32 +365,29 @@ class MailImpl implements Mail {
       }
     }
 
-    var builder = text()
-        .content("[" + text + "]")
-        .color(color);
-
-    var writer = TextWriters.newWriter();
+    TextWriter writer = TextWriters.newWriter();
     writer.viewer(viewer);
-    writer.line(hover);
+    writer.line(mailMessage(hoverKey).create(viewer));
 
     attach.write(writer);
 
-    builder
+    return mailMessage(textKey).create(viewer)
         .hoverEvent(writer.asComponent())
         .clickEvent(ClickEvent.runCommand(MailCommands.getClaimCommand(this, page)));
-
-    return builder.build();
   }
 
   @Override
   public Component readButton(Audience viewer, Page page) {
     boolean read = isRead();
-    TextColor color = read ? NamedTextColor.GRAY : NamedTextColor.YELLOW;
-    String text = read ? "unread" : "read";
 
-    return text("[Mark as " + text + "]", color)
+    String messageKey = "mail.buttons." + (read ? "markUnread" : "markRead");
+
+    Component base = mailMessage(messageKey).create(viewer);
+    Component hover = mailMessage(messageKey + ".hover").create(viewer);
+
+    return base
         .clickEvent(ClickEvent.runCommand(MailCommands.getReadToggleCommand(this, page)))
-        .hoverEvent(text("Click to toggle between read/unread"));
+        .hoverEvent(hover);
   }
 
   @Override
@@ -379,11 +402,15 @@ class MailImpl implements Mail {
     list.useDefaults();
 
     if (sentDate != null) {
-      list.add("sent_date", () -> Text.DATE_TIME_FORMATTER.format(sentDate));
+      list.add("sent_date", () -> Text.formatDate(sentDate));
     }
 
     if (readDate != null) {
-      list.add("read_date", () -> Text.DATE_TIME_FORMATTER.format(readDate));
+      list.add("read_date", () -> Text.formatDate(readDate));
+    }
+
+    if (attachmentExpiry != null) {
+      list.add("attach_expire", () -> Text.formatDate(attachmentExpiry));
     }
 
     if (sender != null) {
@@ -403,21 +430,18 @@ class MailImpl implements Mail {
     writer.line("Mail Message");
 
     if (sentDate != null) {
-      writer.line("Sent ");
-      writer.write(TextFormatTypes.DATE.resolve(sentDate, "", viewer));
+      writer.line(mailMessage("mail.meta.sent"));
     }
 
     if (sender != null && isSenderVisible()) {
-      writer.line("Sent by ");
-      writer.write(TextFormatTypes.USER.resolve(sender, "-flat", viewer));
+      writer.line(mailMessage("mail.meta.sentBy"));
     }
 
     if (hasAttachment()) {
-      writer.line(Messages.PAGE_BORDER);
+      writer.line(Footer.GENERIC_BORDER);
 
       if (claimDate != null) {
-        writer.line("Claimed ");
-        writer.write(TextFormatTypes.DATE.resolve(claimDate, "", viewer));
+        writer.line(mailMessage("mail.meta.claimDate"));
       }
 
       attachment.write(writer);
@@ -473,11 +497,11 @@ class MailImpl implements Mail {
     }
 
     if (state == AttachmentState.EXPIRED) {
-      throw MailExceptions.attachmentExpired(attachmentExpiry);
+      throw MailExceptions.attachmentExpired(player, attachmentExpiry);
     }
 
     if (state == AttachmentState.CLAIMED) {
-      throw MailExceptions.ALREADY_CLAIMED;
+      throw MailExceptions.alreadyClaimed(player);
     }
 
     attachment.claim(player);

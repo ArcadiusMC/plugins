@@ -7,18 +7,12 @@ import net.arcadiusmc.mail.Mail.Builder;
 
 @Getter
 public enum MailSendOption {
-  ANONYMOUS ('a') {
+  ANONYMOUS {
     @Override
     void apply(Builder builder) {
       builder.hideSender(true);
     }
   };
-
-  private final char character;
-
-  MailSendOption(char character) {
-    this.character = character;
-  }
 
   abstract void apply(Mail.Builder builder);
 

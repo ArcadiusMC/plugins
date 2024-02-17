@@ -19,8 +19,6 @@ public interface Attachment {
 
   CurrencyMap<Integer> getCurrencyRewards();
 
-  boolean useGainMultiplier();
-
   List<String> getTags();
 
   ItemList getItems();
@@ -38,8 +36,6 @@ public interface Attachment {
     Builder currency(String currencyName, int reward);
 
     Builder currency(Currency currency, int reward);
-
-    Builder useGainMultiplier(boolean useMultiplier);
 
     Builder addTag(String tag);
 

@@ -51,7 +51,7 @@ class AnsiText extends AbstractFlattenerListener {
   static final String RESET = ESCAPE_CHAR + "[0m";
   static final String BOLD = DECORATION_CODES[0];
   static final String ELLIPSES = RESET + BOLD + "...";
-  static final String SUFFIX = "\n(To reply to this message, join the server)";
+  static final String SUFFIX = "\n(To reply to this message, log on to the server)";
 
   private final StringBuilder builder;
   private final int maxLength;

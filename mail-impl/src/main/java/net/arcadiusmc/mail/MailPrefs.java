@@ -14,18 +14,7 @@ public final class MailPrefs {
 
   static void init(SettingsBook<User> book) {
     var setting = Setting.create(MAIL_TO_DISCORD)
-        .setDisplayName("Discord Mail")
-        .setDescription("Toggles received mail being forwarded to your discord DMs with the FTC bot")
-        .setToggle("N{1} forwarding in-game mail to discord")
-        .setToggleDescription("{Enable} in-game mail forwarding to discord")
-
-        .createCommand(
-            "maildiscord",
-            MailPermissions.MAIL,
-            MailPermissions.MAIL_ADMIN,
-            "togglediscordmail",
-            "discordmail"
-        );
+        .setMessageKey("settings.discordMail");
 
     book.getSettings().add(setting.toBookSettng());
   }

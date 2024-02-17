@@ -1,6 +1,7 @@
 package net.arcadiusmc.mail.command;
 
 import java.util.List;
+import net.arcadiusmc.text.Messages;
 import net.forthecrown.grenadier.CommandSource;
 import net.arcadiusmc.mail.Mail;
 import net.arcadiusmc.mail.Page;
@@ -33,11 +34,14 @@ class MailList {
     format.setHeader(
         Header.<Mail>create()
             .title((it, writer, context) -> {
+              String messageKey = context.getOrThrow(SELF)
+                  ? "mail.listHeader.self"
+                  : "mail.listHeader.other";
 
               writer.write(
-                  context.getOrThrow(SELF)
-                      ? MailMessages.MAIL_HEADER_SELF
-                      : MailMessages.mailHeader(context.getOrThrow(MAIL_USER))
+                  Messages.render(messageKey)
+                      .addValue("player", context.getOrThrow(MAIL_USER))
+                      .create(writer.viewer())
               );
             })
     );

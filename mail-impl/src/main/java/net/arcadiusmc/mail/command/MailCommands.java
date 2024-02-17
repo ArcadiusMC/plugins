@@ -1,7 +1,5 @@
 package net.arcadiusmc.mail.command;
 
-import static net.kyori.adventure.text.Component.text;
-
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -14,18 +12,17 @@ import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.arguments.UserParseResult;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.types.options.ArgumentOption;
-import net.forthecrown.grenadier.types.options.Options;
-import net.forthecrown.grenadier.types.options.OptionsArgument;
 import net.arcadiusmc.mail.Mail;
 import net.arcadiusmc.mail.MailPermissions;
 import net.arcadiusmc.mail.MailService;
 import net.arcadiusmc.mail.Page;
 import net.arcadiusmc.mail.SentDateComparator;
-import net.arcadiusmc.text.Text;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.user.User;
-import net.kyori.adventure.text.format.NamedTextColor;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.types.options.ArgumentOption;
+import net.forthecrown.grenadier.types.options.Options;
+import net.forthecrown.grenadier.types.options.OptionsArgument;
 import org.slf4j.Logger;
 
 public class MailCommands {
@@ -83,7 +80,7 @@ public class MailCommands {
       throws CommandSyntaxException
   {
     if (targets == MailTargets.ALL) {
-      source.sendSuccess(text("Sending mail to all users"));
+      source.sendSuccess(Messages.renderText("mail.sending.all", source));
     }
 
     targets.getTargets(source).whenComplete((users, throwable) -> {
@@ -103,13 +100,17 @@ public class MailCommands {
       }
 
       if (users.size() == 1) {
-        var user = users.iterator().next();
-        source.sendSuccess(
-            Text.format("Sent mail to &7{0, user}&r.", NamedTextColor.GRAY, user)
+        User user = users.iterator().next();
+        source.sendMessage(
+            Messages.render("mail.sent.single")
+                .addValue("target", user)
+                .create(source)
         );
       } else {
-        source.sendSuccess(
-            Text.format("Sent mail to &e{0, number} players&r.", NamedTextColor.GRAY, users.size())
+        source.sendMessage(
+            Messages.render("mail.sent.multiple")
+                .addValue("count", users.size())
+                .create(source)
         );
       }
     });

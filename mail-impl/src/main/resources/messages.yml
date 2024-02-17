@@ -1,0 +1,63 @@
+mail:
+  received:               "&eYou've got mail!\n ${message}"
+  received.player:        "&eYou've got mail! From ${sender}\n ${message}"
+
+  sent.single:            "&7Sent mail to &e${target}&7."
+  sent.multiple:          "&7Sent mail to &e${count}&7 players."
+  sending.all:            "&eSending mail to all users... &7(This may take a minute)"
+
+  display:                "&e${header}\n&8&l»&f ${message}"
+
+  marked.read:            "&eMarked as read."
+  marked.unread:          "&7Marked as unread."
+  deleted:                "&eMessage deleted."
+
+  listHeader.self:        "&eYour mail"
+  listHeader.other:       "&e${player}'s mail"
+
+  login:                  "&eYou have mail! ${text: content='[Click to view mail]' color='aqua' hover='Click to view mail!' run_command='/mail'}"
+
+  meta:
+    header:               "Mail Message"
+    sent:                 "&7Sent ${sent_date}"
+    sentBy:               "&7Sent by: ${sender}"
+    claimDate:            "&7Claimed ${claim_date}"
+    attachment.item:      "Item"
+    attachment.items:     "Items"
+
+  errors:
+    _style: "red"
+    expired.dateMissing:  "Rewards expired."
+    expired:              "Rewards expired on ${date} &7(${date.until.abs.singleUnit} ago)"
+    alreadyClaimed:       "Mail items already claimed."
+    claimForbidden:       "Not allowed to claim mail"
+    viewNotAllowed:       "Cannot view mail"
+
+  buttons:
+    markRead:             "&e[Mark as read]"
+    markUnread:           "&7[Mark as unread]"
+    markRead.hover:       "Click to mark this message as read."
+    markUnread.hover:     "Click to mark this message as unread\nMarked as read on ${read_date}"
+    delete:               "&c[Delete]"
+    deleted:              "&7[Deleted]"
+    delete.hover:         "Click to delete this message."
+    deleted.hover:        "This message has already been deleted."
+    info:                 "&e[Info]"
+
+    claim:
+      regular:            "&a[Claim]"
+      expired:            "&7[Expired]"
+      taken:              "&7[Already claimed]"
+      taken.hover:        "&7Rewards already claimed."
+      regular.hover:      "Click to claim attached rewards."
+      limited.hover:      "Click to claim attached rewards.\n&7Expires on ${attach_expire} (In ${attach_expire.until.singleUnit})"
+      expired.hover:      "Rewards expired on ${expired} (${expires.until.abs.singleUnit} ago)"
+
+settings:
+  discordMail:
+    name:                 "Discord Mail"
+    description:          "Forwards all in-game mail to your discord DMs with the bot."
+    on:                   "Enabled mail Discord forwarding."
+    off:                  "Disabled mail Discord forwarding."
+    toggledesc.on:        "Enable mail forwarding."
+    toggledesc.off:       "Disable mail forwarding."

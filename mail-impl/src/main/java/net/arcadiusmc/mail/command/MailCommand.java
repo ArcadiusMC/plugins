@@ -5,7 +5,6 @@ import static net.arcadiusmc.mail.command.MailCommands.MESSAGE_ID;
 import static net.arcadiusmc.mail.command.MailCommands.PAGE;
 import static net.arcadiusmc.mail.command.MailCommands.PAGE_SIZE;
 import static net.arcadiusmc.mail.command.MailCommands.PLAYER;
-import static net.kyori.adventure.text.Component.text;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -23,17 +22,6 @@ import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.arguments.ItemListResult;
 import net.arcadiusmc.events.Events;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.annotations.Argument;
-import net.forthecrown.grenadier.annotations.CommandFile;
-import net.forthecrown.grenadier.annotations.VariableInitializer;
-import net.forthecrown.grenadier.types.ArgumentTypes;
-import net.forthecrown.grenadier.types.options.ArgumentOption;
-import net.forthecrown.grenadier.types.options.FlagOption;
-import net.forthecrown.grenadier.types.options.Options;
-import net.forthecrown.grenadier.types.options.OptionsArgument;
-import net.forthecrown.grenadier.types.options.OptionsArgumentBuilder;
-import net.forthecrown.grenadier.types.options.ParsedOptions;
 import net.arcadiusmc.mail.Attachment;
 import net.arcadiusmc.mail.Mail;
 import net.arcadiusmc.mail.MailPermissions;
@@ -41,6 +29,7 @@ import net.arcadiusmc.mail.MailService;
 import net.arcadiusmc.mail.Page;
 import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.scripts.commands.ScriptArgument;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.PlayerMessage;
 import net.arcadiusmc.text.ViewerAwareMessage;
 import net.arcadiusmc.text.ViewerAwareMessage.WrappedComponent;
@@ -50,8 +39,17 @@ import net.arcadiusmc.user.currency.Currency;
 import net.arcadiusmc.user.currency.CurrencyMap;
 import net.arcadiusmc.user.currency.CurrencyMaps;
 import net.arcadiusmc.utils.io.source.Source;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.annotations.Argument;
+import net.forthecrown.grenadier.annotations.CommandFile;
+import net.forthecrown.grenadier.annotations.VariableInitializer;
+import net.forthecrown.grenadier.types.ArgumentTypes;
+import net.forthecrown.grenadier.types.options.ArgumentOption;
+import net.forthecrown.grenadier.types.options.Options;
+import net.forthecrown.grenadier.types.options.OptionsArgument;
+import net.forthecrown.grenadier.types.options.OptionsArgumentBuilder;
+import net.forthecrown.grenadier.types.options.ParsedOptions;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 import org.slf4j.Logger;
 
@@ -75,9 +73,6 @@ class MailCommand {
   private static final ArgumentOption<LocalDate> REWARD_EXPIRY
       = Options.argument(ArgumentTypes.localDate(), "rewards-expire");
 
-  private static final FlagOption USE_GAIN_MULTIPLIER
-      = Options.flag("multiply-guild-exp");
-
   private final MailService service;
 
   private final CurrencyMap<ArgumentOption<Integer>> currencyOptions;
@@ -92,7 +87,6 @@ class MailCommand {
     optionsBuilder.addOptional(TAGS);
     optionsBuilder.addOptional(CLAIM_SCRIPT);
     optionsBuilder.addOptional(REWARD_EXPIRY);
-    optionsBuilder.addFlag(USE_GAIN_MULTIPLIER);
 
     var userService = Users.getService();
     var currencies = userService.getCurrencies();
@@ -115,7 +109,6 @@ class MailCommand {
     map.put("mail_target", new MailTargetsArgument(false));
     map.put("admin_options", adminSendOptions);
     map.put("options", MailCommands.OPTIONS);
-    map.put("mail_flags", new MailOptionsArgument());
 
     map.put("flags_permission", MailPermissions.MAIL_FLAGS);
     map.put( "mail_permission", MailPermissions.MAIL);
@@ -239,7 +232,6 @@ class MailCommand {
 
     options.getValueOptional(TAGS).ifPresent(attachment::addTags);
     options.getValueOptional(CLAIM_SCRIPT).ifPresent(attachment::claimScript);
-    attachment.useGainMultiplier(options.has(USE_GAIN_MULTIPLIER));
     mailBuilder.attachment(attachment.build());
 
     MailCommands.sendMail(source, targets, user -> mailBuilder.target(user).send());
@@ -258,9 +250,9 @@ class MailCommand {
       boolean nowRead = mail.toggleRead();
 
       if (nowRead) {
-        source.sendMessage(text("Marked as read", NamedTextColor.YELLOW));
+        source.sendMessage(Messages.renderText("mail.marked.read", source));
       } else {
-        source.sendMessage(text("Marked as unread", NamedTextColor.GRAY));
+        source.sendMessage(Messages.renderText("mail.marked.unread", source));
       }
     }
 
@@ -296,7 +288,7 @@ class MailCommand {
       MailCommands.validateAccess(source, mail);
       mail.delete();
 
-      source.sendMessage(text("Message deleted", NamedTextColor.YELLOW));
+      source.sendMessage(Messages.renderText("mail.deleted", source));
     }
 
     Page page = fromOptions(source, options);
@@ -323,7 +315,7 @@ class MailCommand {
     List<Mail> mailList = MailCommands.getMailList(service, user, includeDeleted);
 
     if (mailList.isEmpty()) {
-      throw Exceptions.NOTHING_TO_LIST;
+      throw Exceptions.NOTHING_TO_LIST.exception(source);
     }
 
     Component pageText = MailList.formatMail(source, page, mailList);
@@ -357,7 +349,7 @@ class MailCommand {
         var senderId = source.asPlayer().getUniqueId();
 
         if (!user.getUniqueId().equals(senderId)) {
-          throw Exceptions.create("Cannot view mail");
+          throw Messages.render("mail.errors.viewNotAllowed").exception(source);
         }
       }
 
