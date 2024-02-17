@@ -8,6 +8,7 @@ import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.loader.MessageList;
 import net.arcadiusmc.text.loader.MessageLoader;
 import net.arcadiusmc.user.User;
+import net.arcadiusmc.utils.PluginUtil;
 import net.arcadiusmc.utils.TomlConfigs;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -27,10 +28,15 @@ public class StaffChatPlugin extends JavaPlugin {
     Messages.MESSAGE_LIST.addChild(getName(), messageList);
 
     new CommandStaffChat();
-    DiscordSRV.api.subscribe(new StaffChatDiscordListener(this));
+
+    if (PluginUtil.isEnabled("Arcadius-DiscordHook")) {
+      DiscordSRV.api.subscribe(new StaffChatDiscordListener(this));
+    }
 
     SettingsBook<User> settingsBook = ArcadiusServer.server().getGlobalSettingsBook();
     StaffChat.createSettings(settingsBook);
+
+    reloadConfig();
   }
 
   @Override

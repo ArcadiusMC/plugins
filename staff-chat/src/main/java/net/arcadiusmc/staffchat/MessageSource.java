@@ -1,12 +1,5 @@
 package net.arcadiusmc.staffchat;
 
-import com.mojang.datafixers.util.Either;
-import github.scarsz.discordsrv.dependencies.jda.api.entities.IMentionable;
-import github.scarsz.discordsrv.dependencies.jda.api.entities.Member;
-import java.util.UUID;
-import net.arcadiusmc.discord.DiscordHook;
-import net.arcadiusmc.user.Properties;
-import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
 import net.forthecrown.grenadier.CommandSource;
 import net.kyori.adventure.audience.Audience;
@@ -18,8 +11,6 @@ public interface MessageSource {
 
   boolean isVanished();
 
-  String mentionString();
-
   static MessageSource simple(String name) {
     return new MessageSource() {
       @Override
@@ -30,11 +21,6 @@ public interface MessageSource {
       @Override
       public boolean isVanished() {
         return false;
-      }
-
-      @Override
-      public String mentionString() {
-        return null;
       }
     };
   }
@@ -54,54 +40,7 @@ public interface MessageSource {
       public boolean isVanished() {
         return StaffChat.isVanished(source);
       }
-
-      @Override
-      public String mentionString() {
-        if (!source.isPlayer()) {
-          return null;
-        }
-
-        return DiscordHook.getUserMember(source.asPlayerOrNull().getUniqueId())
-            .map(IMentionable::getAsMention)
-            .orElse(null);
-      }
     };
   }
 
-  static MessageSource of(Member member) {
-    return new MessageSource() {
-
-      Either<User, Member> asUser() {
-        UUID playerId = DiscordHook.getPlayerId(member);
-
-        if (playerId == null) {
-          return Either.right(member);
-        }
-
-        var user = Users.get(playerId);
-        return Either.left(user);
-      }
-
-      @Override
-      public Component displayName(Audience viewer) {
-        return asUser().map(
-            user -> user.displayName(viewer),
-            member1 -> Component.text(member1.getEffectiveName())
-        );
-      }
-
-      @Override
-      public String mentionString() {
-        return member.getAsMention();
-      }
-
-      @Override
-      public boolean isVanished() {
-        return asUser().map(
-            user -> user.get(Properties.VANISHED),
-            member1 -> false
-        );
-      }
-    };
-  }
 }

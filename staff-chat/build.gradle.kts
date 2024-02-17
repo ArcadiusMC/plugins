@@ -3,7 +3,7 @@ plugins {
 }
 
 repositories {
-
+  maven("https://nexus.scarsz.me/content/groups/public/")
 }
 
 dependencies {
@@ -13,5 +13,9 @@ dependencies {
 
 pluginYml {
   name = "StaffChat"
-  main = "net.arcadiusmc.staffhcat.StaffChatPlugin"
+  main = "net.arcadiusmc.staffchat.StaffChatPlugin"
+
+  depends {
+    optional("project:discord")
+  }
 }

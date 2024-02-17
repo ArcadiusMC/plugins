@@ -1,7 +1,6 @@
 package net.arcadiusmc.staffchat;
 
 import com.google.common.base.Strings;
-import github.scarsz.discordsrv.dependencies.jda.api.entities.Member;
 import github.scarsz.discordsrv.dependencies.jda.api.utils.MarkdownSanitizer;
 import java.util.Objects;
 import lombok.Getter;
@@ -16,6 +15,7 @@ import net.arcadiusmc.text.TextWriter;
 import net.arcadiusmc.text.TextWriters;
 import net.arcadiusmc.text.ViewerAwareMessage;
 import net.arcadiusmc.text.channel.ChannelledMessage;
+import net.arcadiusmc.utils.PluginUtil;
 import net.forthecrown.grenadier.CommandSource;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -37,10 +37,6 @@ public class StaffChatMessage {
   public StaffChatMessage setSource(MessageSource source) {
     this.source = source;
     return this;
-  }
-
-  public StaffChatMessage setSource(Member source) {
-    return setSource(MessageSource.of(source));
   }
 
   public StaffChatMessage setSource(CommandSource source) {
@@ -81,6 +77,10 @@ public class StaffChatMessage {
   }
 
   private void sendDiscord() {
+    if (!PluginUtil.isEnabled("Arcadius-DiscordHook")) {
+      return;
+    }
+
     String channelName = StaffChatPlugin.plugin().getScConfig().getDiscordChannel();
 
     if (Strings.isNullOrEmpty(channelName)) {
