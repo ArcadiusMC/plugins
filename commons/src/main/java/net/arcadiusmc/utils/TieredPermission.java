@@ -18,6 +18,13 @@ import org.apache.commons.lang3.Range;
 import org.bukkit.permissions.Permissible;
 import org.bukkit.permissions.Permission;
 
+/**
+ * Represents a set of tiered permissions.
+ * <p>
+ * Tiered permissions are a group of permissions considered to represent an integer value
+ * in a predefined set of values. Basically this class acts as a wrapper for a set of permissions
+ * that are mapped to integer values.
+ */
 public class TieredPermission {
 
   /**
@@ -34,9 +41,14 @@ public class TieredPermission {
 
   private final PermissionTier[] permissions;
 
+  /** Tier priority */
   @Getter
   private final TierPriority priority;
 
+  /**
+   * The unlimited permission, if a player has this permission then {@link Integer#MAX_VALUE} or
+   * {@link Integer#MIN_VALUE} is returned, based on {@link #getPriority()}
+   */
   @Getter
   private final Permission unlimitedPermission;
 
@@ -67,40 +79,88 @@ public class TieredPermission {
     return new Builder();
   }
 
+  /**
+   * Get max tier's value
+   * @return Max tier's value
+   */
   public int getMaxTier() {
     return priority == TierPriority.HIGHEST
         ? permissions[0].tier()
         : permissions[permissions.length - 1].tier();
   }
 
+  /**
+   * Get min tier's value
+   * @return Min tier's value
+   */
   public int getMinTier() {
     return priority == TierPriority.LOWEST
         ? permissions[0].tier()
         : permissions[permissions.length - 1].tier();
   }
 
+  /**
+   * Gets the tier value of the specified {@code user}.
+   * <p>
+   * If the specified has none of permissions that belong to a tier set, an empty optional
+   * is returned.
+   * <p>
+   * If an {@link #getUnlimitedPermission()} has been set, and the {@code player} has the
+   * permission, then either {@link Integer#MAX_VALUE} or {@link Integer#MIN_VALUE} is
+   * returned, based on {@link #getPriority()}.
+   *
+   * @param user Player
+   * @return Player's tier, or empty, if the player has none of the tier set's permissions
+   */
   public OptionalInt getTier(User user) {
     return _getTier(user::hasPermission);
   }
 
+  /**
+   * Gets the tier value of the specified {@code permissible}.
+   * <p>
+   * If the specified has none of permissions that belong to a tier set, an empty optional
+   * is returned.
+   * <p>
+   * If an {@link #getUnlimitedPermission()} has been set, and the {@code permissible} has the
+   * permission, then either {@link Integer#MAX_VALUE} or {@link Integer#MIN_VALUE} is
+   * returned, based on {@link #getPriority()}.
+   *
+   * @param permissible Player
+   * @return Player's tier, or empty, if the player has none of the tier set's permissions
+   */
   public OptionalInt getTier(Permissible permissible) {
     return _getTier(permissible::hasPermission);
   }
 
+  /**
+   * Tests if the specified {@code permissible} has this tier set's unlimited permission.
+   * <p>
+   * If no {@link #getUnlimitedPermission()} has been set, this will always return false.
+   *
+   * @param permissible Player
+   * @return {@code true}, if an unlimited permission has been defined and the player has,
+   *         {@code false} otherwise
+   */
   public boolean hasUnlimited(Permissible permissible) {
-    return getUnlimitedPermission() != null
-        && permissible.hasPermission(getUnlimitedPermission());
+    return unlimitedPermission != null && permissible.hasPermission(unlimitedPermission);
   }
 
+  /**
+   * Tests if the specified {@code user} has this tier set's unlimited permission.
+   * <p>
+   * If no {@link #getUnlimitedPermission()} has been set, this will always return false.
+   *
+   * @param user Player
+   * @return {@code true}, if an unlimited permission has been defined and the player has,
+   *         {@code false} otherwise
+   */
   public boolean hasUnlimited(User user) {
-    return getUnlimitedPermission() != null
-        && user.hasPermission(getUnlimitedPermission());
+    return unlimitedPermission != null && user.hasPermission(unlimitedPermission);
   }
 
-  private OptionalInt _getTier(Predicate<Permission> permissionHolder) {
-    if (getUnlimitedPermission() != null
-        && permissionHolder.test(getUnlimitedPermission())
-    ) {
+  private OptionalInt _getTier(Predicate<Permission> holder) {
+    if (unlimitedPermission != null && holder.test(unlimitedPermission)) {
       return OptionalInt.of(
           priority == TierPriority.HIGHEST
               ? Integer.MAX_VALUE
@@ -109,7 +169,7 @@ public class TieredPermission {
     }
 
     for (var t: permissions) {
-      if (permissionHolder.test(t.permission)) {
+      if (holder.test(t.permission)) {
         return OptionalInt.of(t.tier);
       }
     }
@@ -117,10 +177,23 @@ public class TieredPermission {
     return OptionalInt.empty();
   }
 
+  /**
+   * Tests if this tier set contains the specified tier value.
+   * @param tier Tier
+   * @return {@code true}, if this object contains a permission mapped to the specified {@code tier},
+   *         {@code false} otherwise.
+   */
   public boolean contains(int tier) {
     return getPermission(tier) != null;
   }
 
+  /**
+   * Gets the permission mapped to the specified {@code tier} value.
+   *
+   * @param tier Tier
+   * @return Tier mapped permission, or {@code null}, if no value mapped to the specified
+   *         tier exists.
+   */
   public Permission getPermission(int tier) {
     for (var t: permissions) {
       if (t.tier == tier) {
