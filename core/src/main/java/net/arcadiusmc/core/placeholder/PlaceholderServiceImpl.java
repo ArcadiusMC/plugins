@@ -4,6 +4,8 @@ import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -63,6 +65,8 @@ public class PlaceholderServiceImpl implements PlaceholderService {
     addObjectPlaceholder(User.class,          ObjectPlaceholder.USER);
     addObjectPlaceholder(Duration.class,      ObjectPlaceholder.DURATION);
     addObjectPlaceholder(CommandSource.class, ObjectPlaceholder.COMMAND_SOURCE);
+    addObjectPlaceholder(ZonedDateTime.class, ObjectPlaceholder.ZONED_DATE_TIME);
+    addObjectPlaceholder(Instant.class,       ObjectPlaceholder.INSTANT);
   }
 
   @Override
