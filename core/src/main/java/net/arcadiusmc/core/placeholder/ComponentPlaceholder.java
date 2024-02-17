@@ -34,6 +34,9 @@ class ComponentPlaceholder extends OptionedPlaceholder {
   private static final ArgumentOption<String> OBJ_NAME = quotedString("objective")
       .build();
 
+  private static final ArgumentOption<String> KEYBIND = quotedString("keybind")
+      .build();
+
   private static final ArgumentOption<TextColor> COLOR = Options.argument(new ColorParser())
       .setLabel("color")
       .build();
@@ -62,7 +65,7 @@ class ComponentPlaceholder extends OptionedPlaceholder {
       .addRequired(OBJ_NAME, b -> b.exclusiveWith(TEXT, TRANS).requires(SELECTOR))
       .addOptional(SELECTOR, b -> b.requires(OBJ_NAME))
 
-      .oneOf(COPY_TEXT, OPEN_URL, RUN_COMMAND, SUGGEST_CMD)
+      .oneOf(COPY_TEXT, OPEN_URL, RUN_COMMAND, SUGGEST_CMD, KEYBIND)
 
       .addOptional(HOVER)
 
@@ -101,6 +104,10 @@ class ComponentPlaceholder extends OptionedPlaceholder {
 
     if (options.has(OBJ_NAME)) {
       return Component.score(options.getValue(SELECTOR), options.getValue(OBJ_NAME)).style(style);
+    }
+
+    if (options.has(KEYBIND)) {
+      return Component.keybind(options.getValue(KEYBIND), style);
     }
 
     return null;
