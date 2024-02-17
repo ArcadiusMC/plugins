@@ -54,6 +54,7 @@ public class PlaceholderServiceImpl implements PlaceholderService {
     defaults.add("text",    new ComponentPlaceholder());
     defaults.add("border",  new RepeatedCharPlaceholder(true));
     defaults.add("spaces",  new RepeatedCharPlaceholder(false));
+    defaults.add("keybind", new KeybindPlaceholder());
 
     addObjectPlaceholder(Number.class,        ObjectPlaceholder.NUMBER);
     addObjectPlaceholder(Boolean.class,       ObjectPlaceholder.BOOLEAN);
