@@ -38,15 +38,15 @@ _styles:
 
 generic:
   button:
-    tick:             "${text: content='[✔]' hover='Click to allow'}"
-    cross:            "${text: content='[✖]' hover='Click to deny'}"
-    confirm:          "${text: content='[Confirm]' hover='Click to confirm'}"
-    deny:             "${text: content='[Deny]' hover='Click to deny'"
-    accept:           "${text: content='[Accept]' hover='Click to accept'"
-    nextPage:         "${text: content=' > ' hover='Next Page' color='yellow' -bold}"
-    previousPage:     "${text: content=' < ' hover='Previous Page' color='yellow' -bold}"
-    firsPage:         "${text: content=' >> ' hover='First Page' color='yellow' -bold}"
-    lastPage:         "${text: content=' << ' hover='Last Page' color='yellow' -bold}"
+    tick:             "[✔]"
+    cross:            "[✖]"
+    confirm:          "[Confirm]"
+    deny:             "[Deny]"
+    accept:           "[Accept]"
+    nextPage:         " > "
+    previousPage:     " < "
+    firsPage:         " >> "
+    lastPage:         " << "
 
   click_me:           "Click me!"
   click_to_allow:     "Click to allow"
