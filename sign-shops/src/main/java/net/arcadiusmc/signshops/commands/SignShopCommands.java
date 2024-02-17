@@ -1,6 +1,6 @@
-package net.arcadiusmc.economy.signshops.commands;
+package net.arcadiusmc.signshops.commands;
 
-import net.arcadiusmc.economy.signshops.ShopManager;
+import net.arcadiusmc.signshops.ShopManager;
 
 public class SignShopCommands {
 

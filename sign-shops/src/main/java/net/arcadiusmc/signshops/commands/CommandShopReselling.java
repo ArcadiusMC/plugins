@@ -1,13 +1,13 @@
-package net.arcadiusmc.economy.signshops.commands;
+package net.arcadiusmc.signshops.commands;
 
-import net.arcadiusmc.Permissions;
-import net.arcadiusmc.command.FtcCommand;
-import net.arcadiusmc.economy.signshops.ShopManager;
-import net.arcadiusmc.economy.signshops.SignShop;
+import net.arcadiusmc.command.BaseCommand;
+import net.arcadiusmc.signshops.SMessages;
+import net.arcadiusmc.signshops.ShopManager;
+import net.arcadiusmc.signshops.SignShop;
+import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
-import net.arcadiusmc.text.Messages;
 
-public class CommandShopReselling extends FtcCommand {
+public class CommandShopReselling extends BaseCommand {
 
   private final ShopManager manager;
 
@@ -17,7 +17,6 @@ public class CommandShopReselling extends FtcCommand {
     this.manager = manager;
 
     setAliases("shopresell");
-    setPermission(Permissions.DEFAULT);
     setDescription("Shop reselling");
     simpleUsages();
 
@@ -27,13 +26,14 @@ public class CommandShopReselling extends FtcCommand {
   @Override
   public void createCommand(GrenadierCommand command) {
     command.executes(c -> {
-      SignShop shop = CommandEditShop.getShop(manager, c.getSource().asPlayer());
+      CommandSource source = c.getSource();
+      SignShop shop = CommandEditShop.getShop(manager, source.asPlayer());
       boolean state = !shop.isResellDisabled();
 
       shop.setResellDisabled(state);
       shop.update();
 
-      c.getSource().sendMessage(Messages.toggleMessage("Shop reselling {3}", state));
+      source.sendMessage(SMessages.resellToggle(source, state));
       return 0;
     });
   }

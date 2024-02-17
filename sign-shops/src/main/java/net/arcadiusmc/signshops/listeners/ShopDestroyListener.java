@@ -1,12 +1,11 @@
-package net.arcadiusmc.economy.signshops.listeners;
+package net.arcadiusmc.signshops.listeners;
 
 import com.destroystokyo.paper.event.block.BlockDestroyEvent;
-import net.arcadiusmc.economy.EconMessages;
-import net.arcadiusmc.economy.EconPermissions;
-import net.arcadiusmc.economy.signshops.ShopManager;
-import net.arcadiusmc.economy.signshops.SignShop;
-import net.arcadiusmc.economy.signshops.SignShops;
-import net.arcadiusmc.utils.Tasks;
+import net.arcadiusmc.signshops.SMessages;
+import net.arcadiusmc.signshops.SPermissions;
+import net.arcadiusmc.signshops.ShopManager;
+import net.arcadiusmc.signshops.SignShop;
+import net.arcadiusmc.signshops.SignShops;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -33,15 +32,17 @@ public class ShopDestroyListener implements Listener {
     event.setCancelled(true);
 
     if (!player.getUniqueId().equals(shop.getOwner())
-        && !player.hasPermission(EconPermissions.SHOP_ADMIN)
+        && !player.hasPermission(SPermissions.ADMIN)
     ) {
-      player.sendMessage(EconMessages.SHOP_CANNOT_DESTROY);
+      player.sendMessage(SMessages.cannotDestroy(player));
       return;
     }
 
+    shop.destroy(false);
+
     //This shit dumb
     //Destroy the block 1 tick later, because some dumb shit event cancelled it so we gotta do it again.
-    Tasks.runLater(() -> shop.destroy(true), 1);
+    //Tasks.runLater(() -> shop.destroy(true), 1);
   }
 
   @EventHandler(ignoreCancelled = true)

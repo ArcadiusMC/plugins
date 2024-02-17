@@ -1,4 +1,4 @@
-package net.arcadiusmc.economy.signshops;
+package net.arcadiusmc.signshops;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import org.jetbrains.annotations.NotNull;

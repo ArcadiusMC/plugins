@@ -1,21 +1,17 @@
-package net.arcadiusmc.economy.signshops;
+package net.arcadiusmc.signshops;
 
-import static net.arcadiusmc.economy.signshops.SignShops.DEFAULT_INV_SIZE;
-import static net.arcadiusmc.economy.signshops.SignShops.LINE_PRICE;
-import static net.arcadiusmc.economy.signshops.SignShops.LINE_TYPE;
 import static net.arcadiusmc.menu.Menus.MAX_INV_SIZE;
+import static net.arcadiusmc.signshops.SignShops.DEFAULT_INV_SIZE;
+import static net.arcadiusmc.signshops.SignShops.LINE_PRICE;
+import static net.arcadiusmc.signshops.SignShops.LINE_TYPE;
 
+import java.time.Duration;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.menu.Menus;
-import net.forthecrown.nbt.BinaryTag;
-import net.forthecrown.nbt.BinaryTags;
-import net.forthecrown.nbt.CompoundTag;
-import net.forthecrown.nbt.IntArrayTag;
-import net.forthecrown.nbt.TagTypes;
 import net.arcadiusmc.utils.LocationFileName;
 import net.arcadiusmc.utils.Tasks;
 import net.arcadiusmc.utils.inventory.ItemList;
@@ -23,13 +19,12 @@ import net.arcadiusmc.utils.inventory.ItemLists;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.arcadiusmc.utils.io.TagUtil;
 import net.arcadiusmc.utils.math.WorldVec3i;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
+import net.forthecrown.nbt.BinaryTags;
+import net.forthecrown.nbt.CompoundTag;
+import net.forthecrown.nbt.TagTypes;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
-import org.bukkit.block.HangingSign;
 import org.bukkit.block.Sign;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -204,9 +199,12 @@ public class SignShop implements InventoryHolder {
     }
 
     // Some lil clouds :D
-    position.getWorld()
-        .spawnParticle(Particle.CLOUD, position.toLocation().add(0.5, 0.5, 0.5), 5, 0.1D, 0.1D,
-            0.1D, 0.05D);
+    Particle.CLOUD.builder()
+        .location(position.toLocation().toCenterLocation())
+        .count(5)
+        .offset(0.1, 0.1, 0.1)
+        .extra(0.05)
+        .spawn();
 
     // Break the block if we have to
     if (removeBlock) {
@@ -222,9 +220,6 @@ public class SignShop implements InventoryHolder {
    * <b>WARNING</b> If the stated inventory size is smaller
    * than the current size, there is a risk of items being lost due to the way they are transferred
    * over.
-   * <p>
-   * Cut me some slack, I'm rewriting 500 classes in a manic bid to remain relevant, and I've been
-   * awake for 27 hours
    *
    * @param newSize THe new inventory size
    */
@@ -265,9 +260,7 @@ public class SignShop implements InventoryHolder {
    * @see #exampleItem
    */
   public ItemStack getExampleItem() {
-    return ItemStacks.isEmpty(exampleItem)
-        ? null
-        : exampleItem.clone();
+    return ItemStacks.isEmpty(exampleItem) ? null : exampleItem.clone();
   }
 
   /**
@@ -393,7 +386,7 @@ public class SignShop implements InventoryHolder {
       return;
     }
 
-    var delay = manager.getPlugin().getShopConfig().getUnloadDelay();
+    Duration delay = manager.getPlugin().getShopConfig().unloadDelay();
     unloadTask = Tasks.runLater(this::onUnload, delay);
   }
 
@@ -436,29 +429,13 @@ public class SignShop implements InventoryHolder {
             : getType().getUnStockedLabel()
     );
 
-    TextColor priceColor = derivePriceColor(s);
-
-    if (s instanceof HangingSign) {
-      s.line(
-          LINE_PRICE,
-          Component.text(getPrice() + "$", priceColor)
-      );
-    } else {
-      s.line(
-          LINE_PRICE,
-          SignShops.priceLine(price, priceColor)
-      );
-    }
+    s.line(LINE_PRICE, SignShops.priceLine(price, s));
 
     // Save the shop into the sign's persistent data
     // container
     save(s);
 
-    s.update();
-  }
-
-  private static TextColor derivePriceColor(Sign sign) {
-    return NamedTextColor.WHITE;
+    s.update(false, false);
   }
 
   /* ----------------------------- SERIALIZATION ------------------------------ */
@@ -523,7 +500,7 @@ public class SignShop implements InventoryHolder {
       tag.putLong(TAG_LAST_USE, lastInteraction);
     }
 
-    tag.put(TAG_EXAMPLE_ITEM, TagUtil.writeItem(exampleItem));
+    tag.put(TAG_EXAMPLE_ITEM, ItemStacks.save(exampleItem));
     tag.putInt(TAG_INVENTORY_SIZE, inventory.getSize());
     tag.putInt(TAG_ITEM_COUNT, countItems());
 
@@ -550,8 +527,9 @@ public class SignShop implements InventoryHolder {
    */
   public void load(CompoundTag tag) {
     var config = manager.getPlugin().getShopConfig();
+
     price = tag.getInt(TAG_PRICE);
-    price = GenericMath.clamp(price, 0, config.getMaxPrice());
+    price = GenericMath.clamp(price, 0, config.maxPrice());
 
     type = TagUtil.readEnum(ShopType.class, tag.get(TAG_TYPE));
 
@@ -561,8 +539,6 @@ public class SignShop implements InventoryHolder {
     // check there isn't a legacy tag to read
     if (tag.contains(TAG_OWNER)) {
       setOwner(tag.getUUID(TAG_OWNER));
-    } else if (tag.contains("ownership")) {
-      readLegacyOwner(tag.get("ownership"));
     }
 
     history.load(tag.get(TAG_HISTORY));
@@ -573,75 +549,41 @@ public class SignShop implements InventoryHolder {
       lastInteraction = -1;
     }
 
-    // Load legacy inventory
-    if (tag.contains("inventory")) {
-      var inventory = tag.getCompound("inventory");
-      setExampleItem(TagUtil.readItem(inventory.get("exampleItem")));
+    setExampleItem(ItemStacks.load(tag.getCompound(TAG_EXAMPLE_ITEM)));
+    getInventory().clear();
+    resizeInventory(tag.getInt(TAG_INVENTORY_SIZE));
 
-      getInventory().clear();
-
-      if (inventory.contains("items")) {
-        var itemList = inventory.getList("items", TagTypes.compoundType());
-
-        for (var t : itemList) {
-          getInventory().addItem(TagUtil.readItem(t));
-        }
-      }
-    } else {
-      setExampleItem(TagUtil.readItem(tag.get(TAG_EXAMPLE_ITEM)));
-      getInventory().clear();
-      resizeInventory(tag.getInt(TAG_INVENTORY_SIZE));
-
-      if (ItemStacks.isEmpty(exampleItem)) {
-        LOGGER.warn("Shop {} loaded empty example item", getPosition());
-      }
-
-      int itemCount = tag.getInt(TAG_ITEM_COUNT);
-      int stackSize = exampleItem.getMaxStackSize();
-
-      int maxInvCapacity = stackSize * inventory.getSize();
-
-      if (itemCount > maxInvCapacity) {
-        LOGGER.warn(
-            "itemCount above max inventory capacity! "
-                + "itemCount={}, inventorySize={} invCapacity={}",
-            itemCount,
-            inventory.getSize(),
-            maxInvCapacity
-        );
-
-        itemCount = maxInvCapacity;
-      }
-
-      for (int i = 0; i < inventory.getSize(); i++) {
-        if (itemCount <= 0) {
-          break;
-        }
-
-        var quantity = Math.min(itemCount, stackSize);
-        var item = exampleItem.asQuantity(quantity);
-        itemCount -= quantity;
-
-        inventory.setItem(i, item);
-      }
-    }
-  }
-
-  /**
-   * Since I yeeted the `ShopOwnership` class, I need to have this little method to make sure the
-   * old shops get taken care of!
-   *
-   * @param tag The tag to read
-   */
-  private void readLegacyOwner(BinaryTag tag) {
-    // Owner was only 1 person
-    if (tag instanceof IntArrayTag) {
-      setOwner(TagUtil.readUUID(tag));
+    if (ItemStacks.isEmpty(exampleItem)) {
+      LOGGER.warn("Shop {} loaded empty example item", getPosition());
     }
 
-    // There may have been multiple owners
-    if (tag instanceof CompoundTag compoundTag) {
-      setOwner(compoundTag.getUUID("owner"));
+    int itemCount = tag.getInt(TAG_ITEM_COUNT);
+    int stackSize = exampleItem.getMaxStackSize();
+
+    int maxInvCapacity = stackSize * inventory.getSize();
+
+    if (itemCount > maxInvCapacity) {
+      LOGGER.warn(
+          "itemCount above max inventory capacity! "
+              + "itemCount={}, inventorySize={} invCapacity={}",
+          itemCount,
+          inventory.getSize(),
+          maxInvCapacity
+      );
+
+      itemCount = maxInvCapacity;
+    }
+
+    for (int i = 0; i < inventory.getSize(); i++) {
+      if (itemCount <= 0) {
+        break;
+      }
+
+      var quantity = Math.min(itemCount, stackSize);
+      var item = exampleItem.asQuantity(quantity);
+      itemCount -= quantity;
+
+      inventory.setItem(i, item);
     }
   }
 

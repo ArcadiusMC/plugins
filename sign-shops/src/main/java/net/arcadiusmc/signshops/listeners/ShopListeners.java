@@ -1,6 +1,6 @@
-package net.arcadiusmc.economy.signshops.listeners;
+package net.arcadiusmc.signshops.listeners;
 
-import net.arcadiusmc.economy.signshops.ShopManager;
+import net.arcadiusmc.signshops.ShopManager;
 import net.arcadiusmc.events.Events;
 
 public class ShopListeners {

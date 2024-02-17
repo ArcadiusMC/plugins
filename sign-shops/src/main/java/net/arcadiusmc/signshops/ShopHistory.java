@@ -1,13 +1,12 @@
-package net.arcadiusmc.economy.signshops;
+package net.arcadiusmc.signshops;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
 import lombok.Getter;
-import net.forthecrown.nbt.BinaryTag;
-import net.forthecrown.nbt.ListTag;
-import net.forthecrown.nbt.TypeIds;
 import net.arcadiusmc.text.page.PagedIterator;
 import net.arcadiusmc.utils.io.TagUtil;
+import net.forthecrown.nbt.BinaryTag;
+import net.forthecrown.nbt.TypeIds;
 import org.jetbrains.annotations.Nullable;
 
 public class ShopHistory {
@@ -35,7 +34,6 @@ public class ShopHistory {
 
   public void addEntry(HistoryEntry entry) {
     entries.add(0, entry);
-    clearOld();
   }
 
   public HistoryEntry getEntry(int index) {
@@ -47,27 +45,15 @@ public class ShopHistory {
   }
 
   public boolean isEmpty() {
-    clearOld();
     return entries.isEmpty();
   }
 
   public int size() {
-    clearOld();
     return entries.size();
   }
 
   public PagedIterator<HistoryEntry> pageIterator(int page, int pageSize) {
     return PagedIterator.of(entries, page, pageSize);
-  }
-
-  private boolean isTooOld(HistoryEntry entry) {
-    //long expiryDate = GeneralConfig.dataRetentionTime + entry.date();
-    //return Time.isPast(expiryDate);
-    return false;
-  }
-
-  private void clearOld() {
-    entries.removeIf(this::isTooOld);
   }
 
   @Nullable
@@ -76,7 +62,6 @@ public class ShopHistory {
       return null;
     }
 
-    clearOld();
     return TagUtil.writeList(entries, HistoryEntry::save);
   }
 
@@ -87,7 +72,6 @@ public class ShopHistory {
       return;
     }
 
-    entries.addAll(TagUtil.readList((ListTag) tag, HistoryEntry::of));
-    clearOld();
+    entries.addAll(TagUtil.readList(tag, HistoryEntry::of));
   }
 }

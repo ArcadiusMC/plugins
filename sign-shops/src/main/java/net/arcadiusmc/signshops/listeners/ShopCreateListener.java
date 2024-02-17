@@ -1,28 +1,24 @@
-package net.arcadiusmc.economy.signshops.listeners;
+package net.arcadiusmc.signshops.listeners;
 
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
-import com.sk89q.worldguard.protection.regions.RegionContainer;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import net.arcadiusmc.command.Exceptions;
-import net.arcadiusmc.economy.EconExceptions;
-import net.arcadiusmc.economy.EconMessages;
-import net.arcadiusmc.economy.EconPermissions;
-import net.arcadiusmc.economy.signshops.ShopManager;
-import net.arcadiusmc.economy.signshops.ShopType;
-import net.arcadiusmc.economy.signshops.SignShop;
-import net.arcadiusmc.economy.signshops.SignShopFlags;
-import net.arcadiusmc.economy.signshops.SignShops;
 import net.arcadiusmc.events.Events;
+import net.arcadiusmc.signshops.SExceptions;
+import net.arcadiusmc.signshops.SMessages;
+import net.arcadiusmc.signshops.SPermissions;
+import net.arcadiusmc.signshops.ShopManager;
+import net.arcadiusmc.signshops.ShopType;
+import net.arcadiusmc.signshops.SignShop;
+import net.arcadiusmc.signshops.SignShopFlags;
+import net.arcadiusmc.signshops.SignShops;
 import net.arcadiusmc.text.Text;
+import net.arcadiusmc.utils.WgUtils;
 import net.arcadiusmc.utils.inventory.ItemStacks;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -94,15 +90,13 @@ public class ShopCreateListener implements Listener {
       return;
     }
 
-    if (player.getGameMode() == GameMode.CREATIVE
-        && player.hasPermission(EconPermissions.SHOP_ADMIN)
-    ) {
+    if (player.getGameMode() == GameMode.CREATIVE && player.hasPermission(SPermissions.ADMIN)) {
       shopType = shopType.toAdmin();
     }
 
     // No price given
     if (line3.isBlank()) {
-      throw EconExceptions.SHOP_NO_PRICE;
+      throw SExceptions.noPrice(player);
     }
 
     Sign sign = (Sign) event.getBlock().getState();
@@ -117,37 +111,31 @@ public class ShopCreateListener implements Listener {
     try {
       price = Integer.parseInt(lastLine);
     } catch (Exception e) {
-      throw EconExceptions.SHOP_NO_PRICE;
+      throw SExceptions.noPrice(player);
     }
 
     // Make sure they don't exceed the max shop price
-    if (price > manager.getPlugin().getShopConfig().getMaxPrice()) {
-      throw EconExceptions.shopMaxPrice();
+    if (price > manager.getPlugin().getShopConfig().maxPrice()) {
+      throw SExceptions.shopMaxPrice(player);
     }
 
     // They must give at least one line of info about the shop
     if (line2.isBlank() && line1.isBlank()) {
-      throw EconExceptions.SHOP_NO_DESC;
+      throw SExceptions.noDescription(player);
     }
 
     //WorldGuard flag check
-    RegionContainer regionContainer = WorldGuard.getInstance()
-        .getPlatform()
-        .getRegionContainer();
+    StateFlag.State flagState = WgUtils.getFlagValue(location, SignShopFlags.SHOP_CREATION);
 
-    StateFlag.State flagState = regionContainer.createQuery().queryValue(
-        BukkitAdapter.adapt(location),
-        WorldGuardPlugin.inst().wrapPlayer(player),
-        SignShopFlags.SHOP_CREATION
-    );
-
-    if (flagState == StateFlag.State.DENY && !player.hasPermission(EconPermissions.SHOP_ADMIN)) {
-      player.sendMessage(EconMessages.WG_CANNOT_MAKE_SHOP);
-      return;
+    if (flagState == StateFlag.State.DENY && !player.hasPermission(SPermissions.ADMIN)) {
+      throw SExceptions.shopNotAllowed(player);
     }
 
     //creates the sign shop
     SignShop shop = manager.createSignShop(location, shopType, price, player.getUniqueId());
+
+    // Resize inventory if better value set
+    SPermissions.SHOP_SIZE.getTier(player).ifPresent(shop::resizeInventory);
 
     //Opens the example item selection screen
     player.openInventory(SignShops.createExampleInventory());
@@ -159,7 +147,7 @@ public class ShopCreateListener implements Listener {
       event.line(0, shopType.getStockedLabel());
     }
 
-    event.line(3, SignShops.priceLine(price, NamedTextColor.WHITE));
+    event.line(3, SignShops.priceLine(price, sign));
   }
 
   @RequiredArgsConstructor
@@ -202,7 +190,14 @@ public class ShopCreateListener implements Listener {
       //If example item was not found: destroy shop and tell them why they failed
       if (ItemStacks.isEmpty(item)) {
         shop.destroy(false);
-        player.sendMessage(EconMessages.SHOP_CREATE_FAILED);
+        player.sendMessage(SMessages.shopCreateFailed(player));
+
+        return;
+      }
+
+      if (SignShops.isResellDisabled(item)) {
+        shop.destroy(false);
+        player.sendMessage(SMessages.nonResellableItem(player, item));
 
         return;
       }
@@ -212,7 +207,7 @@ public class ShopCreateListener implements Listener {
       shopInv.addItem(item.clone());
 
       //Send the info message
-      player.sendMessage(EconMessages.createdShop(shop));
+      player.sendMessage(SMessages.createdShop(player, shop));
 
       player.playSound(
           player.getLocation(),

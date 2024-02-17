@@ -1,8 +1,7 @@
-package net.arcadiusmc.economy.signshops;
+package net.arcadiusmc.signshops;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.arcadiusmc.command.Exceptions;
-import net.arcadiusmc.economy.EconExceptions;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,12 +28,12 @@ final class Interactions {
     public void test(@NotNull SignShopSession session) throws CommandSyntaxException {
       // Check that the customer has space for items
       if (session.customerIsFull()) {
-        throw Exceptions.INVENTORY_FULL;
+        throw Exceptions.INVENTORY_FULL.exception(session.getCustomer());
       }
 
       // Check that the user isn't poor :)
       if (!session.getCustomer().hasBalance(session.getPrice())) {
-        throw Exceptions.cannotAfford(session.getPrice());
+        throw Exceptions.cannotAfford(session.getCustomer(), session.getPrice());
       }
     }
 
@@ -67,7 +66,7 @@ final class Interactions {
       if (!session.getCustomerInventory()
           .containsAtLeast(example, example.getAmount())
       ) {
-        throw EconExceptions.dontHaveItemForShop(example);
+        throw SExceptions.noItemToSell(session.getCustomer(), example);
       }
     }
 
@@ -93,13 +92,13 @@ final class Interactions {
 
       //Check the shop's owner can afford the shop
       if (!session.getOwnerUser().hasBalance(session.getPrice())) {
-        throw EconExceptions.shopOwnerCannotAfford(session.getPrice());
+        throw SExceptions.ownerCannotAfford(session.getCustomer(), session.getPrice());
       }
 
       //Check shop has space for any more items
       if (!session.getShop().inStock()) {
         session.getShop().update();
-        throw EconExceptions.SHOP_NO_SPACE;
+        throw SExceptions.shopNoSpace(session.getCustomer());
       }
     }
 
@@ -128,7 +127,7 @@ final class Interactions {
       //Shop stock check
       if (!session.getShop().inStock()) {
         session.getShop().update();
-        throw EconExceptions.OUT_OF_STOCK;
+        throw SExceptions.outOfStock(session.getCustomer());
       }
     }
 

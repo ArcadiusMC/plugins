@@ -26,6 +26,7 @@ include("dialogues")
 include("sell-shop")
 include("auto-afk")
 include("staff-chat")
+include("sign-shops")
 
 include("mail")
 include("mail-impl")

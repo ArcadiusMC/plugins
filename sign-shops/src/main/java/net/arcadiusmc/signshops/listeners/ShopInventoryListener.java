@@ -1,7 +1,7 @@
-package net.arcadiusmc.economy.signshops.listeners;
+package net.arcadiusmc.signshops.listeners;
 
-import net.arcadiusmc.economy.EconMessages;
-import net.arcadiusmc.economy.signshops.SignShop;
+import net.arcadiusmc.signshops.SMessages;
+import net.arcadiusmc.signshops.SignShop;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -26,7 +26,7 @@ public class ShopInventoryListener implements Listener {
     final ItemStack example = shop.getExampleItem();
 
     if (ItemStacks.isEmpty(example)) {
-      player.sendMessage(EconMessages.SHOP_NO_EXAMPLE);
+      player.sendMessage(SMessages.noExample(player));
       ItemStacks.giveOrDrop(inv, contents);
 
       return;

@@ -1,11 +1,11 @@
-package net.arcadiusmc.economy.signshops.listeners;
+package net.arcadiusmc.signshops.listeners;
 
 import io.papermc.paper.event.player.PlayerOpenSignEvent;
 import java.util.Set;
-import net.arcadiusmc.economy.EconPermissions;
-import net.arcadiusmc.economy.signshops.ShopManager;
-import net.arcadiusmc.economy.signshops.SignShop;
-import net.arcadiusmc.economy.signshops.SignShops;
+import net.arcadiusmc.signshops.SPermissions;
+import net.arcadiusmc.signshops.ShopManager;
+import net.arcadiusmc.signshops.SignShop;
+import net.arcadiusmc.signshops.SignShops;
 import net.arcadiusmc.user.Users;
 import net.arcadiusmc.utils.Cooldown;
 import net.arcadiusmc.utils.inventory.ItemStacks;
@@ -73,9 +73,7 @@ public class ShopInteractionListener implements Listener {
     SignShop shop = manager.getShop(event.getClickedBlock());
 
     // If holding a dye, and you own the shop, don't perform any logic
-    if (SignShops.mayEdit(shop, player.getUniqueId())
-        || player.hasPermission(EconPermissions.SHOP_ADMIN)
-    ) {
+    if (SignShops.mayEdit(shop, player.getUniqueId()) || player.hasPermission(SPermissions.ADMIN)) {
       ItemStack held = player.getInventory().getItemInMainHand();
 
       if (!ItemStacks.isEmpty(held) && DYES.contains(held.getType())) {

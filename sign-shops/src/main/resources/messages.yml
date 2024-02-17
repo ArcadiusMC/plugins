@@ -1,0 +1,71 @@
+_styles:
+  normal: "gray"
+  err: "red"
+
+signshops:
+  created.buy:          "&aSign-shop created!&r It'll sell ${item.nameAndAmount} for ${price}.\n&7Use ${keybind:key.sneak}+${keybind:key.use} to edit the shop inventory."
+  created.sell:         "&aSign-shop created!&r It'll buy ${item.nameAndAmount} for ${price}.\n&7Use ${keybind:key.sneak}+${keybind:key.use} to edit the shop inventory."
+
+  reselling.on:          "&eEnabled item re-selling."
+  reselling.off:         "&eDisabled item re-selling."
+
+  labels:
+    admin_buy:          "&b&l=[Buy]="
+    admin_buy.noStock:  "&c&l=[Buy]="
+    buy:                "&a&l=[Buy]="
+    buy.noStock:        "&c&l=[Buy]="
+    admin_sell:         "&b&l=[Sell]="
+    admin_sell.noStock: "&c&l=[Sell]="
+    sell:               "&a&l=[Sell]="
+    sell.noStock:       "&c&l=[Sell]="
+    price.regular:      "&7Price: &f$${price}"
+    price.hangingSign:  "$${price}"
+
+  errors:
+    _style: $err
+
+    outOfStock:         "This shop is out of stock."
+    shopNoSpace:        "This shop doesn't have enough space!"
+    noDescription:      "You must provide a description of the shop's items!"
+    noPrice:            "The last line must contain a price!"
+    lookAtShop:         "You must be looking at a shop you own"
+    invalidShop:        "Invalid shop"
+    transferSelf:       "Cannot transfer a shop to yourself"
+    noItemToSell:       "You don't have ${item.nameAndAmount} to sell."
+    ownerCannotAfford:  "The owner of this shop cannot afford ${amount}."
+    shopMaxPrice:       "Max shop price exceeded! &7(Max price: ${max})"
+    shopNotAllowed:     "Shop creation is not allowed here!"
+    stockIssue.sell:    "Your shop at ${location} is full, it cannot buy more items!"
+    stockIssue.buy:     "Your shop at ${location} is out of stock!"
+    noExample:          "This shop has no example item set!"
+    createFailed:       "&4Shop creation failed!&r No item in shop inventory."
+    cannotDestroy:      "You cannot destroy a shop you do not own."
+    nonResellableItem:  "${item.nameAndAmount} has been marked non-resellable. You cannot use it in a shop!"
+
+  session:
+    _style: $normal
+    end.owner.sell:     "&e${customer}&r sold &6${item.nameAndAmount}&r to your shop at &e${location}&r for &e${earned}&r."
+    end.owner.buy:      "&e${customer}&r bought &6${item.nameAndAmount}&r from your shop at &e${location}&r for &e${earned}&r."
+    end.customer.sell:  "Sold a total of &6${item.nameAndAmount}&r for &e${earned}&r."
+    end.customer.buy:   "Bought a total of &6${item.nameAndAmount}&r for &e${earned}&r."
+    interaction.sell:   "Sold &e${item.nameAndAmount}&r for &6${price}&r."
+    interaction.buy:    "Bought &e${item.nameAndAmount}&r for &6${price}&r."
+
+  history:
+    title:              "Shop history"
+    entry.buy:          "&e${player}&r bought &6${item.nameAndAmount}&r for &e${price}&r."
+    entry.sell:         "&e${player}&r sold &6${item.nameAndAmount}&r for &e${price}&r."
+
+  types:
+    buy:                "Buy"
+    sell:               "Sell"
+    admin_buy:          "Admin-Buy"
+    admin_sell:         "Admin-Sell"
+
+  edit:
+    _style: $normal
+    type:               "This is now a &e${type}&r shop."
+    amount:             "Set shop item-amount to &e${item}&r."
+    price:              "Set shop price to &e${price}&r."
+    setLine:            "Set line &e${line}&r to '&f${text}&r'"
+

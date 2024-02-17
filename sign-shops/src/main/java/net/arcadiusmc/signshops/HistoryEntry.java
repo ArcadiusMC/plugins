@@ -1,4 +1,4 @@
-package net.arcadiusmc.economy.signshops;
+package net.arcadiusmc.signshops;
 
 import java.util.UUID;
 import net.forthecrown.nbt.BinaryTag;

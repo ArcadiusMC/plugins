@@ -1,20 +1,23 @@
-package net.arcadiusmc.economy.signshops;
+package net.arcadiusmc.signshops;
 
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.StateFlag.State;
+import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import java.util.UUID;
-import net.arcadiusmc.economy.ShopsPlugin;
-import net.arcadiusmc.economy.market.MarketShop;
-import net.forthecrown.nbt.BinaryTags;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.arcadiusmc.utils.math.WorldVec3i;
+import net.forthecrown.nbt.BinaryTags;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
+import org.bukkit.block.HangingSign;
 import org.bukkit.block.Sign;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
@@ -49,7 +52,7 @@ public final class SignShops {
   /**
    * The default inventory size of shops
    */
-  public static final int DEFAULT_INV_SIZE = 27;
+  public static final int DEFAULT_INV_SIZE = 9;
 
   /**
    * The sign line that has the shop's type
@@ -62,38 +65,6 @@ public final class SignShops {
   public static final int LINE_PRICE = 3;
 
   /**
-   * Buy type label
-   */
-  public static final String BUY_LABEL = "=[Buy]=";
-
-  /**
-   * Sell type label
-   */
-  public static final String SELL_LABEL = "=[Sell]=";
-
-  /**
-   * The style to use for labels to display a shop being out of stock
-   */
-  public static final Style OUT_OF_STOCK_STYLE = Style.style(NamedTextColor.RED,
-      TextDecoration.BOLD);
-
-  /**
-   * The style normal shop labels use
-   */
-  public static final Style NORMAL_STYLE = Style.style(NamedTextColor.GREEN, TextDecoration.BOLD);
-
-  /**
-   * The style admin shop labels use
-   */
-  public static final Style ADMIN_STYLE = Style.style(NamedTextColor.AQUA, TextDecoration.BOLD);
-
-  /**
-   * The price line prefix
-   */
-  public static final Component PRICE_LINE = Component.text("Price: ")
-      .color(NamedTextColor.DARK_GRAY);
-
-  /**
    * The barrier item displayed in the Example Inventory
    */
   static final ItemStack EXAMPLE_BARRIER = ItemStacks.builder(Material.BARRIER, 1)
@@ -101,6 +72,14 @@ public final class SignShops {
       .build();
 
   /* ----------------------------- UTILITY METHODS ------------------------------ */
+
+  public static Component priceLine(int price, Sign sign) {
+    boolean usesCondensed = sign instanceof HangingSign;
+
+    return Messages.render("signshops.labels.price", usesCondensed ? "hangingSign" : "regular")
+        .addValue("price", price)
+        .asComponent();
+  }
 
   public static void makeNonResellable(ItemStack item) {
     item.editMeta(meta -> {
@@ -138,10 +117,6 @@ public final class SignShops {
 
   /**
    * Tests if the player with the given ID can edit the given shop.
-   * <p>
-   * What mayEdit means in this function's context is that the player is either the owner of the
-   * shop, or, if the shop is located within a {@link MarketShop}, then it must allow member editing
-   * and the given player must be a co-owner of that market
    *
    * @param shop The shop to test the player against
    * @param uuid The player to test
@@ -158,37 +133,38 @@ public final class SignShops {
       return true;
     }
 
-    // Get the shop's position and try to
-    // find a market that overlaps that area
+    // Get the shop's position and try to find a region that overlaps that area
+    // If one is found, then check if it allows members to edit shops and then
+    // check if the player's UUID is in the members list of the highest
+    // priority region
+
     WorldVec3i vec = shop.getPosition();
-    MarketShop s = ShopsPlugin.getPlugin().getMarkets().get(vec);
 
-    // Shop is null or has no owner, false
-    if (s == null || !s.hasOwner()) {
+    RegionManager manager = WorldGuard.getInstance()
+        .getPlatform()
+        .getRegionContainer()
+        .get(BukkitAdapter.adapt(vec.getWorld()));
+
+    if (manager == null) {
       return false;
     }
 
-    // Members aren't allowed to edit each other's shops
-    // in this market, so false
-    if (!s.isMemberEditingAllowed()) {
+    BlockVector3 wePos = BlockVector3.at(vec.x(), vec.y(), vec.z());
+    ApplicableRegionSet set = manager.getApplicableRegions(wePos);
+
+    if (set.size() < 1) {
       return false;
     }
 
-    // Must be a co owner to edit
-    return s.getMembers().contains(uuid);
+    ProtectedRegion first = set.iterator().next();
+    State memberEditingAllowed = first.getFlag(SignShopFlags.MEMBER_EDITING);
+
+    if (memberEditingAllowed != State.ALLOW) {
+      return false;
+    }
+
+    return first.getMembers().contains(uuid) || first.getOwners().contains(uuid);
   }
-
-  /**
-   * Gets the "Price: $12345" line for the shop's sign with the given amount.
-   *
-   * @param amount The amount to get the text for
-   * @return The created text
-   */
-  public static Component priceLine(int amount, TextColor priceColor) {
-    // Take the price line prefix and just append the price
-    // onto it lol
-    return SignShops.PRICE_LINE.append(Component.text("$" + amount, priceColor));
-  } 
 
   /**
    * Creates an inventory for the given {@link SignShop} instance.

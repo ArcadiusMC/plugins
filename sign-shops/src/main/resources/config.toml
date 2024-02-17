@@ -1,0 +1,19 @@
+#
+# Determines if interactions with normal shops should be logged to console
+#
+logNormalUses = false
+
+#
+# Determines if interactions with admin shops should be logged to console
+#
+logAdminUses = true
+
+#
+# Max sign shop price
+#
+maxPrice = 1000000
+
+#
+# The amount of time a signshop will stay in memory
+#
+unloadDelay = "5m"

@@ -1,118 +1,49 @@
-package net.arcadiusmc.economy.signshops.commands;
+package net.arcadiusmc.signshops.commands;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.arcadiusmc.Permissions;
-import net.arcadiusmc.command.DataCommands;
-import net.arcadiusmc.command.DataCommands.DataAccessor;
-import net.arcadiusmc.command.FtcCommand;
+import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.help.UsageFactory;
-import net.arcadiusmc.economy.EconExceptions;
-import net.arcadiusmc.economy.EconMessages;
-import net.arcadiusmc.economy.EconPermissions;
-import net.arcadiusmc.economy.signshops.ShopManager;
-import net.arcadiusmc.economy.signshops.ShopType;
-import net.arcadiusmc.economy.signshops.SignShop;
-import net.arcadiusmc.economy.signshops.SignShops;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.Completions;
-import net.forthecrown.grenadier.GrenadierCommand;
-import net.forthecrown.nbt.BinaryTags;
-import net.forthecrown.nbt.CompoundTag;
+import net.arcadiusmc.signshops.SExceptions;
+import net.arcadiusmc.signshops.SMessages;
+import net.arcadiusmc.signshops.SPermissions;
+import net.arcadiusmc.signshops.ShopManager;
+import net.arcadiusmc.signshops.ShopType;
+import net.arcadiusmc.signshops.SignShop;
+import net.arcadiusmc.signshops.SignShops;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.TextWriters;
 import net.arcadiusmc.text.ViewerAwareMessage;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.Tasks;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.Completions;
+import net.forthecrown.grenadier.GrenadierCommand;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-public class CommandEditShop extends FtcCommand {
+public class CommandEditShop extends BaseCommand {
 
-  private final Component usageMessage;
   private final ShopManager manager;
 
   public CommandEditShop(ShopManager manager) {
     super("editshop");
 
     this.manager = manager;
-    usageMessage = makeUsageMessage();
 
     setDescription("Allows you to edit a shop");
     setAliases("shopedit", "signshop");
-    setPermission(EconPermissions.SHOP_EDIT);
+    setPermission(SPermissions.EDIT);
 
     register();
-  }
-
-  private final DataAccessor dataAccess = new DataAccessor() {
-    @Override
-    public CompoundTag getTag(CommandContext<CommandSource> context)
-        throws CommandSyntaxException
-    {
-      var shop = getShop(context.getSource().asPlayer());
-      CompoundTag tag = BinaryTags.compoundTag();
-      shop.save(tag);
-      return tag;
-    }
-
-    @Override
-    public void setTag(CommandContext<CommandSource> context, CompoundTag tag)
-        throws CommandSyntaxException
-    {
-      var shop = getShop(context.getSource().asPlayer());
-      shop.load(tag);
-      shop.update();
-    }
-  };
-
-  private Component makeUsageMessage() {
-    final Component border = Component.text("                  ")
-        .color(NamedTextColor.DARK_GRAY)
-        .decorate(TextDecoration.STRIKETHROUGH);
-
-    final Component header = Component.text()
-        .append(border)
-        .append(Component.text(" editshop usage ").color(NamedTextColor.YELLOW))
-        .append(border)
-        .append(Component.newline())
-        .build();
-
-    final Component footer = Component.text()
-        .content("                                                                        ")
-        .decorate(TextDecoration.STRIKETHROUGH)
-        .color(NamedTextColor.DARK_GRAY)
-        .build();
-
-    final Component info = Component.text(
-            "Just look at a sign shop that you own to use this command")
-        .color(NamedTextColor.GRAY);
-
-    return Component.text()
-        .append(header)
-        .append(info)
-        .append(Component.newline())
-
-        .append(argUsage("buy", "Makes the shop a buy shop"))
-        .append(argUsage("sell", "Makes the shop a sell shop"))
-
-        .append(argUsage("line <2|3>", "Changes the 2nd or 3rd line of the sign"))
-
-        .append(argUsage("amount", "Changes the amount the shop will sell / buy"))
-        .append(argUsage("price", "Changes the price of the shop"))
-        //.append(argUsage("transfer", "Transfers the shop to someone else"))
-
-        .append(footer)
-        .build();
   }
 
   @Override
@@ -126,39 +57,22 @@ public class CommandEditShop extends FtcCommand {
         .addInfo("Changes either the 2nd or 3rd line of the")
         .addInfo("sign shop you're looking at");
 
-    factory.usage("amount <amount: number(1..64)>")
+    factory.usage("amount <amount: 1..64>")
         .addInfo("Changes the amount of items the shop sells/buys");
 
-    factory.usage("price <value: number(1..)>")
+    factory.usage("price <value: 1..>")
         .addInfo("Changes the price of the shop you're looking at");
-
-    //factory.usage("transfer <player>")
-    //    .addInfo("Transfers the shop you're looking at to another <player>");
 
     factory.usage("info")
         .addInfo("Displays info about the shop you're looking at")
-        .setPermission(Permissions.ADMIN);
-
-    var data = factory.withPermission(Permissions.ADMIN)
-        .withPrefix("data");
-
-    DataCommands.addUsages(data, "Shop", null);
+        .setPermission(SPermissions.ADMIN);
   }
 
   @Override
   public void createCommand(GrenadierCommand command) {
     command
-        .executes(c -> {
-          c.getSource().sendMessage(usageMessage);
-          return 0;
-        })
-
-        .then(DataCommands.dataAccess("Shop", dataAccess)
-            .requires(source -> source.hasPermission(Permissions.ADMIN))
-        )
-
         .then(literal("info")
-            .requires(source -> source.hasPermission(Permissions.ADMIN))
+            .requires(source -> source.hasPermission(SPermissions.ADMIN))
 
             .executes(c -> {
               Player player = c.getSource().asPlayer();
@@ -196,8 +110,7 @@ public class CommandEditShop extends FtcCommand {
         .then(literal("sell").executes(c -> setType(c, true)))
 
         .then(literal("price")
-            .then(argument("price_actual",
-                IntegerArgumentType.integer(0))
+            .then(argument("price_actual", IntegerArgumentType.integer(0))
                 .executes(c -> {
                   Player player = c.getSource().asPlayer();
                   SignShop shop = getShop(player);
@@ -205,7 +118,7 @@ public class CommandEditShop extends FtcCommand {
                   int price = c.getArgument("price_actual", Integer.class);
                   shop.setPrice(price);
 
-                  player.sendMessage(EconMessages.shopEditPrice(price));
+                  player.sendMessage(SMessages.shopEditPrice(player, price));
 
                   updateShop(shop);
                   return 0;
@@ -236,7 +149,7 @@ public class CommandEditShop extends FtcCommand {
                   exampleItem.setAmount(amount);
                   shop.setExampleItem(exampleItem);
 
-                  player.sendMessage(EconMessages.shopEditAmount(amount));
+                  player.sendMessage(SMessages.shopEditAmount(player, exampleItem));
 
                   updateShop(shop);
                   return 0;
@@ -298,12 +211,7 @@ public class CommandEditShop extends FtcCommand {
                       sign.line(line - 1, text);
                       sign.update();
 
-                      user.sendMessage(
-                          Text.format("Set line &e{0, number}&r to '&f{1}&r'",
-                              NamedTextColor.GRAY,
-                              line, text
-                          )
-                      );
+                      user.sendMessage(SMessages.setLine(user, line, text));
 
                       updateShop(shop);
                       return 0;
@@ -311,19 +219,6 @@ public class CommandEditShop extends FtcCommand {
                 )
             )
         );
-  }
-
-  private final Component cmdPrefix = Component.text("/" + getName() + " ")
-      .color(NamedTextColor.YELLOW);
-  private final Component connector = Component.text(" - ").color(NamedTextColor.GRAY);
-  private final Style descStyle = Style.style(NamedTextColor.GOLD);
-
-  private Component argUsage(String argument, String usage) {
-    return cmdPrefix
-        .append(Component.text(argument))
-        .append(connector)
-        .append(Component.text(usage).style(descStyle))
-        .append(Component.newline());
   }
 
   private int setType(CommandContext<CommandSource> c, boolean sell) throws CommandSyntaxException {
@@ -338,7 +233,7 @@ public class CommandEditShop extends FtcCommand {
 
     shop.setType(to);
 
-    player.sendMessage(EconMessages.setShopType(to));
+    player.sendMessage(SMessages.setShopType(player, to));
 
     updateShop(shop);
     return 0;
@@ -352,15 +247,15 @@ public class CommandEditShop extends FtcCommand {
     Block block = player.getTargetBlockExact(5);
 
     if (!SignShops.isShop(block)) {
-      throw EconExceptions.LOOK_AT_SHOP;
+      throw SExceptions.lookAtShop(player);
     }
 
     SignShop result = manager.getShop(block);
 
     if (!SignShops.mayEdit(result, player.getUniqueId())
-        && !player.hasPermission(Permissions.ADMIN)
+        && !player.hasPermission(SPermissions.ADMIN)
     ) {
-      throw EconExceptions.LOOK_AT_SHOP;
+      throw SExceptions.lookAtShop(player);
     }
 
     return result;

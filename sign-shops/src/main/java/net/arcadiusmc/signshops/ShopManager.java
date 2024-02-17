@@ -1,4 +1,4 @@
-package net.arcadiusmc.economy.signshops;
+package net.arcadiusmc.signshops;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -7,10 +7,8 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.Getter;
 import net.arcadiusmc.command.Exceptions;
-import net.arcadiusmc.economy.EconMessages;
-import net.arcadiusmc.economy.EconPermissions;
-import net.arcadiusmc.economy.ShopsPlugin;
 import net.arcadiusmc.user.User;
+import net.arcadiusmc.user.Users;
 import net.arcadiusmc.utils.LocationFileName;
 import net.arcadiusmc.utils.Tasks;
 import net.arcadiusmc.utils.inventory.ItemStacks;
@@ -24,9 +22,9 @@ public class ShopManager {
   private final Map<UUID, SignShopSession> sessions = new HashMap<>();
 
   @Getter
-  private final ShopsPlugin plugin;
+  private final SignShopsPlugin plugin;
 
-  public ShopManager(ShopsPlugin plugin) {
+  public ShopManager(SignShopsPlugin plugin) {
     this.plugin = plugin;
   }
 
@@ -50,7 +48,25 @@ public class ShopManager {
     var player = customer.getPlayer();
 
     boolean mayEdit = SignShops.mayEdit(shop, customer.getUniqueId())
-        || player.hasPermission(EconPermissions.SHOP_ADMIN);
+        || player.hasPermission(SPermissions.ADMIN);
+
+    // Potentially update shop inventory size
+    // depending on owner's permissions
+    UUID ownerId = shop.getOwner();
+    if (ownerId != null) {
+      User owner = Users.get(ownerId);
+
+      SPermissions.SHOP_SIZE.getTier(owner)
+          .ifPresent(value -> {
+            int existingSize = shop.getInventory().getSize();
+
+            if (value <= existingSize) {
+              return;
+            }
+
+            shop.resizeInventory(value);
+          });
+    }
 
     if (player.isSneaking() && mayEdit) {
       shop.delayUnload();
@@ -80,7 +96,7 @@ public class ShopManager {
     // move on to interaction
     try {
       if (ItemStacks.isEmpty(shop.getExampleItem())) {
-        throw Exceptions.create(EconMessages.SHOP_NO_EXAMPLE);
+        throw Exceptions.create(SMessages.noExample(customer));
       }
 
       shop.getType().getInteraction().test(session);

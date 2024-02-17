@@ -1,37 +1,45 @@
-package net.arcadiusmc.economy.signshops.commands;
+package net.arcadiusmc.signshops.commands;
 
 import static net.forthecrown.grenadier.types.options.ParsedOptions.EMPTY;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.Exceptions;
-import net.arcadiusmc.command.FtcCommand;
-import net.arcadiusmc.economy.EconExceptions;
-import net.arcadiusmc.economy.EconMessages;
-import net.arcadiusmc.economy.EconPermissions;
-import net.arcadiusmc.economy.signshops.HistoryEntry;
-import net.arcadiusmc.economy.signshops.ShopManager;
-import net.arcadiusmc.economy.signshops.SignShop;
-import net.arcadiusmc.economy.signshops.SignShops;
+import net.arcadiusmc.signshops.HistoryEntry;
+import net.arcadiusmc.signshops.SExceptions;
+import net.arcadiusmc.signshops.SMessages;
+import net.arcadiusmc.signshops.SPermissions;
+import net.arcadiusmc.signshops.ShopHistory;
+import net.arcadiusmc.signshops.ShopManager;
+import net.arcadiusmc.signshops.SignShop;
+import net.arcadiusmc.signshops.SignShops;
+import net.arcadiusmc.text.DefaultTextWriter;
+import net.arcadiusmc.text.TextWriters;
+import net.arcadiusmc.text.page.Footer;
+import net.arcadiusmc.text.page.Header;
+import net.arcadiusmc.text.page.PageFormat;
+import net.arcadiusmc.text.page.PagedIterator;
+import net.arcadiusmc.utils.LocationFileName;
+import net.arcadiusmc.utils.context.Context;
+import net.arcadiusmc.utils.context.ContextOption;
+import net.arcadiusmc.utils.context.ContextSet;
+import net.arcadiusmc.utils.math.WorldVec3i;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
 import net.forthecrown.grenadier.types.options.ArgumentOption;
 import net.forthecrown.grenadier.types.options.Options;
 import net.forthecrown.grenadier.types.options.OptionsArgument;
 import net.forthecrown.grenadier.types.options.ParsedOptions;
-import net.arcadiusmc.text.page.Footer;
-import net.arcadiusmc.text.page.PageFormat;
-import net.arcadiusmc.utils.LocationFileName;
-import net.arcadiusmc.utils.context.ContextOption;
-import net.arcadiusmc.utils.context.ContextSet;
-import net.arcadiusmc.utils.math.WorldVec3i;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class CommandShopHistory extends FtcCommand {
+public class CommandShopHistory extends BaseCommand {
 
   public static final ArgumentOption<Integer> PAGE
       = Options.argument(IntegerArgumentType.integer(1))
@@ -58,6 +66,7 @@ public class CommandShopHistory extends FtcCommand {
 
   public static final ContextSet SET = ContextSet.create();
   public static final ContextOption<SignShop> SHOP = SET.newOption();
+  public static final ContextOption<Audience> VIEWER = SET.newOption();
 
   public final PageFormat<HistoryEntry> format;
 
@@ -69,7 +78,12 @@ public class CommandShopHistory extends FtcCommand {
     this.manager = manager;
     this.format = PageFormat.create();
 
-    format.setHeader(EconMessages.SHOP_HISTORY_TITLE)
+    format
+        .setHeader(
+            Header.<HistoryEntry>create().title((it, writer, context) -> {
+              writer.write(SMessages.historyTitle(writer.viewer()));
+            })
+        )
         .setFooter(
             Footer.create()
                 .setPageButton((viewerPage, pageSize1, context) -> {
@@ -84,13 +98,14 @@ public class CommandShopHistory extends FtcCommand {
         )
 
         .setEntry((writer, entry, viewerIndex, context, it) -> {
-          writer.write(EconMessages.formatShopHistory(
-              entry,
-              context.getOrThrow(SHOP).getExampleItem()
-          ));
+          Audience viewer = writer.viewer();
+          Component message = SMessages.formatShopHistory(
+              viewer, entry, context.getOrThrow(SHOP).getExampleItem()
+          );
+
+          writer.write(message);
         });
 
-    setPermission(EconPermissions.SHOP_HISTORY);
     setDescription("Shows the history of the shop you're looking at");
     simpleUsages();
 
@@ -119,7 +134,7 @@ public class CommandShopHistory extends FtcCommand {
       var name = args.getValue(SHOP_NAME);
 
       if ((shop = manager.getShop(name)) == null) {
-        throw EconExceptions.INVALID_SHOP;
+        throw SExceptions.invalidShop(source);
       }
 
       validateShop(shop, source.asBukkit());
@@ -128,9 +143,9 @@ public class CommandShopHistory extends FtcCommand {
     }
 
     // Ensure the history isn't empty
-    var history = shop.getHistory();
+    ShopHistory history = shop.getHistory();
     if (history.isEmpty()) {
-      throw Exceptions.NOTHING_TO_LIST;
+      throw Exceptions.NOTHING_TO_LIST.exception(source);
     }
 
     int page = args.getValueOptional(PAGE).orElse(1) - 1;
@@ -139,10 +154,14 @@ public class CommandShopHistory extends FtcCommand {
     // Ensure the page is valid
     Commands.ensurePageValid(page, pageSize, history.size());
 
-    var it = history.pageIterator(page, pageSize);
-    var context = SET.createContext().set(SHOP, shop);
+    PagedIterator<HistoryEntry> it = history.pageIterator(page, pageSize);
+    Context context = SET.createContext().set(SHOP, shop);
 
-    source.sendMessage(format.format(it, context));
+    DefaultTextWriter writer = TextWriters.newWriter();
+    writer.viewer(source);
+    format.write(it, writer, context);
+
+    source.sendMessage(writer.asComponent());
     return 0;
   }
 
@@ -150,7 +169,7 @@ public class CommandShopHistory extends FtcCommand {
     Block block = player.getTargetBlockExact(5);
 
     if (!SignShops.isShop(block)) {
-      throw EconExceptions.LOOK_AT_SHOP;
+      throw SExceptions.lookAtShop(player);
     }
 
     SignShop shop = manager.getShop(WorldVec3i.of(block));
@@ -166,9 +185,9 @@ public class CommandShopHistory extends FtcCommand {
 
     // If allowed to look at shop info or has admin permissions
     if (!SignShops.mayEdit(shop, player.getUniqueId())
-        && !player.hasPermission(EconPermissions.SHOP_ADMIN)
+        && !player.hasPermission(SPermissions.ADMIN)
     ) {
-      throw EconExceptions.LOOK_AT_SHOP;
+      throw SExceptions.lookAtShop(sender);
     }
   }
 }

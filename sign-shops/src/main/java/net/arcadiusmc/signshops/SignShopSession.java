@@ -1,10 +1,9 @@
-package net.arcadiusmc.economy.signshops;
+package net.arcadiusmc.signshops;
 
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.Loggers;
-import net.arcadiusmc.economy.EconMessages;
-import net.arcadiusmc.economy.signshops.event.ShopPostUseEvent;
+import net.arcadiusmc.signshops.event.ShopPostUseEvent;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
@@ -86,7 +85,7 @@ public class SignShopSession {
    */
   public void run() {
     type.getInteraction().interact(this);
-    customer.sendMessage(EconMessages.sessionInteraction(this));
+    customer.sendMessage(SMessages.sessionInteraction(customer, this));
     growAmount(getExampleItem().getAmount());
     shop.setLastInteraction(System.currentTimeMillis());
 
@@ -143,7 +142,7 @@ public class SignShopSession {
 
     // If used shop more than 5 times
     if (getAmount() > (getExampleItem().getAmount() * 5)) {
-      customer.sendMessage(EconMessages.sessionEndCustomer(this));
+      customer.sendMessage(SMessages.sessionEndCustomer(customer, this));
     }
 
     // Admin shops don't have owners and
@@ -154,10 +153,10 @@ public class SignShopSession {
 
     // Tell owner that someone used their shop
     var owner = getOwnerUser();
-    owner.sendMessage(EconMessages.sessionEndOwner(this));
+    owner.sendMessage(SMessages.sessionEndOwner(owner, this));
 
     if (!shop.inStock()) {
-      owner.sendMessage(EconMessages.stockIssueMessage(type, shop.getPosition()));
+      owner.sendMessage(SMessages.stockIssueMessage(owner, type, shop.getPosition()));
       shop.update();
     }
   }
@@ -169,7 +168,7 @@ public class SignShopSession {
    */
   private boolean shouldLog() {
     var config = manager.getPlugin().getShopConfig();
-    return type.isAdmin() ? config.isLogAdminUses() : config.isLogNormalUses();
+    return type.isAdmin() ? config.logAdminUses() : config.logNormalUses();
   }
 
   /**
