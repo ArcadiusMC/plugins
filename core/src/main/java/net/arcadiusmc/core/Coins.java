@@ -29,7 +29,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 public final class Coins {
   private Coins() {}
 
-  public static final int TEXTURE_ID = 223423; // I hit keys randomly
+  public static final int TEXTURE_ID = 10070001;
   public static final Material COIN_MATERIAL = Material.SUNFLOWER;
 
   public static final String NBT_TAG = "coin_worth";
