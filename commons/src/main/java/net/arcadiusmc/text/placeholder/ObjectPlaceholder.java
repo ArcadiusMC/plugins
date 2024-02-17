@@ -3,6 +3,9 @@ package net.arcadiusmc.text.placeholder;
 import static net.kyori.adventure.text.Component.text;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -150,12 +153,48 @@ public interface ObjectPlaceholder<T> {
 
   ObjectPlaceholder<Duration> DURATION = (value, fieldName, ctx) -> {
     return switch (fieldName) {
+      case "abs" -> value.abs();
+
       case "seconds"  -> value.getSeconds();
       case "minutes"  -> value.getSeconds() / 60;
       case "hours"    -> value.getSeconds() / 60 / 60;
       case "days"     -> value.getSeconds() / 60 / 60 / 24;
+
+      case "singleUnit" -> PeriodFormat.of(value).retainBiggest().asComponent();
+      case "short" -> PeriodFormat.of(value).withShortNames().asComponent();
+
+      case "singleUnitShort" -> {
+        yield PeriodFormat.of(value).withShortNames().retainBiggest().asComponent();
+      }
+
       default -> PeriodFormat.of(value).asComponent();
     };
+  };
+
+  ObjectPlaceholder<ZonedDateTime> ZONED_DATE_TIME = (value, fieldName, ctx) -> {
+    return switch (fieldName) {
+      case "until" -> {
+        ZonedDateTime now = ZonedDateTime.now();
+        yield Duration.between(now, value);
+      }
+
+      case "year" -> value.getYear();
+      case "dayOfYear" -> value.getDayOfYear();
+      case "date" -> value.getDayOfMonth();
+      case "weekDay" -> value.getDayOfWeek().getValue();
+      case "monthNum" -> value.getMonthValue();
+
+      default -> Text.formatDate(value.toInstant());
+    };
+  };
+
+  ObjectPlaceholder<Instant> INSTANT = (value, fieldName, ctx) -> {
+    if (fieldName.isEmpty()) {
+      return Text.formatDate(value);
+    }
+
+    ZonedDateTime dateTime = ZonedDateTime.ofInstant(value, ZoneId.systemDefault());
+    return ZONED_DATE_TIME.lookup(dateTime, fieldName, ctx);
   };
 
   Object lookup(@NotNull T value, @NotNull String fieldName, @NotNull PlaceholderContext ctx);
