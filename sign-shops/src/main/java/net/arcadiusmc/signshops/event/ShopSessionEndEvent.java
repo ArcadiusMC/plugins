@@ -1,26 +1,22 @@
 package net.arcadiusmc.signshops.event;
 
 import lombok.Getter;
-import net.arcadiusmc.signshops.SignShop;
 import net.arcadiusmc.signshops.SignShopSession;
 import net.arcadiusmc.user.User;
-import org.bukkit.event.Event;
+import net.arcadiusmc.user.event.UserEvent;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-@Getter
-public class ShopPostUseEvent extends Event {
+public class ShopSessionEndEvent extends UserEvent {
 
   @Getter
   private static final HandlerList handlerList = new HandlerList();
 
-  private final User user;
-  private final SignShop shop;
+  @Getter
   private final SignShopSession session;
 
-  public ShopPostUseEvent(User user, SignShopSession session) {
-    this.user = user;
-    this.shop = session.getShop();
+  public ShopSessionEndEvent(User user, SignShopSession session) {
+    super(user);
     this.session = session;
   }
 

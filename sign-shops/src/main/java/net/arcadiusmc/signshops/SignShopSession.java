@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.signshops.event.ShopPostUseEvent;
+import net.arcadiusmc.signshops.event.ShopSessionEndEvent;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
@@ -89,7 +90,7 @@ public class SignShopSession {
     growAmount(getExampleItem().getAmount());
     shop.setLastInteraction(System.currentTimeMillis());
 
-    new ShopPostUseEvent(customer, shop).callEvent();
+    new ShopPostUseEvent(customer, this).callEvent();
   }
 
   /**
@@ -144,6 +145,9 @@ public class SignShopSession {
     if (getAmount() > (getExampleItem().getAmount() * 5)) {
       customer.sendMessage(SMessages.sessionEndCustomer(customer, this));
     }
+
+    // Call event
+    new ShopSessionEndEvent(customer, this).callEvent();
 
     // Admin shops don't have owners and
     // also no one cares lol
