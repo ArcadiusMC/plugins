@@ -14,6 +14,7 @@ import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.help.UsageFactory;
 import net.arcadiusmc.text.TextJoiner;
 import net.arcadiusmc.text.loader.MessageRender;
+import net.arcadiusmc.text.placeholder.Placeholders;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Completions;
 import net.forthecrown.grenadier.types.ArgumentTypes;
@@ -162,13 +163,14 @@ public class ItemLoreNode extends ItemModifierNode {
     }
 
     Component message = Arguments.getMessage(c, "text").asComponent();
+    Component wrapped = Placeholders.render(optionallyWrap(message, c, "text"));
 
-    lore.add(optionallyWrap(message, c, "text"));
+    lore.add(wrapped);
     held.lore(lore);
 
     source.sendSuccess(
         ItemMessages.ADDED_LORE.get()
-            .addValue("lore", message)
+            .addValue("lore", wrapped)
             .create(source)
     );
     return 0;
@@ -186,16 +188,17 @@ public class ItemLoreNode extends ItemModifierNode {
 
     int index = c.getArgument("index", Integer.class);
     Component text = Arguments.getMessage(c, "text").asComponent();
+    Component wrapped = Placeholders.render(optionallyWrap(text, c, "text"));
 
     Commands.ensureIndexValid(index, lore.size());
 
-    lore.set(index - 1, optionallyWrap(text, c, "text"));
+    lore.set(index - 1, wrapped);
     held.lore(lore);
 
     source.sendSuccess(
         ItemMessages.SET_LORE.get()
             .addValue("index", index)
-            .addValue("lore", text)
+            .addValue("lore", wrapped)
             .create(source)
     );
     return 0;

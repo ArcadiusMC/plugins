@@ -8,6 +8,7 @@ import net.arcadiusmc.command.help.Usage;
 import net.arcadiusmc.command.help.UsageFactory;
 import net.arcadiusmc.core.commands.CommandNickname;
 import net.arcadiusmc.text.Text;
+import net.arcadiusmc.text.placeholder.Placeholders;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Completions;
 import net.kyori.adventure.text.Component;
@@ -77,10 +78,11 @@ public class ItemNameNode extends ItemModifierNode {
                 meta.displayName(null);
                 source.sendSuccess(ItemMessages.NAME_CLEARED.renderText(source));
               } else {
-                meta.displayName(optionallyWrap(name, c, "name"));
+                Component wrapped = Placeholders.render(optionallyWrap(name, c, "name"));
+                meta.displayName(wrapped);
                 source.sendSuccess(
                     ItemMessages.NAME_SET.get()
-                        .addValue("name", name)
+                        .addValue("name", wrapped)
                         .create(source)
                 );
               }
