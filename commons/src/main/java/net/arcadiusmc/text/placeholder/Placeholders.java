@@ -100,4 +100,8 @@ public final class Placeholders {
     PlayerPlaceholders placeholders = new PlayerPlaceholders(prefix, player);
     list.addSource(placeholders);
   }
+
+  public static Component render(Component text) {
+    return newRenderer().useDefaults().render(text);
+  }
 }
