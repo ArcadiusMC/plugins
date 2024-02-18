@@ -6,7 +6,10 @@ import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import com.sk89q.worldguard.protection.util.WorldEditRegionConverter;
 import java.util.Iterator;
+import java.util.Objects;
 import net.arcadiusmc.utils.math.AreaSelection;
 import net.arcadiusmc.utils.math.WorldBounds3i;
 import org.bukkit.World;
@@ -56,10 +59,31 @@ public final class WorldEditHook {
     }
   }
 
+  public static AreaSelection wrap(World world, ProtectedRegion protectedRegion) {
+    Objects.requireNonNull(protectedRegion, "Null region");
+
+    Region region = WorldEditRegionConverter.convertToRegion(protectedRegion);
+
+    if (region == null) {
+      return null;
+    }
+
+    region.setWorld(BukkitAdapter.adapt(world));
+    return wrap(region);
+  }
+
+  public static AreaSelection wrap(Region region) {
+    Objects.requireNonNull(region, "Null region");
+    return new WorldEditSelection(region);
+  }
+
   record WorldEditSelection(Region region) implements AreaSelection {
 
     @Override
     public World getWorld() {
+      if (region.getWorld() == null) {
+        return null;
+      }
       return BukkitAdapter.adapt(region.getWorld());
     }
 
