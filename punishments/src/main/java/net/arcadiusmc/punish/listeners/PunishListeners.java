@@ -14,6 +14,7 @@ public final class PunishListeners {
     register(new JailListener(plugin));
     register(new JoinListener());
     register(new LoginListener());
+    register(new ServerLoadListener(plugin));
     register(new VeinListener(plugin));
   }
 }
