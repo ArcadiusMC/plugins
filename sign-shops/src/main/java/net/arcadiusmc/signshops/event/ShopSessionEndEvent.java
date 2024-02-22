@@ -20,6 +20,10 @@ public class ShopSessionEndEvent extends UserEvent {
     this.session = session;
   }
 
+  public boolean isSuccessful() {
+    return session.getAmount() > 0;
+  }
+
   @Override
   public @NotNull HandlerList getHandlers() {
     return handlerList;
