@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.Getter;
 import net.arcadiusmc.command.Exceptions;
+import net.arcadiusmc.signshops.event.ShopUseEvent;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
 import net.arcadiusmc.utils.LocationFileName;
@@ -100,6 +101,16 @@ public class ShopManager {
       }
 
       shop.getType().getInteraction().test(session);
+
+      ShopUseEvent event = new ShopUseEvent(customer, session);
+      event.callEvent();
+
+      if (event.isCancelled()) {
+        session.expireTask = Tasks.cancel(session.expireTask);
+        session.expire();
+
+        return;
+      }
 
       session.delayExpiry();
       shop.delayUnload();

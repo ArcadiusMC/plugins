@@ -3,7 +3,6 @@ package net.arcadiusmc.signshops;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.Loggers;
-import net.arcadiusmc.signshops.event.ShopPostUseEvent;
 import net.arcadiusmc.signshops.event.ShopSessionEndEvent;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.user.User;
@@ -89,8 +88,6 @@ public class SignShopSession {
     customer.sendMessage(SMessages.sessionInteraction(customer, this));
     growAmount(getExampleItem().getAmount());
     shop.setLastInteraction(System.currentTimeMillis());
-
-    new ShopPostUseEvent(customer, this).callEvent();
   }
 
   /**
