@@ -60,7 +60,7 @@ public class UserLookupImpl implements UserLookup {
    * If the changes have been made to this map and the map has not been saved.
    */
   @Getter @Setter
-  private boolean unsaved;
+  private boolean dirty;
 
   @Override
   public UserLookupEntry getEntry(UUID playerId) {
@@ -162,7 +162,7 @@ public class UserLookupImpl implements UserLookup {
       byIp.put(entry.getIp(), entry);
     }
 
-    unsaved = true;
+    dirty = true;
   }
 
   /**
@@ -186,7 +186,7 @@ public class UserLookupImpl implements UserLookup {
     named.put(newName.toLowerCase(), entry);
     oldNamed.put(entry.lastName.toLowerCase(), entry);
 
-    unsaved = true;
+    dirty = true;
   }
 
   /**
@@ -206,11 +206,11 @@ public class UserLookupImpl implements UserLookup {
       nicknamed.put(newNick.toLowerCase(), entry);
     }
 
-    unsaved = true;
+    dirty = true;
   }
 
   public synchronized void changeIp(UserLookupEntry entry, String ip) {
-    unsaved = true;
+    dirty = true;
 
     String existing = entry.getIp();
     if (existing != null) {
@@ -252,7 +252,7 @@ public class UserLookupImpl implements UserLookup {
       byIp.remove(cache.getIp());
     }
 
-    unsaved = true;
+    dirty = true;
   }
 
   /**
@@ -264,7 +264,7 @@ public class UserLookupImpl implements UserLookup {
     identified.clear();
     oldNamed.clear();
 
-    unsaved = true;
+    dirty = true;
   }
 
   @Override

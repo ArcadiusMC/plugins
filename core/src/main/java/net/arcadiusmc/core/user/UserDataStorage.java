@@ -63,11 +63,19 @@ public class UserDataStorage {
   }
 
   public void saveMap(ScoreIntMap<UUID> map, Path file) {
-    SerializationHelper.writeJsonFile(file, json -> {
+    if (!map.isDirty()) {
+      return;
+    }
+
+    boolean success = SerializationHelper.writeJsonFile(file, json -> {
       map.forEach(entry -> {
         json.add(entry.key().toString(), entry.value());
       });
     });
+
+    if (success) {
+      map.setDirty(false);
+    }
   }
 
   public void loadMap(ScoreIntMap<UUID> map, Path file) {
@@ -84,6 +92,7 @@ public class UserDataStorage {
           LOGGER.error("Error setting value {} to {} in map", uuid, value, exc);
         }
       }
+      map.setDirty(false);
     });
   }
 
@@ -104,13 +113,13 @@ public class UserDataStorage {
             }
           }
 
-          lookup.setUnsaved(false);
+          lookup.setDirty(false);
         }
     );
   }
 
   public void saveProfiles(UserLookupImpl lookup) {
-    if (!lookup.isUnsaved()) {
+    if (!lookup.isDirty()) {
       return;
     }
 
@@ -125,7 +134,7 @@ public class UserDataStorage {
     });
 
     if (SerializationHelper.writeJson(userLookup, arr)) {
-      lookup.setUnsaved(false);
+      lookup.setDirty(false);
     }
   }
 

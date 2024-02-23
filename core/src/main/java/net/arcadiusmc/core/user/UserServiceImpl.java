@@ -42,7 +42,6 @@ import net.arcadiusmc.user.event.UserLeaveEvent;
 import net.arcadiusmc.user.event.UserLogEvent;
 import net.arcadiusmc.utils.Result;
 import net.arcadiusmc.utils.ScoreIntMap;
-import net.arcadiusmc.utils.ScoreIntMap.KeyValidator;
 import net.arcadiusmc.utils.Time;
 import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.PathUtil;
@@ -89,32 +88,20 @@ public class UserServiceImpl implements UserService {
     this.plugin = plugin;
 
     Path dir = PathUtil.pluginPath();
-    this.storage     = new UserDataStorage(dir);
+    this.storage          = new UserDataStorage(dir);
 
-    this.lookup      = new UserLookupImpl();
-    this.nameFactory = new NameFactoryImpl();
-    this.userMaps    = new UserMaps(this);
-    this.altUsers    = new AltUsers();
+    this.lookup           = new UserLookupImpl();
+    this.nameFactory      = new NameFactoryImpl();
+    this.userMaps         = new UserMaps(this);
+    this.altUsers         = new AltUsers();
 
-    this.balances = new ScoreIntMap<>();
-    this.gems     = new ScoreIntMap<>();
-    this.playtime = new ScoreIntMap<>();
-    this.votes    = new ScoreIntMap<>();
-    this.monthlyPlaytime = new ScoreIntMap<>();
+    this.balances         = new ScoreIntMap<>();
+    this.gems             = new ScoreIntMap<>();
+    this.playtime         = new ScoreIntMap<>();
+    this.votes            = new ScoreIntMap<>();
+    this.monthlyPlaytime  = new ScoreIntMap<>();
 
-    this.monthlyPlaytime.setValidator(KeyValidator.IS_PLAYER);
-    this.balances.setValidator(KeyValidator.IS_PLAYER);
-    this.gems.setValidator(KeyValidator.IS_PLAYER);
-    this.playtime.setValidator(KeyValidator.IS_PLAYER);
-    this.votes.setValidator(KeyValidator.IS_PLAYER);
-
-    this.monthlyPlaytime.setFatalErrors(false);
-    this.balances.setFatalErrors(false);
-    this.gems.setFatalErrors(false);
-    this.playtime.setFatalErrors(false);
-    this.votes.setFatalErrors(false);
-
-    this.currencies = Registries.newFreezable();
+    this.currencies       = Registries.newFreezable();
 
     this.propertyRegistry = Registries.newFreezable();
     this.propertyRegistry.setListener(new RegistryListener<>() {

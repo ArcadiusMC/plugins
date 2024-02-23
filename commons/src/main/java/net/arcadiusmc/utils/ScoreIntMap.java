@@ -1,6 +1,7 @@
 package net.arcadiusmc.utils;
 
-import com.google.common.base.Strings;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectIterators;
 import it.unimi.dsi.fastutil.objects.ObjectList;
@@ -11,18 +12,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Spliterator;
-import java.util.UUID;
 import java.util.function.IntSupplier;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import net.arcadiusmc.Loggers;
 import net.arcadiusmc.text.page.PagedIterator;
-import net.arcadiusmc.user.Users;
-import net.arcadiusmc.user.UserLookup;
 import net.arcadiusmc.utils.ScoreIntMap.Entry;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class ScoreIntMap<K> implements Iterable<Entry<K>> {
 
@@ -39,8 +35,8 @@ public class ScoreIntMap<K> implements Iterable<Entry<K>> {
   /**
    * The default return value supplier
    */
-  @Getter
-  private final IntSupplier defaultSupplier;
+  @Getter @Setter
+  private IntSupplier defaultSupplier = () -> MINIMUM_VALUE;
 
   /**
    * The UUID lookup backing map
@@ -56,58 +52,31 @@ public class ScoreIntMap<K> implements Iterable<Entry<K>> {
    * True, if the list has been saved and has not yet been saved. This value is also used to stop
    * unneeded save operations
    */
-  @Getter
-  private boolean unsaved = true;
-
   @Getter @Setter
-  private boolean fatalErrors = true;
-
-  @Setter
-  @Getter
-  private KeyValidator<K> validator;
+  private boolean dirty = false;
 
   public ScoreIntMap() {
-    this(() -> MINIMUM_VALUE);
-  }
 
-  public ScoreIntMap(IntSupplier defaultSupplier) {
-    this.defaultSupplier = Objects.requireNonNull(defaultSupplier);
   }
 
   /**
-   * Sets the uuid's value.
+   * Sets the key's value.
    * <p>
    * This method will also ensure that the given amount is equal to or greater
    * than 0.
    *
    * @param key    key to set the value of
    * @param amount amount to set the uuid's value to
-   *
-   * @throws IllegalArgumentException If a {@link KeyValidator} is present, and
-   * the given UUID fails validation
    */
   public void set(K key, int amount) throws IllegalArgumentException {
     Objects.requireNonNull(key);
-
-    if (validator != null) {
-      String reason = validator.test(key);
-
-      if (!Strings.isNullOrEmpty(reason)) {
-        if (fatalErrors) {
-          throw new IllegalArgumentException(reason);
-        } else {
-          Loggers.getLogger().warn(reason);
-        }
-      }
-    }
-
     amount = Math.max(MINIMUM_VALUE, amount);
 
-    var entry = entries.get(key);
+    Entry<K> entry = entries.get(key);
 
     // UUID is not stored in the map
     if (entry == null) {
-      entry = new Entry(key, amount);
+      entry = new Entry<>(key, amount);
       entries.put(key, entry);
       insert(entry);
     } else {
@@ -117,7 +86,7 @@ public class ScoreIntMap<K> implements Iterable<Entry<K>> {
       sortedList.sort(COMPARATOR);
     }
 
-    unsaved = true;
+    dirty = true;
   }
 
   /**
@@ -203,7 +172,7 @@ public class ScoreIntMap<K> implements Iterable<Entry<K>> {
   public void clear() {
     entries.clear();
     sortedList.clear();
-    unsaved = true;
+    dirty = true;
   }
 
   @NotNull
@@ -252,6 +221,18 @@ public class ScoreIntMap<K> implements Iterable<Entry<K>> {
     sortedList.add(index, entry);
   }
 
+  public void putAll(Map<K, Integer> map) {
+    map.forEach(this::set);
+  }
+
+  public Object2IntMap<K> toMap() {
+    Object2IntMap<K> map = new Object2IntOpenHashMap<>();
+    for (Entry<K> kEntry : this) {
+      map.put(kEntry.key, kEntry.value);
+    }
+    return map;
+  }
+
   @Setter
   @Getter
   @Accessors(fluent = true)
@@ -269,28 +250,5 @@ public class ScoreIntMap<K> implements Iterable<Entry<K>> {
     public int compareTo(@NotNull ScoreIntMap.Entry<K> o) {
       return Integer.compare(value, o.value);
     }
-  }
-
-  public interface KeyValidator<K> {
-
-    KeyValidator<UUID> IS_PLAYER = key -> {
-      UserLookup lookup = Users.getService().getLookup();
-      var entry = lookup.getEntry(key);
-
-      if (entry == null) {
-        return "No player with UUID %s exists".formatted(key);
-      }
-
-      return null;
-    };
-
-    /**
-     * Tests the given UUID
-     * @param key key to test
-     *
-     * @return The reason for the UUID being denied, or null/empty if
-     *         the UUID is valid
-     */
-    @Nullable String test(K key);
   }
 }
