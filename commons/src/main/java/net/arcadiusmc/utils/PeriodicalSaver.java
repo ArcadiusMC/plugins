@@ -30,6 +30,11 @@ public class PeriodicalSaver {
     return new PeriodicalSaver(runnable, plugin, () -> delayGetter.get().toMillis());
   }
 
+  public static PeriodicalSaver create(Runnable runnable, Duration duration) {
+    Plugin plugin = PluginUtil.getCallingPlugin();
+    return new PeriodicalSaver(runnable, plugin, duration::toMillis);
+  }
+
   public static PeriodicalSaver create(Runnable runnable, LongSupplier delayGetter) {
     Plugin plugin = PluginUtil.getCallingPlugin();
     return new PeriodicalSaver(runnable, plugin, delayGetter);
