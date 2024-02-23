@@ -1,6 +1,6 @@
 mail:
-  received:               "&eYou've got mail!\n ${message}"
-  received.player:        "&eYou've got mail! From ${sender}\n ${message}"
+  received:               "&eYou've got mail! ${message}"
+  received.player:        "&eYou've got mail! From ${sender} ${message}"
 
   sent.single:            "&7Sent mail to &e${target}&7."
   sent.multiple:          "&7Sent mail to &e${count}&7 players."
