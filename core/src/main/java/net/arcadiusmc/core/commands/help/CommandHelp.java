@@ -4,10 +4,11 @@ import com.google.common.base.Strings;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.util.List;
 import net.arcadiusmc.Permissions;
+import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.Exceptions;
-import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.help.ArcadiusHelpList;
 import net.arcadiusmc.command.help.HelpEntry;
 import net.arcadiusmc.command.help.UsageFactory;
@@ -17,7 +18,6 @@ import net.arcadiusmc.text.page.Header;
 import net.arcadiusmc.text.page.PageEntry;
 import net.arcadiusmc.text.page.PageFormat;
 import net.arcadiusmc.text.page.PagedIterator;
-import net.arcadiusmc.text.placeholder.Placeholders;
 import net.arcadiusmc.utils.context.Context;
 import net.arcadiusmc.utils.context.ContextOption;
 import net.arcadiusmc.utils.context.ContextSet;
@@ -181,7 +181,6 @@ public class CommandHelp extends BaseCommand {
 
     var writer = TextWriters.newWriter();
     writer.setFieldStyle(Style.style(NamedTextColor.YELLOW));
-    writer.placeholders(Placeholders.newRenderer().useDefaults());
 
     Context context = contextSet.createContext()
         .set(sourceOption, source)
@@ -197,7 +196,7 @@ public class CommandHelp extends BaseCommand {
       loreWriter.setFieldStyle(Style.style(NamedTextColor.YELLOW));
       entry.writeFull(loreWriter, source);
 
-      var text = loreWriter.getBuffer();
+      List<Component> text = loreWriter.getBuffer();
 
       // Ensure list isn't empty and page number is valid
       Commands.ensurePageValid(page, pageSize, text.size());
