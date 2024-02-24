@@ -1,6 +1,5 @@
 package net.arcadiusmc.text;
 
-import net.arcadiusmc.text.placeholder.PlaceholderRenderer;
 import net.arcadiusmc.text.format.FormatBuilder;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
@@ -15,10 +14,6 @@ public interface TextWriter extends ComponentLike {
   Audience viewer();
 
   void viewer(@Nullable Audience audience);
-
-  PlaceholderRenderer placeholders();
-
-  void placeholders(PlaceholderRenderer renderer);
 
   void write(ComponentLike text);
 

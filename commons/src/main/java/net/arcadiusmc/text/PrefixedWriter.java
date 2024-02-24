@@ -1,7 +1,6 @@
 package net.arcadiusmc.text;
 
 import lombok.Getter;
-import net.arcadiusmc.text.placeholder.PlaceholderRenderer;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
@@ -18,16 +17,6 @@ public class PrefixedWriter implements TextWriter {
   public PrefixedWriter(TextWriter other, Component prefix) {
     this.base = other;
     this.prefix = prefix;
-  }
-
-  @Override
-  public PlaceholderRenderer placeholders() {
-    return base.placeholders();
-  }
-
-  @Override
-  public void placeholders(PlaceholderRenderer renderer) {
-    base.placeholders(renderer);
   }
 
   @Override

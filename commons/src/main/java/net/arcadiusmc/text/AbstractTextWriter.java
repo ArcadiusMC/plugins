@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
-import net.arcadiusmc.text.placeholder.PlaceholderRenderer;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
@@ -61,7 +60,6 @@ public abstract class AbstractTextWriter implements ComponentLike, TextWriter {
   protected Component fieldSeparator = DEF_FIELD_SEPARATOR;
 
   protected Audience viewer;
-  private PlaceholderRenderer renderer;
 
   /**
    * Empty constructor
@@ -86,16 +84,6 @@ public abstract class AbstractTextWriter implements ComponentLike, TextWriter {
     this.viewer = audience;
   }
 
-  @Override
-  public PlaceholderRenderer placeholders() {
-    return renderer;
-  }
-
-  @Override
-  public void placeholders(PlaceholderRenderer renderer) {
-    this.renderer = renderer;
-  }
-
   protected abstract void onNewLine();
 
   protected abstract void onClear();
@@ -118,10 +106,6 @@ public abstract class AbstractTextWriter implements ComponentLike, TextWriter {
     if (component.equals(Component.newline())) {
       newLine();
       return;
-    }
-
-    if (renderer != null) {
-      component = renderer.render(component, viewer);
     }
 
     Iterator<Component> it = Text.splitNewlines(component).iterator();
