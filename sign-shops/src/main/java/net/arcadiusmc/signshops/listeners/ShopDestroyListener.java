@@ -29,8 +29,6 @@ public class ShopDestroyListener implements Listener {
     SignShop shop = manager.getShop(event.getBlock());
     Player player = event.getPlayer();
 
-    event.setCancelled(true);
-
     if (!player.getUniqueId().equals(shop.getOwner())
         && !player.hasPermission(SPermissions.ADMIN)
     ) {
@@ -39,10 +37,6 @@ public class ShopDestroyListener implements Listener {
     }
 
     shop.destroy(false);
-
-    //This shit dumb
-    //Destroy the block 1 tick later, because some dumb shit event cancelled it so we gotta do it again.
-    //Tasks.runLater(() -> shop.destroy(true), 1);
   }
 
   @EventHandler(ignoreCancelled = true)
