@@ -4,9 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 import net.arcadiusmc.Permissions;
 import net.arcadiusmc.command.BaseCommand;
-import net.forthecrown.grenadier.GrenadierCommand;
 import net.arcadiusmc.text.TextWriters;
-import net.arcadiusmc.text.placeholder.Placeholders;
+import net.forthecrown.grenadier.GrenadierCommand;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 
@@ -30,8 +29,8 @@ public class LoadedEntryCommand extends BaseCommand {
   public void createCommand(GrenadierCommand command) {
     command.executes(c -> {
       var writer = TextWriters.newWriter();
-      writer.placeholders(Placeholders.newRenderer().useDefaults());
       writer.setFieldStyle(Style.style(NamedTextColor.YELLOW));
+      writer.viewer(c.getSource());
 
       entry.writeFull(writer, c.getSource());
 

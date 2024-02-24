@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.help.HelpEntry;
+import net.arcadiusmc.text.placeholder.Placeholders;
 import net.forthecrown.grenadier.CommandSource;
 import net.arcadiusmc.text.TextWriter;
 import net.arcadiusmc.text.ViewerAwareMessage;
@@ -42,7 +43,7 @@ public class LoadedHelpEntry implements HelpEntry {
 
   @Override
   public void writeFull(TextWriter writer, CommandSource source) {
-    writer.write(fullText);
+    writer.write(Placeholders.render(fullText.create(source)));
   }
 
   @Override
