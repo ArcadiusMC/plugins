@@ -197,5 +197,15 @@ public interface ObjectPlaceholder<T> {
     return ZONED_DATE_TIME.lookup(dateTime, fieldName, ctx);
   };
 
+  @SuppressWarnings("rawtypes")
+  ObjectPlaceholder<Enum> ENUM = (value, fieldName, ctx) -> {
+    return switch (fieldName) {
+      case "ordinal" -> value.ordinal();
+      case "raw" -> value.name();
+      case "formatted" -> Text.prettyEnumName(value);
+      default -> value.name().toLowerCase();
+    };
+  };
+
   Object lookup(@NotNull T value, @NotNull String fieldName, @NotNull PlaceholderContext ctx);
 }

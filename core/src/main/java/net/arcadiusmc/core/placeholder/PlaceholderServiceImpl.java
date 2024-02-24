@@ -68,6 +68,7 @@ public class PlaceholderServiceImpl implements PlaceholderService {
     addObjectPlaceholder(CommandSource.class, ObjectPlaceholder.COMMAND_SOURCE);
     addObjectPlaceholder(ZonedDateTime.class, ObjectPlaceholder.ZONED_DATE_TIME);
     addObjectPlaceholder(Instant.class,       ObjectPlaceholder.INSTANT);
+    addObjectPlaceholder(Enum.class,          ObjectPlaceholder.ENUM);
   }
 
   @Override
