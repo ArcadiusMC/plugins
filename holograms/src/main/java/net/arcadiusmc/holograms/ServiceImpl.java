@@ -1,7 +1,8 @@
-package net.arcadiusmc.leaderboards;
+package net.arcadiusmc.holograms;
 
 import com.google.common.base.Strings;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.nio.file.Path;
@@ -34,7 +35,7 @@ public class ServiceImpl implements LeaderboardService {
 
   private final BoardRenderTriggers triggers;
 
-  public ServiceImpl(LeaderboardPlugin plugin) {
+  public ServiceImpl(HologramPlugin plugin) {
     this.path = plugin.getDataFolder().toPath().resolve("leaderboards.json");
     this.triggers = new BoardRenderTriggers(plugin);
   }
@@ -65,14 +66,14 @@ public class ServiceImpl implements LeaderboardService {
 
   private void saveTo(JsonWrapper json) {
     boards.forEach((key, board) -> {
-      LeaderboardCodecs.CODEC.encodeStart(JsonOps.INSTANCE, board)
+      LeaderboardCodecs.BOARD_CODEC.encode(JsonOps.INSTANCE, board)
           .mapError(s -> "Failed to save leaderboard '" + key + "': " + s)
           .resultOrPartial(LOGGER::error)
           .ifPresent(element -> json.add(key, element));
     });
   }
 
-  private void loadFrom(JsonWrapper jsonWrapper) {
+  private void loadFrom(JsonObject jsonWrapper) {
     clear();
 
     for (Entry<String, JsonElement> entry : jsonWrapper.entrySet()) {
@@ -84,13 +85,12 @@ public class ServiceImpl implements LeaderboardService {
         continue;
       }
 
-      LeaderboardCodecs.CODEC.parse(JsonOps.INSTANCE, element)
+      BoardImpl board = new BoardImpl(key);
+
+      LeaderboardCodecs.BOARD_CODEC.decode(JsonOps.INSTANCE, element, board)
           .mapError(s -> "Failed to load leaderboard '" + s + "': " + s)
           .resultOrPartial(LOGGER::error)
-          .ifPresent(board -> {
-            board.setName(key);
-            addLeaderboard(board);
-          });
+          .ifPresent(this::addLeaderboard);
     }
   }
 

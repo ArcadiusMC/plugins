@@ -11,8 +11,8 @@ dependencies {
 }
 
 pluginYml {
-  name = "Leaderboards"
-  main = "net.arcadiusmc.leaderboards.LeaderboardPlugin"
+  name = "Arcadius-Holograms"
+  main = "net.arcadiusmc.holograms.HologramPlugin"
 
   loadAfter {
     regular("project:vanilla-hook")

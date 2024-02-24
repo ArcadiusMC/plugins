@@ -1,4 +1,4 @@
-package net.arcadiusmc.leaderboards;
+package net.arcadiusmc.holograms;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -7,7 +7,7 @@ import java.util.Optional;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.Results;
 import net.arcadiusmc.utils.math.Vectors;
 import org.bukkit.Color;
@@ -64,11 +64,11 @@ public class TextDisplayMeta {
             Vectors.V3F_CODEC.optionalFieldOf("translation", Vector3f.ZERO)
                 .forGetter(TextDisplayMeta::getTranslation),
 
-            FtcCodecs.enumCodec(Billboard.class)
+            ExtraCodecs.enumCodec(Billboard.class)
                 .optionalFieldOf("billboard", Billboard.FIXED)
                 .forGetter(TextDisplayMeta::getBillboard),
 
-            FtcCodecs.enumCodec(TextAlignment.class)
+            ExtraCodecs.enumCodec(TextAlignment.class)
                 .optionalFieldOf("text_align", TextAlignment.CENTER)
                 .forGetter(TextDisplayMeta::getAlign),
 

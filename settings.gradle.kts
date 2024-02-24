@@ -27,6 +27,8 @@ include("sell-shop")
 include("auto-afk")
 include("staff-chat")
 include("sign-shops")
+include("player-markets")
+include("holograms")
 
 include("mail")
 include("mail-impl")

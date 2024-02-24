@@ -1,8 +1,7 @@
-package net.arcadiusmc.leaderboards;
+package net.arcadiusmc.holograms;
 
 import static net.kyori.adventure.text.Component.text;
 
-import com.google.common.base.Preconditions;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -19,6 +18,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.registry.Holder;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.PlayerMessage;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.TextWriter;
@@ -30,6 +30,7 @@ import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.Audiences;
 import net.arcadiusmc.utils.Locations;
 import net.arcadiusmc.utils.PluginUtil;
+import net.forthecrown.grenadier.types.IntRangeArgument.IntRange;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
@@ -79,7 +80,7 @@ public class BoardImpl implements Leaderboard {
 
   static final PlayerMessage DEFAULT_YOU = PlayerMessage.allFlags("You");
 
-  String name;
+  final String name;
 
   Holder<LeaderboardSource> source;
   Location location;
@@ -88,9 +89,10 @@ public class BoardImpl implements Leaderboard {
   PlayerMessage header;
   PlayerMessage format;
   PlayerMessage youFormat;
+  PlayerMessage emptyFormat;
 
   Order order = Order.DESCENDING;
-  ScoreFilter filter;
+  IntRange filter;
 
   int maxEntries = DEFAULT_MAX_SIZE;
   boolean fillMissingSlots = false;
@@ -109,15 +111,6 @@ public class BoardImpl implements Leaderboard {
 
   public static PlayerMessage makeTextFieldMessage(String text) {
     return new PlayerMessage(text, TEXT_FIELD_FLAGS);
-  }
-
-  public void setName(String name) {
-    Objects.requireNonNull(name, "Null name");
-    Preconditions.checkState(service == null,
-        "Leaderboard name cannot be modified after being added to manager"
-    );
-
-    this.name = name;
   }
 
   public void setLocation(Location location) {
@@ -355,7 +348,7 @@ public class BoardImpl implements Leaderboard {
         renderer.add("score.raw", "-");
         renderer.add("score.timer", "-");
 
-        Component line = renderLine(viewer, i, null, null, null);
+        Component line = renderLine(viewer, i, null, null, null, emptyFormat);
         builder.appendNewline().append(line);
 
         continue;
@@ -369,7 +362,7 @@ public class BoardImpl implements Leaderboard {
         viewerWasShown = Objects.equals(viewingUser.getUniqueId(), playerId);
       }
 
-      Component line = renderLine(viewer, i, score.displayName(viewer), value, playerId);
+      Component line = renderLine(viewer, i, score.displayName(viewer), value, playerId, null);
       builder.appendNewline().append(line);
     }
 
@@ -377,16 +370,17 @@ public class BoardImpl implements Leaderboard {
     if (!viewerWasShown && vIndex != -1 && viewingUser != null && includeYou) {
       source.getValue().getScore(viewingUser.getUniqueId())
           .ifPresent(value -> {
-            if (filter != null && !filter.test(value)) {
+            if (filter != null && !filter.contains(value)) {
               return;
             }
 
             Component line = renderLine(
                 viewer,
                 vIndex,
-                text("You"),
+                Messages.renderText("leaderboards.you", viewer),
                 value,
-                viewingUser.getUniqueId()
+                viewingUser.getUniqueId(),
+                youFormat
             );
 
             builder.appendNewline().append(line);
@@ -421,7 +415,8 @@ public class BoardImpl implements Leaderboard {
       int index,
       Component displayName,
       Integer value,
-      UUID playerId
+      UUID playerId,
+      PlayerMessage formatBase
   ) {
     String timerScore = value == null ? "-" : getTimerCounter(value);
 
@@ -441,12 +436,14 @@ public class BoardImpl implements Leaderboard {
 
     Component format;
 
-    if (displayName != null && Text.plain(displayName).equals("You") && youFormat != null) {
-      format = youFormat.create(viewer);
-    } else if (this.format == null) {
-      format = DEFAULT_FORMAT;
+    if (formatBase == null) {
+      if (this.format == null) {
+        format = DEFAULT_FORMAT;
+      } else {
+        format = this.format.create(viewer);
+      }
     } else {
-      format = this.format.create(viewer);
+      format = formatBase.create(viewer);
     }
 
     return renderer.render(format.replaceText(NEW_LINE_REPLACER), viewer, ctx);
@@ -558,7 +555,7 @@ public class BoardImpl implements Leaderboard {
     if (filter != null) {
       list.removeIf(leaderboardScore -> {
         int v = leaderboardScore.value();
-        return !filter.test(v);
+        return !filter.contains(v);
       });
     }
 

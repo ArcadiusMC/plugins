@@ -1,4 +1,4 @@
-package net.arcadiusmc.leaderboards;
+package net.arcadiusmc.holograms;
 
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.packet.PacketListeners;
@@ -19,12 +19,12 @@ public class BoardRenderTriggers {
 
   private static final Logger LOGGER = Loggers.getLogger();
 
-  private final LeaderboardPlugin plugin;
+  private final HologramPlugin plugin;
 
   private final WorldChunkMap<BoardImpl> chunkMap;
   private final CollisionSystem<Player, BoardImpl> system;
 
-  public BoardRenderTriggers(LeaderboardPlugin plugin) {
+  public BoardRenderTriggers(HologramPlugin plugin) {
     this.plugin = plugin;
 
     this.chunkMap = new WorldChunkMap<>();

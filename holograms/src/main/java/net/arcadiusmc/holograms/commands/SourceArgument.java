@@ -1,6 +1,6 @@
-package net.arcadiusmc.leaderboards.commands;
+package net.arcadiusmc.holograms.commands;
 
-import static net.arcadiusmc.leaderboards.LeaderboardSources.OBJECTIVE_PREFIX;
+import static net.arcadiusmc.holograms.LeaderboardSources.OBJECTIVE_PREFIX;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
@@ -15,9 +15,9 @@ import java.util.concurrent.CompletableFuture;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.forthecrown.grenadier.Completions;
 import net.forthecrown.grenadier.Grenadier;
-import net.arcadiusmc.leaderboards.LeaderboardSource;
-import net.arcadiusmc.leaderboards.LeaderboardSources;
-import net.arcadiusmc.leaderboards.ServiceImpl;
+import net.arcadiusmc.holograms.LeaderboardSource;
+import net.arcadiusmc.holograms.LeaderboardSources;
+import net.arcadiusmc.holograms.ServiceImpl;
 import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.registry.Registry;
 import org.bukkit.Bukkit;
@@ -39,7 +39,7 @@ public class SourceArgument implements ArgumentType<Holder<LeaderboardSource>> {
   @Override
   public Holder<LeaderboardSource> parse(StringReader reader) throws CommandSyntaxException {
     int start = reader.getCursor();
-    String ftcKey = Arguments.FTC_KEY.parse(reader);
+    String ftcKey = Arguments.RESOURCE_KEY.parse(reader);
 
     DataResult<Holder<LeaderboardSource>> dataResult = LeaderboardSources.get(ftcKey);
 

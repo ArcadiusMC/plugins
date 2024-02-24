@@ -33,7 +33,7 @@ literal("list") {
   }
 }
 
-literal("create").argument("name", ftc_key) {
+literal("create").argument("name", rkey) {
   executes = createBoard()
   description = "Creates a new leaderboard with 'dummy' source"
 }
@@ -122,6 +122,23 @@ literal("format").argument("board" @lb).argument("text", greedy_string) {
   executes = setFormat()
   suggests = suggestFormat()
   description = "Sets the format used by a leaderboard"
+}
+
+literal("empty-format") {
+  literal("set").argument("board" @lb).argument("text", greedy_string) {
+    executes = setEmptyFormat()
+    description = [
+      "Overrides the format used for displaying entries that",
+      "are empty, only used in when 'fill-empty' is set to 'true'"
+    ]
+  }
+  literal("unset").argument("board" @lb) {
+    executes = setEmptyFormat()
+    description = [
+      "Revers the format used for displaying empty entries",
+      "back to the regular format."
+    ]
+  }
 }
 
 literal("you-format") {

@@ -1,8 +1,8 @@
-package net.arcadiusmc.leaderboards.listeners;
+package net.arcadiusmc.holograms.listeners;
 
 import com.destroystokyo.paper.event.player.PlayerTeleportEndGatewayEvent;
 import lombok.RequiredArgsConstructor;
-import net.arcadiusmc.leaderboards.LeaderboardPlugin;
+import net.arcadiusmc.holograms.HologramPlugin;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -13,7 +13,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 @RequiredArgsConstructor
 public class PlayerListener implements Listener {
 
-  private final LeaderboardPlugin plugin;
+  private final HologramPlugin plugin;
 
   @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
   public void onPlayerJoin(PlayerJoinEvent event) {

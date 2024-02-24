@@ -1,4 +1,4 @@
-package net.arcadiusmc.leaderboards;
+package net.arcadiusmc.holograms;
 
 import com.google.common.base.Strings;
 import java.util.ArrayList;

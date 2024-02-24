@@ -1,4 +1,4 @@
-package net.arcadiusmc.leaderboards.commands;
+package net.arcadiusmc.holograms.commands;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
@@ -10,8 +10,8 @@ import java.util.concurrent.CompletableFuture;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.forthecrown.grenadier.Completions;
-import net.arcadiusmc.leaderboards.BoardImpl;
-import net.arcadiusmc.leaderboards.ServiceImpl;
+import net.arcadiusmc.holograms.BoardImpl;
+import net.arcadiusmc.holograms.ServiceImpl;
 
 public class LeaderboardArgument implements ArgumentType<BoardImpl> {
 
@@ -25,7 +25,7 @@ public class LeaderboardArgument implements ArgumentType<BoardImpl> {
   public BoardImpl parse(StringReader reader) throws CommandSyntaxException {
     int start = reader.getCursor();
 
-    String ftcKey = Arguments.FTC_KEY.parse(reader);
+    String ftcKey = Arguments.RESOURCE_KEY.parse(reader);
     var opt = service.getBoard(ftcKey);
 
     if (opt.isEmpty()) {

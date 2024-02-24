@@ -1,16 +1,16 @@
-package net.arcadiusmc.leaderboards.listeners;
+package net.arcadiusmc.holograms.listeners;
 
 import net.arcadiusmc.events.EarlyShutdownEvent;
-import net.arcadiusmc.leaderboards.LeaderboardPlugin;
+import net.arcadiusmc.holograms.HologramPlugin;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.ServerLoadEvent;
 
 public class ServerListener implements Listener {
 
-  private final LeaderboardPlugin plugin;
+  private final HologramPlugin plugin;
 
-  public ServerListener(LeaderboardPlugin plugin) {
+  public ServerListener(HologramPlugin plugin) {
     this.plugin = plugin;
   }
 

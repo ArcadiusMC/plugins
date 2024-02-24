@@ -1,4 +1,4 @@
-package net.arcadiusmc.leaderboards.commands;
+package net.arcadiusmc.holograms.commands;
 
 import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.StringReader;

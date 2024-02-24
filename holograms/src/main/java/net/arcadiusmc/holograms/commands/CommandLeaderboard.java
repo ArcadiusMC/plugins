@@ -1,8 +1,7 @@
-package net.arcadiusmc.leaderboards.commands;
+package net.arcadiusmc.holograms.commands;
 
 import static net.arcadiusmc.text.Text.format;
 import static net.arcadiusmc.text.Text.formatNumber;
-import static net.kyori.adventure.text.Component.text;
 
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -18,26 +17,32 @@ import java.util.function.BiConsumer;
 import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.arguments.chat.MessageSuggestions;
+import net.arcadiusmc.holograms.BoardImpl;
+import net.arcadiusmc.holograms.Leaderboard.Order;
+import net.arcadiusmc.holograms.HologramPlugin;
+import net.arcadiusmc.holograms.LeaderboardSource;
+import net.arcadiusmc.holograms.LeaderboardSources;
+import net.arcadiusmc.holograms.ServiceImpl;
+import net.arcadiusmc.registry.Holder;
+import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.PlayerMessage;
+import net.arcadiusmc.text.TextWriter;
+import net.arcadiusmc.text.TextWriters;
+import net.arcadiusmc.text.loader.MessageRender;
+import net.arcadiusmc.text.page.Footer;
+import net.arcadiusmc.text.page.Header;
+import net.arcadiusmc.text.page.PageFormat;
+import net.arcadiusmc.text.page.PagedIterator;
+import net.arcadiusmc.utils.context.Context;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.annotations.Argument;
 import net.forthecrown.grenadier.annotations.CommandFile;
 import net.forthecrown.grenadier.annotations.VariableInitializer;
 import net.forthecrown.grenadier.types.ArgumentTypes;
+import net.forthecrown.grenadier.types.IntRangeArgument.IntRange;
 import net.forthecrown.grenadier.types.ParsedPosition;
-import net.arcadiusmc.leaderboards.BoardImpl;
-import net.arcadiusmc.leaderboards.Leaderboard.Order;
-import net.arcadiusmc.leaderboards.LeaderboardPlugin;
-import net.arcadiusmc.leaderboards.LeaderboardSource;
-import net.arcadiusmc.leaderboards.LeaderboardSources;
-import net.arcadiusmc.leaderboards.ScoreFilter;
-import net.arcadiusmc.leaderboards.ServiceImpl;
-import net.arcadiusmc.registry.Holder;
-import net.arcadiusmc.text.PlayerMessage;
-import net.arcadiusmc.text.page.Footer;
-import net.arcadiusmc.text.page.PageFormat;
-import net.arcadiusmc.text.page.PagedIterator;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Display.Billboard;
@@ -50,15 +55,21 @@ public class CommandLeaderboard {
 
   private final PageFormat<BoardImpl> pageFormat;
 
-  private final LeaderboardPlugin plugin;
+  private final HologramPlugin plugin;
   private final ServiceImpl service;
 
-  public CommandLeaderboard(LeaderboardPlugin plugin) {
+  public CommandLeaderboard(HologramPlugin plugin) {
     this.service = plugin.getService();
     this.plugin = plugin;
 
     pageFormat = PageFormat.create();
-    pageFormat.setHeader(text("Leaderboards"));
+
+    pageFormat.setHeader(
+        Header.<BoardImpl>create().title((it, writer, context) -> {
+          writer.write(Messages.render("leaderboards.list.header"));
+        })
+    );
+
     pageFormat.setFooter(Footer.ofButton("/lb list %s %s"));
 
     pageFormat.setEntry((writer, entry, viewerIndex, context, it) -> {
@@ -71,7 +82,7 @@ public class CommandLeaderboard {
     vars.put("lb", new LeaderboardArgument(service));
     vars.put("source", new SourceArgument(service));
     vars.put("color", new ColorArgument());
-    vars.put("filter", new FilterArgument());
+    vars.put("filter", ArgumentTypes.intRange());
     vars.put("alignment", ArgumentTypes.enumType(TextAlignment.class));
     vars.put("billboard", ArgumentTypes.enumType(Billboard.class));
     vars.put("order", ArgumentTypes.enumType(Order.class));
@@ -79,17 +90,17 @@ public class CommandLeaderboard {
 
   void reloadConfig(CommandSource source) {
     plugin.reloadConfig();
-    source.sendSuccess(text("Reloaded Leaderboards config"));
+    source.sendSuccess(Messages.renderText("leaderboards.reloaded.config", source));
   }
 
   void reloadBoards(CommandSource source) {
     service.load();
-    source.sendSuccess(text("Reloaded Leaderboards"));
+    source.sendSuccess(Messages.renderText("leaderboards.reloaded.plugin", source));
   }
 
   void saveBoards(CommandSource source) {
     service.save();
-    source.sendSuccess(text("Saved leaderboards"));
+    source.sendSuccess(Messages.renderText("leaderboards.saved", source));
   }
 
   void listBoards(
@@ -106,7 +117,11 @@ public class CommandLeaderboard {
     Commands.ensurePageValid(page, pageSize, boards.size());
 
     PagedIterator<BoardImpl> it = PagedIterator.of(boards, page, pageSize);
-    Component pageDisplay = pageFormat.format(it);
+    TextWriter writer = TextWriters.newWriter();
+    writer.viewer(source);
+    pageFormat.write(it, writer, Context.EMPTY);
+
+    Component pageDisplay = writer.asComponent();
 
     source.sendMessage(pageDisplay);
   }
@@ -119,12 +134,17 @@ public class CommandLeaderboard {
       throws CommandSyntaxException
   {
     if (!board.isSpawned()) {
-      throw Exceptions.create("Leaderboard has not been spawned");
+      throw Messages.render("leaderboards.errors.notSpawned")
+          .addValue("board", board.displayName())
+          .exception(source);
     }
 
     board.update();
+
     source.sendSuccess(
-        format("Updated leaderboard {0}.", NamedTextColor.GRAY, board.displayName())
+        Messages.render("leaderboards.updated")
+            .addValue("board", board.displayName())
+            .create(source)
     );
   }
 
@@ -133,7 +153,9 @@ public class CommandLeaderboard {
   {
     var opt = service.getLeaderboard(name);
     if (opt.isPresent()) {
-      throw Exceptions.alreadyExists("Leaderboard", name);
+      throw Messages.render("leaderboards.errors.alreadyExists")
+          .addValue("name", name)
+          .exception(source);
     }
 
     BoardImpl board = new BoardImpl(name);
@@ -141,7 +163,11 @@ public class CommandLeaderboard {
 
     service.addLeaderboard(board);
 
-    source.sendSuccess(format("Created leaderboard named '&e{0}&r'", NamedTextColor.GRAY, name));
+    source.sendSuccess(
+        Messages.render("leaderboards.created")
+            .addValue("board", board.displayName())
+            .create(source)
+    );
   }
 
   void updateAll(CommandSource source) {
@@ -157,7 +183,9 @@ public class CommandLeaderboard {
     }
 
     source.sendSuccess(
-        format("Updated &e{0, number}&r Leaderboards.", NamedTextColor.GRAY, updated)
+        Messages.render("leaderboards.updateAll")
+            .addValue("count", updated)
+            .create(source)
     );
   }
 
@@ -165,12 +193,17 @@ public class CommandLeaderboard {
       throws CommandSyntaxException
   {
     if (!board.isSpawned()) {
-      throw Exceptions.create("Leaderboard is already inactive");
+      throw Messages.render("leaderboards.errors.alreadyInactive")
+          .addValue("board", board.displayName())
+          .exception(source);
     }
 
     board.kill();
+
     source.sendSuccess(
-        format("Killed leaderboard {0}.", NamedTextColor.GRAY, board.displayName())
+        Messages.render("leaderboards.killed")
+            .addValue("board", board)
+            .create(source)
     );
   }
 
@@ -184,23 +217,29 @@ public class CommandLeaderboard {
     Component name = board.displayName();
 
     service.removeLeaderboard(board.getName());
-    source.sendSuccess(format("Removed leaderboard {0}.", NamedTextColor.GRAY, name));
+
+    source.sendSuccess(
+        Messages.render("leaderboards.removed")
+            .addValue("board", name)
+            .create(source)
+    );
   }
 
   void spawnBoard(CommandSource source, @Argument("board") BoardImpl board)
       throws CommandSyntaxException
   {
     if (board.isSpawned()) {
-      throw Exceptions.create("Leaderboard is already spawned");
+      throw Messages.render("leaderboards.errors.alreadySpawned")
+          .addValue("board", board.displayName())
+          .exception(source);
     }
 
     board.spawn();
 
     source.sendSuccess(
-        format("Spawned leaderboard {0}.",
-            NamedTextColor.GRAY,
-            board.displayName()
-        )
+        Messages.render("leaderboards.spawned")
+            .addValue("board", board.displayName())
+            .create(source)
     );
   }
 
@@ -220,11 +259,10 @@ public class CommandLeaderboard {
     board.setLocation(location);
 
     source.sendSuccess(
-        format("Moved leaderboard {0} to &e{1, location, -c -w}&r",
-            NamedTextColor.GRAY,
-            board.displayName(),
-            location
-        )
+        Messages.render("leaderboards.location")
+            .addValue("board", board.displayName())
+            .addValue("location", location)
+            .create(source)
     );
   }
 
@@ -234,19 +272,42 @@ public class CommandLeaderboard {
       @Argument("source") BoardImpl copySource
   ) throws CommandSyntaxException {
     if (Objects.equals(board, copySource)) {
-      throw Exceptions.create("Cannot copy from self");
+      throw Messages.render("leaderboards.errors.copySelf")
+          .addValue("board", board.displayName())
+          .exception(source);
     }
 
     board.copyFrom(copySource);
     board.update();
 
     source.sendSuccess(
-        format("Copied all style data from {0} into {1}",
-            NamedTextColor.GRAY,
-            copySource.displayName(),
-            board.displayName()
-        )
+        Messages.render("leaderboards.copied")
+            .addValue("source", copySource.displayName())
+            .addValue("target", board.displayName())
+            .create(source)
     );
+  }
+
+  Component getSetMessage(Audience viewer, BoardImpl board, String suffix, Object value) {
+    MessageRender render;
+    String regular = "leaderboards." + suffix;
+
+    if (value == null) {
+      render = Messages.render(regular, "removed");
+    } else {
+      String set = regular + ".set";
+
+      if (Messages.MESSAGE_LIST.hasMessage(set)) {
+        render = Messages.render(set);
+      } else {
+        render = Messages.render(regular);
+      }
+    }
+
+    return render
+        .addValue("board", board.displayName())
+        .addValue("value", value)
+        .create(viewer);
   }
 
   void setTextField(
@@ -258,20 +319,11 @@ public class CommandLeaderboard {
   ) {
     if (text == null) {
       setter.accept(board, null);
-
-      source.sendSuccess(
-          format("{0}: Removed {1}.", NamedTextColor.GRAY, board.displayName(), name)
-      );
     } else {
       setter.accept(board, BoardImpl.makeTextFieldMessage(text));
-
-      source.sendSuccess(
-          format("{0}: Set {1} to '&f{2}&r'",
-              NamedTextColor.GRAY,
-              board.displayName(), name, text
-          )
-      );
     }
+
+    source.sendSuccess(getSetMessage(source, board, name, text));
 
     board.update();
   }
@@ -343,7 +395,15 @@ public class CommandLeaderboard {
       @Argument("board") BoardImpl board,
       @Argument(value = "text", optional = true) String text
   ) {
-    setTextField(board, source, "you-format", BoardImpl::setYouFormat, text);
+    setTextField(board, source, "youFormat", BoardImpl::setYouFormat, text);
+  }
+
+  void setEmptyFormat(
+      CommandSource source,
+      @Argument("board") BoardImpl board,
+      @Argument(value = "text", optional = true) String text
+  ) {
+    setTextField(board, source, "emptyFormat", BoardImpl::setEmptyFormat, text);
   }
 
   void setIncludeYou(
@@ -354,11 +414,7 @@ public class CommandLeaderboard {
     board.setIncludeYou(include);
     board.update();
 
-    source.sendSuccess(
-        format("{0}: Set 'include-you' to &e{1}&r.", NamedTextColor.GRAY,
-            board.displayName(), include
-        )
-    );
+    source.sendSuccess(getSetMessage(source, board, "includeYou", include));
   }
 
   void setOrder(
@@ -369,11 +425,7 @@ public class CommandLeaderboard {
     board.setOrder(order);
     board.update();
 
-    source.sendSuccess(
-        format("Set {0} order to &e{1}&r.",
-            NamedTextColor.GRAY,
-            board.displayName(), order.name().toLowerCase())
-    );
+    source.sendSuccess(getSetMessage(source, board, "order", order));
   }
 
 
@@ -385,12 +437,7 @@ public class CommandLeaderboard {
     board.setSource(holder);
     board.update();
 
-    source.sendSuccess(
-        format("Set {0} source to &e{1}&r.",
-            NamedTextColor.GRAY,
-            board.displayName(), holder.getKey()
-        )
-    );
+    source.sendSuccess(getSetMessage(source, board, "source", holder.getKey()));
   }
 
   void setMaxSize(
@@ -401,12 +448,7 @@ public class CommandLeaderboard {
     board.setMaxEntries(maxSize);
     board.update();
 
-    source.sendSuccess(
-        format("Set {0} max-size to &e{1, number}&r.",
-            NamedTextColor.GRAY,
-            board.displayName(), maxSize
-        )
-    );
+    source.sendSuccess(getSetMessage(source, board, "maxSize", maxSize));
   }
 
   void setFillEmpty(
@@ -417,37 +459,18 @@ public class CommandLeaderboard {
     board.setFillMissingSlots(value);
     board.update();
 
-    source.sendSuccess(
-        format("Set {0} fill-empty-slots to &e{1}&r.",
-            NamedTextColor.GRAY,
-            board.displayName(), value
-        )
-    );
+    source.sendSuccess(getSetMessage(source, board, "fillEmpty", value));
   }
 
   void setFilter(
       CommandSource source,
       @Argument("board") BoardImpl board,
-      @Argument(value = "filter", optional = true) ScoreFilter filter
+      @Argument(value = "filter", optional = true) IntRange filter
   ) {
     board.setFilter(filter);
     board.update();
 
-    if (filter == null) {
-      source.sendSuccess(
-          format("Removed filter from {0}",
-              NamedTextColor.GRAY,
-              board.displayName()
-          )
-      );
-    } else {
-      source.sendSuccess(
-          format("Set {0} filter to '&f{1}&r'",
-              NamedTextColor.GRAY,
-              board.displayName(), filter
-          )
-      );
-    }
+    source.sendSuccess(getSetMessage(source, board, "filter", filter));
   }
 
   void setYaw(
@@ -457,7 +480,7 @@ public class CommandLeaderboard {
   ) {
     board.getDisplayMeta().setYaw(value);
     board.update();
-    source.sendSuccess(setEntityProperty(board, "yaw", formatNumber(value)));
+    source.sendSuccess(getSetMessage(source, board, "yaw", formatNumber(value)));
   }
 
   void setPitch(
@@ -467,7 +490,7 @@ public class CommandLeaderboard {
   ) {
     board.getDisplayMeta().setPitch(value);
     board.update();
-    source.sendSuccess(setEntityProperty(board, "pitch", formatNumber(value)));
+    source.sendSuccess(getSetMessage(source, board, "pitch", formatNumber(value)));
   }
 
   Vector3f toVec(ParsedPosition position) throws CommandSyntaxException {
@@ -492,11 +515,11 @@ public class CommandLeaderboard {
   ) throws CommandSyntaxException {
     if (position == null) {
       board.getDisplayMeta().setScale(Vector3f.ONE);
-      source.sendSuccess(setEntityProperty(board, "scale", null));
+      source.sendSuccess(getSetMessage(source, board, "scale", null));
     } else {
       Vector3f vector = toVec(position);
       board.getDisplayMeta().setScale(vector);
-      source.sendSuccess(setEntityProperty(board, "scale", format("{0, vector}", vector)));
+      source.sendSuccess(getSetMessage(source, board, "scale", format("{0, vector}", vector)));
     }
 
     board.update();
@@ -509,11 +532,11 @@ public class CommandLeaderboard {
   ) throws CommandSyntaxException {
     if (position == null) {
       board.getDisplayMeta().setTranslation(Vector3f.ONE);
-      source.sendSuccess(setEntityProperty(board, "offset", null));
+      source.sendSuccess(getSetMessage(source, board, "offset", null));
     } else {
       Vector3f vector = toVec(position);
       board.getDisplayMeta().setTranslation(vector);
-      source.sendSuccess(setEntityProperty(board, "offset", format("{0, vector}", vector)));
+      source.sendSuccess(getSetMessage(source, board, "offset", format("{0, vector}", vector)));
     }
 
     board.update();
@@ -527,7 +550,7 @@ public class CommandLeaderboard {
     board.getDisplayMeta().setBillboard(billboard);
     board.update();
 
-    source.sendSuccess(setEntityProperty(board, "billboard", format("{0, enum}", billboard)));
+    source.sendSuccess(getSetMessage(source, board, "billboard", billboard));
   }
 
   void setAlign(
@@ -538,9 +561,7 @@ public class CommandLeaderboard {
     board.getDisplayMeta().setAlign(alignment);
     board.update();
 
-    source.sendSuccess(
-        setEntityProperty(board, "text-alignment", format("{0, number}", alignment))
-    );
+    source.sendSuccess(getSetMessage(source, board, "align", alignment));
   }
 
   void setBackColor(
@@ -550,7 +571,7 @@ public class CommandLeaderboard {
   ) {
     board.getDisplayMeta().setBackgroundColor(color);
     board.update();
-    source.sendSuccess(setEntityProperty(board, "background-color", color));
+    source.sendSuccess(getSetMessage(source, board, "backColor", color));
   }
 
   void setBrightness(
@@ -561,11 +582,11 @@ public class CommandLeaderboard {
   ) {
     if (skylight == null || blocklight == null) {
       board.getDisplayMeta().setBrightness(null);
-      source.sendSuccess(setEntityProperty(board, "brightness", null));
+      source.sendSuccess(getSetMessage(source, board, "brightness", null));
     } else {
       Brightness brightness = new Brightness(blocklight, skylight);
       board.getDisplayMeta().setBrightness(brightness);
-      source.sendSuccess(setEntityProperty(board, "brightness", brightness));
+      source.sendSuccess(getSetMessage(source, board, "brightness", brightness));
     }
 
     board.update();
@@ -578,7 +599,7 @@ public class CommandLeaderboard {
   ) {
     board.getDisplayMeta().setShadowed(value);
     board.update();
-    source.sendSuccess(setEntityProperty(board, "shadowed", value));
+    source.sendSuccess(getSetMessage(source, board, "shadowed", value));
   }
 
   void setSeeThrough(
@@ -588,7 +609,7 @@ public class CommandLeaderboard {
   ) {
     board.getDisplayMeta().setSeeThrough(value);
     board.update();
-    source.sendSuccess(setEntityProperty(board, "see-through", value));
+    source.sendSuccess(getSetMessage(source, board, "seeThrough", value));
   }
 
   void setLineWidth(
@@ -603,7 +624,7 @@ public class CommandLeaderboard {
     }
 
     board.update();
-    source.sendSuccess(setEntityProperty(board, "line-width", lineWidth));
+    source.sendSuccess(getSetMessage(source, board, "lineWidth", lineWidth));
   }
 
   void setOpacity(
@@ -618,23 +639,6 @@ public class CommandLeaderboard {
     }
 
     board.update();
-    source.sendSuccess(setEntityProperty(board, "opacity", opacity));
-  }
-
-  Component setEntityProperty(BoardImpl board, String name, Object value) {
-    if (value == null) {
-      return format("{0}: Unset entity value '&f{1}&r'",
-          NamedTextColor.GRAY,
-          board.displayName(),
-          name
-      );
-    }
-
-    return format("{0}: Set entity value '&f{1}&r' to &e{2}",
-        NamedTextColor.GRAY,
-        board.displayName(),
-        name,
-        value
-    );
+    source.sendSuccess(getSetMessage(source, board, "opacity", opacity));
   }
 }

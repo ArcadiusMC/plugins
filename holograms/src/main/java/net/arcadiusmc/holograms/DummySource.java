@@ -1,4 +1,4 @@
-package net.arcadiusmc.leaderboards;
+package net.arcadiusmc.holograms;
 
 import java.util.List;
 import java.util.OptionalInt;

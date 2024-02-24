@@ -1,7 +1,8 @@
 package net.arcadiusmc.holograms;
 
-import net.arcadiusmc.text.PlayerMessage;
 import net.arcadiusmc.registry.Holder;
+import net.arcadiusmc.text.PlayerMessage;
+import net.forthecrown.grenadier.types.IntRangeArgument.IntRange;
 import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -54,9 +55,9 @@ public interface Leaderboard {
   void setOrder(@NotNull Order order);
 
   @Nullable
-  ScoreFilter getFilter();
+  IntRange getFilter();
 
-  void setFilter(@Nullable ScoreFilter filter);
+  void setFilter(@Nullable IntRange filter);
 
   enum Order {
     ASCENDING,

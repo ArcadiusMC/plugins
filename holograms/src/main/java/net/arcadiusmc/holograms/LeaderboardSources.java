@@ -1,10 +1,7 @@
-package net.arcadiusmc.leaderboards;
+package net.arcadiusmc.holograms;
 
 import com.mojang.serialization.DataResult;
-import java.util.List;
 import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.UUID;
 import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.registry.Registries;
 import net.arcadiusmc.registry.Registry;
@@ -18,17 +15,7 @@ public class LeaderboardSources {
 
   public static final String OBJECTIVE_PREFIX = "objective/";
 
-  public static final LeaderboardSource DUMMY = new LeaderboardSource() {
-    @Override
-    public List<LeaderboardScore> getScores() {
-      return List.of();
-    }
-
-    @Override
-    public OptionalInt getScore(UUID playerId) {
-      return OptionalInt.empty();
-    }
-  };
+  public static final LeaderboardSource DUMMY = DummySource.INSTANCE;
 
   public static final Holder<LeaderboardSource> DUMMY_HOLDER = SOURCES.register("dummy", DUMMY);
 

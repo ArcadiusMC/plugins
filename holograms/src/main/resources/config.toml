@@ -1,4 +1,4 @@
-
+#
 # Radius in which leaderboards are rendered for players
 #
 # Note:
@@ -6,5 +6,7 @@
 #
 renderRadius = 25
 
+#
 # Interval at which leaderboards are saved
+#
 autosaveInterval = "30m"

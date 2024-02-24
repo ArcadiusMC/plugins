@@ -1,0 +1,74 @@
+leaderboards:
+  _style: "gray"
+
+  errors:
+    _style: "red"
+    notSpawned:           "Leaderboard has not been spawned."
+    alreadyExists:        "A leaderboard with the name '${name}' already exists!"
+    alreadyInactive:      "Leaderboard is already inactive."
+    alreadySpawned:       "Leaderboard has already been spawned."
+    copySelf:             "Cannot copy from self"
+
+  you:                    "You"
+
+  reloaded.config:        "Reloaded Leaderboards config."
+  reloaded.plugin:        "Reloaded Leaderboards."
+  saved:                  "Saved Leaderboards."
+
+  list.header:            "&eLeaderboards"
+
+  updated:                "Updated leaderboard &e${board}&r."
+  created:                "Created leaderboard named '&e${board}&r'"
+  updateAll:              "Updated ${count} leaderboards."
+  killed:                 "Killed leaderboard &r${board}&r."
+  removed:                "Removed leaderboard &e${board}&r."
+  spawned:                "Spawned leaderboard &e${board}&r."
+  location:               "Moved leaderboard &e${board}&r to &6${location}&r."
+  copied:                 "Copied all style data from &e${source}&r to &6${target}&r."
+  includeYou:             "Set &e${board}&r include-you to &f${value}&r."
+  order:                  "Set &e${board}&r order to &f${value}&r."
+  source:                 "Set &e${board}&r source to '&f${value}&r'"
+  maxSize:                "Set &e${board}&r max-size to &f${value}&r."
+  fillEmpty:              "Set &e${board}&r fill-empty to &f${value}&r."
+  yaw:                    "Set &e${board}&r entity yaw to &f${value}&r."
+  pitch:                  "Set &e${board}&r entity pitch to &f${value}&r."
+  billboard:              "Set &e${board}&r billboard-state to &f${value}&r."
+  align:                  "Set &e${board}&r text-align to &f${value}&r."
+  shadowed:               "Set &e${board}&r shadowed-state to &f${value}&r."
+  seeThrough:             "Set &e${board}&r see-through to &f${value}&r."
+
+  scale.set:              "Set &e${board}&r entity-scale to &f${value}&r."
+  scale.removed:          "Unset &e${board}&r entity-scale."
+
+  offset.set:             "Set &e${board}&r entity-offset to &f${value}&r."
+  offset.removed:         "Unset &e${board}&r entity-offset."
+
+  backColor.set:          "Set &e${board}&r background-color to &f${value}&r."
+  backColor.removed:      "Unset &e${board}&r background-color."
+
+  brightness.set:         "Set &e${board}&r brightness to &f${value}&r."
+  brightness.removed:     "Unset &e${board}&r brightness."
+
+  lineWidth.set:          "Set &e${board}&r line-width to &f${value}&r."
+  lineWidth.removed:      "Unset &e${board}&r line-width."
+
+  opacity.set:            "Set &e${board}&r opacity to &f${value}&r."
+  opacity.removed:        "Unset &e${board}&r opacity."
+
+  filter.set:             "Set &e${board}&r filter to ${value}"
+  filter.removed:         "Removed &e${board}&r filter."
+
+  header.set:             "Set &e${board}&r header to '&f${value}&r'"
+  header.removed:         "Cleared &e${board}&r header."
+
+  footer.set:             "Set &e${board}&r footer to '&f${value}&r'"
+  footer.removed:         "Cleared &e${board}&r footer."
+
+  format.set:             "Set &e${board}&r format to '&f${value}&r'"
+  format.removed:         "Cleared &e${board}&r format."
+
+  youFormat.set:          "Set &e${board}&r you-format to '&f${value}&r'"
+  youFormat.removed:      "Cleared &e${board}&r you-format."
+
+  emptyFormat.set:        "Set &e${board}&r empty-format to '&f${value}&r'"
+  emptyFormat.removed:    "Cleared &e${board}&r empty-format."
