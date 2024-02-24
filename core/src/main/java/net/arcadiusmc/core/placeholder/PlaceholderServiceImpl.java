@@ -33,6 +33,9 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.math.vector.Vectord;
+import org.spongepowered.math.vector.Vectorf;
+import org.spongepowered.math.vector.Vectori;
 
 @Getter
 public class PlaceholderServiceImpl implements PlaceholderService {
@@ -69,6 +72,9 @@ public class PlaceholderServiceImpl implements PlaceholderService {
     addObjectPlaceholder(ZonedDateTime.class, ObjectPlaceholder.ZONED_DATE_TIME);
     addObjectPlaceholder(Instant.class,       ObjectPlaceholder.INSTANT);
     addObjectPlaceholder(Enum.class,          ObjectPlaceholder.ENUM);
+    addObjectPlaceholder(Vectori.class,       ObjectPlaceholder.VECTOR_I);
+    addObjectPlaceholder(Vectord.class,       ObjectPlaceholder.VECTOR_D);
+    addObjectPlaceholder(Vectorf.class,       ObjectPlaceholder.VECTOR_F);
   }
 
   @Override

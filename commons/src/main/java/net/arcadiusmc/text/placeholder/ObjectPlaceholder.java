@@ -14,6 +14,7 @@ import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.PeriodFormat;
 import net.arcadiusmc.text.RomanNumeral;
 import net.arcadiusmc.text.Text;
+import net.arcadiusmc.text.format.TextFormatTypes;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
 import net.arcadiusmc.utils.Audiences;
@@ -27,6 +28,9 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.spongepowered.math.vector.Vectord;
+import org.spongepowered.math.vector.Vectorf;
+import org.spongepowered.math.vector.Vectori;
 
 public interface ObjectPlaceholder<T> {
 
@@ -204,6 +208,48 @@ public interface ObjectPlaceholder<T> {
       case "raw" -> value.name();
       case "formatted" -> Text.prettyEnumName(value);
       default -> value.name().toLowerCase();
+    };
+  };
+
+  ObjectPlaceholder<Vectori> VECTOR_I = (value, fieldName, ctx) -> {
+    return switch (fieldName) {
+      case "x" -> value.toArray()[0];
+      case "y" -> value.toArray()[1];
+      case "z" -> value.toArray()[2];
+      case "w" -> value.toArray()[3];
+
+      case "length" -> value.length();
+      case "negate" -> value.negate();
+
+      default -> TextFormatTypes.VECTOR.resolve(value, "", ctx.viewer());
+    };
+  };
+
+  ObjectPlaceholder<Vectorf> VECTOR_F = (value, fieldName, ctx) -> {
+    return switch (fieldName) {
+      case "x" -> value.toArray()[0];
+      case "y" -> value.toArray()[1];
+      case "z" -> value.toArray()[2];
+      case "w" -> value.toArray()[3];
+
+      case "length" -> value.length();
+      case "negate" -> value.negate();
+
+      default -> TextFormatTypes.VECTOR.resolve(value, "", ctx.viewer());
+    };
+  };
+
+  ObjectPlaceholder<Vectord> VECTOR_D = (value, fieldName, ctx) -> {
+    return switch (fieldName) {
+      case "x" -> value.toArray()[0];
+      case "y" -> value.toArray()[1];
+      case "z" -> value.toArray()[2];
+      case "w" -> value.toArray()[3];
+
+      case "length" -> value.length();
+      case "negate" -> value.negate();
+
+      default -> TextFormatTypes.VECTOR.resolve(value, "", ctx.viewer());
     };
   };
 
