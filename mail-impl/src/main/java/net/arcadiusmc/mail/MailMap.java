@@ -202,6 +202,6 @@ class MailMap {
   public boolean hasUnread(UUID playerId) {
     return byTarget.getOrDefault(playerId, ObjectLists.emptyList())
         .stream()
-        .anyMatch(mail -> !mail.isRead());
+        .anyMatch(mail -> !mail.isDeleted() && !mail.isRead());
   }
 }
