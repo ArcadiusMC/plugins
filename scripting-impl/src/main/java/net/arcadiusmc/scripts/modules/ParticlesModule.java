@@ -451,6 +451,10 @@ public class ParticlesModule extends IdScriptableObject {
         spawn.count = ScriptRuntime.toInt32(getProperty(scriptable, "count"));
       }
 
+      if (hasProperty(scriptable, "extra")) {
+        spawn.extra = ScriptRuntime.toNumber(getProperty(scriptable, "extra"));
+      }
+
       if (hasProperty(scriptable, "offset")) {
         Object offsetObject = getProperty(scriptable, "offset");
         spawn.setOffset(offsetObject);
