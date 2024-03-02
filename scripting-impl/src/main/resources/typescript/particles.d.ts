@@ -29,6 +29,7 @@ declare interface ParticleOptions {
 
   count?: number;
   force?: boolean;
+  extra?: number;
 
   color?: ColorValue;
   colorTransition?: ColorValue;

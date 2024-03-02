@@ -300,6 +300,7 @@ public class ParticlesModule extends IdScriptableObject {
     private Particle particle;
     private Vector3d offset;
     private int count = 0;
+    private double extra = 0;
     private boolean force = false;
     private Float size;
     private ColorSupplier color;
@@ -493,6 +494,8 @@ public class ParticlesModule extends IdScriptableObject {
       if (count > 0) {
         builder.count(count);
       }
+
+      builder.extra(extra);
 
       if (item != null) {
         builder.data(item.clone());
