@@ -1,6 +1,5 @@
 package net.arcadiusmc.utils;
 
-import static net.arcadiusmc.utils.PluginUtil.getCallingPlugin;
 import static net.kyori.adventure.util.Ticks.SINGLE_TICK_DURATION_MS;
 import static org.bukkit.Bukkit.getScheduler;
 
@@ -199,7 +198,7 @@ public final class Tasks {
     return null;
   }
 
-  private static long toTicks(Duration dur) {
+  public static long toTicks(Duration dur) {
     long millis = dur.toMillis();
     return millis / SINGLE_TICK_DURATION_MS;
   }
