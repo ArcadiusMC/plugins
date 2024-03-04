@@ -4,7 +4,7 @@ import com.google.common.base.Strings;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 
-record DirectSource(CharSequence src, String name) implements Source {
+public record DirectSource(CharSequence src, String name) implements Source {
 
   @Override
   public StringBuffer read() {
