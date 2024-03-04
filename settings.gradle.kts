@@ -29,6 +29,7 @@ include("staff-chat")
 include("sign-shops")
 include("player-markets")
 include("holograms")
+include("waypoints")
 
 include("mail")
 include("mail-impl")
