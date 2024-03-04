@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.UtilityClass;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.registry.Registries;
@@ -520,5 +521,54 @@ public @UtilityClass class ExtraCodecs {
 
   public static int[] uuidToIntArray(UUID uuid) {
     return UUIDUtil.uuidToIntArray(uuid);
+  }
+
+  public static <V> MapCodec<V> strictOptional(Codec<V> codec, String field, V defaultValue) {
+    return strictOptional(codec, field)
+        .xmap(
+            v -> v.orElse(defaultValue),
+            v -> {
+              if (v == null || Objects.equals(v, defaultValue)) {
+                return Optional.empty();
+              }
+              return Optional.of(v);
+            }
+        );
+  }
+
+  public static <V> MapCodec<Optional<V>> strictOptional(Codec<V> codec, String field) {
+    return new StrictOptionalCodec<>(codec, field);
+  }
+
+  @RequiredArgsConstructor
+  private class StrictOptionalCodec<V> extends MapCodec<Optional<V>> {
+
+    final Codec<V> base;
+    final String key;
+
+    @Override
+    public <T> Stream<T> keys(DynamicOps<T> ops) {
+      return Stream.of(ops.createString(key));
+    }
+
+    @Override
+    public <T> DataResult<Optional<V>> decode(DynamicOps<T> ops, MapLike<T> input) {
+      T found = input.get(key);
+
+      if (found == null) {
+        return Results.success(Optional.empty());
+      }
+
+      return base.parse(ops, found).map(Optional::of);
+    }
+
+    @Override
+    public <T> RecordBuilder<T> encode(Optional<V> input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
+      if (input.isEmpty()) {
+        return prefix;
+      }
+
+      return prefix.add(key, input.get(), base);
+    }
   }
 }
