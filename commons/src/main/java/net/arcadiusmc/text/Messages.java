@@ -1,10 +1,13 @@
 package net.arcadiusmc.text;
 
+import static net.arcadiusmc.Cooldowns.NO_END_COOLDOWN;
 import static net.arcadiusmc.text.Text.format;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.event.ClickEvent.runCommand;
 
 import com.google.common.base.Joiner;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import net.arcadiusmc.text.loader.MessageList;
 import net.arcadiusmc.text.loader.MessageRef;
@@ -84,6 +87,10 @@ public interface Messages {
 
   static MessageRender render(String... key) {
     return MESSAGE_LIST.render(Joiner.on('.').join(key));
+  }
+
+  static Component renderText(String key) {
+    return render(key).asComponent();
   }
 
   static Component renderText(String key, Audience viewer) {
@@ -402,5 +409,24 @@ public interface Messages {
   static Component currencyUnit(boolean singular) {
     String formatKey = singular ? "units.currency.singular" : "units.currency.plural";
     return MESSAGE_LIST.renderText(formatKey, null);
+  }
+
+  static Component cooldownMessage(Audience viewer, Duration remaining, Duration cooldownLength) {
+    MessageRender render;
+
+    if (cooldownLength == null
+        || cooldownLength.toMillis() == NO_END_COOLDOWN
+        || remaining.isNegative()
+    ) {
+      render = MESSAGE_LIST.render("cooldowns.eternal");
+    } else {
+      boolean longCooldown = cooldownLength.toMillis() > TimeUnit.MINUTES.toMillis(10);
+      render = MESSAGE_LIST.render(longCooldown ? "cooldowns.long" : "cooldowns.short");
+    }
+
+    return render
+        .addValue("remaining", remaining)
+        .addValue("cooldown", cooldownLength)
+        .create(viewer);
   }
 }
