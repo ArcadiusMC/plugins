@@ -1,5 +1,6 @@
 package net.arcadiusmc;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.papermc.paper.util.Tick;
 import java.time.Duration;
 import java.util.Set;
@@ -68,4 +69,12 @@ public interface Cooldowns {
    */
   @Nullable
   Duration getRemainingTime(UUID playerId, String category);
+
+  boolean containsOrAdd(UUID uuid, long timeMillis);
+
+  boolean containsOrAdd(UUID uuid, String category, long timeMillis);
+
+  void testAndThrow(UUID uuid, long timeMillis) throws CommandSyntaxException;
+
+  void testAndThrow(UUID uuid, String category, long timeMillis) throws CommandSyntaxException;
 }

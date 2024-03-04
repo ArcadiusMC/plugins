@@ -1,13 +1,10 @@
 package net.arcadiusmc.utils;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import io.papermc.paper.util.Tick;
-import java.time.Duration;
 import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nonnegative;
 import net.arcadiusmc.Cooldowns;
-import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.user.User;
 import net.forthecrown.grenadier.CommandSource;
 import net.kyori.adventure.audience.Audience;
@@ -148,20 +145,7 @@ public class Cooldown {
   public static void testAndThrow(Audience audience, String category, long ticks)
       throws CommandSyntaxException
   {
-    var id = getUniqueId(audience);
-    Cooldowns cooldowns = Cooldowns.cooldowns();
-    Duration remaining = cooldowns.getRemainingTime(id, category);
-
-    if (remaining == null) {
-      cooldowns.cooldown(id, Tick.of(ticks));
-      return;
-    }
-
-    if (remaining.getSeconds() == -1) {
-      throw Exceptions.format("You can only do this once");
-    } else {
-      throw Exceptions.format("You can do this again in {0, time}", remaining);
-    }
+    Cooldowns.cooldowns().testAndThrow(getUniqueId(audience), category, ticks);
   }
 
   private static UUID getUniqueId(Audience audience) {
@@ -178,13 +162,5 @@ public class Cooldown {
     throw new IllegalArgumentException(
         "Audience " + audience + " is not a player, CommandSource or a User"
     );
-  }
-
-  private static long toMillis(long ticks) {
-    if (ticks == Cooldowns.NO_END_COOLDOWN) {
-      return Cooldowns.NO_END_COOLDOWN;
-    }
-
-    return Time.ticksToMillis(ticks);
   }
 }

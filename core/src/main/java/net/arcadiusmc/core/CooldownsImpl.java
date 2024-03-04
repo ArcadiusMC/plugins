@@ -1,7 +1,5 @@
 package net.arcadiusmc.core;
 
-import static net.arcadiusmc.text.Messages.MESSAGE_LIST;
-
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -12,18 +10,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import net.arcadiusmc.Cooldowns;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.command.Exceptions;
-import net.arcadiusmc.text.loader.MessageRender;
-import net.arcadiusmc.user.Users;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.utils.Time;
 import net.arcadiusmc.utils.io.JsonWrapper;
 import net.arcadiusmc.utils.io.PathUtil;
 import net.arcadiusmc.utils.io.SerializationHelper;
-import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -160,6 +156,7 @@ public class CooldownsImpl implements Cooldowns {
    * {@link #TRANSIENT_CATEGORY}
    * @see #containsOrAdd(UUID, String, long)
    */
+  @Override
   public boolean containsOrAdd(UUID uuid, long timeMillis) {
     return containsOrAdd(uuid, TRANSIENT_CATEGORY, timeMillis);
   }
@@ -177,6 +174,7 @@ public class CooldownsImpl implements Cooldowns {
    * @return True, if the player was already on cooldown, false, if they were
    *         added just now
    */
+  @Override
   public boolean containsOrAdd(UUID uuid, String category, long timeMillis) {
     if (onCooldown(uuid, category))  {
       return true;
@@ -191,6 +189,7 @@ public class CooldownsImpl implements Cooldowns {
    * {@link #TRANSIENT_CATEGORY}
    * @see #testAndThrow(UUID, String, long)
    */
+  @Override
   public void testAndThrow(UUID uuid, long timeMillis)
       throws CommandSyntaxException
   {
@@ -211,6 +210,7 @@ public class CooldownsImpl implements Cooldowns {
    * {@link Exceptions#onCooldown(long)} if the timeMillis is not
    * {@link #NO_END_COOLDOWN}, else just says 'This can only be done once'
    */
+  @Override
   public void testAndThrow(UUID uuid, String category, long timeMillis)
       throws CommandSyntaxException
   {
@@ -218,25 +218,11 @@ public class CooldownsImpl implements Cooldowns {
       return;
     }
 
-    MessageRender render;
-
     Duration remaining = getRemainingTime(uuid, category);
     assert remaining != null;
 
-    if (timeMillis == NO_END_COOLDOWN || remaining.isNegative()) {
-      render = MESSAGE_LIST.render("cooldowns.eternal");
-    } else {
-      boolean longCooldown = timeMillis > TimeUnit.MINUTES.toMillis(10);
-      render = MESSAGE_LIST.render(longCooldown ? "cooldowns.long" : "cooldowns.short");
-    }
-
-    Audience viewer = Users.get(uuid);
-
-    throw render
-        .addValue("category", category)
-        .addValue("remaining", remaining)
-        .addValue("cooldown", Duration.ofMillis(timeMillis))
-        .exception(viewer);
+    Component message = Messages.cooldownMessage(null, remaining, Duration.ofMillis(timeMillis));
+    throw Exceptions.create(message);
   }
 
   /* --------------------------- SERIALIZATION ---------------------------- */
