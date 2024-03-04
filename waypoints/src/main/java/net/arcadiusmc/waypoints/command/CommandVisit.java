@@ -1,15 +1,15 @@
 package net.arcadiusmc.waypoints.command;
 
-import net.arcadiusmc.command.FtcCommand;
+import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.ParseResult;
 import net.arcadiusmc.command.help.UsageFactory;
-import net.forthecrown.grenadier.GrenadierCommand;
 import net.arcadiusmc.utils.Cooldown;
 import net.arcadiusmc.waypoints.WPermissions;
 import net.arcadiusmc.waypoints.Waypoint;
 import net.arcadiusmc.waypoints.visit.WaypointVisit;
+import net.forthecrown.grenadier.GrenadierCommand;
 
-public class CommandVisit extends FtcCommand {
+public class CommandVisit extends BaseCommand {
 
   public CommandVisit() {
     super("Visit");

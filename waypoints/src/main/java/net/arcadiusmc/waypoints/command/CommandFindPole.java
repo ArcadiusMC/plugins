@@ -1,16 +1,18 @@
 package net.arcadiusmc.waypoints.command;
 
-import net.arcadiusmc.command.FtcCommand;
-import net.forthecrown.grenadier.GrenadierCommand;
+import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.text.Text;
+import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.math.Vectors;
 import net.arcadiusmc.waypoints.WExceptions;
 import net.arcadiusmc.waypoints.WPermissions;
+import net.arcadiusmc.waypoints.Waypoint;
 import net.arcadiusmc.waypoints.Waypoints;
+import net.forthecrown.grenadier.GrenadierCommand;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.spongepowered.math.vector.Vector3i;
 
-public class CommandFindPole extends FtcCommand {
+public class CommandFindPole extends BaseCommand {
 
   public CommandFindPole() {
     super("findpole");
@@ -25,11 +27,11 @@ public class CommandFindPole extends FtcCommand {
   @Override
   public void createCommand(GrenadierCommand command) {
     command.executes(c -> {
-      var user = getUserSender(c);
-      var nearest = Waypoints.getNearest(user);
+      User user = getUserSender(c);
+      Waypoint nearest = Waypoints.getNearest(user);
 
       if (nearest == null) {
-        throw WExceptions.FAR_FROM_WAYPOINT;
+        throw WExceptions.farFromWaypoint();
       }
 
       Vector3i playerPos = Vectors.intFrom(user.getLocation());

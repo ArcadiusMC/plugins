@@ -1,20 +1,19 @@
 package net.arcadiusmc.waypoints;
 
-import static net.arcadiusmc.command.Exceptions.create;
 import static net.arcadiusmc.command.Exceptions.format;
-import static net.kyori.adventure.text.Component.text;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.arcadiusmc.registry.Holder;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.TextJoiner;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.math.Vectors;
 import net.arcadiusmc.waypoints.type.WaypointType;
 import net.arcadiusmc.waypoints.type.WaypointTypes;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -22,55 +21,54 @@ import org.spongepowered.math.vector.Vector3i;
 
 public interface WExceptions {
 
-  CommandSyntaxException NO_HOME_REGION = create("You do not have a home waypoint");
-
-  CommandSyntaxException WAYPOINTS_WRONG_WORLD = create("Waypoints are disabled in this world!");
-
-  CommandSyntaxException ONLY_IN_VEHICLE = create("Can only teleport in a vehicle");
-
-  CommandSyntaxException FAR_FROM_WAYPOINT = create(
-      "Too far from any waypoint, or in a world without waypoints"
-  );
-
-  CommandSyntaxException UNLOADED_WORLD = create("This waypoint is in an unloaded world!");
-
-  CommandSyntaxException FACE_WAYPOINT
-      = create("You must be looking at a waypoint's pillar blocks");
-
-  static CommandSyntaxException unknownRegion(StringReader reader, int cursor) {
-    return format(
-        "There's no region, player or guild named '{0}'.\nUse /listregions to list all regions.",
-        reader.getString().substring(cursor, reader.getCursor())
-    );
+  static CommandSyntaxException noHomeRegion() {
+    return Messages.render("waypoints.errors.noHome.self").exception();
   }
 
-  /**
-   * Creates an exception stating the given region name is unknown
-   *
-   * @param name The region's name
-   * @return The created exception
-   */
-  static CommandSyntaxException unknownRegion(String name) {
-    return format("Unknown region: '{0}'", name);
+  static CommandSyntaxException onlyInVehicle() {
+    return Messages.render("waypoints.errors.visitInVehicle").exception();
+  }
+
+  static CommandSyntaxException farFromWaypoint() {
+    return Messages.render("waypoints.errors.farFromWaypoint").exception();
+  }
+
+  static CommandSyntaxException unloadedWorld() {
+    return Messages.render("waypoints.errors.unloadedWorld").exception();
+  }
+
+  static CommandSyntaxException faceWaypoint() {
+    return Messages.render("waypoints.errors.faceWaypoint").exception();
+  }
+
+  static CommandSyntaxException unknownRegion(StringReader reader, int cursor) {
+    return Messages.render("waypoints.errors.unknown")
+        .addValue("name", reader.getString().substring(cursor, reader.getCursor()))
+        .exception();
   }
 
   static CommandSyntaxException farFromWaypoint(Waypoint waypoint) {
-    var pos = waypoint.getPosition();
-    return farFromWaypoint(pos.x(), pos.y(), pos.z());
+    return farFromWaypoint(waypoint.getPosition());
   }
 
-  static CommandSyntaxException farFromWaypoint(int x, int y, int z) {
-    return format("Too far from a waypoint.\nClosest pole is at {0, vector}",
-        Vector3i.from(x, y, z)
-    );
+  static CommandSyntaxException farFromWaypoint(Vector3i pos) {
+    return Messages.render("waypoints.errors.farFromWaypoint.pos")
+        .addValue("position", pos)
+        .exception();
   }
 
   static CommandSyntaxException privateRegion(Waypoint region) {
-    return format("'{0}' is a private waypoint", region.get(WaypointProperties.NAME));
+    return Messages.render("waypoints.errors.privateRegion")
+        .addValue("waypoint", region.getEffectiveName())
+        .exception();
   }
 
   static CommandSyntaxException brokenWaypoint(Vector3i pos, Material found, Material expected) {
-    return format("Waypoint is broken at {0}! Expected {1}, found {2}", pos, expected, found);
+    return Messages.render("waypoints.errors.broken")
+        .addValue("position", pos)
+        .addValue("expected", expected)
+        .addValue("found", found)
+        .exception();
   }
 
   static CommandSyntaxException invalidWaypointTop(Material m) {
@@ -134,56 +132,67 @@ public interface WExceptions {
   }
 
 
-  static CommandSyntaxException notInvited(User user) {
-    return format("{0, user} has not invited you.", user);
+  static CommandSyntaxException notInvited(Audience viewer, User user) {
+    return Messages.render("waypoints.errors.notInvited")
+        .addValue("player", user)
+        .exception(viewer);
   }
 
-  static CommandSyntaxException noHomeWaypoint(User user) {
-    return format("{0, user} does not have a home waypoint", user);
+  static CommandSyntaxException noHomeWaypoint(Audience viewer, User user) {
+    return Messages.render("waypoints.errors.noHome.other")
+        .addValue("player", user)
+        .exception(viewer);
   }
 
   static CommandSyntaxException nonReplaceableFloorBlock(Block block) {
     Vector3i vec = Vectors.from(block);
-    return format("{0} at {1, vector} cannot be replaced to create a waypoint platform",
-        block.getType(), vec
-    );
+
+    return Messages.render("waypoints.errors.nonReplaceable")
+        .addValue("position", vec)
+        .addValue("block", block.getType())
+        .exception();
   }
 
-  static CommandSyntaxException waypointAlreadySet(
-      Waypoint existing,
-      String messagePrefix,
-      String waypointPrefix
-  ) {
-    Component how = text(
-        """
-        Right-Click the 'edit waypoint'
-        sign on the waypoint you want to delete
-        and select the delete option
-        """.trim()
-    );
-
-    var p = existing.getPosition();
+  static CommandSyntaxException waypointAlreadySet(Waypoint existing) {
+    Vector3i p = existing.getPosition();
     Location location = new Location(existing.getWorld(), p.x(), p.y(), p.z());
 
-    return format(
-        "{2}, remove the old one before making a new one {0}\n"
-            + "Your current {3}-waypoint is at {1, location}",
-
-        text("[How?]", NamedTextColor.AQUA)
-            .hoverEvent(how),
-
-        location,
-
-        messagePrefix,
-        waypointPrefix
-    );
-  }
-
-  static CommandSyntaxException homeAlreadySet(Waypoint currentHome) {
-    return waypointAlreadySet(currentHome, "You already have a home waypoint", "home");
+    return Messages.render("waypoints.errors.alreadySet")
+        .addValue("existing", location)
+        .addValue("how",
+            Messages.render("waypoints.errors.alreadySet.how")
+                .asComponent()
+                .hoverEvent(Messages.renderText("waypoints.errors.alreadySet.how.hover", null))
+        )
+        .exception();
   }
 
   static CommandSyntaxException creationDisabled() {
-    return create("Waypoint creation is disabled here");
+    return Messages.render("waypoints.errors.creationDisabled").exception();
+  }
+
+  static CommandSyntaxException waypointNotDiscovered(Waypoint waypoint) {
+    Component displayName = waypoint.displayName();
+
+    if (displayName == null) {
+      return Messages.render("waypoints.errors.notDiscovered.unnamed").exception();
+    }
+
+    return Messages.render("waypoints.errors.notDiscovered.named")
+        .addValue("waypoint", displayName)
+        .exception();
+  }
+
+  static CommandSyntaxException alreadyDiscovered(Audience viewer, User user, Waypoint waypoint) {
+    return Messages.render("waypoints.errors.alreadyDiscovered")
+        .addValue("waypoint", waypoint.nonNullDisplayName())
+        .addValue("player", user)
+        .exception(viewer);
+  }
+
+  static CommandSyntaxException notDiscovered(Audience viewer, User user) {
+    return Messages.render("waypoints.errors.notDiscovered.other")
+        .addValue("player", user)
+        .exception(viewer);
   }
 }

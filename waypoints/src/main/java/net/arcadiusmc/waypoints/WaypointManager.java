@@ -15,6 +15,10 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.Getter;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.user.Users;
+import net.arcadiusmc.utils.collision.CollisionListener;
+import net.arcadiusmc.utils.collision.CollisionSystems;
+import net.arcadiusmc.utils.collision.PlayerCollisionSystem;
 import net.forthecrown.nbt.BinaryTags;
 import net.forthecrown.nbt.CompoundTag;
 import net.arcadiusmc.utils.collision.WorldChunkMap;
@@ -23,6 +27,7 @@ import net.arcadiusmc.utils.io.SerializationHelper;
 import net.arcadiusmc.waypoints.event.WaypointRemoveEvent;
 import net.arcadiusmc.waypoints.type.WaypointType;
 import net.arcadiusmc.waypoints.util.MultiHomeFixer;
+import org.bukkit.entity.Player;
 import org.slf4j.Logger;
 
 public class WaypointManager {
@@ -43,6 +48,11 @@ public class WaypointManager {
   @Getter
   final WorldChunkMap<Waypoint> chunkMap = new WorldChunkMap<>();
 
+  @Getter
+  final WorldChunkMap<Waypoint> discoveryMap = new WorldChunkMap<>();
+
+  final PlayerCollisionSystem<Waypoint> discoverer;
+
   final Map<String, WaypointExtension> extensions = new HashMap<>();
 
   /* ---------------------------- CONSTRUCTOR ----------------------------- */
@@ -50,6 +60,26 @@ public class WaypointManager {
   WaypointManager(WaypointsPlugin plugin) {
     this.path = PathUtil.pluginPath("waypoints.dat");
     this.plugin = plugin;
+
+    discoverer = CollisionSystems.createSystem(
+        discoveryMap,
+        new CollisionListener<>() {
+          @Override
+          public void onEnter(Player source, Waypoint waypoint) {
+            waypoint.discover(Users.get(source));
+          }
+
+          @Override
+          public void onExit(Player source, Waypoint waypoint) {
+            // No-op
+          }
+
+          @Override
+          public void onMoveInside(Player source, Waypoint waypoint) {
+            waypoint.discover(Users.get(source));
+          }
+        }
+    );
   }
 
   /* ------------------------------ METHODS ------------------------------- */
@@ -98,6 +128,7 @@ public class WaypointManager {
     byName.clear();
     byId.clear();
     chunkMap.clear();
+    discoveryMap.clear();
     WaypointHomes.clear();
   }
 
@@ -162,6 +193,7 @@ public class WaypointManager {
     }
 
     chunkMap.add(waypoint.getWorld(), waypoint.getBounds(), waypoint);
+    discoveryMap.add(waypoint.getWorld(), waypoint.getDiscoveryBounds(), waypoint);
   }
 
   /**
@@ -185,6 +217,7 @@ public class WaypointManager {
     waypoint.manager = null;
     byId.remove(waypoint.getId(), waypoint);
     chunkMap.remove(waypoint.getWorld(), waypoint);
+    discoveryMap.remove(waypoint.getWorld(), waypoint);
 
     // If has name, remove from name lookup map
     var name = waypoint.get(WaypointProperties.NAME);

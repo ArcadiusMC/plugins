@@ -1,0 +1,58 @@
+waypoints:
+  errors:
+    _style: "red"
+    visitInVehicle:         "Can only visit regions while vehicles."
+    unloadedWorld:          "This waypoint is in an unloaded world :("
+    faceWaypoint:           "You must be looking at a waypoint's pillar blocks."
+    unknown:                "&4There's no region or player named '${name}'\n&cUse '/listwaypoints' to list all accessible waypoints."
+    farFromWaypoint:        "Too far from any waypoint, or in a world without waypoints."
+    farFromWaypoint.pos:    "Too far from a waypoint!\n&7Closest waypoint is at ${position}"
+    privateRegion:          "'${waypoint}' is a private waypoint."
+    broken:                 "Waypoint is incomplete at ${position}! Expected ${expected}, found ${found}"
+    invalidTop:             "${top} is an invalid waypoint top block! Must be one of: ${list}."
+    clearArea:              "Waypoint requires a clear ${size.x}x${size.y}x${size.z} area around it!\n${additional}"
+    nonEmpty:               "Non-empty block found at ${position}."
+    snowTooHigh:            "Snow block higher than half a block found at ${position}."
+    overlapping:            "This waypoint is overlapping with ${count} other waypoint(s)."
+    platform:               "Waypoint requires a ${size.x}x${size.y} waypoint around it."
+    notInvited:             "${player} has not invited you."
+    nonReplaceable:         "${block} at ${position} cannot be replaced to create a waypoint platform!"
+    noHome.self:            "You do not have a home waypoint."
+    noHome.other:           "${player} does not have a home waypoint."
+    alreadySet:             "You already have a home waypoint, remove the old one before making a new one! ${how}\nYour current home-waypoint is at ${existing}."
+    alreadySet.how:         "&b[How?]"
+    alreadySet.how.hover:   "Right-Click the 'edit waypoint'\nsign on the waypoint you want to delete\nand select the delete option"
+    creationDisabled:       "Waypoint creation is disabled here!"
+    notDiscovered.unnamed:  "You haven't discovered that waypoint yet!"
+    notDiscovered.named:    "You haven't discovered &f${waypoint}&r yet!"
+    notDiscovered.other:    "${player} has not discovered that waypoint."
+    alreadyDiscovered:      "${player} has already discovered ${waypoint}!"
+
+  discovered:
+    list:                   "&7${waypoint} discovered players: &f${list}."
+    cleared:                "Removed all players that discovered ${waypoint}."
+    removed:                "Removed ${player} from ${waypoint} discovered-players."
+    title:                  ""
+    subtitle:               "&7Discovered &e${waypoint}"
+
+  invites:
+    blocked:                "&c${player} doesn't accept region invites"
+    self:                   "&cCannot invite self!"
+
+
+settings:
+  hulkSmashing:
+    name:                   "Hulk Smashing"
+    description:            "Toggle Hulk smashing waypoints."
+    on:                     "Now hulk smashing waypoints."
+    off:                    "Now instantly teleporting to waypoints."
+    toggledesc.on:          "Enable hulk smashing waypoints."
+    toggledesc.off:         "Instantly teleport to waypoints"
+
+  regionInvites:
+    name:                   "Invites"
+    description:            "Allows/disables being invited to others' waypoints."
+    on:                     "Waypoint invites enabled."
+    off:                    "Waypoint invites disabled."
+    toggledesc.on:          "Enable waypoint invites."
+    toggledesc.off:         "Disabled waypoint invites."

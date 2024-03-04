@@ -1,7 +1,7 @@
 package net.arcadiusmc.waypoints.util;
 
 import java.util.UUID;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +24,7 @@ public enum UuidPersistentDataType implements PersistentDataType<int[], UUID> {
       @NotNull UUID complex,
       @NotNull PersistentDataAdapterContext context
   ) {
-    return FtcCodecs.uuidToIntArray(complex);
+    return ExtraCodecs.uuidToIntArray(complex);
   }
 
   @Override
@@ -32,6 +32,6 @@ public enum UuidPersistentDataType implements PersistentDataType<int[], UUID> {
       int @NotNull [] primitive,
       @NotNull PersistentDataAdapterContext context
   ) {
-    return FtcCodecs.uuidFromIntArray(primitive);
+    return ExtraCodecs.uuidFromIntArray(primitive);
   }
 }

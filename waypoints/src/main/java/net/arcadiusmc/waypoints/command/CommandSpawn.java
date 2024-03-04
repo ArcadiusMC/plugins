@@ -1,8 +1,7 @@
 package net.arcadiusmc.waypoints.command;
 
+import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.Exceptions;
-import net.arcadiusmc.command.FtcCommand;
-import net.forthecrown.grenadier.GrenadierCommand;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.Cooldown;
 import net.arcadiusmc.waypoints.WPermissions;
@@ -10,8 +9,9 @@ import net.arcadiusmc.waypoints.Waypoint;
 import net.arcadiusmc.waypoints.WaypointConfig;
 import net.arcadiusmc.waypoints.WaypointManager;
 import net.arcadiusmc.waypoints.visit.WaypointVisit;
+import net.forthecrown.grenadier.GrenadierCommand;
 
-public class CommandSpawn extends FtcCommand {
+public class CommandSpawn extends BaseCommand {
 
   public CommandSpawn() {
     super("spawn");

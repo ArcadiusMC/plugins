@@ -7,27 +7,30 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
+import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.Commands;
-import net.arcadiusmc.command.FtcCommand;
 import net.arcadiusmc.command.help.UsageFactory;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.GrenadierCommand;
 import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.TextWriter;
+import net.arcadiusmc.text.TextWriters;
 import net.arcadiusmc.text.page.Footer;
 import net.arcadiusmc.text.page.PageEntry;
 import net.arcadiusmc.text.page.PageFormat;
 import net.arcadiusmc.text.page.PagedIterator;
 import net.arcadiusmc.user.User;
+import net.arcadiusmc.utils.context.Context;
 import net.arcadiusmc.waypoints.WPermissions;
 import net.arcadiusmc.waypoints.Waypoint;
 import net.arcadiusmc.waypoints.WaypointManager;
 import net.arcadiusmc.waypoints.WaypointProperties;
 import net.arcadiusmc.waypoints.menu.WaypointListPage;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.GrenadierCommand;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-public class CommandListWaypoints extends FtcCommand {
+public class CommandListWaypoints extends BaseCommand {
 
   final PageFormat<Waypoint> waypointPageFormat;
 
@@ -54,7 +57,7 @@ public class CommandListWaypoints extends FtcCommand {
       writer.write(
           text("[Open List menu]", NamedTextColor.AQUA)
               .clickEvent(ClickEvent.runCommand("/waypointgui"))
-              .hoverEvent(Messages.CLICK_ME)
+              .hoverEvent(Messages.CLICK_ME.renderText(writer.viewer()))
       );
     });
 
@@ -125,9 +128,14 @@ public class CommandListWaypoints extends FtcCommand {
     });
 
     Commands.ensurePageValid(--page, pageSize, waypoints.size());
-    var it = PagedIterator.of(waypoints, page, pageSize);
+    PagedIterator<Waypoint> it = PagedIterator.of(waypoints, page, pageSize);
 
-    var text = waypointPageFormat.format(it);
+    TextWriter writer = TextWriters.newWriter();
+    writer.viewer(source);
+
+    waypointPageFormat.write(it, writer, Context.EMPTY);
+
+    Component text = writer.asComponent();
     source.sendMessage(text);
 
     return 0;

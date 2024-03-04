@@ -1,16 +1,16 @@
 package net.arcadiusmc.waypoints.command;
 
 import java.util.Optional;
-import net.arcadiusmc.command.FtcCommand;
-import net.forthecrown.grenadier.GrenadierCommand;
+import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.waypoints.WExceptions;
 import net.arcadiusmc.waypoints.WPermissions;
 import net.arcadiusmc.waypoints.Waypoint;
 import net.arcadiusmc.waypoints.WaypointHomes;
 import net.arcadiusmc.waypoints.visit.WaypointVisit;
+import net.forthecrown.grenadier.GrenadierCommand;
 
-public class CommandHomeWaypoint extends FtcCommand {
+public class CommandHomeWaypoint extends BaseCommand {
 
   public CommandHomeWaypoint() {
     super("HomeWaypoint");
@@ -44,7 +44,7 @@ public class CommandHomeWaypoint extends FtcCommand {
           Optional<Waypoint> home = WaypointHomes.getHome(user);
 
           if (home.isEmpty()) {
-            throw WExceptions.NO_HOME_REGION;
+            throw WExceptions.noHomeRegion();
           }
 
           WaypointVisit.visit(user, home.get());

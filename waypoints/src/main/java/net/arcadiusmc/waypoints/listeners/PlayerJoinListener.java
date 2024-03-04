@@ -18,7 +18,7 @@ class PlayerJoinListener implements Listener {
     boolean hulkSmashing = user.get(WaypointPrefs.HULK_SMASHING);
 
     if (hulkSmashing) {
-      HulkSmash.startHulkSmash(user, null);
+      HulkSmash.startHulkSmash(user);
     }
   }
 

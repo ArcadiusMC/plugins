@@ -1,16 +1,16 @@
 package net.arcadiusmc.waypoints.command;
 
-import net.arcadiusmc.command.FtcCommand;
-import net.forthecrown.grenadier.GrenadierCommand;
+import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.waypoints.WExceptions;
 import net.arcadiusmc.waypoints.WMessages;
 import net.arcadiusmc.waypoints.WPermissions;
 import net.arcadiusmc.waypoints.Waypoint;
 import net.arcadiusmc.waypoints.Waypoints;
+import net.forthecrown.grenadier.GrenadierCommand;
 import org.bukkit.Sound;
 
-public class CommandMoveIn extends FtcCommand {
+public class CommandMoveIn extends BaseCommand {
 
   public CommandMoveIn() {
     super("MoveIn");
@@ -43,14 +43,10 @@ public class CommandMoveIn extends FtcCommand {
           User user = getUserSender(c);
           Waypoint waypoint = Waypoints.getNearest(user);
 
-          Waypoints.validateMoveInCooldown(user);
-
-          if (waypoint == null || !waypoint.getBounds().contains(user.getPlayer())) {
-            if (waypoint != null) {
-              throw WExceptions.farFromWaypoint(waypoint);
-            } else {
-              throw WExceptions.FAR_FROM_WAYPOINT;
-            }
+          if (waypoint == null) {
+            throw WExceptions.farFromWaypoint();
+          } else if (!waypoint.getBounds().contains(user.getPlayer())) {
+            throw WExceptions.farFromWaypoint(waypoint);
           }
 
           user.sendMessage(WMessages.HOME_WAYPOINT_SET);

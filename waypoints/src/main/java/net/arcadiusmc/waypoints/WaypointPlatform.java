@@ -7,11 +7,11 @@ import com.mojang.serialization.JsonOps;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import net.forthecrown.grenadier.types.ArgumentTypes;
-import net.forthecrown.grenadier.types.BlockArgument.Result;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.Results;
 import net.arcadiusmc.utils.math.Vectors;
+import net.forthecrown.grenadier.types.ArgumentTypes;
+import net.forthecrown.grenadier.types.BlockArgument.Result;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -70,12 +70,12 @@ public interface WaypointPlatform {
   record LoadedPlatform(BlockData[][] materials) implements WaypointPlatform {
 
     static final Codec<BlockData> BLOCK_DATA_CODEC = Codec.STRING.comapFlatMap(
-        s -> FtcCodecs.safeParse(s, ArgumentTypes.block()).map(Result::getParsedState),
+        s -> ExtraCodecs.safeParse(s, ArgumentTypes.block()).map(Result::getParsedState),
         BlockData::getAsString
     );
 
     static final Codec<Map<Character, BlockData>> WHERE_CODEC
-        = Codec.unboundedMap(FtcCodecs.CHAR, BLOCK_DATA_CODEC)
+        = Codec.unboundedMap(ExtraCodecs.CHAR, BLOCK_DATA_CODEC)
         .fieldOf("where")
         .codec();
 

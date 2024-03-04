@@ -16,9 +16,6 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.command.Exceptions;
-import net.arcadiusmc.cosmetics.CosmeticData;
-import net.arcadiusmc.cosmetics.Cosmetics;
-import net.arcadiusmc.cosmetics.travel.TravelEffect;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.Locations;
 import net.arcadiusmc.utils.Tasks;
@@ -26,6 +23,8 @@ import net.arcadiusmc.waypoints.Waypoint;
 import net.arcadiusmc.waypoints.WaypointManager;
 import net.arcadiusmc.waypoints.WaypointPrefs;
 import net.arcadiusmc.waypoints.WaypointProperties;
+import net.arcadiusmc.waypoints.event.WaypointVisitEvent;
+import net.arcadiusmc.waypoints.event.WaypointVisitEvent.EventType;
 import net.arcadiusmc.waypoints.listeners.HulkSmash;
 import net.arcadiusmc.waypoints.type.WaypointTypes;
 import org.bukkit.GameMode;
@@ -51,11 +50,6 @@ public class WaypointVisit implements Runnable {
    * The user visiting the region
    */
   private final User user;
-
-  /**
-   * The user's active travel effect
-   */
-  private final TravelEffect activeEffect;
 
   /**
    * Visitation handlers
@@ -113,8 +107,6 @@ public class WaypointVisit implements Runnable {
       WaypointManager manager
   ) {
     this.user = user;
-    this.activeEffect = user.getComponent(CosmeticData.class)
-        .getValue(Cosmetics.TRAVEL_EFFECTS);
 
     this.destination = destination;
     this.manager = manager;
@@ -189,6 +181,7 @@ public class WaypointVisit implements Runnable {
         .addPredicate(VisitPredicate.DESTINATION_VALID)
         .addPredicate(VisitPredicate.NEAREST_VALID)
         .addPredicate(VisitPredicate.NOT_AT_SAME)
+        .addPredicate(VisitPredicate.IS_DISCOVERED)
 
         // This order matters, vehicles must be handled before
         // other passengers
@@ -288,10 +281,7 @@ public class WaypointVisit implements Runnable {
       user.getPlayer().setVelocity(new Vector(0, 20, 0));
       user.playSound(Sound.ENTITY_ENDER_DRAGON_SHOOT, 1, 1.2f);
 
-      // If they have cosmetic effect, execute it
-      if (activeEffect != null) {
-        activeEffect.onHulkStart(user, user.getLocation());
-      }
+      new WaypointVisitEvent(WaypointVisit.this, EventType.ON_HULK_BEGIN).callEvent();
 
       // Run the goingUp thing, so we can run the cosmetic effects while
       // they're ascending and then teleport them after they've reached
@@ -302,16 +292,9 @@ public class WaypointVisit implements Runnable {
           GAME_TICKS_PER_COSMETIC_TICK
       );
     } else {
-      // Execute travel effect, if they have one
-      if (shouldPlayEffect()) {
-        Tasks.runLater(() -> {
-          activeEffect.onPoleTeleport(
-              user,
-              user.getLocation(),
-              getTeleportLocation()
-          );
-        }, 2);
-      }
+      Tasks.runLater(() -> {
+        new WaypointVisitEvent(WaypointVisit.this, EventType.ON_INSTANT_TELEPORT).callEvent();
+      }, 2);
 
       if (!cancelTeleport) {
         // Just TP them to pole... boring
@@ -325,10 +308,6 @@ public class WaypointVisit implements Runnable {
 
       runTpHandlers();
     }
-  }
-
-  boolean shouldPlayEffect() {
-    return activeEffect != null && user.getGameMode() != GameMode.SPECTATOR;
   }
 
   void runHandlers(Consumer<VisitHandler> consumer) {
@@ -361,9 +340,8 @@ public class WaypointVisit implements Runnable {
     public void accept(BukkitTask task) {
       try {
         // If they have travel effect, run it
-        if (activeEffect != null) {
-          activeEffect.onHulkTickUp(user, user.getLocation());
-        }
+        new WaypointVisitEvent(WaypointVisit.this, EventType.ON_TICK_UP)
+            .callEvent();
 
         // If we're below the tick limit,
         // stop and move on to fall listener
@@ -377,7 +355,7 @@ public class WaypointVisit implements Runnable {
 
           user.playSound(Sound.ENTITY_ENDERMAN_TELEPORT, 1, 1);
           runTpHandlers();
-          HulkSmash.startHulkSmash(user, activeEffect);
+          HulkSmash.startHulkSmash(user);
         }
       } catch (Exception e) {
         task.cancel();

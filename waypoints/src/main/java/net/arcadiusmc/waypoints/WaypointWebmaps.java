@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import java.util.Optional;
 import lombok.experimental.UtilityClass;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.utils.Result;
 import net.arcadiusmc.webmap.MapIcon;
 import net.arcadiusmc.webmap.MapLayer;
 import net.arcadiusmc.webmap.MapMarker;
@@ -44,15 +45,15 @@ class WaypointWebmaps {
    * to be in sync with the actual waypoint
    */
   static void updateMarker(Waypoint waypoint) {
-    var layerOpt = getSet(waypoint.getWorld());
+    Optional<MapLayer> layerOpt = getSet(waypoint.getWorld());
     if (layerOpt.isEmpty()) {
       return;
     }
 
-    var set = layerOpt.get();
-    var name = waypoint.getEffectiveName();
-    var markerOpt = set.findPointMarker(waypoint.getMarkerId());
-    var marker = markerOpt.orElse(null);
+    MapLayer set = layerOpt.get();
+    String name = waypoint.getEffectiveName();
+    Optional<MapPointMarker> markerOpt = set.findPointMarker(waypoint.getMarkerId());
+    MapPointMarker marker = markerOpt.orElse(null);
 
     if (Strings.isNullOrEmpty(name) || !waypoint.get(WaypointProperties.ALLOWS_MARKER)) {
       if (marker != null) {
@@ -70,16 +71,16 @@ class WaypointWebmaps {
       return;
     }
 
-    var icon = iconOpt.get();
+    MapIcon icon = iconOpt.get();
 
     int x = waypoint.getPosition().x();
     int y = waypoint.getPosition().y();
     int z = waypoint.getPosition().z();
 
     if (marker == null) {
-      var markerResult = set.createPointMarker(
+      Result<MapPointMarker> markerResult = set.createPointMarker(
           waypoint.getMarkerId(),
-          waypoint.get(WaypointProperties.NAME),
+          name,
 
           // Location
           x, y, z,

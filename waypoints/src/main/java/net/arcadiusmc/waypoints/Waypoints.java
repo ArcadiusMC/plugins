@@ -6,7 +6,6 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
@@ -17,13 +16,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import net.arcadiusmc.Loggers;
-import net.arcadiusmc.antigrief.BannedWords;
-import net.arcadiusmc.command.Exceptions;
-import net.arcadiusmc.user.TimeField;
+import net.arcadiusmc.punish.PunishPlugin;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
-import net.arcadiusmc.utils.PluginUtil;
-import net.arcadiusmc.utils.Time;
 import net.arcadiusmc.utils.io.PathUtil;
 import net.arcadiusmc.utils.io.PluginJar;
 import net.arcadiusmc.utils.io.Results;
@@ -182,7 +177,7 @@ public final class Waypoints {
       return Results.error("Name already in use");
     }
 
-    if (BannedWords.contains(name)) {
+    if (PunishPlugin.plugin().getBannedWords().contains(name)) {
       return Results.error("Inappropriate name");
     }
 
@@ -401,7 +396,7 @@ public final class Waypoints {
       throws CommandSyntaxException
   {
     if (clicked == null) {
-      throw WExceptions.FACE_WAYPOINT;
+      throw WExceptions.faceWaypoint();
     }
 
     User user = Users.get(player);
@@ -417,11 +412,6 @@ public final class Waypoints {
 
     Block b = topAndType.getFirst();
     WaypointType type = topAndType.getSecond();
-
-    var config = WaypointManager.getInstance().config();
-    if (config.isDisabledWorld(b.getWorld())) {
-      throw WExceptions.WAYPOINTS_WRONG_WORLD;
-    }
 
     Vector3i pos = Vectors.from(b);
 
@@ -496,37 +486,6 @@ public final class Waypoints {
         .orElse(WaypointPlatform.DEFAULT);
   }
 
-  /**
-   * Tests if the user can move their home waypoint.
-   * <p>
-   * The cooldown length is determined by {@link WaypointConfig#moveInCooldown}
-   *
-   * @param user The user to test
-   * @throws CommandSyntaxException If they cannot move their waypoint home
-   */
-  public static void validateMoveInCooldown(User user)
-      throws CommandSyntaxException
-  {
-    long lastMoveIn = user.getTime(TimeField.LAST_MOVEIN);
-
-    // Unset cool downs mean they haven't
-    // tried to set their home yet.
-    // If movein cooldown disabled or the
-    // cooldown length is less than 1
-    var config = WaypointManager.getInstance().config();
-    Duration duration = config.moveInCooldown;
-
-    if (lastMoveIn == -1 || duration == null || duration.toMillis() < 1) {
-      return;
-    }
-
-    long remainingCooldown = Time.timeUntil(lastMoveIn + duration.toMillis());
-
-    if (remainingCooldown > 0) {
-      throw Exceptions.cooldownEndsIn(remainingCooldown);
-    }
-  }
-
   public static Waypoint makeWaypoint(WaypointType type, Vector3i pos, Player source) {
     Location location = source.getLocation();
 
@@ -577,10 +536,6 @@ public final class Waypoints {
    * @see WaypointWebmaps#updateMarker(Waypoint)
    */
   public static void updateDynmap(Waypoint waypoint) {
-    if (!PluginUtil.isEnabled("Dynmap")) {
-      return;
-    }
-
     WaypointWebmaps.updateMarker(waypoint);
   }
 }

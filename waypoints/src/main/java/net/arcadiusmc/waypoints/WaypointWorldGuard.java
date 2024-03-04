@@ -1,11 +1,10 @@
 package net.arcadiusmc.waypoints;
 
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import net.arcadiusmc.user.User;
+import net.arcadiusmc.utils.WgUtils;
 import org.bukkit.block.Block;
 
 public final class WaypointWorldGuard {
@@ -23,14 +22,6 @@ public final class WaypointWorldGuard {
       return true;
     }
 
-    return WorldGuard.getInstance()
-        .getPlatform()
-        .getRegionContainer()
-        .createQuery()
-        .testState(
-            BukkitAdapter.adapt(block.getLocation()),
-            WorldGuardPlugin.inst().wrapPlayer(user.getPlayer()),
-            CREATE_WAYPOINTS
-        );
+    return WgUtils.testFlag(block.getLocation(), CREATE_WAYPOINTS, user.getPlayer());
   }
 }

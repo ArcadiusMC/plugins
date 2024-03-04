@@ -1,6 +1,7 @@
 package net.arcadiusmc.waypoints.listeners;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.datafixers.util.Pair;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -13,13 +14,17 @@ import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.arcadiusmc.waypoints.Waypoint;
 import net.arcadiusmc.waypoints.WaypointManager;
 import net.arcadiusmc.waypoints.Waypoints;
+import net.arcadiusmc.waypoints.type.WaypointType;
 import net.arcadiusmc.waypoints.type.WaypointTypes;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 import org.slf4j.Logger;
 
@@ -36,8 +41,8 @@ public class PlayerListener implements Listener {
 
   @EventHandler(ignoreCancelled = true)
   public void onPlayerInteract(PlayerInteractEvent event) {
-    var player = event.getPlayer();
-    var item = event.getItem();
+    Player player = event.getPlayer();
+    ItemStack item = event.getItem();
 
     if (ItemStacks.isEmpty(item) || !event.getAction().isRightClick()) {
       return;
@@ -71,9 +76,9 @@ public class PlayerListener implements Listener {
         return;
       }
 
-      var target = WaypointTypes.findTopAndType(block);
+      Pair<Block, WaypointType> target = WaypointTypes.findTopAndType(block);
       if (target != null) {
-        var targetType = target.getSecond();
+        WaypointType targetType = target.getSecond();
 
         if (!Objects.equals(targetType, copy.getType())) {
           player.sendMessage(

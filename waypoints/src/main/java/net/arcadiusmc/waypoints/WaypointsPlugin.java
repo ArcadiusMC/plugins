@@ -1,10 +1,13 @@
 package net.arcadiusmc.waypoints;
 
-import net.arcadiusmc.FtcServer;
+import net.arcadiusmc.ArcadiusServer;
 import net.arcadiusmc.command.settings.SettingsBook;
 import net.arcadiusmc.packet.PacketListeners;
 import net.arcadiusmc.packet.SignRenderer;
 import net.arcadiusmc.registry.Registry;
+import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.loader.MessageList;
+import net.arcadiusmc.text.loader.MessageLoader;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.UserService;
 import net.arcadiusmc.user.Users;
@@ -17,18 +20,22 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class WaypointsPlugin extends JavaPlugin {
 
+  private final MessageList messageList = MessageList.create();
+
   public WaypointConfig wConfig;
 
   private PeriodicalSaver saver;
 
   @Override
   public void onEnable() {
+    Messages.MESSAGE_LIST.addChild(getName(), messageList);
+
     reloadConfig();
 
     WaypointTypes.registerAll();
     WaypointManager.instance = new WaypointManager(this);
 
-    SettingsBook<User> settingsBook = FtcServer.server().getGlobalSettingsBook();
+    SettingsBook<User> settingsBook = ArcadiusServer.server().getGlobalSettingsBook();
     WaypointPrefs.createSettings(settingsBook);
 
     saver = PeriodicalSaver.create(
@@ -46,6 +53,8 @@ public class WaypointsPlugin extends JavaPlugin {
 
     UserService service = Users.getService();
     service.setPropertyDefunct("homeWaypoint");
+
+    WaypointManager.instance.discoverer.beginListening();
   }
 
   @Override
@@ -57,15 +66,19 @@ public class WaypointsPlugin extends JavaPlugin {
   public void onDisable() {
     saver.stop();
 
-    var m = WaypointManager.getInstance();
+    WaypointManager m = WaypointManager.getInstance();
+    m.discoverer.stopListening();
     m.clear();
 
     Registry<SignRenderer> renderers = PacketListeners.listeners().getSignRenderers();
     renderers.remove("waypoint_edit_sign");
+
+    Messages.MESSAGE_LIST.removeChild(getName());
   }
 
   @Override
   public void reloadConfig() {
     wConfig = TomlConfigs.loadPluginConfig(this, WaypointConfig.class);
+    MessageLoader.loadPluginMessages(this, messageList);
   }
 }

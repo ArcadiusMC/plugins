@@ -16,6 +16,7 @@ import net.arcadiusmc.waypoints.Waypoint;
 import net.arcadiusmc.waypoints.WaypointHomes;
 import net.arcadiusmc.waypoints.WaypointProperties;
 import net.arcadiusmc.waypoints.Waypoints;
+import org.bukkit.entity.Player;
 
 public interface WaypointResults {
   /* ----------------------------- CONSTANTS ------------------------------ */
@@ -25,11 +26,11 @@ public interface WaypointResults {
       throw Exceptions.NO_PERMISSION;
     }
 
-    var player = source.asPlayer();
+    Player player = source.asPlayer();
     Waypoint waypoint = Waypoints.getNearest(Users.get(player));
 
     if (waypoint == null) {
-      throw WExceptions.FAR_FROM_WAYPOINT;
+      throw WExceptions.farFromWaypoint();
     }
 
     return waypoint;
@@ -40,11 +41,11 @@ public interface WaypointResults {
       throw Exceptions.NO_PERMISSION;
     }
 
-    var player = source.asPlayer();
+    Player player = source.asPlayer();
     Waypoint waypoint = Waypoints.getNearest(Users.get(player));
 
     if (waypoint == null) {
-      throw WExceptions.FAR_FROM_WAYPOINT;
+      throw WExceptions.farFromWaypoint();
     }
 
     if (!waypoint.getBounds().contains(player)) {
@@ -82,9 +83,9 @@ public interface WaypointResults {
 
       if (waypoint.isEmpty()) {
         if (self) {
-          throw WExceptions.NO_HOME_REGION;
+          throw WExceptions.noHomeRegion();
         } else {
-          throw WExceptions.noHomeWaypoint(user);
+          throw WExceptions.noHomeWaypoint(source, user);
         }
       }
 
@@ -98,7 +99,7 @@ public interface WaypointResults {
       }
 
       if (shouldValidate && !self && isAccessInvalid(source, waypoint.get())) {
-        throw WExceptions.notInvited(user);
+        throw WExceptions.notInvited(source, user);
       }
 
       return waypoint.get();

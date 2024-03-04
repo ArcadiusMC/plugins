@@ -17,7 +17,9 @@ import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +32,8 @@ import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.Worlds;
+import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.forthecrown.nbt.BinaryTag;
 import net.forthecrown.nbt.BinaryTags;
 import net.forthecrown.nbt.CompoundTag;
@@ -60,6 +64,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.title.Title;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.mutable.Mutable;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -101,6 +106,10 @@ public class Waypoint {
   static final String TAG_LAST_VALID = "lastValid";
   static final String TAG_CREATION_TIME = "creation_time";
   static final String TAG_DESCRIPTION = "description";
+  static final String TAG_DISCOVERED = "discovered_players";
+
+  static final Codec<Set<UUID>> ID_LIST_CODEC
+      = ExtraCodecs.INT_ARRAY_UUID.listOf().xmap(HashSet::new, ArrayList::new);
 
   /**
    * The Waypoint's randomly generated UUID
@@ -162,6 +171,8 @@ public class Waypoint {
    */
   @Getter
   private final Object2LongMap<UUID> residents = new Object2LongOpenHashMap<>();
+
+  private Set<UUID> discovered;
 
   /**
    * Last time this waypoint was 'valid'
@@ -242,7 +253,9 @@ public class Waypoint {
     // need to update any actual values
     if (hasBeenAdded() && getWorld() != null) {
       type.onPreMove(this, position, world);
+
       manager.getChunkMap().remove(getWorld(), this);
+      manager.getDiscoveryMap().remove(getWorld(), this);
 
       update(false);
       clearPlatform(getWorld(), getPlatform());
@@ -259,7 +272,9 @@ public class Waypoint {
 
     if (hasBeenAdded()) {
       type.onPostMove(this);
+
       manager.getChunkMap().add(world, bounds, this);
+      manager.getDiscoveryMap().add(world, getDiscoveryBounds(), this);
 
       update(true);
       placePlatform(getWorld(), getPlatform());
@@ -906,7 +921,7 @@ public class Waypoint {
   }
 
   public void addResident(UUID uuid) {
-    if (!isResident(uuid)) {
+    if (isResident(uuid)) {
       return;
     }
 
@@ -956,6 +971,91 @@ public class Waypoint {
     return residents.containsKey(uuid);
   }
 
+  /* ----------------------------- DISCOVERED ----------------------------- */
+
+  public Set<UUID> getDiscoveredPlayers() {
+    if (discovered == null) {
+      return Set.of();
+    }
+    return Collections.unmodifiableSet(discovered);
+  }
+
+  public boolean hasDiscovered(UUID playerId) {
+    if (discovered == null) {
+      return false;
+    }
+    return discovered.contains(playerId);
+  }
+
+  public void addDiscovered(UUID playerId) {
+    if (discovered == null) {
+      discovered = new HashSet<>();
+    }
+
+    discovered.add(playerId);
+  }
+
+  public void clearDiscovered() {
+    if (discovered == null) {
+      return;
+    }
+
+    discovered.clear();
+  }
+
+  public void removeDiscovered(UUID playerId) {
+    if (discovered == null) {
+      return;
+    }
+
+    discovered.remove(playerId);
+  }
+
+  public void discover(User user) {
+    Objects.requireNonNull(user, "Null user");
+
+    if (hasDiscovered(user.getUniqueId())) {
+      return;
+    }
+
+    addDiscovered(user.getUniqueId());
+
+    // Basically, if discovery is not actually required,
+    // then don't tell the player they just stumbled upon
+    // a waypoint
+    if (!get(WaypointProperties.REQUIRES_DISCOVERY)) {
+      return;
+    }
+
+    Component displayName = nonNullDisplayName();
+
+    Component subtitle = Messages.render("waypoints.discovered.subtitle")
+        .addValue("waypoint", displayName)
+        .create(user);
+
+    Component titleText = Messages.render("waypoints.discovered.title")
+        .addValue("waypoint", displayName)
+        .create(user);
+
+    Title title = Title.title(titleText, subtitle);
+    user.showTitle(title);
+  }
+
+  public int getDiscoveryRange() {
+    Integer propertyRange = get(WaypointProperties.DISCOVERY_RANGE);
+
+    if (propertyRange == null) {
+      return WaypointManager.getInstance().getPlugin().wConfig.discoveryRange;
+    }
+
+    return propertyRange;
+  }
+
+  public Bounds3i getDiscoveryBounds() {
+    int range = getDiscoveryRange();
+    return bounds.expand(range);
+  }
+
   /* ------------------------------ DISPLAY ------------------------------- */
 
   public void configureWriter(TextWriter writer) {
@@ -964,20 +1064,34 @@ public class Waypoint {
     writer.setFieldSeparator(Component.text(": ", NamedTextColor.GRAY));
   }
 
+  public @NotNull Component nonNullDisplayName() {
+    String effectiveName = getEffectiveName();
+
+    if (Strings.isNullOrEmpty(effectiveName)) {
+      effectiveName = "Wilderness";
+    }
+
+    return displayNameFrom(effectiveName);
+  }
+
   public @Nullable Component displayName() {
-    var effectiveName = getEffectiveName();
+    String effectiveName = getEffectiveName();
 
     if (Strings.isNullOrEmpty(effectiveName)) {
       return null;
     }
 
+    return displayNameFrom(effectiveName);
+  }
+
+  private Component displayNameFrom(String name) {
     var color = getTextColor();
     var writer = TextWriters.newWriter();
 
     configureWriter(writer);
     writeHover(writer);
 
-    return Text.format("[{0}]", color, effectiveName)
+    return Text.format("[{0}]", color, name)
         .hoverEvent(writer.asComponent())
         .clickEvent(ClickEvent.suggestCommand("/visit " + effectiveName));
   }
@@ -1056,7 +1170,13 @@ public class Waypoint {
     }
   }
 
-  private TextColor getTextColor() {
+  public TextColor getTextColor() {
+    TextColor propertyValue = get(WaypointProperties.NAME_COLOR);
+
+    if (propertyValue != null) {
+      return propertyValue;
+    }
+
     return type.getNameColor(this);
   }
 
@@ -1116,6 +1236,13 @@ public class Waypoint {
           .mapError(s -> "Failed to save description for waypoint " + this + ": " + s)
           .resultOrPartial(LOGGER::error)
           .ifPresent(binaryTag -> tag.put(TAG_DESCRIPTION, binaryTag));
+    }
+
+    if (discovered != null && !discovered.isEmpty()) {
+      ID_LIST_CODEC.encodeStart(TagOps.OPS, discovered)
+          .mapError(s -> "Failed to save discovered player list: " + s)
+          .resultOrPartial(LOGGER::error)
+          .ifPresent(binaryTag -> tag.put(TAG_DISCOVERED, binaryTag));
     }
 
     if (hasProperties()) {
@@ -1212,13 +1339,22 @@ public class Waypoint {
       description = null;
     }
 
+    if (tag.containsKey(TAG_DISCOVERED)) {
+      ID_LIST_CODEC.parse(TagOps.OPS, tag.get(TAG_DISCOVERED))
+          .mapError(s -> "Failed to load discovered player list " + s)
+          .resultOrPartial(LOGGER::error)
+          .ifPresent(uuids -> discovered = uuids);
+    } else {
+      discovered = null;
+    }
+
     if (tag.containsKey(TAG_PROPERTIES)) {
       CompoundTag propertyTag = tag.getCompound(TAG_PROPERTIES);
 
       for (var e : propertyTag.entrySet()) {
-        String renamedKey = WaypointProperties.RENAMES.getOrDefault(e.getKey(), e.getKey());
+        String key = e.getKey();
 
-        WaypointProperties.REGISTRY.get(renamedKey).ifPresentOrElse(property -> {
+        WaypointProperties.REGISTRY.get(key).ifPresentOrElse(property -> {
           WaypointProperty<Object> prop = property;
 
           prop.getCodec()

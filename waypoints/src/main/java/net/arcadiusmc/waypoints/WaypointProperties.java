@@ -10,15 +10,16 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.arguments.Arguments;
-import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.arcadiusmc.registry.Registries;
 import net.arcadiusmc.registry.Registry;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.waypoints.command.StringListArgument;
+import net.forthecrown.grenadier.types.ArgumentTypes;
+import net.kyori.adventure.text.format.TextColor;
+import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 
 public class WaypointProperties {
@@ -27,13 +28,6 @@ public class WaypointProperties {
    * Registry of waypoint properties
    */
   public static final Registry<WaypointProperty> REGISTRY = Registries.newFreezable();
-
-  static final Map<String, String> RENAMES = Map.ofEntries(
-      Map.entry("allowsMarker", "allows_marker"),
-      Map.entry("specialMarker", "special_marker"),
-      Map.entry("hideResidents", "hide_residents"),
-      Map.entry("guildOwner", "guild_owner")
-  );
 
   /**
    * Determines if a pole can be destroyed, if set to true, a waypoint will also never be
@@ -64,6 +58,24 @@ public class WaypointProperties {
   public static final WaypointProperty<Boolean> SPECIAL_MARKER
       = new WaypointProperty<>("special_marker", bool(), BOOL, false);
 
+  public static final WaypointProperty<Boolean> REQUIRES_DISCOVERY
+      = new WaypointProperty<>("requires_discovery", bool(), BOOL, false);
+
+  public static final WaypointProperty<Integer> DISCOVERY_RANGE
+      = new WaypointProperty<>("discovery_range", integer(), INT, null)
+      .setCallback((waypoint, oldValue, value) -> {
+        WaypointManager manager = waypoint.manager;
+
+        World world = waypoint.getWorld();
+        assert world != null;
+
+        manager.discoveryMap.remove(world, waypoint);
+        manager.discoveryMap.add(world, waypoint.getDiscoveryBounds(), waypoint);
+      });
+
+  public static final WaypointProperty<TextColor> NAME_COLOR
+      = new WaypointProperty<>("name_color", Arguments.COLOR, createColorCodec(), null);
+
   public static final WaypointProperty<Integer> VISITS_DAILY
       = new WaypointProperty<>("visits/daily", integer(), INT, 0);
 
@@ -74,7 +86,7 @@ public class WaypointProperties {
       = new WaypointProperty<>("visits/total", integer(), INT, 0);
 
   public static final WaypointProperty<ItemStack> DISPLAY_ITEM
-      = new WaypointProperty<>("display_material", Arguments.ITEMSTACK, FtcCodecs.ITEM_CODEC, null);
+      = new WaypointProperty<>("display_material", Arguments.ITEMSTACK, ExtraCodecs.ITEM_CODEC, null);
 
   public static final WaypointProperty<Float> VISIT_YAW
       = new WaypointProperty<>("visit_rotation/yaw", floatArg(-180, 180), Codec.FLOAT, null);
@@ -132,5 +144,9 @@ public class WaypointProperties {
    * The UUID of the player that owns the waypoint
    */
   public static final WaypointProperty<UUID> OWNER
-      = new WaypointProperty<>("owner", ArgumentTypes.uuid(), FtcCodecs.INT_ARRAY_UUID, null);
+      = new WaypointProperty<>("owner", ArgumentTypes.uuid(), ExtraCodecs.INT_ARRAY_UUID, null);
+
+  private static Codec<TextColor> createColorCodec() {
+    return INT.xmap(TextColor::color, TextColor::value);
+  }
 }

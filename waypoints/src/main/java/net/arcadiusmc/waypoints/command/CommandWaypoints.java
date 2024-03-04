@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.UnaryOperator;
@@ -18,6 +19,8 @@ import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.arguments.ParseResult;
 import net.arcadiusmc.command.arguments.chat.MessageSuggestions;
+import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.waypoints.WExceptions;
 import net.forthecrown.grenadier.CommandContexts;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Completions;
@@ -128,8 +131,77 @@ public class CommandWaypoints {
   ) {
     var bounds = waypoint.getBounds();
     Particles.drawBounds(waypoint.getWorld(), bounds,
-        Color.fromRGB(waypoint.getType().getNameColor(waypoint).value())
+        Color.fromRGB(waypoint.getTextColor().value())
     );
+  }
+
+  public void discover(
+      CommandSource source,
+      @Argument("waypoint") Waypoint waypoint,
+      @Argument("player") User user
+  ) throws CommandSyntaxException {
+    if (waypoint.hasDiscovered(user.getUniqueId())) {
+      throw WExceptions.alreadyDiscovered(source, user, waypoint);
+    }
+
+    waypoint.discover(user);
+  }
+
+  public void listDiscovered(
+      CommandSource source,
+      @Argument("waypoint") Waypoint waypoint
+  ) throws CommandSyntaxException {
+    Set<UUID> discovered = waypoint.getDiscoveredPlayers();
+
+    if (discovered.isEmpty()) {
+      throw Exceptions.NOTHING_TO_LIST.exception(source);
+    }
+
+    TextJoiner joiner = TextJoiner.onComma()
+        .add(
+            discovered.stream()
+                .map(Users::get)
+                .map(user -> user.displayName(source))
+        );
+
+    makeWaypointMessage(waypoint, source, like -> {
+      return Messages.render("waypoints.discovered.list")
+          .addValue("waypoint", like)
+          .addValue("list", joiner.asComponent())
+          .create(source);
+    });
+  }
+
+  public void clearDiscovered(
+      CommandSource source,
+      @Argument("waypoint") Waypoint waypoint
+  ) throws CommandSyntaxException {
+    waypoint.clearDiscovered();
+
+    makeWaypointMessage(waypoint, source, like -> {
+      return Messages.render("waypoints.discovered.cleared")
+          .addValue("waypoint", like.asComponent())
+          .create(source);
+    });
+  }
+
+  public void removeDiscovered(
+      CommandSource source,
+      @Argument("waypoint") Waypoint waypoint,
+      @Argument("player") User user
+  ) throws CommandSyntaxException {
+    if (!waypoint.hasDiscovered(user.getUniqueId())) {
+      throw WExceptions.notDiscovered(source, user);
+    }
+
+    waypoint.removeDiscovered(user.getUniqueId());
+
+    makeWaypointMessage(waypoint, source, like -> {
+      return Messages.render("waypoints.discovered.removed")
+          .addValue("player", user)
+          .addValue("waypoint", like.asComponent())
+          .create(source);
+    });
   }
 
   public void moveWaypoint(
@@ -362,7 +434,7 @@ public class CommandWaypoints {
       long movein = waypoint.getResidents().getLong(user.getUniqueId());
 
       if (movein == time.toEpochMilli()) {
-        throw Exceptions.NOTHING_CHANGED;
+        throw Exceptions.create("Nothing changed.");
       }
     }
 

@@ -1,7 +1,10 @@
 package net.arcadiusmc.waypoints.visit;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.util.Optional;
 import net.arcadiusmc.command.Exceptions;
+import net.arcadiusmc.user.User;
+import net.arcadiusmc.waypoints.Waypoint;
 import net.forthecrown.grenadier.SyntaxExceptions;
 import net.arcadiusmc.waypoints.WExceptions;
 import net.arcadiusmc.waypoints.WPermissions;
@@ -18,7 +21,7 @@ public interface VisitPredicate {
       return;
     }
 
-    throw WExceptions.ONLY_IN_VEHICLE;
+    throw WExceptions.onlyInVehicle();
   };
 
   VisitPredicate NOT_AT_SAME = visit -> {
@@ -48,10 +51,24 @@ public interface VisitPredicate {
     }
 
     if (nearest == null) {
-      throw WExceptions.FAR_FROM_WAYPOINT;
+      throw WExceptions.farFromWaypoint();
     } else {
       throw WExceptions.farFromWaypoint(nearest);
     }
+  };
+
+  VisitPredicate IS_DISCOVERED = visit -> {
+    User player = visit.getUser();
+    Waypoint waypoint = visit.getDestination();
+
+    if (player.hasPermission(WPermissions.IGNORE_DISCOVERY)
+        || !waypoint.get(WaypointProperties.REQUIRES_DISCOVERY)
+        || waypoint.hasDiscovered(player.getUniqueId())
+    ) {
+      return;
+    }
+
+    throw WExceptions.waypointNotDiscovered(waypoint);
   };
 
   VisitPredicate DESTINATION_VALID = waypointIsValid(true);
@@ -74,7 +91,7 @@ public interface VisitPredicate {
       }
 
       if (dest && !visit.getDestination().isWorldLoaded()) {
-        throw WExceptions.UNLOADED_WORLD;
+        throw WExceptions.unloadedWorld();
       }
 
       var waypoint = dest
@@ -93,7 +110,7 @@ public interface VisitPredicate {
         return;
       }
 
-      var exc = waypoint.getType().isValid(waypoint)
+      Optional<CommandSyntaxException> exc = waypoint.getType().isValid(waypoint)
           .map(e -> {
             Component msg = SyntaxExceptions.formatCommandException(e);
 

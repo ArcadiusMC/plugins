@@ -48,14 +48,12 @@ public class PlayerWaypointType extends WaypointType {
       return;
     }
 
-    Waypoints.validateMoveInCooldown(creator);
-
-    var alreadyOwned = WaypointHomes.getHome(creator);
+    Optional<Waypoint> alreadyOwned = WaypointHomes.getHome(creator);
     if (alreadyOwned.isEmpty()) {
       return;
     }
 
-    throw WExceptions.homeAlreadySet(alreadyOwned.get());
+    throw WExceptions.waypointAlreadySet(alreadyOwned.get());
   }
 
   @Override

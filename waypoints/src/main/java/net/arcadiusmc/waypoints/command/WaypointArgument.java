@@ -7,17 +7,17 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.concurrent.CompletableFuture;
-import net.arcadiusmc.command.FtcSuggestions;
+import net.arcadiusmc.command.ArcSuggestions;
 import net.arcadiusmc.command.arguments.ParseResult;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.Completions;
-import net.forthecrown.grenadier.Readers;
 import net.arcadiusmc.user.UserLookup.LookupEntry;
 import net.arcadiusmc.user.Users;
 import net.arcadiusmc.waypoints.WExceptions;
 import net.arcadiusmc.waypoints.WPermissions;
 import net.arcadiusmc.waypoints.Waypoint;
 import net.arcadiusmc.waypoints.WaypointManager;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.Completions;
+import net.forthecrown.grenadier.Readers;
 
 public class WaypointArgument implements ArgumentType<ParseResult<Waypoint>> {
 
@@ -80,7 +80,7 @@ public class WaypointArgument implements ArgumentType<ParseResult<Waypoint>> {
     }
 
     // Suggest players
-    FtcSuggestions.suggestPlayerNames(source, builder, false);
+    ArcSuggestions.suggestPlayerNames(source, builder, false);
 
     WaypointManager manager = WaypointManager.getInstance();
 

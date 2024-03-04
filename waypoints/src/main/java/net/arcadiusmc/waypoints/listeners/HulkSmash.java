@@ -4,15 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
-import net.arcadiusmc.cosmetics.CosmeticData;
-import net.arcadiusmc.cosmetics.Cosmetics;
-import net.arcadiusmc.cosmetics.travel.TravelEffect;
 import net.arcadiusmc.events.Events;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.Tasks;
 import net.arcadiusmc.waypoints.WaypointPrefs;
+import net.arcadiusmc.waypoints.event.WaypointVisitEvent;
+import net.arcadiusmc.waypoints.event.WaypointVisitEvent.EventType;
 import net.kyori.adventure.util.Ticks;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -33,25 +31,11 @@ public class HulkSmash implements Listener {
   private static final Map<UUID, HulkSmash> listeners = new HashMap<>();
 
   private final User user;
-  private final TravelEffect effect;
 
   private boolean active = false;
 
-  public static void startHulkSmash(User user, @Nullable TravelEffect effect) {
-    HulkSmash listener = listeners.computeIfAbsent(
-        user.getUniqueId(),
-        uuid -> {
-          TravelEffect eff;
-
-          if (effect != null) {
-            eff = effect;
-          } else {
-            eff = user.getComponent(CosmeticData.class).getValue(Cosmetics.TRAVEL_EFFECTS);
-          }
-
-          return new HulkSmash(user, eff);
-        }
-    );
+  public static void startHulkSmash(User user) {
+    HulkSmash listener = listeners.computeIfAbsent(user.getUniqueId(), uuid -> new HulkSmash(user));
 
     if (!listener.active) {
       listener.beginListening();
@@ -108,9 +92,7 @@ public class HulkSmash implements Listener {
     }
 
     try {
-      if (effect != null) {
-        effect.onHulkTickDown(user, user.getLocation());
-      }
+      new WaypointVisitEvent(user, user.getLocation(), EventType.ON_TICK_DOWN).callEvent();
     } catch (Exception e) {
       unregister(true);
     }
@@ -141,9 +123,7 @@ public class HulkSmash implements Listener {
         .offset(1, 1, 1)
         .spawn();
 
-    if (effect != null) {
-      effect.onHulkLand(user, user.getLocation());
-    }
+    new WaypointVisitEvent(user, user.getLocation(), EventType.ON_LAND).callEvent();
   }
 
   @EventHandler(ignoreCancelled = true)

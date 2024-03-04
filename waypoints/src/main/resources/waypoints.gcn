@@ -46,6 +46,36 @@ literal("draw-bounds").argument("waypoint", @waypoint) {
   description = "Draws the bounds of a waypoint"
 }
 
+literal("discover").argument("waypoint", @waypoint).argument("player", online_user) {
+  map_result("waypoint") = @to_waypoint
+  map_result("player") = @result_to_user
+
+  executes = discover()
+  description = "Discovers a waypoint for a player"
+}
+
+literal("discovered-players") {
+  literal("list").argument("waypoint", @waypoint) {
+    map_result("waypoint") = @to_waypoint
+    executes = listDiscovered()
+    description = "Lists all players that have discovered a waypoint"
+  }
+
+  literal("clear").argument("waypoint", @waypoint) {
+    map_result("waypoint") = @to_waypoint
+    executes = clearDiscovered()
+    description = "Clears all players from a waypoint's discovered list"
+  }
+
+  literal("remove").argument("waypoint", @waypoint).argument("player", user) {
+    map_result("waypoint") = @to_waypoint
+    map_result("player") = @result_to_user
+
+    executes = removeDiscovered()
+    description = "Removes a player from a waypoint's discovered list"
+  }
+}
+
 literal("create") {
   literal("admin") {
     description = "Creates an invisible admin waypoint"

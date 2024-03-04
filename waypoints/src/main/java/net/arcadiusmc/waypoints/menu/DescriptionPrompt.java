@@ -5,8 +5,8 @@ import static net.kyori.adventure.text.Component.text;
 
 import com.google.common.base.Strings;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.arcadiusmc.antigrief.BannedWords;
 import net.arcadiusmc.command.Exceptions;
+import net.arcadiusmc.punish.PunishPlugin;
 import net.arcadiusmc.text.PlayerMessage;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.user.User;
@@ -67,7 +67,7 @@ public class DescriptionPrompt extends StringPrompt {
 
     desc = desc.replace("\\n", "\n");
 
-    if (BannedWords.checkAndWarn(user.getPlayer(), desc)) {
+    if (PunishPlugin.plugin().getBannedWords().checkAndWarn(user.getPlayer(), desc)) {
       return;
     }
 

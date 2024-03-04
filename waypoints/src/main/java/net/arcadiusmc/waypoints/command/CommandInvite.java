@@ -3,22 +3,24 @@ package net.arcadiusmc.waypoints.command;
 import static net.arcadiusmc.waypoints.WaypointPrefs.INVITES_ALLOWED;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.util.List;
 import java.util.Optional;
+import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.Exceptions;
-import net.arcadiusmc.command.FtcCommand;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.help.UsageFactory;
-import net.forthecrown.grenadier.GrenadierCommand;
+import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.UserBlockList;
 import net.arcadiusmc.waypoints.WExceptions;
 import net.arcadiusmc.waypoints.WMessages;
 import net.arcadiusmc.waypoints.WPermissions;
 import net.arcadiusmc.waypoints.Waypoint;
 import net.arcadiusmc.waypoints.WaypointHomes;
-import net.kyori.adventure.text.Component;
+import net.forthecrown.grenadier.GrenadierCommand;
 import org.bukkit.Sound;
 
-public class CommandInvite extends FtcCommand {
+public class CommandInvite extends BaseCommand {
 
   public CommandInvite() {
     super("Invite");
@@ -48,24 +50,24 @@ public class CommandInvite extends FtcCommand {
               Optional<Waypoint> waypoint = WaypointHomes.getHome(user);
 
               if (waypoint.isEmpty()) {
-                throw WExceptions.NO_HOME_REGION;
+                throw WExceptions.noHomeRegion();
               }
 
-              var targets = Arguments.getUsers(c, "users");
+              List<User> targets = Arguments.getUsers(c, "users");
 
               Optional<CommandSyntaxException> opt = UserBlockList.filterPlayers(
                   user,
                   targets,
                   INVITES_ALLOWED,
-                  "{0, user} doesn't accept region invites",
-                  Component.text("Cannot invite yourself")
+                  Messages.reference("waypoints.invites.blocked"),
+                  Messages.reference("waypoints.invites.self")
               ).map(Exceptions::create);
 
               if (opt.isPresent()) {
                 throw opt.get();
               }
 
-              for (var target : targets) {
+              for (User target : targets) {
                 waypoint.get().invite(user.getUniqueId(), target.getUniqueId());
 
                 target.sendMessage(WMessages.targetInvited(user));

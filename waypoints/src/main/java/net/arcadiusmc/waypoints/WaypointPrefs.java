@@ -1,5 +1,7 @@
 package net.arcadiusmc.waypoints;
 
+import java.util.List;
+import net.arcadiusmc.command.settings.BookSetting;
 import net.arcadiusmc.command.settings.Setting;
 import net.arcadiusmc.command.settings.SettingsBook;
 import net.arcadiusmc.user.Properties;
@@ -26,30 +28,12 @@ public class WaypointPrefs {
 
   static void createSettings(SettingsBook<User> settingsBook) {
     Setting hulkSmashing = Setting.create(WaypointPrefs.HULK_SMASH_ENABLED)
-        .setDescription("Toggles hulk smashing poles")
-        .setDisplayName("Hulk Smashing")
-        .setToggle("N{1} hulk smashing poles")
-        .setDisableDescription("Disable hulk smashing")
-        .setEnableDescription("Enable hulk smashing")
-        .createCommand(
-            "hulksmash",
-            WPermissions.WAYPOINTS,
-            WPermissions.WAYPOINTS_ADMIN,
-            "togglehulksmashing"
-        );
+        .setMessageKey("settings.hulkSmashing");
 
     Setting regionInvites = Setting.create(WaypointPrefs.INVITES_ALLOWED)
-        .setDescription("Allows/disables receiving and sending waypoint invites")
-        .setDisplayName("Region Invites")
-        .setToggle("N{1} accepting region invites")
-        .createCommand(
-            "regioninvites",
-            WPermissions.WAYPOINTS,
-            WPermissions.WAYPOINTS_ADMIN,
-            "toggleregioninvites"
-        );
+        .setMessageKey("settings.regionInvites");
 
-    var list = settingsBook.getSettings();
+    List<BookSetting<User>> list = settingsBook.getSettings();
     list.add(regionInvites.toBookSettng());
     list.add(hulkSmashing.toBookSettng());
   }
