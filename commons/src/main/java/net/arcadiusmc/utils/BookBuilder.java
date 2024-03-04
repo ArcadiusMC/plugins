@@ -88,8 +88,7 @@ public class BookBuilder {
   }
 
   public BookBuilder addCentered(Component text) {
-    String strText = Text.plain(text);
-    int pxLength = TextInfo.getPxWidth(strText);
+    int pxLength = TextInfo.length(text);
     int dif = PIXELS_PER_LINE - pxLength;
 
     Preconditions.checkArgument(dif >= 0, "Given text is longer than a single line");
@@ -105,8 +104,8 @@ public class BookBuilder {
   }
 
   public BookBuilder addField(Component field, Component value) {
-    int hSize = TextInfo.getPxWidth(Text.plain(field));
-    int oSize = TextInfo.getPxWidth(Text.plain(value));
+    int hSize = TextInfo.length(field);
+    int oSize = TextInfo.length(value);
     int fSize = PIXELS_PER_LINE - (oSize + hSize);
 
     Component filler;
@@ -144,7 +143,7 @@ public class BookBuilder {
       throw new IllegalStateException("Footer larger than a single line");
     }
 
-    int size = TextInfo.getPxWidth(Text.plain(text));
+    int size = TextInfo.length(text);
 
     if (size <= 0) {
       return this;

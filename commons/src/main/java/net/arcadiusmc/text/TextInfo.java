@@ -2,6 +2,7 @@ package net.arcadiusmc.text;
 
 import javax.annotation.Nonnegative;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.map.MinecraftFont;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,8 +33,9 @@ public final class TextInfo {
   }
 
   public static int length(Component c) {
-    String s = Text.plain(c);
-    return getPxWidth(s);
+    MeasuringListener listener = new MeasuringListener();
+    Text.FLATTENER.flatten(c, listener);
+    return listener.width;
   }
 
   public static @NotNull String getFiller(@Nonnegative int pixels) {
@@ -65,5 +67,21 @@ public final class TextInfo {
     buffer.append(".".repeat(divided));
 
     return buffer.toString();
+  }
+
+  private static class MeasuringListener extends AbstractFlattenerListener {
+
+    private int width = 0;
+
+    @Override
+    public void component(@NotNull String text) {
+      int pxWidth = getPxWidth(text);
+
+      if (style.hasDecoration(TextDecoration.BOLD)) {
+        pxWidth += text.length();
+      }
+
+      width += pxWidth;
+    }
   }
 }
