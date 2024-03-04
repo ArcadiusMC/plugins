@@ -202,10 +202,14 @@ public interface Exceptions {
    * @return The created exception
    */
   static CommandSyntaxException cannotAfford(Audience viewer, Number amount) {
+    return create(cannotAffordText(viewer, amount));
+  }
+
+  static Component cannotAffordText(Audience viewer, Number amount) {
     return MESSAGE_LIST.render("errors.cannotAfford")
         .addValue("amountRaw", amount)
         .addValue("amount", currency(amount))
-        .exception(viewer);
+        .create(viewer);
   }
 
   static CommandSyntaxException cannotAfford(Audience viewer, Number amount, Currency currency) {
