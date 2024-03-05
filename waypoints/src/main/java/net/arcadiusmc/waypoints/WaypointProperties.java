@@ -59,10 +59,12 @@ public class WaypointProperties {
       = new WaypointProperty<>("special_marker", bool(), BOOL, false);
 
   public static final WaypointProperty<Boolean> REQUIRES_DISCOVERY
-      = new WaypointProperty<>("requires_discovery", bool(), BOOL, false);
+      = new WaypointProperty<>("requires_discovery", bool(), BOOL, false)
+      .setUpdatesMarker(false);
 
   public static final WaypointProperty<Integer> DISCOVERY_RANGE
       = new WaypointProperty<>("discovery_range", integer(), INT, null)
+      .setUpdatesMarker(false)
       .setCallback((waypoint, oldValue, value) -> {
         WaypointManager manager = waypoint.manager;
 
@@ -77,22 +79,28 @@ public class WaypointProperties {
       = new WaypointProperty<>("name_color", Arguments.COLOR, createColorCodec(), null);
 
   public static final WaypointProperty<Integer> VISITS_DAILY
-      = new WaypointProperty<>("visits/daily", integer(), INT, 0);
+      = new WaypointProperty<>("visits/daily", integer(), INT, 0)
+      .setUpdatesMarker(false);
 
   public static final WaypointProperty<Integer> VISITS_MONTHLY
-      = new WaypointProperty<>("visits/monthly", integer(), INT, 0);
+      = new WaypointProperty<>("visits/monthly", integer(), INT, 0)
+      .setUpdatesMarker(false);
 
   public static final WaypointProperty<Integer> VISITS_TOTAL
-      = new WaypointProperty<>("visits/total", integer(), INT, 0);
+      = new WaypointProperty<>("visits/total", integer(), INT, 0)
+      .setUpdatesMarker(false);
 
   public static final WaypointProperty<ItemStack> DISPLAY_ITEM
-      = new WaypointProperty<>("display_material", Arguments.ITEMSTACK, ExtraCodecs.ITEM_CODEC, null);
+      = new WaypointProperty<>("display_material", Arguments.ITEMSTACK, ExtraCodecs.ITEM_CODEC, null)
+      .setUpdatesMarker(false);
 
   public static final WaypointProperty<Float> VISIT_YAW
-      = new WaypointProperty<>("visit_rotation/yaw", floatArg(-180, 180), Codec.FLOAT, null);
+      = new WaypointProperty<>("visit_rotation/yaw", floatArg(-180, 180), Codec.FLOAT, null)
+      .setUpdatesMarker(false);
 
   public static final WaypointProperty<Float> VISIT_PITCH
-      = new WaypointProperty<>("visit_rotation/pitch", floatArg(-90, 90), Codec.FLOAT, null);
+      = new WaypointProperty<>("visit_rotation/pitch", floatArg(-90, 90), Codec.FLOAT, null)
+      .setUpdatesMarker(false);
 
   /**
    * Property only used for region poles to determine whether they should display their resident
@@ -130,6 +138,8 @@ public class WaypointProperties {
 
   public static final WaypointProperty<List<String>> ALIASES
       = new WaypointProperty<>("aliases", new StringListArgument(), Codec.STRING.listOf(), null)
+      .setUpdatesMarker(false)
+
       .setCallback((waypoint, oldValue, value) -> {
         WaypointManager.getInstance().onAliasesUpdate(waypoint, oldValue, value);
       })
@@ -144,7 +154,8 @@ public class WaypointProperties {
    * The UUID of the player that owns the waypoint
    */
   public static final WaypointProperty<UUID> OWNER
-      = new WaypointProperty<>("owner", ArgumentTypes.uuid(), ExtraCodecs.INT_ARRAY_UUID, null);
+      = new WaypointProperty<>("owner", ArgumentTypes.uuid(), ExtraCodecs.INT_ARRAY_UUID, null)
+      .setUpdatesMarker(false);
 
   private static Codec<TextColor> createColorCodec() {
     return INT.xmap(TextColor::color, TextColor::value);
