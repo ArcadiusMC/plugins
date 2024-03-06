@@ -8,6 +8,7 @@ import net.arcadiusmc.Cooldowns;
 import net.arcadiusmc.user.User;
 import net.forthecrown.grenadier.CommandSource;
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.util.Ticks;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -145,7 +146,7 @@ public class Cooldown {
   public static void testAndThrow(Audience audience, String category, long ticks)
       throws CommandSyntaxException
   {
-    Cooldowns.cooldowns().testAndThrow(getUniqueId(audience), category, ticks);
+    Cooldowns.cooldowns().testAndThrow(getUniqueId(audience), category, ticks * Ticks.SINGLE_TICK_DURATION_MS);
   }
 
   private static UUID getUniqueId(Audience audience) {
