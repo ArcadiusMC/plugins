@@ -2,11 +2,13 @@ package net.arcadiusmc.waypoints;
 
 import static net.arcadiusmc.waypoints.WaypointScan.Result.CANNOT_BE_DESTROYED;
 import static net.arcadiusmc.waypoints.WaypointScan.Result.DESTROYED;
-import static net.arcadiusmc.waypoints.WaypointScan.Result.NO_RESIDENTS_NAME_GUILD;
+import static net.arcadiusmc.waypoints.WaypointScan.Result.NO_RESIDENTS_NAME;
 import static net.arcadiusmc.waypoints.WaypointScan.Result.POLE_BROKEN;
 import static net.arcadiusmc.waypoints.WaypointScan.Result.SUCCESS;
 
 import com.google.common.base.Strings;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.arcadiusmc.Loggers;
@@ -25,7 +27,7 @@ public final class WaypointScan {
     POLE_BROKEN ("Pole broken", false),
     CANNOT_BE_DESTROYED ("Cannot be destroyed", false),
     DESTROYED ("Destroyed", true),
-    NO_RESIDENTS_NAME_GUILD ("No residents/name/guild", true);
+    NO_RESIDENTS_NAME ("No residents/name", true);
 
     final String reason;
     final boolean removable;
@@ -34,7 +36,6 @@ public final class WaypointScan {
   public static Result scan(Waypoint waypoint) {
     if (waypoint.getType() == WaypointTypes.ADMIN
         || waypoint.get(WaypointProperties.INVULNERABLE)
-        || !waypoint.getType().isBuildable()
     ) {
       LOGGER.debug("scan={} is invulnerable", waypoint);
       return CANNOT_BE_DESTROYED;
@@ -52,10 +53,10 @@ public final class WaypointScan {
         && waypoint.getType().canBeRemoved(waypoint)
     ) {
       LOGGER.debug("scan={} has no residents/name/guild", waypoint);
-      return NO_RESIDENTS_NAME_GUILD;
+      return NO_RESIDENTS_NAME;
     }
 
-    var test = waypoint.getType().isValid(waypoint);
+    Optional<CommandSyntaxException> test = waypoint.getType().isValid(waypoint);
 
     if (test.isPresent()) {
       LOGGER.debug("scan={} is broken", waypoint);

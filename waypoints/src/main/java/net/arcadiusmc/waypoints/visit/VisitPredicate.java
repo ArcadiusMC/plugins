@@ -5,6 +5,7 @@ import java.util.Optional;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.waypoints.Waypoint;
+import net.arcadiusmc.waypoints.Waypoints;
 import net.forthecrown.grenadier.SyntaxExceptions;
 import net.arcadiusmc.waypoints.WExceptions;
 import net.arcadiusmc.waypoints.WPermissions;
@@ -12,6 +13,7 @@ import net.arcadiusmc.waypoints.WaypointProperties;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Vehicle;
+import org.spongepowered.math.vector.Vector3i;
 
 public interface VisitPredicate {
 
@@ -38,22 +40,22 @@ public interface VisitPredicate {
   };
 
   VisitPredicate IS_NEAR = visit -> {
-    var player = visit.getUser();
+    User player = visit.getUser();
 
     if (player.hasPermission(WPermissions.WAYPOINTS_ADMIN)) {
       return;
     }
 
-    var nearest = visit.getNearestWaypoint();
-
     if (visit.isNearWaypoint()) {
       return;
     }
 
-    if (nearest == null) {
+    Vector3i nearestPoint = Waypoints.findNearestProbable(player);
+
+    if (nearestPoint == null) {
       throw WExceptions.farFromWaypoint();
     } else {
-      throw WExceptions.farFromWaypoint(nearest);
+      throw WExceptions.farFromWaypoint(nearestPoint);
     }
   };
 

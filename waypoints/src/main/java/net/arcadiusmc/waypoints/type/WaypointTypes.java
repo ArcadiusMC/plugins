@@ -23,6 +23,7 @@ public class WaypointTypes {
   public static final WaypointType ADMIN = new AdminWaypoint();
   public static final WaypointType PLAYER = new PlayerWaypointType();
   public static final WaypointType REGION_POLE = new RegionPoleType();
+  public static final WaypointType WILDERNESS = new WildernessType();
 
   private static int highestColumn;
   private static final Set<WaypointType> buildableTypes = new HashSet<>();
@@ -65,6 +66,7 @@ public class WaypointTypes {
     register("admin", ADMIN);
     register("player", PLAYER);
     register("region_pole", REGION_POLE);
+    register("wilderness", WILDERNESS);
   }
 
   public static boolean isDestroyed(Material[] column, Vector3i pos, World world) {

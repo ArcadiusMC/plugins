@@ -2,8 +2,10 @@ package net.arcadiusmc.waypoints.listeners;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 import net.arcadiusmc.utils.Tasks;
 import net.arcadiusmc.utils.math.Bounds3i;
+import net.arcadiusmc.waypoints.Waypoint;
 import net.arcadiusmc.waypoints.WaypointManager;
 import net.arcadiusmc.waypoints.Waypoints;
 import org.bukkit.block.Block;
@@ -48,7 +50,7 @@ class WaypointDestroyListener implements Listener {
       return;
     }
 
-    var waypoints = WaypointManager.getInstance()
+    Set<Waypoint> waypoints = WaypointManager.getInstance()
         .getChunkMap()
         .getOverlapping(
             blocks.iterator().next().getWorld(),
@@ -60,7 +62,7 @@ class WaypointDestroyListener implements Listener {
     }
 
     Tasks.runLater(() -> {
-      waypoints.forEach(Waypoints::removeIfPossible);
-    }, 1);
+      waypoints.forEach(Waypoints::removeIfDestroyed);
+    }, 3);
   }
 }

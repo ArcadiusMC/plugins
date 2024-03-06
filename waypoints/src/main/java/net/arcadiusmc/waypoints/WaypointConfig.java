@@ -2,6 +2,7 @@ package net.arcadiusmc.waypoints;
 
 import java.time.Duration;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
+import org.spongepowered.math.vector.Vector2i;
 import org.spongepowered.math.vector.Vector3i;
 
 @ConfigSerializable
@@ -19,6 +20,10 @@ public class WaypointConfig {
   public int maxNameLength = 20;
 
   public int discoveryRange = 50;
+
+  public Vector2i wildernessWaypointGrid = Vector2i.from(500);
+
+  public String[] autoGenWorlds = { "world" };
 
   public String[] bannedNames = {};
 

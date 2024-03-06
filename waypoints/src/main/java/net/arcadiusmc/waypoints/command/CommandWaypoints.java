@@ -37,7 +37,6 @@ import net.arcadiusmc.text.TextJoiner;
 import net.arcadiusmc.text.TextWriters;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
-import net.arcadiusmc.utils.Particles;
 import net.arcadiusmc.utils.math.Vectors;
 import net.arcadiusmc.waypoints.WMessages;
 import net.arcadiusmc.waypoints.WPermissions;
@@ -54,7 +53,6 @@ import net.arcadiusmc.waypoints.util.WaypointAction;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -129,10 +127,7 @@ public class CommandWaypoints {
       CommandSource source,
       @Argument("waypoint") Waypoint waypoint
   ) {
-    var bounds = waypoint.getBounds();
-    Particles.drawBounds(waypoint.getWorld(), bounds,
-        Color.fromRGB(waypoint.getTextColor().value())
-    );
+    Waypoints.particleBox(waypoint);
   }
 
   public void discover(

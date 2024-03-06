@@ -39,6 +39,9 @@ waypoints:
     blocked:                "&c${player} doesn't accept region invites"
     self:                   "&cCannot invite self!"
 
+  # The ${waypoint} placeholder is available here
+  # but I don't think the display name needs to be shown
+  broken:                   "&eWaypoint broken."
 
 settings:
   hulkSmashing:

@@ -47,6 +47,26 @@ maxNameLength = 20
 discoveryRange = 50
 
 #
+# Size of the wilderness (auto-generated) waypoint grid
+#
+# Auto generated waypoints are waypoints that are automatically
+# generated in a grid in newly generated chunks
+#
+# Default: {x = 500, y = 500}
+#
+wildernessWaypointGrid = {x = 500, y = 500}
+
+#
+# List of worlds where waypoints are automatically generated.
+#
+# Waypoints are generated in a grid, configured by
+# 'wildernessWaypointGrid'
+#
+# Default: [ "world" ]
+#
+autoGenWorlds = [ "world" ]
+
+#
 # Banned waypoint names, case insensitive
 #
 bannedNames = [

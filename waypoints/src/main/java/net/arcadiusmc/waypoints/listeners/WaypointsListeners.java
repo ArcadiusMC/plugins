@@ -6,6 +6,7 @@ public final class WaypointsListeners {
   private WaypointsListeners() {}
 
   public static void registerAll() {
+    register(new AutoGenListener());
     register(new DayChangeListener());
     register(new HomeListener());
     register(new PlayerJoinListener());

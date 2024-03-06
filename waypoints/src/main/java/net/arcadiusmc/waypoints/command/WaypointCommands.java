@@ -15,7 +15,7 @@ public class WaypointCommands {
       = new RegistryArguments<>(WaypointProperties.REGISTRY, "Waypoint property");
 
   public static void createCommands(WaypointManager manager) {
-    new CommandFindPole();
+    new CommandFindWaypoint();
     new CommandHomeWaypoint();
     new CommandInvite();
     new CommandListWaypoints();

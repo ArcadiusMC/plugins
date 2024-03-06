@@ -17,20 +17,26 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.punish.PunishPlugin;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
+import net.arcadiusmc.utils.Particles;
 import net.arcadiusmc.utils.io.PathUtil;
 import net.arcadiusmc.utils.io.PluginJar;
 import net.arcadiusmc.utils.io.Results;
 import net.arcadiusmc.utils.io.SerializationHelper;
 import net.arcadiusmc.utils.math.Bounds3i;
 import net.arcadiusmc.utils.math.Vectors;
+import net.arcadiusmc.utils.math.WorldBounds3i;
 import net.arcadiusmc.waypoints.WaypointPlatform.FloorPlacer;
 import net.arcadiusmc.waypoints.WaypointPlatform.LoadedPlatform;
 import net.arcadiusmc.waypoints.WaypointScan.Result;
 import net.arcadiusmc.waypoints.type.PlayerWaypointType;
 import net.arcadiusmc.waypoints.type.WaypointType;
 import net.arcadiusmc.waypoints.type.WaypointTypes;
+import net.kyori.adventure.sound.Sound;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -43,6 +49,7 @@ import org.bukkit.block.data.type.Snow;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.slf4j.Logger;
+import org.spongepowered.math.vector.Vector2i;
 import org.spongepowered.math.vector.Vector3i;
 
 public final class Waypoints {
@@ -132,6 +139,66 @@ public final class Waypoints {
    */
   public static Waypoint getNearest(User user) {
     return WaypointManager.getInstance().getChunkMap().findNearest(user.getLocation()).left();
+  }
+
+  /**
+   * Finds the position of the nearest waypoint that <i>could</i> exist.
+   * <p>
+   * This function takes the automatically generated waypoint grid system
+   * into consideration and returns a position that may be in an un-generated
+   * chunk if it believes that the closest waypoint would be generated there.
+   * <p>
+   * If an existing waypoint is closer than any grid waypoint, or if the waypoint
+   * grid system is disabled either in the {@code user}'s current world or is
+   * disabled altogether, then the nearest existing is resized.
+   * <p>
+   * If the waypoint grid is disabled and there are no waypoints at all in
+   * the {@code user}'s current world, then {@code null} is returned.
+   *
+   * @param user User to get the nearest waypoint position of
+   * @return
+   */
+  public static Vector3i findNearestProbable(User user) {
+    Waypoint existingNearest = getNearest(user);
+    Vector3i existingPos = existingNearest == null ? null : existingNearest.getPosition();
+
+    Vector2i player2d = Vectors.intFrom(user.getLocation()).toVector2(true);
+    World world = user.getWorld();
+
+    // Returns null if the grid system is disabled
+    Vector2i nearestAuto = AutoGen.nearestGridWaypoint(player2d, world);
+    if (nearestAuto == null) {
+      return existingPos;
+    }
+
+    // Compare distance between the closest auto generated waypoint and the
+    // closest actually existing waypoint, if the existing one is closer,
+    // return that instead of continuing
+    double autoDist = player2d.distanceSquared(nearestAuto);
+    double existDist = existingPos == null
+        ? Double.MAX_VALUE
+        : existingPos.toVector2(true).distanceSquared(player2d);
+
+    if (existDist <= autoDist) {
+      return existingPos;
+    }
+
+    Vector2i gridChunk = nearestAuto.div(Vectors.CHUNK_SIZE);
+
+    // If it's generated and the waypoint existed, it would've
+    // been returned by getNearest and the if statement above
+    // would've returned early, thus if chunk is generated, it
+    // means the waypoint was destroyed
+    if (world.isChunkGenerated(gridChunk.x(), gridChunk.y())) {
+      return existingPos;
+    }
+
+    // Just a random guess, revealing the true answer would mean loading the
+    // chunk, causing it to generate, which we can't do here, as it would be
+    // too expensive
+    final int y = 75;
+
+    return Vector3i.from(nearestAuto.x(), y, nearestAuto.y());
   }
 
   /**
@@ -514,14 +581,39 @@ public final class Waypoints {
     return waypoint;
   }
 
-  public static void removeIfPossible(Waypoint waypoint) {
+  public static void removeIfDestroyed(Waypoint waypoint) {
     Result scanResult = WaypointScan.scan(waypoint);
 
-    if (!scanResult.isRemovable()) {
+    if (scanResult != Result.DESTROYED) {
       return;
     }
 
-    Loggers.getLogger().info("Removing waypoint {}, reason: {}",
+    if (LOGGER.isDebugEnabled()) {
+      particleBox(waypoint);
+    }
+
+    // Play deactivation sound
+    WorldBounds3i soundRange = waypoint.getBounds()
+        .expand(10)
+        .toWorldBounds(waypoint.getWorld());
+
+    Component displayName = waypoint.nonNullDisplayName();
+
+    for (Player player : soundRange.getPlayers()) {
+      player.sendMessage(
+          Messages.render("waypoints.broken")
+              .addValue("waypoint", displayName)
+              .create(player)
+      );
+
+      player.playSound(
+          Sound.sound()
+              .type(org.bukkit.Sound.BLOCK_CONDUIT_DEACTIVATE)
+              .build()
+      );
+    }
+
+    LOGGER.info("Removing waypoint {}, reason: {}",
         waypoint.identificationInfo(),
         scanResult.getReason()
     );
@@ -537,5 +629,16 @@ public final class Waypoints {
    */
   public static void updateDynmap(Waypoint waypoint) {
     WaypointWebmaps.updateMarker(waypoint);
+  }
+
+  /**
+   * Creates a particle box around the waypoint
+   * @param waypoint Waypoint to create particles around
+   */
+  public static void particleBox(Waypoint waypoint) {
+    Bounds3i bounds = waypoint.getBounds();
+    Particles.drawBounds(waypoint.getWorld(), bounds,
+        Color.fromRGB(waypoint.getTextColor().value())
+    );
   }
 }
