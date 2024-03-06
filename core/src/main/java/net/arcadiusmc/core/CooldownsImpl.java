@@ -180,7 +180,7 @@ public class CooldownsImpl implements Cooldowns {
       return true;
     }
 
-    cooldown(uuid, category, timeMillis);
+    cooldown(uuid, category, Duration.ofMillis(timeMillis));
     return false;
   }
 
