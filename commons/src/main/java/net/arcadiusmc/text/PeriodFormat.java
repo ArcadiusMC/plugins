@@ -178,17 +178,17 @@ public class PeriodFormat implements ComponentLike {
 
       writer.write(Text.formatNumber(amount).style(numberStyle));
 
-      if (!shortNames) {
+      if (shortNames) {
+        writer.write(
+            ChronoEntry.shortDisplayName(unit, entry.amount),
+            textStyle
+        );
+      } else {
         writer.space();
         writer.write(Component.text(
             ChronoEntry.displayName(unit, entry.amount),
             textStyle
         ));
-      } else {
-        writer.write(
-            ChronoEntry.shortDisplayName(unit, entry.amount),
-            textStyle
-        );
       }
 
       if (it.hasNext()) {
