@@ -167,7 +167,7 @@ public interface ObjectPlaceholder<T> {
       case "singleUnit" -> PeriodFormat.of(value).retainBiggest().asComponent();
       case "short" -> PeriodFormat.of(value).withShortNames().asComponent();
 
-      case "singleUnitShort" -> {
+      case "singleUnitShort", "singleShortUnit", "shortSingleUnit" -> {
         yield PeriodFormat.of(value).withShortNames().retainBiggest().asComponent();
       }
 
