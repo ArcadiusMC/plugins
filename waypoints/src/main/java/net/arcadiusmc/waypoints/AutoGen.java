@@ -28,7 +28,13 @@ public class AutoGen {
   public static final NamespacedKey CHUNK_MARKER
       = new NamespacedKey("arcadiusmc", "has_auto_waypoint");
 
+  public static boolean serverInitialized = false;
+
   public static void maybePlace(Chunk chunk, WaypointManager manager) {
+    if (!serverInitialized) {
+      return;
+    }
+
     WaypointConfig config = manager.config();
 
     if (AutoGen.isDisabled(config, chunk.getWorld())) {
