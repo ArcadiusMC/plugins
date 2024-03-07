@@ -18,7 +18,7 @@ public class GraveImpl implements ItemGraveService {
   public static void init() {
     GraveImpl impl = new GraveImpl();
     BukkitServices.register(ItemGraveService.class, impl);
-    Events.register(new GraveListener());
+    Events.register(new GraveListener(impl));
   }
 
   @Override
