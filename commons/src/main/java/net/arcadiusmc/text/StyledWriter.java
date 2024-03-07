@@ -18,6 +18,11 @@ public class StyledWriter implements TextWriter {
   }
 
   @Override
+  public TextWriter unwarp() {
+    return base.unwarp();
+  }
+
+  @Override
   public @Nullable Audience viewer() {
     return base.viewer();
   }

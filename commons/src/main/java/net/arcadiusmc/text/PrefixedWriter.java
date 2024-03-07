@@ -20,6 +20,11 @@ public class PrefixedWriter implements TextWriter {
   }
 
   @Override
+  public TextWriter unwarp() {
+    return base.unwarp();
+  }
+
+  @Override
   public void write(ComponentLike text) {
     if (isLineEmpty()) {
       base.write(prefix);

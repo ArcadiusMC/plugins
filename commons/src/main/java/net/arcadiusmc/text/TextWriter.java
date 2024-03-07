@@ -225,4 +225,7 @@ public interface TextWriter extends ComponentLike {
 
   void setFieldSeparator(Component fieldSeparator);
 
+  default TextWriter unwarp() {
+    return this;
+  }
 }
