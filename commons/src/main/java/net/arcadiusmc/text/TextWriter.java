@@ -195,6 +195,10 @@ public interface TextWriter extends ComponentLike {
 
   String getPlain();
 
+  default StyledWriter withStyle(Style style) {
+    return new StyledWriter(style, this);
+  }
+
   default PrefixedWriter withPrefix(ComponentLike prefix) {
     return new PrefixedWriter(this, prefix.asComponent());
   }
