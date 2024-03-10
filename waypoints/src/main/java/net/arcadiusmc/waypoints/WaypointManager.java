@@ -194,6 +194,8 @@ public class WaypointManager {
 
     chunkMap.add(waypoint.getWorld(), waypoint.getBounds(), waypoint);
     discoveryMap.add(waypoint.getWorld(), waypoint.getDiscoveryBounds(), waypoint);
+
+    waypoint.getType().onWaypointAdded(waypoint);
   }
 
   /**

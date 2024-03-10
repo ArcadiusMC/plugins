@@ -77,6 +77,10 @@ literal("discovered-players") {
 }
 
 literal("create") {
+  literal("faction-region") {
+    description = "Creates a faction region waypoint"
+    executes = createFactionRegion()
+  }
   literal("admin") {
     description = "Creates an invisible admin waypoint"
     executes = createAdmin()

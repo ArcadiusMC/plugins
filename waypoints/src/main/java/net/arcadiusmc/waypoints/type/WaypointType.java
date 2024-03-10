@@ -153,4 +153,8 @@ public abstract class WaypointType {
   public void writeHover(TextWriter writer, Waypoint waypoint, Mutable<Boolean> written) {
 
   }
+
+  public void onWaypointAdded(Waypoint waypoint) {
+    // No-op
+  }
 }

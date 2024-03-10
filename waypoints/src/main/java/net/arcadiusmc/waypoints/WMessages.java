@@ -42,12 +42,14 @@ public interface WMessages {
   }
 
   static Component createdWaypoint(Vector3i pos, WaypointType type) {
-    String typeStr = "Waypoint";
+    String typeStr;
 
     if (type == WaypointTypes.REGION_POLE) {
       typeStr = "Region pole";
     } else if (type == WaypointTypes.ADMIN) {
       typeStr = "Admin waypoint";
+    } else {
+      typeStr = type.getDisplayName() + " Waypoint";
     }
 
     return format("Created &e{0}&r at x&6{1}&r y&6{2}&r z&6{3}&r.",

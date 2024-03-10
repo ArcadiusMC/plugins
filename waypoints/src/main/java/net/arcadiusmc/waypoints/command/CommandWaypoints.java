@@ -104,6 +104,10 @@ public class CommandWaypoints {
     it.schedule();
   }
 
+  public void createFactionRegion(CommandSource source) {
+    createWaypoint(source, WaypointTypes.FACTION_REGION);
+  }
+
   public void createAdmin(CommandSource source) {
     createWaypoint(source, WaypointTypes.ADMIN);
   }
