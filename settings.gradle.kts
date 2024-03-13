@@ -30,6 +30,8 @@ include("sign-shops")
 include("player-markets")
 include("holograms")
 include("waypoints")
+include("factions")
+include("usables")
 
 include("mail")
 include("mail-impl")
