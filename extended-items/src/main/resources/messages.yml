@@ -1,0 +1,18 @@
+itemsPlugin:
+  level.uncapped:       "&7Rank ${level.roman}"
+  level.capped:         "&7Rank ${level.roman}&8/${max.roman}"
+
+  border:               "&8${border:50}"
+
+  wreath:
+    name:               "&6=[&l<gradient=red,dark_purple:Emperor's Wreath>&6]="
+    onHead:             "&7${item.modifiers.head}"
+    preview.prefix:     "&7 • "
+    damageResist:       "${duration.singleShortUnit} ${effect.minecraft.resistance} after taking damage"
+    damageRegen:        "${duration.singleShortUnit} ${effect.minecraft.regeneration} after taking damage"
+    flavour:            "&7The Emperor's wreath, rewarded to\nthose who have proven they are worthy\nof the divine throne."
+    bestowedTo.single:  "&7Bestowed to ${title} ${name}"
+    bestowedTo.multi:   "&7Bestowed to\n${title} ${name}"
+    nextRank:           "&bNext rank:\n • Win 1 Succession Event"
+    nextRankUpgrades:   "&7Next rank upgrades:"
+    defaultTitle:       "Emperor"

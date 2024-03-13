@@ -12,6 +12,6 @@ dependencies {
 }
 
 pluginYml {
-  prefixedName("CustomItems")
-  main = "net.arcadiusmc.customitems.ItemPlugin"
+  prefixedName("Items")
+  main = "net.arcadiusmc.items.ItemPlugin"
 }
