@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 import net.arcadiusmc.utils.io.source.Source;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.mozilla.javascript.Context;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.Scriptable;
 import org.slf4j.Logger;
@@ -219,6 +220,8 @@ public interface Script extends AutoCloseable {
    * @throws IllegalStateException If the script is not compiled
    */
   NativeObject getScriptObject() throws IllegalStateException;
+
+  Context context();
 
   /**
    * Compiles the script from the {@link #getSource()}.
