@@ -572,3 +572,8 @@ cmd.closeinv:
   _style: $normal
   closed:             "Closed &e${player}&r's inventory."
   closed.reason:      "Closed &e${player}&r's inventory, reason: &e${reason}&r."
+
+cmd.texttojson:
+  format:             "&7Click to copy: ${jsonString} or ${nbtString}."
+  jsonString:         "&b[JSON text]"
+  nbtString:          "&b[Ready-for-NBT text]"
