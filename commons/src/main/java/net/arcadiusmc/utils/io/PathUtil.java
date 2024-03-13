@@ -309,6 +309,16 @@ public final class PathUtil {
       boolean includeFileFormats,
       Predicate<Path> filter
   ) {
+    if (!Files.exists(directory)) {
+      LOGGER.error("Can't find files in directory {}, file doesn't exist", directory);
+      return ObjectLists.emptyList();
+    }
+
+    if (!Files.isDirectory(directory)) {
+      LOGGER.error("Can't find files in directory {}, path is not a directory", directory);
+      return ObjectLists.emptyList();
+    }
+
     FileFinderWalker walker = new FileFinderWalker(
         includeFileFormats, directory, filter
     );
@@ -317,7 +327,7 @@ public final class PathUtil {
       Files.walkFileTree(directory, walker);
       return walker.results;
     } catch (IOException exc) {
-      Loggers.getLogger().error("Error walking file tree, dir={}", directory, exc);
+      LOGGER.error("Error walking file tree, dir={}", directory, exc);
       return ObjectLists.emptyList();
     }
   }
