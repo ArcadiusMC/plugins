@@ -215,11 +215,18 @@ public class RhinoScript implements Script {
     return bindingScope.entrySet();
   }
 
-  private Context enterContext() {
-    Context ctx = Context.enter();
+  @Override
+  public Context context() {
+    Context ctx = Context.getCurrentContext();
+
+    if (ctx == null) {
+       ctx = Context.enter();
+    }
+
     ctx.setLanguageVersion(VERSION_ES6);
     ctx.setOptimizationLevel(useClassGen ? 9 : -1);
     ctx.setApplicationClassLoader(getClass().getClassLoader());
+
     return ctx;
   }
 
@@ -240,7 +247,7 @@ public class RhinoScript implements Script {
     PreProcessor processor = new PreProcessor(buf);
     String str = processor.run();
 
-    try (Context ctx = enterContext()) {
+    try (Context ctx = context()) {
       compiled = ctx.compileString(str, getName(), 1, null);
       bindingScope = new NativeObject();
       evaluationScope = new NativeObject();
@@ -292,7 +299,7 @@ public class RhinoScript implements Script {
       return ExecResultImpl.error("Script not compiled", this);
     }
 
-    try (Context ctx = enterContext()) {
+    try (Context ctx = context()) {
       try {
         Object o = compiled.exec(ctx, evaluationScope);
         return ExecResultImpl.success(transformResult(o), this);
@@ -328,7 +335,7 @@ public class RhinoScript implements Script {
       return ExecResultImpl.error("No such method found", methodName, this);
     }
 
-    try (Context ctx = enterContext()) {
+    try (Context ctx = context()) {
       Object[] args;
 
       if (arguments.length > 0) {
