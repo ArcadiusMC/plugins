@@ -128,4 +128,8 @@ public interface ItemList extends List<ItemStack> {
             Integer::sum
         );
   }
+
+  default ItemStack[] toItemArray() {
+    return toArray(ItemStack[]::new);
+  }
 }
