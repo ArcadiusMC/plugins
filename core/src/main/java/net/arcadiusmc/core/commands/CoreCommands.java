@@ -25,6 +25,7 @@ import net.arcadiusmc.core.commands.admin.CommandTab;
 import net.arcadiusmc.core.commands.admin.CommandTeleport;
 import net.arcadiusmc.core.commands.admin.CommandTeleportExact;
 import net.arcadiusmc.core.commands.admin.CommandTellRawF;
+import net.arcadiusmc.core.commands.admin.CommandTextToJson;
 import net.arcadiusmc.core.commands.admin.CommandTime;
 import net.arcadiusmc.core.commands.admin.CommandTimeFields;
 import net.arcadiusmc.core.commands.admin.CommandTop;
@@ -90,6 +91,7 @@ public final class CoreCommands {
     new CommandTellRawF();
     new CommandSudo();
     new CommandSmite();
+    new CommandTextToJson();
 
     // Tool commands
     new CommandUserProperty(plugin);
