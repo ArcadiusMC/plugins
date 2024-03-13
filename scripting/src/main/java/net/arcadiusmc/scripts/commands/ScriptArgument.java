@@ -9,6 +9,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import net.arcadiusmc.scripts.Scripts;
 import net.arcadiusmc.command.Exceptions;
@@ -76,7 +77,11 @@ public class ScriptArgument implements ArgumentType<Source> {
   ) {
     Path dir = Scripts.getService().getScriptsDirectory();
 
-    var result = PathUtil.findAllFiles(dir, true, path -> {
+    if (!Files.exists(dir) || !Files.isDirectory(dir)) {
+      return Suggestions.empty();
+    }
+
+    List<String> result = PathUtil.findAllFiles(dir, true, path -> {
       String name = path.getFileName().toString();
       return name.endsWith(".js") || name.endsWith(".ts");
     });
