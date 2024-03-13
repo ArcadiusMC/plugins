@@ -27,5 +27,6 @@ public final class CoreListeners {
     register(new SmokeBomb());
     register(new TextDecorationListener());
     register(new TrapDoorListener());
+    register(new WearableTagListener());
   }
 }
