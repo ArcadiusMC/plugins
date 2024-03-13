@@ -17,7 +17,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.usables.BuiltType;
 import net.arcadiusmc.usables.Condition;
@@ -26,7 +25,8 @@ import net.arcadiusmc.usables.ObjectType;
 import net.arcadiusmc.usables.UsableComponent;
 import net.arcadiusmc.utils.Time;
 import net.arcadiusmc.utils.TomlConfigs;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
+import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.Nullable;
@@ -34,13 +34,13 @@ import org.jetbrains.annotations.Nullable;
 public class TestCooldown implements Condition {
 
   public static final Codec<Object2LongMap<UUID>> CD_MAP_CODEC
-      = Codec.unboundedMap(FtcCodecs.STRING_UUID, Codec.LONG)
+      = Codec.unboundedMap(ExtraCodecs.STRING_UUID, Codec.LONG)
       .xmap(Object2LongOpenHashMap::new, Function.identity());
 
   private static final MapCodec<Duration> DURATION_EITHER_CODEC
       = new EitherMapCodec<>(
-          FtcCodecs.DURATION.fieldOf("millisDuration"),
-          FtcCodecs.DURATION.fieldOf("duration")
+          ExtraCodecs.DURATION.fieldOf("millisDuration"),
+          ExtraCodecs.DURATION.fieldOf("duration")
       )
       .xmap(e -> e.map(d1 -> d1, d2 -> d2), Either::right);
 
@@ -75,7 +75,7 @@ public class TestCooldown implements Condition {
 
           if (strResult.result().isPresent()) {
             return strResult
-                .flatMap(s -> FtcCodecs.safeParse(s, TomlConfigs::parseDuration))
+                .flatMap(s -> ExtraCodecs.safeParse(s, TomlConfigs::parseDuration))
                 .map(duration1 -> new Pair<>(new TestCooldown(duration1), input));
           }
 
@@ -111,26 +111,34 @@ public class TestCooldown implements Condition {
   @Override
   public boolean test(Interaction interaction) {
     clearExpired();
-    return !cooldowns.containsKey(interaction.playerId());
+
+    return interaction.getPlayerId()
+        .map(playerId -> !cooldowns.containsKey(playerId))
+        .orElse(true);
   }
 
   @Override
   public void afterTests(Interaction interaction) {
-    long end = System.currentTimeMillis() + duration.toMillis();
-    cooldowns.put(interaction.playerId(), end);
+    interaction.getPlayerId().ifPresent(playerId -> {
+      long end = System.currentTimeMillis() + duration.toMillis();
+      cooldowns.put(playerId, end);
+    });
   }
 
   @Override
   public Component failMessage(Interaction interaction) {
+    UUID playerId = interaction.getPlayerId().orElse(null);
+
     if (duration.toMillis() < TimeUnit.MINUTES.toMillis(2)
-        || !cooldowns.containsKey(interaction.playerId())
+        || playerId == null
+        || !cooldowns.containsKey(playerId)
     ) {
       return Component.text("You're on cooldown!", NamedTextColor.GRAY);
     }
 
     return Text.format("You cannot use this for {0, time, -timestamp}",
         NamedTextColor.GRAY,
-        cooldowns.getLong(interaction.playerId())
+        cooldowns.getLong(playerId)
     );
   }
 

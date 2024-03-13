@@ -4,6 +4,7 @@ import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.registry.Registry;
 import net.arcadiusmc.usables.Condition;
 import net.arcadiusmc.usables.ObjectType;
+import net.arcadiusmc.usables.items.ItemTestType;
 import net.arcadiusmc.usables.scripts.ScriptInstance;
 import net.arcadiusmc.user.currency.Currency;
 import net.arcadiusmc.user.UserService;
@@ -14,15 +15,16 @@ public class Conditions {
   public static void registerAll(Registry<ObjectType<? extends Condition>> r) {
     r.register("cooldown", TestCooldown.TYPE);
     r.register("in_world", TestWorld.TYPE);
-    r.register("one_use",  TestOneUse.TYPE);
-    r.register("never_used", TestNeverUsed.TYPE);
-    r.register("test_script", ScriptInstance.TYPE);
+    r.register("one_use_individual",  TestOneUse.TYPE);
+    r.register("one_use_global", TestNeverUsed.TYPE);
+    r.register("script_file", ScriptInstance.FILE_TYPE);
+    r.register("js", ScriptInstance.RAW_TYPE);
     r.register("not_alt", TestNotAlt.TYPE);
     r.register("inventory_empty", TestEmptyInventory.TYPE);
     r.register("no_riders", NoRiderCondition.TYPE);
     r.register("has_score", TestScore.TYPE);
-    r.register("has_items", ItemCondition.HAS_ITEMS);
-    r.register("does_not_have_items", ItemCondition.MISSING_ITEMS);
+    r.register("has_items", ItemTestType.CONTAINS);
+    r.register("does_not_have_items", ItemTestType.NOT);
     r.register("has_permission", TestPermission.TYPE);
     r.register("hand", HandCondition.TYPE);
 

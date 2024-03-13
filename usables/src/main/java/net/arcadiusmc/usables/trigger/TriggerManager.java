@@ -141,7 +141,7 @@ public class TriggerManager {
       Triggers.runReferences(
           refs, player, null,
           interaction -> {
-            var ctx = interaction.context();
+            var ctx = interaction.getContext();
             ctx.put("triggerName", trigger.getName());
             ctx.put("area", trigger.getArea());
           },

@@ -7,9 +7,9 @@ import net.arcadiusmc.text.Text;
 import net.arcadiusmc.usables.BuiltType;
 import net.arcadiusmc.usables.Condition;
 import net.arcadiusmc.usables.Interaction;
-import net.arcadiusmc.usables.UsableComponent;
 import net.arcadiusmc.usables.ObjectType;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.usables.UsableComponent;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.Nullable;
@@ -19,7 +19,7 @@ public class TestOneUse implements Condition {
   public static final ObjectType<TestOneUse> TYPE = BuiltType.<TestOneUse>builder()
       .emptyFactory(TestOneUse::new)
       .loader(dynamic -> {
-        return dynamic.readList(FtcCodecs.UUID_CODEC).map(uuids -> {
+        return dynamic.readList(ExtraCodecs.UUID_CODEC).map(uuids -> {
           TestOneUse use = new TestOneUse();
           use.used.addAll(uuids);
           return use;
@@ -28,7 +28,7 @@ public class TestOneUse implements Condition {
       .saver((value, ops) -> {
         var list = ops.listBuilder();
         for (UUID uuid : value.used) {
-          list.add(FtcCodecs.UUID_CODEC.encodeStart(ops, uuid));
+          list.add(ExtraCodecs.UUID_CODEC.encodeStart(ops, uuid));
         }
         return list.build(ops.empty());
       })
@@ -38,12 +38,14 @@ public class TestOneUse implements Condition {
 
   @Override
   public boolean test(Interaction interaction) {
-    return !used.contains(interaction.playerId());
+    return interaction.getPlayerId()
+        .map(playerId -> !used.contains(playerId))
+        .orElse(true);
   }
 
   @Override
   public void afterTests(Interaction interaction) {
-    used.add(interaction.playerId());
+    interaction.getPlayerId().ifPresent(used::add);
   }
 
   @Override

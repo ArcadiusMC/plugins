@@ -1,20 +1,29 @@
 package net.arcadiusmc.usables;
 
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.util.Map;
 import javax.annotation.Nullable;
-import net.forthecrown.grenadier.types.IntRangeArgument.IntRange;
+import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.TextJoiner;
+import net.arcadiusmc.text.placeholder.PlaceholderRenderer;
+import net.arcadiusmc.text.placeholder.Placeholders;
 import net.arcadiusmc.usables.objects.UsableBlock;
 import net.arcadiusmc.usables.objects.UsableEntity;
 import net.arcadiusmc.usables.objects.UsableItem;
 import net.arcadiusmc.utils.inventory.ItemList;
 import net.arcadiusmc.utils.inventory.ItemStacks;
+import net.forthecrown.grenadier.types.IntRangeArgument.IntRange;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.TileState;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataHolder;
 import org.bukkit.persistence.PersistentDataType;
@@ -22,9 +31,16 @@ import org.bukkit.persistence.PersistentDataType;
 public final class Usables {
   private Usables() {}
 
-  public static final NamespacedKey BLOCK_KEY  = new NamespacedKey("arcadiusmc", "usable_block");
-  public static final NamespacedKey ENTITY_KEY = new NamespacedKey("arcadiusmc", "usable_entity");
-  public static final NamespacedKey ITEM_KEY   = new NamespacedKey("arcadiusmc", "usable_item");
+  public static final NamespacedKey BLOCK_KEY  = new NamespacedKey("arcadiusmc", "usable/block");
+  public static final NamespacedKey ENTITY_KEY = new NamespacedKey("arcadiusmc", "usable/entity");
+  public static final NamespacedKey ITEM_KEY   = new NamespacedKey("arcadiusmc", "usable/item");
+
+  public static final int NO_FAILURE = -1;
+
+  public static final TextReplacementConfig NEWLINES = TextReplacementConfig.builder()
+      .matchLiteral("\\n")
+      .replacement("\n")
+      .build();
 
   public static boolean isUsable(Block block) {
     if (!(block.getState() instanceof TileState tile)) {
@@ -61,55 +77,6 @@ public final class Usables {
     return new UsableItem(itemStack);
   }
 
-  public static Condition testConditions(
-      Iterable<Condition> conditions,
-      Interaction interaction
-  ) {
-    for (Condition condition : conditions) {
-      if (condition.test(interaction)) {
-        continue;
-      }
-
-      return condition;
-    }
-
-    return null;
-  }
-
-  public static boolean test(Iterable<Condition> conditions, Interaction interaction) {
-    return testConditions(conditions, interaction) == null;
-  }
-
-  public static boolean runConditions(
-      Iterable<Condition> conditions,
-      Interaction interaction
-  ) {
-    Condition failed = testConditions(conditions, interaction);
-
-    if (failed == null) {
-      for (Condition condition : conditions) {
-        condition.afterTests(interaction);
-      }
-
-      return true;
-    }
-
-    Component message = failed.failMessage(interaction);
-    boolean silent = interaction.getBoolean("silent").orElse(false);
-
-    if (message != null && !silent) {
-      interaction.player().sendMessage(message);
-    }
-
-    return false;
-  }
-
-  public static void runActions(Iterable<Action> actions, Interaction interaction) {
-    for (Action action : actions) {
-      action.onUse(interaction);
-    }
-  }
-
   public static String boundsDisplay(IntRange ints) {
     if (ints == null || ints.isUnlimited()) {
       return "Any";
@@ -138,5 +105,22 @@ public final class Usables {
         .asComponent();
 
     return Component.text("[Hover to see items]", NamedTextColor.AQUA).hoverEvent(itemList);
+  }
+
+  public static Component formatBaseString(String text, Audience viewer) {
+    try {
+      StringReader reader = new StringReader(text);
+      return Arguments.CHAT.parse(reader).create(viewer);
+    } catch (CommandSyntaxException exc) {
+      return Text.valueOf(text, viewer);
+    }
+  }
+
+  public static Component formatString(String str, Player viewer, Map<String, Object> context) {
+    Component base = formatBaseString(str, viewer);
+    PlaceholderRenderer list = Placeholders.newRenderer().useDefaults();
+
+    return list.render(base, viewer, context)
+        .replaceText(NEWLINES);
   }
 }

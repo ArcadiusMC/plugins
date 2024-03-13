@@ -13,13 +13,13 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import lombok.Getter;
 import net.arcadiusmc.command.Exceptions;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.arcadiusmc.registry.Registry;
 import net.arcadiusmc.usables.ObjectType;
 import net.arcadiusmc.usables.UsableComponent;
 import net.arcadiusmc.utils.EntityRef;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.types.ArgumentTypes;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -49,7 +49,7 @@ enum EntityAction {
   ON_ENTITY_KILL,
   ON_ENTITY_INTERACT;
 
-  static final Codec<EntityAction> CODEC = FtcCodecs.enumCodec(EntityAction.class);
+  static final Codec<EntityAction> CODEC = ExtraCodecs.enumCodec(EntityAction.class);
 
   final EntityTriggerType type;
 

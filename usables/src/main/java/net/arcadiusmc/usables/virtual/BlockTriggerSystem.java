@@ -204,9 +204,11 @@ class BlockTriggerListener implements Listener {
 
         // Context fill
         interaction -> {
-          var ctx = interaction.context();
+          var ctx = interaction.getContext();
           ctx.put("expToDrop", event.getExpToDrop());
           ctx.put("dropItems", event.isDropItems());
+          ctx.put("block", event.getBlock());
+          ctx.put("location", event.getBlock().getLocation());
         },
 
         // Post execution
@@ -227,7 +229,7 @@ class BlockTriggerListener implements Listener {
     Player player = event.getPlayer();
 
     Triggers.runReferences(list, manager, player, event, interaction -> {
-      var ctx = interaction.context();
+      var ctx = interaction.getContext();
       ctx.put("block", event.getBlock());
       ctx.put("location", event.getBlock().getLocation());
       ctx.put("hand", event.getHand());
@@ -251,13 +253,15 @@ class BlockTriggerListener implements Listener {
 
         // Context fill
         interaction -> {
-          var ctx = interaction.context();
+          var ctx = interaction.getContext();
           ctx.put("useItemInHand", event.useItemInHand());
           ctx.put("item", event.getItem());
           ctx.put("useClickedBlock", event.useInteractedBlock());
           ctx.put("action", event.getAction());
           ctx.put("clickedPosition", event.getInteractionPoint());
           ctx.put("hand", event.getHand());
+          ctx.put("block", event.getClickedBlock());
+          ctx.put("location", event.getClickedBlock().getLocation());
         },
 
         // Post execution

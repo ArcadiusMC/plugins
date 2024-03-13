@@ -19,6 +19,7 @@ import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.arguments.RegistryArguments;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.usables.Condition.TransientCondition;
 import net.forthecrown.grenadier.CommandContexts;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Completions;
@@ -104,6 +105,8 @@ public class ListCommands<T extends UsableComponent> {
     writer.field(name.append(text(" " + displayName + "s")));
     list.write(writer, holder.object().getCommandPrefix() + " " + argumentName);
 
+    writer.newLine();
+
     return writer.asComponent();
   }
 
@@ -118,14 +121,14 @@ public class ListCommands<T extends UsableComponent> {
     });
 
     builder.then(literal("add")
-        .then(literal("-at")
+        .then(literal("at")
             .then(argument("index", IntegerArgumentType.integer(1))
                 .suggests(suggestIndices(access))
                 .then(addArgument(access, POS_AT))
             )
         )
 
-        .then(literal("-first").then(addArgument(access, POS_FIRST)))
+        .then(literal("first").then(addArgument(access, POS_FIRST)))
         .then(addArgument(access, POS_LAST))
     );
 
@@ -151,6 +154,12 @@ public class ListCommands<T extends UsableComponent> {
           Component message;
 
           if (minIndex == maxIndex) {
+            // Ensure hardcoded condition is not removed
+            T value = list.get(minIndex - 1);
+            if (value instanceof TransientCondition) {
+              throw Exceptions.create("Cannot remove hardcoded condition");
+            }
+
             list.remove(minIndex - 1);
 
             message = Text.format("Removed {0} at index &f{1, number}&r.",
@@ -158,6 +167,17 @@ public class ListCommands<T extends UsableComponent> {
                 displayName, minIndex
             );
           } else {
+            // Ensure hardcoded condition is not removed
+            for (int i = minIndex -1; i < maxIndex; i++) {
+              T value = list.get(minIndex - 1);
+
+              if (value instanceof TransientCondition) {
+                throw Exceptions.format("Cannot remove hardcoded condition at index {0, number}",
+                    i + 1
+                );
+              }
+            }
+
             list.removeBetween(minIndex - 1, maxIndex);
 
             message = Text.format(
@@ -167,6 +187,7 @@ public class ListCommands<T extends UsableComponent> {
             );
           }
 
+          holder.onRemove(range);
           holder.postEdit();
 
           c.getSource().sendSuccess(message);
@@ -215,6 +236,7 @@ public class ListCommands<T extends UsableComponent> {
       }
 
       list.clear();
+      holder.onClear();
       holder.postEdit();
 
       c.getSource().sendSuccess(
@@ -228,7 +250,7 @@ public class ListCommands<T extends UsableComponent> {
     }));
   }
 
-  private SuggestionProvider<CommandSource> suggestIndices(ListAccess<T> access) {
+  public SuggestionProvider<CommandSource> suggestIndices(ListAccess<T> access) {
     return (context, builder) -> {
       var holder = access.getHolder(context);
       var list = holder.getList();
@@ -399,5 +421,7 @@ public class ListCommands<T extends UsableComponent> {
           displayName, holder.getKey(), displayInfo
       ));
     }
+
+    source.sendMessage(show(listHolder));
   }
 }

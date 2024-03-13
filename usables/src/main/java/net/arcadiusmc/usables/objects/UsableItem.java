@@ -36,7 +36,7 @@ public class UsableItem extends InWorldUsable {
 
   @Override
   public String getCommandPrefix() {
-    return "/usable_item";
+    return "/usableitem";
   }
 
   @Override

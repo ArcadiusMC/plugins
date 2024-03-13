@@ -2,6 +2,7 @@ package net.arcadiusmc.usables.objects;
 
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 import net.forthecrown.nbt.CompoundTag;
 import net.arcadiusmc.text.TextWriter;
 import net.arcadiusmc.usables.Condition.TransientCondition;
@@ -15,6 +16,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 public class Kit extends CommandUsable {
 
@@ -79,12 +81,23 @@ public class Kit extends CommandUsable {
   private class InventoryCondition implements TransientCondition {
     @Override
     public boolean test(Interaction interaction) {
-      return ItemStacks.hasRoom(interaction.player().getInventory(), items);
+      Optional<Player> playerOpt = interaction.getPlayer();
+
+      if (playerOpt.isEmpty()) {
+        return false;
+      }
+
+      return ItemStacks.hasRoom(playerOpt.get().getInventory(), items);
     }
 
     @Override
     public Component failMessage(Interaction interaction) {
       return Component.text("Not enough inventory space", NamedTextColor.GRAY);
+    }
+
+    @Override
+    public @Nullable Component displayInfo() {
+      return Component.text("Inventory space check");
     }
   }
 }

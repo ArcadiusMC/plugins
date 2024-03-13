@@ -32,7 +32,7 @@ public class CurrencyConditionType implements ObjectType<CurrencyCondition> {
   public CurrencyConditionType(Currency currency) {
     Objects.requireNonNull(currency);
     this.currency = currency;
-    this.currencyName = currency.name();
+    this.currencyName = currency.pluralName();
   }
 
   @Override
@@ -74,8 +74,12 @@ class CurrencyCondition implements Condition {
 
   @Override
   public boolean test(Interaction interaction) {
-    int value = type.getCurrency().get(interaction.player().getUniqueId());
-    return range.contains(value);
+    return interaction.getPlayerId()
+        .map(playerId -> {
+          int value = type.getCurrency().get(playerId);
+          return range.contains(value);
+        })
+        .orElse(false);
   }
 
   @Override

@@ -12,19 +12,20 @@ import com.mojang.serialization.ListBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import java.lang.reflect.Array;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.registry.Registry;
 import net.arcadiusmc.text.TextWriter;
+import net.arcadiusmc.utils.AbstractListIterator;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 public final class ComponentList<T extends UsableComponent> implements Iterable<T> {
@@ -129,21 +130,9 @@ public final class ComponentList<T extends UsableComponent> implements Iterable<
     }
   }
 
-  public void removeWithType(ObjectType<? extends T> type) {
-    var it = iterator();
-
-    while (it.hasNext()) {
-      var n = it.next();
-
-      if (Objects.equals(type, n.getType())) {
-        it.remove();
-      }
-    }
-  }
-
   @NotNull
   @Override
-  public Iterator<T> iterator() {
+  public ListIterator<T> iterator() {
     return new Iter();
   }
 
@@ -208,7 +197,7 @@ public final class ComponentList<T extends UsableComponent> implements Iterable<
             var value = type.createEmpty();
             addLast(value);
           } catch (UnsupportedOperationException exc) {
-            LOGGER.error("Type '{}' didn't support createEmpty() but has no data to load",
+            LOGGER.error("Type '{}' doesn't support createEmpty() but has no data to load",
                 key, exc
             );
           }
@@ -277,10 +266,7 @@ public final class ComponentList<T extends UsableComponent> implements Iterable<
     writer.line("]");
   }
 
-  public Component displayEntry(int index) {
-    T component = contents[index];
-    ObjectType<T> type = (ObjectType<T>) component.getType();
-
+  public Component displayType(ObjectType<T> type) {
     Component prefix;
 
     if (type == null) {
@@ -291,6 +277,14 @@ public final class ComponentList<T extends UsableComponent> implements Iterable<
           .orElseGet(() -> text("UNKNOWN", NamedTextColor.YELLOW));
     }
 
+    return prefix;
+  }
+
+  public Component displayEntry(int index) {
+    T component = contents[index];
+    ObjectType<T> type = (ObjectType<T>) component.getType();
+
+    Component prefix = displayType(type);
     Component displayInfo = component.displayInfo();
 
     if (displayInfo == null) {
@@ -300,34 +294,61 @@ public final class ComponentList<T extends UsableComponent> implements Iterable<
     }
   }
 
-  private class Iter implements Iterator<T> {
-    int i = 0;
-    int current = -1;
+  public ObjectType<T> getType(int index) {
+    T value = get(index);
+    return (ObjectType<T>) value.getType();
+  }
+
+  public T get(int index) {
+    Objects.checkIndex(index, size);
+    return contents[index];
+  }
+
+  public boolean contains(T value) {
+    return indexOf(value) != -1;
+  }
+
+  public int indexOf(T value) {
+    if (isEmpty()) {
+      return -1;
+    }
+
+    for (int i = 0; i < size; i++) {
+      T containedValue = contents[i];
+
+      if (Objects.equals(value, containedValue)) {
+        return i;
+      }
+    }
+
+    return -1;
+  }
+
+  private class Iter extends AbstractListIterator<T> {
 
     @Override
-    public boolean hasNext() {
-      return i < size;
+    protected void add(int pos, T val) {
+      ComponentList.this.add(val, pos);
     }
 
     @Override
-    public void remove() {
-      if (current == -1) {
-        throw new NoSuchElementException("remove() already called or next() not called at all");
-      }
-
-      ComponentList.this.remove(i);
-      i--;
-      current = -1;
+    protected @Nullable T get(int pos) {
+      return ComponentList.this.get(pos);
     }
 
     @Override
-    public T next() {
-      if (!hasNext()) {
-        throw new NoSuchElementException();
-      }
+    protected void set(int pos, @Nullable T val) {
+      ComponentList.this.set(pos, val);
+    }
 
-      current = i;
-      return contents[i++];
+    @Override
+    protected void remove(int pos) {
+      ComponentList.this.remove(pos);
+    }
+
+    @Override
+    protected int size() {
+      return size;
     }
   }
 }

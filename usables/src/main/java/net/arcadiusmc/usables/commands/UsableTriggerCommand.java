@@ -24,7 +24,6 @@ import net.arcadiusmc.usables.trigger.TriggerManager;
 import net.arcadiusmc.utils.math.WorldBounds3i;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
-import org.bukkit.permissions.Permission;
 
 public class UsableTriggerCommand extends InteractableCommand<AreaTrigger> {
 
@@ -39,8 +38,8 @@ public class UsableTriggerCommand extends InteractableCommand<AreaTrigger> {
   }
 
   @Override
-  public Permission getAdminPermission() {
-    return UPermissions.TRIGGER;
+  public String getAdminPermission() {
+    return UPermissions.TRIGGER.getName();
   }
 
   @Override
@@ -71,7 +70,7 @@ public class UsableTriggerCommand extends InteractableCommand<AreaTrigger> {
   @Override
   protected void addPrefixedArguments(LiteralArgumentBuilder<CommandSource> builder) {
     builder.then(literal("define")
-        .then(argument("name", Arguments.FTC_KEY)
+        .then(argument("name", Arguments.RESOURCE_KEY)
             .executes(c -> {
               define(c, false);
               return 0;
@@ -97,7 +96,7 @@ public class UsableTriggerCommand extends InteractableCommand<AreaTrigger> {
     AreaTrigger existing = manager.get(name);
 
     if (existing != null) {
-      throw Exceptions.alreadyExists("Trigger", existing.displayName());
+      throw alreadyExists(existing.displayName());
     }
 
     WorldBounds3i area;
@@ -121,8 +120,12 @@ public class UsableTriggerCommand extends InteractableCommand<AreaTrigger> {
     manager.add(trigger);
 
     c.getSource().sendSuccess(
-        Text.format("Created trigger called '&e{0}&r", NamedTextColor.GRAY, trigger.displayName())
+        Text.format("Created trigger called '&e{0}&r'", NamedTextColor.GRAY, trigger.displayName())
     );
+  }
+
+  static CommandSyntaxException alreadyExists(Object displayName) {
+    return Exceptions.format("Trigger named '{0}' already exists", displayName);
   }
 
   @Override
@@ -133,7 +136,7 @@ public class UsableTriggerCommand extends InteractableCommand<AreaTrigger> {
     super.createEditArguments(argument, provider);
 
     argument.then(literal("remove").executes(c -> {
-      AreaTrigger trigger = c.getArgument("trigger", AreaTrigger.class);
+      AreaTrigger trigger = provider.get(c);
       manager.remove(trigger);
 
       c.getSource().sendSuccess(
@@ -164,7 +167,7 @@ public class UsableTriggerCommand extends InteractableCommand<AreaTrigger> {
     );
 
     argument.then(literal("rename")
-        .then(argument("newName", Arguments.FTC_KEY)
+        .then(argument("newName", Arguments.RESOURCE_KEY)
             .suggests((context, builder) -> {
               AreaTrigger trigger = provider.get(context);
               return Completions.suggest(builder, trigger.getName());
@@ -177,7 +180,7 @@ public class UsableTriggerCommand extends InteractableCommand<AreaTrigger> {
 
               var existing = manager.get(name);
               if (existing != null) {
-                throw Exceptions.alreadyExists("Trigger", trigger.displayName());
+                throw alreadyExists(trigger.displayName());
               }
 
               trigger.setName(name);
@@ -248,7 +251,7 @@ public class UsableTriggerCommand extends InteractableCommand<AreaTrigger> {
     public AreaTrigger parse(StringReader reader) throws CommandSyntaxException {
       final int start = reader.getCursor();
 
-      String ftcKey = Arguments.FTC_KEY.parse(reader);
+      String ftcKey = Arguments.RESOURCE_KEY.parse(reader);
 
       var triggers = UsablesPlugin.get().getTriggers();
       AreaTrigger trigger = triggers.get(ftcKey);

@@ -1,22 +1,31 @@
 package net.arcadiusmc.usables.objects;
 
+import static net.arcadiusmc.usables.Usables.NO_FAILURE;
+import static net.arcadiusmc.usables.Usables.formatString;
+
+import com.google.common.base.Strings;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
+import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.Loggers;
-import net.forthecrown.nbt.BinaryTag;
-import net.forthecrown.nbt.CompoundTag;
-import net.forthecrown.nbt.TypeIds;
 import net.arcadiusmc.text.TextWriter;
 import net.arcadiusmc.usables.Action;
 import net.arcadiusmc.usables.ComponentList;
 import net.arcadiusmc.usables.Condition;
 import net.arcadiusmc.usables.Interaction;
-import net.arcadiusmc.usables.Usables;
 import net.arcadiusmc.utils.io.Results;
 import net.arcadiusmc.utils.io.TagOps;
+import net.forthecrown.nbt.BinaryTag;
+import net.forthecrown.nbt.BinaryTags;
+import net.forthecrown.nbt.CompoundTag;
+import net.forthecrown.nbt.ListTag;
+import net.forthecrown.nbt.TagTypes;
+import net.forthecrown.nbt.TypeIds;
+import net.kyori.adventure.text.Component;
+import org.bukkit.entity.Player;
 import org.slf4j.Logger;
 
 @Getter
@@ -26,6 +35,8 @@ public abstract class Usable implements ConditionHolder {
 
   public static final String KEY_CONDITIONS = "checks";
   public static final String KEY_ACTIONS = "actions";
+  public static final String KEY_G_ERROR_OVERRIDE = "globalErrorOverride";
+  public static final String KEY_ERROR_OVERRIDES = "errorOverrides";
 
   @Setter
   private boolean silent;
@@ -33,9 +44,84 @@ public abstract class Usable implements ConditionHolder {
   private final ComponentList<Condition> conditions;
   private final ComponentList<Action> actions;
 
+  @Setter
+  private String[] errorOverrides = null;
+
+  @Setter
+  private String globalErrorOverride = null;
+
   public Usable() {
     this.conditions = ComponentList.newConditionList();
     this.actions = ComponentList.newActionList();
+  }
+
+  @Override
+  public int getFailureIndex(Interaction interaction) {
+    ComponentList<Condition> conditions = getConditions();
+
+    for (int i = 0; i < conditions.size(); i++) {
+      Condition condition = conditions.get(i);
+
+      if (condition.test(interaction)) {
+        continue;
+      }
+
+      return i;
+    }
+
+    return NO_FAILURE;
+  }
+
+  @Override
+  public boolean runConditions(Interaction interaction) {
+    ComponentList<Condition> conditions = getConditions();
+    int failedIndex = getFailureIndex(interaction);
+
+    if (failedIndex == NO_FAILURE) {
+      for (Condition condition : conditions) {
+        condition.afterTests(interaction);
+      }
+
+      return true;
+    }
+
+    if (interaction.getBoolean("silent").orElse(false)) {
+      return false;
+    }
+
+    Player player = interaction.getPlayer().orElse(null);
+
+    if (player == null) {
+      return false;
+    }
+
+    Condition condition = conditions.get(failedIndex);
+    Component message;
+    String errorOverride;
+
+    if (errorOverrides == null
+        || errorOverrides.length < failedIndex
+        || Strings.isNullOrEmpty(errorOverrides[failedIndex])
+    ) {
+      errorOverride = globalErrorOverride;
+    } else {
+      errorOverride = errorOverrides[failedIndex];
+    }
+
+    if (Strings.isNullOrEmpty(errorOverride)) {
+      message = condition.failMessage(interaction);
+    } else {
+      Map<String, Object> ctx2 = new HashMap<>(interaction.getContext());
+      ctx2.put("original", condition.failMessage(interaction));
+
+      message = formatString(errorOverride, player, ctx2);
+    }
+
+    if (message != null) {
+      player.sendMessage(message);
+    }
+
+    return false;
   }
 
   public void clear() {
@@ -54,8 +140,14 @@ public abstract class Usable implements ConditionHolder {
       return false;
     }
 
-    Usables.runActions(actions, interaction);
+    runActions(interaction);
     return true;
+  }
+
+  public void runActions(Interaction interaction) {
+    for (Action action : getActions()) {
+      action.onUse(interaction);
+    }
   }
 
   @Override
@@ -64,6 +156,42 @@ public abstract class Usable implements ConditionHolder {
 
     save(conditions, tag, KEY_CONDITIONS);
     save(actions, tag, KEY_ACTIONS);
+
+    if (!Strings.isNullOrEmpty(globalErrorOverride)) {
+      tag.putString(KEY_G_ERROR_OVERRIDE, globalErrorOverride);
+    }
+
+    if (errorOverrides != null && errorOverrides.length > 0) {
+      ListTag listTag = BinaryTags.listTag();
+
+      for (String errorOverride : errorOverrides) {
+        String str = Strings.nullToEmpty(errorOverride);
+        listTag.addString(str);
+      }
+
+      tag.put(KEY_ERROR_OVERRIDES, listTag);
+    }
+  }
+
+  @Override
+  public void load(CompoundTag tag) {
+    this.silent = tag.getBoolean("silent");
+
+    load(tag.get(KEY_ACTIONS), actions);
+    load(tag.get(KEY_CONDITIONS), conditions);
+
+    this.globalErrorOverride = tag.getString(KEY_G_ERROR_OVERRIDE);
+
+    if (tag.contains(KEY_ERROR_OVERRIDES, TagTypes.listType())) {
+      ListTag listTag = tag.getList(KEY_ERROR_OVERRIDES, TagTypes.stringType());
+      int size = listTag.size();
+
+      this.errorOverrides = new String[size];
+
+      for (int i = 0; i < size; i++) {
+        this.errorOverrides[i] = listTag.getString(i, "");
+      }
+    }
   }
 
   static void save(ComponentList<?> list, CompoundTag container, String key) {
@@ -89,14 +217,6 @@ public abstract class Usable implements ConditionHolder {
   }
 
   @Override
-  public void load(CompoundTag tag) {
-    this.silent = tag.getBoolean("silent");
-
-    load(tag.get(KEY_ACTIONS), actions);
-    load(tag.get(KEY_CONDITIONS), conditions);
-  }
-
-  @Override
   public void write(TextWriter writer) {
     writer.field("Silent", silent);
     writer.field("Conditions");
@@ -104,5 +224,9 @@ public abstract class Usable implements ConditionHolder {
 
     writer.field("Actions");
     actions.write(writer, getCommandPrefix() + " actions");
+
+    if (!Strings.isNullOrEmpty(globalErrorOverride)) {
+      writer.field("Global Error Override", globalErrorOverride);
+    }
   }
 }

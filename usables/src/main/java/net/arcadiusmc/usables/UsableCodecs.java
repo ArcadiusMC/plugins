@@ -8,16 +8,16 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import java.util.OptionalInt;
-import net.forthecrown.grenadier.types.ArgumentTypes;
-import net.forthecrown.grenadier.types.IntRangeArgument.IntRange;
 import net.arcadiusmc.utils.inventory.ItemList;
 import net.arcadiusmc.utils.inventory.ItemLists;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
+import net.forthecrown.grenadier.types.ArgumentTypes;
+import net.forthecrown.grenadier.types.IntRangeArgument.IntRange;
 
 public class UsableCodecs {
 
   public static final Codec<ItemList> ITEM_LIST_OR_SINGLE
-      = Codec.either(FtcCodecs.ITEM_LIST_CODEC, FtcCodecs.ITEM_CODEC)
+      = Codec.either(ExtraCodecs.ITEM_LIST_CODEC, ExtraCodecs.ITEM_CODEC)
       .xmap(
           either -> either.map(list -> list, ItemLists::newList),
           Either::left
@@ -43,7 +43,7 @@ public class UsableCodecs {
 
       if (strResult.result().isPresent()) {
         return strResult
-            .flatMap(s -> FtcCodecs.safeParse(s, ArgumentTypes.intRange()))
+            .flatMap(s -> ExtraCodecs.safeParse(s, ArgumentTypes.intRange()))
             .map(range -> Pair.of(range, input));
       }
 

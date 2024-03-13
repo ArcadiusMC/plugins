@@ -12,7 +12,6 @@ import net.arcadiusmc.usables.UPermissions;
 import net.arcadiusmc.usables.Usables;
 import net.arcadiusmc.usables.objects.UsableEntity;
 import org.bukkit.entity.Entity;
-import org.bukkit.permissions.Permission;
 
 public class UsableEntityCommand extends InWorldUsableCommand<UsableEntity> {
 
@@ -23,8 +22,8 @@ public class UsableEntityCommand extends InWorldUsableCommand<UsableEntity> {
   }
 
   @Override
-  public Permission getAdminPermission() {
-    return UPermissions.ENTITY;
+  public String getAdminPermission() {
+    return UPermissions.ENTITY.getName();
   }
 
   @Override

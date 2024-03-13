@@ -16,8 +16,12 @@ public class TestNotAlt implements Condition {
 
   @Override
   public boolean test(Interaction interaction) {
-    UserService service = Users.getService();
-    return !service.isAltAccount(interaction.playerId());
+    return interaction.getPlayerId()
+        .map(playerId -> {
+          UserService service = Users.getService();
+          return !service.isAltAccount(playerId);
+        })
+        .orElse(true);
   }
 
   @Override

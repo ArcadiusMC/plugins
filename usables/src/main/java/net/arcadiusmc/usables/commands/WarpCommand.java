@@ -12,7 +12,6 @@ import net.arcadiusmc.usables.objects.Warp;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.permissions.Permission;
 
 public class WarpCommand extends CmdUsableCommand<Warp> {
 
@@ -28,8 +27,8 @@ public class WarpCommand extends CmdUsableCommand<Warp> {
   }
 
   @Override
-  public Permission getAdminPermission() {
-    return UPermissions.WARP_ADMIN;
+  public String getAdminPermission() {
+    return UPermissions.WARP_ADMIN.getName();
   }
 
   @Override

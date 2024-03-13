@@ -5,7 +5,7 @@ import net.arcadiusmc.registry.Registry;
 import net.arcadiusmc.usables.ObjectType;
 import net.arcadiusmc.usables.UsablesPlugin;
 import net.arcadiusmc.usables.commands.UsableTriggerCommand.TriggerArgumentType;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 
 public enum RegionAction {
   ON_REGION_ENTER,
@@ -14,7 +14,7 @@ public enum RegionAction {
   ON_REGION_MOVE_INSIDE_OF;
 
   public static final Codec<RegionAction> CODEC
-      = FtcCodecs.enumCodec(RegionAction.class);
+      = ExtraCodecs.enumCodec(RegionAction.class);
 
   RegionTriggerType type;
 

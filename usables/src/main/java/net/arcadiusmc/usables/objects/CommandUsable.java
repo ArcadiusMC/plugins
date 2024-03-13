@@ -1,14 +1,12 @@
 package net.arcadiusmc.usables.objects;
 
-import com.google.common.collect.Iterables;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.Getter;
+import net.arcadiusmc.usables.ComponentList;
 import net.arcadiusmc.usables.Condition;
 import net.arcadiusmc.usables.Condition.TransientCondition;
 import net.arcadiusmc.usables.Interaction;
-import net.arcadiusmc.usables.Usables;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 
@@ -43,27 +41,45 @@ public abstract class CommandUsable extends Usable {
       return false;
     }
 
-    Usables.runActions(getActions(), interaction);
+    runActions(interaction);
 
-    onInteract(interaction.player(), interaction.getBoolean("adminInteraction").orElse(false));
+    var playerOpt = interaction.getPlayer();
+    if (playerOpt.isEmpty()) {
+      return false;
+    }
+
+    onInteract(playerOpt.get(), interaction.getBoolean("adminInteraction").orElse(false));
     return true;
   }
 
   protected abstract void onInteract(Player player, boolean adminInteraction);
 
   @Override
-  public Iterable<Condition> getEffectiveConditions() {
-    var additional = getAdditional();
+  public ComponentList<Condition> getConditions() {
+    ComponentList<Condition> list = super.getConditions();
 
-    if (additional == null) {
-      return getConditions();
+    if (additional != null) {
+      int index = list.indexOf(additional);
+
+      if (index == -1) {
+        list.addFirst(additional);
+      } else if (index != 0) {
+        list.remove(index);
+        list.addFirst(additional);
+      }
+
+      return list;
     }
 
-    return Iterables.concat(getConditions(), List.of(additional));
-  }
+    TransientCondition created = additionalCondition();
+    if (created == null) {
+      return list;
+    }
 
-  private TransientCondition getAdditional() {
-    return additional == null ? (additional = additionalCondition()) : additional;
+    additional = created;
+    list.addFirst(additional);
+
+    return list;
   }
 
   protected TransientCondition additionalCondition() {

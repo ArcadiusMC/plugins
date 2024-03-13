@@ -5,24 +5,20 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.Getter;
-import lombok.experimental.Accessors;
 import net.arcadiusmc.usables.objects.UsableObject;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 @Getter
-@Accessors(fluent = true)
 public class Interaction {
 
   private final Map<String, Object> context = new Object2ObjectOpenHashMap<>();
-  private final Player player;
   private final UsableObject object;
 
-  public Interaction(Player player, UsableObject object) {
-    this.player = player;
+  public Interaction(UsableObject object) {
     this.object = object;
-
     this.object.fillContext(context);
   }
 
@@ -31,13 +27,26 @@ public class Interaction {
   }
 
   public static Interaction create(Player player, UsableObject object, boolean adminInteraction) {
-    Interaction interaction = new Interaction(player, object);
+    Interaction interaction = new Interaction(object);
     interaction.context.put("adminInteraction", adminInteraction);
+    interaction.context.put("player", player);
     return interaction;
   }
 
-  public User user() {
-    return Users.get(player);
+  public static Interaction create(UsableObject object) {
+    return new Interaction(object);
+  }
+
+  public Optional<User> getUser() {
+    return getPlayer().map(Users::get);
+  }
+
+  public Optional<Player> getPlayer() {
+    return getValue("player", Player.class);
+  }
+
+  public Optional<UUID> getPlayerId() {
+    return getPlayer().map(Entity::getUniqueId);
   }
 
   public Optional<Object> getValue(String name) {
@@ -56,9 +65,5 @@ public class Interaction {
 
       return Boolean.parseBoolean(String.valueOf(o));
     });
-  }
-
-  public UUID playerId() {
-    return player.getUniqueId();
   }
 }

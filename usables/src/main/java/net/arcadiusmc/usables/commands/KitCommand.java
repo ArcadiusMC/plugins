@@ -14,7 +14,6 @@ import net.arcadiusmc.utils.inventory.ItemList;
 import net.arcadiusmc.utils.inventory.ItemLists;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
-import org.bukkit.permissions.Permission;
 
 public class KitCommand extends CmdUsableCommand<Kit> {
 
@@ -30,8 +29,8 @@ public class KitCommand extends CmdUsableCommand<Kit> {
   }
 
   @Override
-  public Permission getAdminPermission() {
-    return UPermissions.KIT_ADMIN;
+  public String getAdminPermission() {
+    return UPermissions.KIT_ADMIN.getName();
   }
 
   @Override

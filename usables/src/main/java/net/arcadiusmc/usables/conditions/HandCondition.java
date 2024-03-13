@@ -7,9 +7,6 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import java.util.HashMap;
 import java.util.Map;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.Completions;
-import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.arcadiusmc.usables.BuiltType;
 import net.arcadiusmc.usables.BuiltType.Parser;
 import net.arcadiusmc.usables.Condition;
@@ -18,14 +15,17 @@ import net.arcadiusmc.usables.ObjectType;
 import net.arcadiusmc.usables.UsableComponent;
 import net.arcadiusmc.usables.objects.InWorldUsable;
 import net.arcadiusmc.usables.virtual.VirtualUsable;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.Completions;
+import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.kyori.adventure.text.Component;
 import org.bukkit.inventory.EquipmentSlot;
 import org.jetbrains.annotations.Nullable;
 
 public class HandCondition implements Condition {
 
-  private static final Codec<EquipmentSlot> SLOT_CODEC = FtcCodecs.enumCodec(EquipmentSlot.class);
+  private static final Codec<EquipmentSlot> SLOT_CODEC = ExtraCodecs.enumCodec(EquipmentSlot.class);
 
   public static final ObjectType<HandCondition> TYPE = BuiltType.<HandCondition>builder()
       .parser(new Parser<>() {

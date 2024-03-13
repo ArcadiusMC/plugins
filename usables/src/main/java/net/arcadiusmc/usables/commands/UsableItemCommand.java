@@ -8,7 +8,6 @@ import net.forthecrown.grenadier.CommandSource;
 import net.arcadiusmc.usables.UPermissions;
 import net.arcadiusmc.usables.Usables;
 import net.arcadiusmc.usables.objects.UsableItem;
-import org.bukkit.permissions.Permission;
 
 public class UsableItemCommand extends InWorldUsableCommand<UsableItem> {
 
@@ -19,8 +18,8 @@ public class UsableItemCommand extends InWorldUsableCommand<UsableItem> {
   }
 
   @Override
-  public Permission getAdminPermission() {
-    return UPermissions.ITEM;
+  public String getAdminPermission() {
+    return UPermissions.ITEM.getName();
   }
 
   @Override

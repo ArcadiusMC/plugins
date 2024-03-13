@@ -1,5 +1,6 @@
 package net.arcadiusmc.usables.listeners;
 
+import net.arcadiusmc.usables.Interaction;
 import net.arcadiusmc.usables.Usables;
 import net.arcadiusmc.usables.objects.UsableEntity;
 import org.bukkit.entity.ArmorStand;
@@ -23,8 +24,8 @@ public class EntityListener implements Listener {
     UsableEntity usable = Usables.entity(entity);
     usable.load();
 
-    var interaction = usable.createInteraction(player);
-    interaction.context().put("hand", event.getHand());
+    Interaction interaction = usable.createInteraction(player);
+    interaction.getContext().put("hand", event.getHand());
 
     UsablesListeners.execute(usable, interaction, event);
   }

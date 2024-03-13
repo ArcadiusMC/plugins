@@ -1,13 +1,13 @@
 package net.arcadiusmc.usables.commands;
 
-import net.arcadiusmc.command.FtcCommand;
+import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.help.UsageFactory;
-import net.forthecrown.grenadier.GrenadierCommand;
 import net.arcadiusmc.usables.UPermissions;
 import net.arcadiusmc.usables.UsablesPlugin;
+import net.forthecrown.grenadier.GrenadierCommand;
 import net.kyori.adventure.text.Component;
 
-public class CommandUsables extends FtcCommand {
+public class CommandUsables extends BaseCommand {
 
   private final UsablesPlugin plugin;
 

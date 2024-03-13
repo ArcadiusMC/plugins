@@ -6,7 +6,7 @@ import org.bukkit.permissions.Permission;
 
 public interface UPermissions {
 
-  Permission USABLES = register("ftc.usables");
+  Permission USABLES = register("arcadius.usables");
 
   Permission ADMIN_INTERACTION = register(USABLES, "adminuse");
 
@@ -15,9 +15,9 @@ public interface UPermissions {
   Permission ITEM = register(USABLES, "item");
   Permission TRIGGER = register(USABLES, "trigger");
 
-  Permission WARP = register("ftc.warps");
+  Permission WARP = register("arcadius.warps");
   Permission WARP_ADMIN = register(WARP, "admin");
 
-  Permission KIT = register("ftc.kits");
+  Permission KIT = register("arcadius.kits");
   Permission KIT_ADMIN = register(KIT, "admin");
 }

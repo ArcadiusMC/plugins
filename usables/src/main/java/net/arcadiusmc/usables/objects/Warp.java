@@ -17,6 +17,7 @@ import net.arcadiusmc.utils.io.TagUtil;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 public class Warp extends CommandUsable {
 
@@ -83,12 +84,17 @@ public class Warp extends CommandUsable {
 
     @Override
     public boolean test(Interaction interaction) {
-      return interaction.user().canTeleport();
+      return interaction.getUser().map(User::canTeleport).orElse(false);
     }
 
     @Override
     public Component failMessage(Interaction interaction) {
-      return interaction.user().checkTeleportMessage();
+      return interaction.getUser().map(User::checkTeleportMessage).orElse(null);
+    }
+
+    @Override
+    public @Nullable Component displayInfo() {
+      return Component.text("User canTeleport() function call");
     }
   }
 }

@@ -1,10 +1,13 @@
 package net.arcadiusmc.usables.virtual;
 
+import static net.arcadiusmc.usables.objects.InWorldUsable.CANCEL_VANILLA;
+
 import java.util.Map;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.usables.objects.Usable;
+import net.forthecrown.nbt.CompoundTag;
 import net.kyori.adventure.text.Component;
 
 public class VirtualUsable extends Usable {
@@ -44,8 +47,20 @@ public class VirtualUsable extends Usable {
   }
 
   @Override
+  public void save(CompoundTag tag) {
+    super.save(tag);
+    tag.putBoolean(CANCEL_VANILLA, cancelVanilla);
+  }
+
+  @Override
+  public void load(CompoundTag tag) {
+    super.load(tag);
+    cancelVanilla = tag.getBoolean(CANCEL_VANILLA);
+  }
+
+  @Override
   public void fillContext(Map<String, Object> context) {
-    context.put("cancelVanilla", cancelVanilla);
+    context.put(CANCEL_VANILLA, cancelVanilla);
   }
 
   @Override

@@ -1,7 +1,10 @@
 package net.arcadiusmc.usables.listeners;
 
 import static net.arcadiusmc.events.Events.register;
+import static net.arcadiusmc.usables.objects.InWorldUsable.CANCEL_VANILLA;
 
+import java.util.Map;
+import java.util.Optional;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.usables.Interaction;
 import net.arcadiusmc.usables.UsablesPlugin;
@@ -28,34 +31,49 @@ public final class UsablesListeners {
   }
 
   static void execute(InWorldUsable usable, Interaction interaction, Cancellable cancellable) {
-    var player = interaction.player();
+    Optional<Player> playerOpt = interaction.getPlayer();
 
-    if (player.getGameMode() == GameMode.SPECTATOR) {
-      return;
+    boolean originalCancelState = cancellable.isCancelled();
+
+    if (usable.isCancelVanilla()) {
+      cancellable.setCancelled(true);
     }
 
-    if (Cooldown.containsOrAdd(player, 5)) {
-      return;
+    if (playerOpt.isPresent()) {
+      Player player = playerOpt.get();
+
+      if (player.getGameMode() == GameMode.SPECTATOR) {
+        return;
+      }
+
+      if (Cooldown.containsOrAdd(player, 5)) {
+        return;
+      }
     }
 
     usable.interact(interaction);
     usable.save();
 
-    if (interaction.getBoolean("cancelVanilla").orElse(usable.isCancelVanilla())) {
+    if (interaction.getBoolean(CANCEL_VANILLA).orElse(usable.isCancelVanilla())) {
       cancellable.setCancelled(true);
+    } else {
+      cancellable.setCancelled(originalCancelState);
     }
   }
 
   static void executeInteract(InWorldUsable usable, Player player, PlayerInteractEvent event) {
-    var interaction = usable.createInteraction(player);
-    var ctx = interaction.context();
+    Interaction interaction = usable.createInteraction(player);
+    Map<String, Object> ctx = interaction.getContext();
+
     ctx.put("hand", event.getHand());
     ctx.put("useItem", event.useItemInHand());
     ctx.put("useBlock", event.useInteractedBlock());
 
     execute(usable, interaction, event);
 
-    interaction.getValue("useItem", Result.class).ifPresent(event::setUseItemInHand);
-    interaction.getValue("useBlock", Result.class).ifPresent(event::setUseInteractedBlock);
+    if (!event.isCancelled()) {
+      interaction.getValue("useItem", Result.class).ifPresent(event::setUseItemInHand);
+      interaction.getValue("useBlock", Result.class).ifPresent(event::setUseInteractedBlock);
+    }
   }
 }

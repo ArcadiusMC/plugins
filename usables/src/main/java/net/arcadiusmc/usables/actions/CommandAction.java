@@ -8,8 +8,10 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import lombok.Getter;
+import net.arcadiusmc.command.Commands;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Grenadier;
 import net.arcadiusmc.usables.Action;
@@ -38,36 +40,32 @@ public class CommandAction implements Action {
   }
 
   static String formatPlaceholders(String cmd, Player player) {
-    var l = player.getLocation();
-
-    return cmd
-        .replace("%p", player.getName())
-        .replace("%plr", player.getName())
-        .replace("%player", player.getName())
-        .replace("%player.block", String.format("%s %s %s", l.getBlockX(), l.getBlockY(), l.getBlockZ()))
-        .replace("%player.pos", String.format("%s %s %s", l.getX(), l.getY(), l.getZ()))
-        .replace("%player.x", l.getX() + "")
-        .replace("%player.y", l.getY() + "")
-        .replace("%player.z", l.getZ() + "")
-        .replace("%player.bx", l.getBlockX() + "")
-        .replace("%player.by", l.getBlockY() + "")
-        .replace("%player.bz", l.getBlockZ() + "")
-        .replace("%player.yaw", l.getYaw() + "")
-        .replace("%player.pitch", l.getPitch() + "")
-        .replace("%player.uuid", player.getUniqueId() + "");
+    return Commands.replacePlaceholders(cmd, player);
   }
 
   @Override
   public void onUse(Interaction interaction) {
-    var player = interaction.player();
-    String formattedCommand = formatPlaceholders(command, player);
+    String formattedCommand;
+    Optional<Player> playerOpt = interaction.getPlayer();
 
-    if (asPlayer) {
-      player.performCommand(formattedCommand);
+    if (playerOpt.isEmpty()) {
+      if (asPlayer) {
+        return;
+      }
+
+      formattedCommand = command;
     } else {
-      CommandSender sender = interaction.object().getCommandSender();
-      Bukkit.dispatchCommand(sender, formattedCommand);
+      var player = playerOpt.get();
+      formattedCommand = formatPlaceholders(command, player);
+
+      if (asPlayer) {
+        player.performCommand(formattedCommand);
+        return;
+      }
     }
+
+    CommandSender sender = interaction.getObject().getCommandSender();
+    Bukkit.dispatchCommand(sender, formattedCommand);
   }
 
   @Override

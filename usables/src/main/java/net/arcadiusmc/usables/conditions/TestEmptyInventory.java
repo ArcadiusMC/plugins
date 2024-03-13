@@ -15,7 +15,9 @@ public class TestEmptyInventory implements Condition {
 
   @Override
   public boolean test(Interaction interaction) {
-    return interaction.player().getInventory().isEmpty();
+    return interaction.getPlayer()
+        .map(player -> player.getInventory().isEmpty())
+        .orElse(true);
   }
 
   @Override

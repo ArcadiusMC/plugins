@@ -32,7 +32,7 @@ public class CmdUsableArgument<T extends CommandUsable>
   public T parse(StringReader reader) throws CommandSyntaxException {
     final int start = reader.getCursor();
 
-    String key = Arguments.FTC_KEY.parse(reader);
+    String key = Arguments.RESOURCE_KEY.parse(reader);
     T usable = usables.get(key);
 
     if (usable == null) {
@@ -58,6 +58,6 @@ public class CmdUsableArgument<T extends CommandUsable>
 
   @Override
   public ArgumentType<?> getVanillaType() {
-    return Arguments.FTC_KEY.getVanillaType();
+    return Arguments.RESOURCE_KEY.getVanillaType();
   }
 }

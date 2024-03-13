@@ -2,6 +2,7 @@ package net.arcadiusmc.usables.conditions;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
+import javax.swing.text.html.parser.Entity;
 import net.arcadiusmc.Loggers;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.forthecrown.grenadier.types.IntRangeArgument.IntRange;
@@ -18,6 +19,7 @@ import net.arcadiusmc.usables.UsableComponent;
 import net.arcadiusmc.usables.ObjectType;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.jetbrains.annotations.Nullable;
@@ -85,6 +87,15 @@ public class TestScore implements Condition {
 
   @Override
   public boolean test(Interaction interaction) {
+    var holderOpt = interaction.getPlayer().map(Player::getName)
+        .or(() -> interaction.getValue("target", Entity.class).map(Entity::getName));
+
+    if (holderOpt.isEmpty()) {
+      return false;
+    }
+
+    String scoreHolder = holderOpt.get();
+
     Objective objective = Bukkit.getScoreboardManager()
         .getMainScoreboard()
         .getObjective(objectiveName);
@@ -94,7 +105,7 @@ public class TestScore implements Condition {
       return false;
     }
 
-    Score score = objective.getScore(interaction.player());
+    Score score = objective.getScore(scoreHolder);
     return scoreRange.contains(score.getScore());
   }
 

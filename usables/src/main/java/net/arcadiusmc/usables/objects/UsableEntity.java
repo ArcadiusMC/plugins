@@ -41,7 +41,7 @@ public class UsableEntity extends InWorldUsable {
 
   @Override
   public String getCommandPrefix() {
-    return "/usable_entity " + entity.getUniqueId();
+    return "/usableentity " + entity.getUniqueId();
   }
 
   @Override

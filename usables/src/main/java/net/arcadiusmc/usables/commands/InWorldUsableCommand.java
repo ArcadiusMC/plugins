@@ -39,7 +39,7 @@ public abstract class InWorldUsableCommand<H extends InWorldUsable> extends Inte
               H holder = provider.get(c);
               boolean state = c.getArgument("state", Boolean.class);
 
-              holder.setCancelVanilla(!state);
+              holder.setCancelVanilla(state);
               provider.postEdit(holder);
 
               c.getSource().sendMessage(

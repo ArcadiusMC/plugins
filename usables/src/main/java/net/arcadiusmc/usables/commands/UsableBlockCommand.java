@@ -14,7 +14,6 @@ import net.arcadiusmc.utils.math.Vectors;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.TileState;
-import org.bukkit.permissions.Permission;
 
 public class UsableBlockCommand extends InWorldUsableCommand<UsableBlock> {
 
@@ -25,8 +24,8 @@ public class UsableBlockCommand extends InWorldUsableCommand<UsableBlock> {
   }
 
   @Override
-  public Permission getAdminPermission() {
-    return UPermissions.BLOCK;
+  public String getAdminPermission() {
+    return UPermissions.BLOCK.getName();
   }
 
   @Override

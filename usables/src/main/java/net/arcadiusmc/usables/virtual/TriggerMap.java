@@ -89,10 +89,7 @@ public class TriggerMap<A> {
   }
 
   public boolean add(A key, String ref) {
-    ObjectList<String> list = action2References.computeIfAbsent(
-        key,
-        a -> new ObjectArrayList<>()
-    );
+    ObjectList<String> list = action2References.computeIfAbsent(key, a -> new ObjectArrayList<>());
 
     if (list.contains(ref)) {
       return false;

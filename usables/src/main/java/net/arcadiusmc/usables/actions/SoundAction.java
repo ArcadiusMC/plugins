@@ -8,12 +8,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.time.Duration;
 import java.util.Optional;
 import lombok.Getter;
-import net.forthecrown.grenadier.Completions;
-import net.forthecrown.grenadier.types.ArgumentTypes;
-import net.forthecrown.grenadier.types.options.ArgumentOption;
-import net.forthecrown.grenadier.types.options.Options;
-import net.forthecrown.grenadier.types.options.OptionsArgument;
-import net.forthecrown.grenadier.types.options.ParsedOptions;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.usables.Action;
 import net.arcadiusmc.usables.BuiltType;
@@ -21,7 +15,13 @@ import net.arcadiusmc.usables.Interaction;
 import net.arcadiusmc.usables.ObjectType;
 import net.arcadiusmc.usables.UsableComponent;
 import net.arcadiusmc.utils.Tasks;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
+import net.forthecrown.grenadier.Completions;
+import net.forthecrown.grenadier.types.ArgumentTypes;
+import net.forthecrown.grenadier.types.options.ArgumentOption;
+import net.forthecrown.grenadier.types.options.Options;
+import net.forthecrown.grenadier.types.options.OptionsArgument;
+import net.forthecrown.grenadier.types.options.ParsedOptions;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.Sound.Source;
 import net.kyori.adventure.text.Component;
@@ -39,9 +39,9 @@ public class SoundAction implements Action {
   static final Codec<Sound> SOUND_CODEC = RecordCodecBuilder.create(instance -> {
     return instance
         .group(
-            FtcCodecs.KYORI_KEY.fieldOf("id").forGetter(Sound::name),
+            ExtraCodecs.KYORI_KEY.fieldOf("id").forGetter(Sound::name),
 
-            FtcCodecs.enumCodec(Source.class)
+            ExtraCodecs.enumCodec(Source.class)
                 .optionalFieldOf("source", Source.MASTER)
                 .forGetter(Sound::source),
 
@@ -179,9 +179,10 @@ public class SoundAction implements Action {
 
   private void playSound(Interaction interaction) {
     Optional<Location> locationOpt = interaction.getValue("location", Location.class);
+    Optional<Player> playerOpt = interaction.getPlayer();
 
     if (playRadius <= 0 || locationOpt.isEmpty()) {
-      interaction.player().playSound(sound);
+      playerOpt.ifPresent(player -> player.playSound(sound));
       return;
     }
 

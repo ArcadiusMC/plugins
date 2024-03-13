@@ -9,22 +9,21 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import java.util.List;
 import java.util.function.Predicate;
 import lombok.Getter;
+import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.DataCommands;
 import net.arcadiusmc.command.DataCommands.DataAccessor;
-import net.arcadiusmc.command.FtcCommand;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.usables.UPermissions;
+import net.arcadiusmc.usables.objects.UsableObject;
+import net.arcadiusmc.user.User;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
 import net.forthecrown.nbt.BinaryTags;
 import net.forthecrown.nbt.CompoundTag;
-import net.arcadiusmc.usables.UPermissions;
-import net.arcadiusmc.usables.objects.UsableObject;
-import net.arcadiusmc.user.User;
 import org.bukkit.entity.Player;
-import org.bukkit.permissions.Permission;
 
-public abstract class UsableCommand<H extends UsableObject> extends FtcCommand {
+public abstract class UsableCommand<H extends UsableObject> extends BaseCommand {
 
   @Getter
   private final String argumentName;
@@ -76,8 +75,8 @@ public abstract class UsableCommand<H extends UsableObject> extends FtcCommand {
 
   }
 
-  public Permission getAdminPermission() {
-    return UPermissions.USABLES;
+  public String getAdminPermission() {
+    return UPermissions.USABLES.getName();
   }
 
   public Predicate<CommandSource> hasAdminPermission() {

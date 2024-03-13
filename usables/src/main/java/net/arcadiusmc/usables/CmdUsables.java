@@ -11,11 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.Getter;
-import net.arcadiusmc.Permissions;
-import net.forthecrown.nbt.BinaryTags;
-import net.forthecrown.nbt.CompoundTag;
 import net.arcadiusmc.usables.objects.CommandUsable;
 import net.arcadiusmc.utils.io.SerializationHelper;
+import net.forthecrown.nbt.BinaryTags;
+import net.forthecrown.nbt.CompoundTag;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -67,9 +66,9 @@ public class CmdUsables<T extends CommandUsable> implements Iterable<T> {
     List<T> result = new ArrayList<>();
 
     for (var e : entries.values()) {
-      Interaction interaction = Interaction.create(player, e);
+      Interaction interaction = e.createInteraction(player);
 
-      if (!player.hasPermission(Permissions.ADMIN) && !e.test(interaction)) {
+      if (!e.test(interaction)) {
         continue;
       }
 

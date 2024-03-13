@@ -41,7 +41,7 @@ public class UsableBlock extends InWorldUsable {
   @Override
   public Component name() {
     return Component.text(
-        String.format("Block(%s %s %s)", block.getX(), block.getY(), block.getZ())
+        String.format("UsableBlock(%s %s %s)", block.getX(), block.getY(), block.getZ())
     );
   }
 

@@ -1,14 +1,14 @@
 package net.arcadiusmc.usables.conditions;
 
 import com.mojang.serialization.DataResult;
-import net.forthecrown.grenadier.Completions;
-import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.usables.BuiltType;
 import net.arcadiusmc.usables.Condition;
 import net.arcadiusmc.usables.Interaction;
-import net.arcadiusmc.usables.UsableComponent;
 import net.arcadiusmc.usables.ObjectType;
+import net.arcadiusmc.usables.UsableComponent;
+import net.forthecrown.grenadier.Completions;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.permissions.Permission;
 import org.jetbrains.annotations.Nullable;
@@ -37,12 +37,14 @@ public class TestPermission implements Condition {
 
   @Override
   public boolean test(Interaction interaction) {
-    return interaction.player().hasPermission(permission);
+    return interaction.getPlayer()
+        .map(player -> player.hasPermission(permission))
+        .orElse(false);
   }
 
   @Override
   public Component failMessage(Interaction interaction) {
-    return Messages.NO_PERMISSION;
+    return Component.text("You do not have permission to do this", NamedTextColor.GRAY);
   }
 
   @Override

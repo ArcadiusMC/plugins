@@ -12,12 +12,14 @@ import org.bukkit.persistence.PersistentDataContainer;
 @Getter @Setter
 public abstract class InWorldUsable extends Usable {
 
+  public static final String CANCEL_VANILLA = "cancelVanilla";
+
   private boolean cancelVanilla;
 
   @Override
   public void fillContext(Map<String, Object> context) {
     super.fillContext(context);
-    context.put("cancelVanilla", cancelVanilla);
+    context.put(CANCEL_VANILLA, cancelVanilla);
   }
 
   public void save() {
@@ -32,7 +34,7 @@ public abstract class InWorldUsable extends Usable {
   @Override
   public void save(CompoundTag tag) {
     super.save(tag);
-    tag.putBoolean("cancelVanilla", cancelVanilla);
+    tag.putBoolean(CANCEL_VANILLA, cancelVanilla);
   }
 
   public void load() {
@@ -46,7 +48,7 @@ public abstract class InWorldUsable extends Usable {
   @Override
   public void load(CompoundTag tag) {
     super.load(tag);
-    this.cancelVanilla = tag.getBoolean("cancelVanilla");
+    this.cancelVanilla = tag.getBoolean(CANCEL_VANILLA);
   }
 
   protected abstract void executeOnContainer(

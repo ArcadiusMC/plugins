@@ -13,14 +13,14 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import lombok.Getter;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.types.ArgumentTypes;
-import net.forthecrown.grenadier.types.ParsedPosition;
 import net.arcadiusmc.registry.Registry;
 import net.arcadiusmc.usables.ObjectType;
 import net.arcadiusmc.usables.UsableComponent;
-import net.arcadiusmc.utils.io.FtcCodecs;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.math.Vectors;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.types.ArgumentTypes;
+import net.forthecrown.grenadier.types.ParsedPosition;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -67,7 +67,7 @@ enum BlockAction {
 
   ;
 
-  static final Codec<BlockAction> CODEC = FtcCodecs.enumCodec(BlockAction.class);
+  static final Codec<BlockAction> CODEC = ExtraCodecs.enumCodec(BlockAction.class);
 
   final BlockTriggerType type;
 

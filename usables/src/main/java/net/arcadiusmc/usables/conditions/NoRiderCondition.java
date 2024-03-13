@@ -14,7 +14,7 @@ public class NoRiderCondition implements Condition {
 
   @Override
   public boolean test(Interaction interaction) {
-    return interaction.player().getPassengers().isEmpty();
+    return interaction.getPlayer().map(player -> player.getPassengers().isEmpty()).orElse(true);
   }
 
   @Override

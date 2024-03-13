@@ -32,6 +32,7 @@ import net.arcadiusmc.usables.UsableComponent;
 import net.arcadiusmc.usables.ObjectType;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
@@ -98,7 +99,12 @@ record ScoreAction(
     Score score;
 
     if (Strings.isNullOrEmpty(entryName)) {
-      score = objective.getScore(interaction.player());
+      Optional<Player> playerOpt = interaction.getPlayer();
+      if (playerOpt.isEmpty()) {
+        return;
+      }
+
+      score = objective.getScore(playerOpt.get());
     } else {
       score = objective.getScore(entryName);
     }

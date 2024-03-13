@@ -6,14 +6,14 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import java.util.UUID;
-import net.forthecrown.grenadier.CommandSource;
 import net.arcadiusmc.registry.Registry;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.usables.Action;
 import net.arcadiusmc.usables.Interaction;
-import net.arcadiusmc.usables.UsableComponent;
 import net.arcadiusmc.usables.ObjectType;
+import net.arcadiusmc.usables.UsableComponent;
 import net.arcadiusmc.user.currency.Currency;
+import net.forthecrown.grenadier.CommandSource;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,13 +27,7 @@ public class CurrencyActions {
   ) {
     for (Modification mod : Modification.values()) {
       CurrencyActionType type = new CurrencyActionType(mod, currency);
-      String key;
-
-      if (mod == Modification.ADD_WITH_MULTIPLIER) {
-        key = "add_" + currencyName + "_with_multiplier";
-      } else {
-        key = mod.prefix() + "_" + currencyName;
-      }
+      String key = mod.prefix() + "_" + currencyName;
 
       registry.register(key, type);
     }
@@ -80,7 +74,7 @@ record CurrencyAction(
 
   @Override
   public void onUse(Interaction interaction) {
-    action.apply(currency, interaction.playerId(), value);
+    interaction.getPlayerId().ifPresent(playerId -> action.apply(currency, playerId, value));
   }
 
   @Override
@@ -99,14 +93,6 @@ enum Modification {
     @Override
     void apply(Currency map, UUID uuid, int amount) {
       map.add(uuid, amount);
-    }
-  },
-
-  ADD_WITH_MULTIPLIER {
-    @Override
-    void apply(Currency map, UUID uuid, int amount) {
-      int finalAmount = (int) (map.getGainMultiplier(uuid) * amount);
-      map.add(uuid, finalAmount);
     }
   },
 

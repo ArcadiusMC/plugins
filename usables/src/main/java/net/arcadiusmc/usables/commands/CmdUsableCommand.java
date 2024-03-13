@@ -138,7 +138,7 @@ public abstract class CmdUsableCommand<T extends CommandUsable> extends Interact
       var list = usables.getUsable(user.getPlayer());
 
       if (list.isEmpty()) {
-        throw Exceptions.NOTHING_TO_LIST;
+        throw Exceptions.NOTHING_TO_LIST.exception();
       }
 
       user.sendMessage(
@@ -156,7 +156,7 @@ public abstract class CmdUsableCommand<T extends CommandUsable> extends Interact
     builder.then(literal("create")
         .requires(hasAdminPermission())
 
-        .then(argument("name", Arguments.FTC_KEY)
+        .then(argument("name", Arguments.RESOURCE_KEY)
             .executes(c -> {
               String name = c.getArgument("name", String.class);
 
