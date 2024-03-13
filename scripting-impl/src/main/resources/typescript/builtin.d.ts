@@ -129,6 +129,13 @@ declare function playSound(
   category?: string
 ): void;
 
+
+declare function text(): TextComponent
+
+declare function text(value: any, viewer?: any): TextComponent
+
+declare function text(content: string, color?: string, ...decorations?: string[]): TextComponent
+
 declare interface Vector<S> {
   
   add(val: number | S): S;

@@ -1,14 +1,16 @@
 package net.arcadiusmc.scripts.builtin;
 
-import net.arcadiusmc.scripts.ScriptUtils;
+import static org.mozilla.javascript.ScriptableObject.putConstProperty;
+
 import net.arcadiusmc.ArcadiusServer;
+import net.arcadiusmc.scripts.ScriptUtils;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Grenadier;
 import org.bukkit.Bukkit;
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptableObject;
 
 public class PluginScriptRuntime {
 
@@ -43,27 +45,30 @@ public class PluginScriptRuntime {
     return timeMillis / 1000.0d;
   };
 
+  static final Function TEXT = new TextFunction();
+
   public static void initStandardObjects(Scriptable object) {
-    ScriptableObject.putConstProperty(object, "command", EXEC_CONSOLE);
-    ScriptableObject.putConstProperty(object, "runAs", EXEC_AS);
+    putConstProperty(object, "command", EXEC_CONSOLE);
+    putConstProperty(object, "runAs", EXEC_AS);
 
-    ScriptableObject.putConstProperty(object, "giveItem", GIVE_ITEM);
+    putConstProperty(object, "giveItem", GIVE_ITEM);
 
-    ScriptableObject.putConstProperty(object, "currentTimeMillis", TIME_MILLIS);
-    ScriptableObject.putConstProperty(object, "currentTimeSeconds", TIME_SECONDS);
+    putConstProperty(object, "currentTimeMillis", TIME_MILLIS);
+    putConstProperty(object, "currentTimeSeconds", TIME_SECONDS);
 
-    ScriptableObject.putConstProperty(object, "sendMessage", SEND_MESSAGE);
-    ScriptableObject.putConstProperty(object, "sendActionBar", SEND_ACTION_BAR);
-    ScriptableObject.putConstProperty(object, "renderPlaceholders", RENDER_PLACEHOLDERS);
-    ScriptableObject.putConstProperty(object, "playSound", PLAY_SOUND);
+    putConstProperty(object, "sendMessage", SEND_MESSAGE);
+    putConstProperty(object, "sendActionBar", SEND_ACTION_BAR);
+    putConstProperty(object, "renderPlaceholders", RENDER_PLACEHOLDERS);
+    putConstProperty(object, "playSound", PLAY_SOUND);
+    putConstProperty(object, "text", TEXT);
 
-    ScriptableObject.putConstProperty(
+    putConstProperty(
         object,
         "arcServer",
         Context.javaToJS(ArcadiusServer.server(), object)
     );
 
-    ScriptableObject.putConstProperty(
+    putConstProperty(
         object,
         "server",
         Context.javaToJS(Bukkit.getServer(), object)
