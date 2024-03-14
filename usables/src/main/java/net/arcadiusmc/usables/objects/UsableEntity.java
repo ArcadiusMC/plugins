@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -27,11 +26,6 @@ public class UsableEntity extends InWorldUsable {
     super.fillContext(context);
     context.put("location", entity.getLocation());
     context.put("entity", entity);
-  }
-
-  @Override
-  public CommandSender getCommandSender() {
-    return entity;
   }
 
   @Override
