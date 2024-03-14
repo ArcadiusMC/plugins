@@ -13,7 +13,6 @@ import it.unimi.dsi.fastutil.longs.LongObjectPair;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.time.Instant;
@@ -32,14 +31,8 @@ import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.Worlds;
-import net.arcadiusmc.text.Messages;
-import net.arcadiusmc.utils.io.ExtraCodecs;
-import net.forthecrown.nbt.BinaryTag;
-import net.forthecrown.nbt.BinaryTags;
-import net.forthecrown.nbt.CompoundTag;
-import net.forthecrown.nbt.LongTag;
-import net.forthecrown.nbt.TagTypes;
 import net.arcadiusmc.text.BufferedTextWriter;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.PlayerMessage;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.TextJoiner;
@@ -51,21 +44,27 @@ import net.arcadiusmc.utils.ArrayIterator;
 import net.arcadiusmc.utils.Time;
 import net.arcadiusmc.utils.inventory.ItemBuilder;
 import net.arcadiusmc.utils.inventory.ItemStacks;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.TagOps;
 import net.arcadiusmc.utils.io.TagUtil;
 import net.arcadiusmc.utils.math.Bounds3i;
 import net.arcadiusmc.utils.math.Direction;
 import net.arcadiusmc.utils.math.Vectors;
+import net.arcadiusmc.utils.property.IdPropertyMap;
 import net.arcadiusmc.waypoints.type.WaypointType;
 import net.arcadiusmc.waypoints.type.WaypointTypes;
 import net.arcadiusmc.waypoints.util.UuidPersistentDataType;
+import net.forthecrown.nbt.BinaryTag;
+import net.forthecrown.nbt.BinaryTags;
+import net.forthecrown.nbt.CompoundTag;
+import net.forthecrown.nbt.LongTag;
+import net.forthecrown.nbt.TagTypes;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.title.Title;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.mutable.Mutable;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.bukkit.Bukkit;
@@ -156,7 +155,7 @@ public class Waypoint {
   /**
    * Property values
    */
-  private Object[] properties = ArrayUtils.EMPTY_OBJECT_ARRAY;
+  private IdPropertyMap properties;
 
   private CompoundTag unknownProperties;
 
@@ -762,67 +761,30 @@ public class Waypoint {
 
   @SuppressWarnings("unchecked")
   public <T> T get(WaypointProperty<T> property) {
-    if (!has(property)) {
-      return property.getDefaultValue();
-    }
-
-    return (T) properties[property.getId()];
+    return properties.get(property);
   }
 
   public <T> boolean has(WaypointProperty<T> property) {
-    int index = property.getId();
-
-    if (index >= properties.length) {
-      return false;
-    }
-
-    var value = properties[index];
-
-    if (value == null) {
-      return false;
-    }
-
-    return !value.equals(property.getDefaultValue());
+    return properties.has(property);
   }
 
   public <T> boolean set(@NotNull WaypointProperty<T> property, @Nullable T value) {
     T current = get(property);
-
-    // If current value == given value, don't change anything
-    if ((current == null && value == null) || Objects.equals(current, value)) {
-      return false;
-    }
-
-    int index = property.getId();
-
-    // If we should unset the value
-    if (value == null || Objects.equals(value, property.getDefaultValue())) {
-      // If the property value array isn't large enough
-      // for the property we want to unset
-      if (index >= properties.length) {
-        return false;
-      }
-
-      value = null;
-      properties[index] = null;
-    } else {
-      properties = ObjectArrays.ensureCapacity(properties, index + 1);
-      properties[index] = value;
-    }
+    boolean wasChanged = properties.set(property, value);
 
     // If this method is called before the waypoint is added to
     // the manager, it's most likely because it's being deserialized,
     // during deserialization nothing should be updated as there's
     // no need to update any world data or such
-    if (hasBeenAdded()) {
+    if (hasBeenAdded() && wasChanged) {
       property.onValueUpdate(this, current, value);
     }
 
-    return true;
+    return wasChanged;
   }
 
   public boolean hasProperties() {
-    return ArrayIterator.unmodifiable(properties).hasNext();
+    return !properties.isEmpty();
   }
 
   /* ----------------------------- INVITES ------------------------------ */
@@ -1247,7 +1209,7 @@ public class Waypoint {
 
     if (hasProperties()) {
       CompoundTag propTag = BinaryTags.compoundTag();
-      ArrayIterator<Object> it = ArrayIterator.unmodifiable(properties);
+      ArrayIterator<Object> it = properties.iterator();
 
       while (it.hasNext()) {
         int id = it.nextIndex();
@@ -1372,7 +1334,7 @@ public class Waypoint {
         });
       }
     } else {
-      properties = ArrayUtils.EMPTY_OBJECT_ARRAY;
+      properties.clear();
       unknownProperties = null;
     }
 

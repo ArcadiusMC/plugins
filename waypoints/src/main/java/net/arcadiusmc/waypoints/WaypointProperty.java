@@ -8,11 +8,12 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.arcadiusmc.utils.property.IdProperty;
 import org.jetbrains.annotations.Nullable;
 
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public final class WaypointProperty<T> {
+public final class WaypointProperty<T> implements IdProperty<T> {
 
   @EqualsAndHashCode.Include
   private final String name;
