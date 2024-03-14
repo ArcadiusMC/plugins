@@ -155,7 +155,7 @@ public class Waypoint {
   /**
    * Property values
    */
-  private IdPropertyMap properties;
+  private final IdPropertyMap properties = new IdPropertyMap();
 
   private CompoundTag unknownProperties;
 
