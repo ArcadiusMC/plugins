@@ -1,0 +1,41 @@
+
+#
+# Cooldown applied to players after they join a faction. Determines
+# how long a player has to wait until they are allowed to leave the
+# faction they join
+#
+faction-join-cooldown: 2d
+
+#
+# Cooldown that determines how long a player has to wait until they
+# are allowed to join another action after leaving one faction.
+#
+faction-leave-cooldown: 2d
+
+#
+# Reputation penalty for leaving a faction.
+#
+# When a player leaves a faction this setting determines how much
+# their reputation in that faction will decrease when they leave
+#
+faction-leave-reputation-penalty: 100
+
+#
+# Maximum reputation a player can have within a faction
+#
+max-reputation: 100
+
+#
+# Minimum reputation a player in a faction can have
+#
+min-reputation: -100
+
+#
+# Template used to create a URL for players to click on to
+# go to their faction's discord channel
+#
+# Uses the %GUILD% and %CHANNEL% placeholders:
+# - %GUILD% becomes the server's ID
+# - %CHANNEL% becomes the channel's ID
+#
+channel-url-template: "https://discord.com/channels/%GUILD%/%CHANNEL%"

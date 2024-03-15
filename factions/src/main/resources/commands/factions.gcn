@@ -1,0 +1,72 @@
+name = "factions"
+description = "Factions Admin Command"
+
+literal("reload-config") {
+  description = "Reloads the Factions config"
+  executes = reloadConfig()
+}
+
+literal("reload-factions") {
+  description = "Reloads all factions from disk"
+  executes = reloadFactions()
+}
+
+literal("save") {
+  description = "Saves the factions plugin"
+  executes = savePlugin()
+}
+
+literal("list") {
+  description = "Lists all existing factions"
+  executes = listFactions()
+}
+
+literal("create").argument("id", rkey) {
+  description = "Creates a faction"
+  executes = createFaction()
+}
+
+literal("delete").argument(F_ARG, @faction) {
+  description = "Deletes a faction"
+  executes = deleteFaction()
+}
+
+literal("join").argument(F_ARG, @faction).argument("player", user) {
+  map_result("player") = @result_to_user
+  description = "Makes a player join a faction"
+  executes = joinFaction()
+}
+
+literal("leave").argument(F_ARG, @faction).argument("player", user) {
+  map_result("player") = @result_to_user
+  description = "Makes a player leave a faction"
+  executes = leaveFaction()
+}
+
+literal("property") {
+  literal("list").argument(F_ARG, @faction) {
+    executes = listProperties()
+    description = "Lists all of a faction's properties"
+  }
+
+  literal("get").argument(F_ARG, @faction).argument("property", @f_property) {
+    map_result("property") = @holder_to_value
+    executes = getProperty()
+    description = "Gets a property value"
+  }
+
+  literal("set").argument(F_ARG, @faction)
+      .argument("property", @f_property)
+      .argument("input", greedy_string)
+  {
+    map_result("property") = @holder_to_value
+    executes = setProperty()
+    description = "Sets a faction's property"
+  }
+
+  literal("unset").argument(F_ARG, @faction).argument("property", @f_property) {
+    map_result("property") = @holder_to_value
+    executes = unsetProperty()
+    description = "Unsets a property value"
+  }
+}

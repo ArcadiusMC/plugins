@@ -1,0 +1,42 @@
+factions:
+  errors:
+    _style: "red"
+    notInFaction:         "${player} is not in a faction"
+    unknown:              "Unknown faction/player '${label}'"
+    notFactionMember:     "Only ${faction} players can use this!"
+    tooLittleReputation:  "Too little ${faction} reputation!"
+    alreadyExists:        "Faction named ${name} already exists"
+    alreadyMember.same:   "${player} is already a member of the ${faction} faction!"
+    alreadyMember.other:  "${player} is a member of the ${faction}! Cannot join 2 factions at once!"
+    notMemberOf:          "${player} is not a member of ${faction}!"
+
+  names.format:           "[${base}]"
+
+  joined:                 "&eJoined the &6${faction}&6 faction!"
+  left:                   "&7Left the &e${faction}&7 faction. &8(Reputation with ${faction} dropped by ${reputationDrop})"
+
+  cmd:
+    _style: "gray"
+
+    reloaded.config:      "Reloaded Factions config."
+    reloaded.plugin:      "Reloaded factions."
+    saved:                "Saved factions plugin."
+
+    list.format:          "Factions: &e${list}&r."
+    created:              "Created the &f${faction}&r faction."
+    deleted:              "Deleted the ${faction} faction."
+    joined:               "Made &e${player}&r join the &f${faction}&r faction."
+    left:                 "Made &e${player}&r leave the &f${faction}&r faction."
+
+    property:
+      set:                "Set &6${faction}&r property &e${property}&r to &f${value}."
+      get:                "&6${faction}&r property &e${property}&r has value &f${value}&r."
+      unset:              "Unset &6${faction}&r property &e${property}&r."
+      list.header:        "&6${faction}&r Property values:"
+      list.setValue:      "- &e${property}&r: &f${value}&r"
+      list.unsetValue:    "- &e${property}&r: &f${value}&r &8(Not-set)"
+
+  discord:
+    link:                 "&7Link your discord account with &b/discord link &7to be added to your&e faction's chat&7!"
+    added:                "&7You've been added to your&e faction's discord chat&7! ${channelLink}"
+    channelLink:          "${text: content='[Click to see]' color=cyan hover='Click me!'}"
