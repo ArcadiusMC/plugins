@@ -150,13 +150,18 @@ public class IdPropertyMap implements Iterable<Object> {
     if (value == null || Objects.equals(value, property.getDefaultValue())) {
       // If the property value array isn't large enough
       // for the property we want to unset
-      if (index >= values.length) {
+      if (values == null || index >= values.length) {
         return false;
       }
 
       values[index] = null;
     } else {
-      values = ObjectArrays.ensureCapacity(values, index + 1);
+      if (values == null) {
+        values = new Object[index + 1];
+      } else {
+        values = ObjectArrays.ensureCapacity(values, index + 1);
+      }
+
       values[index] = value;
     }
 
