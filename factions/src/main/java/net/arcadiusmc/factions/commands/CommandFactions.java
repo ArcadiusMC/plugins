@@ -11,6 +11,7 @@ import java.util.Objects;
 import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.arguments.RegistryArguments;
+import net.arcadiusmc.factions.FExceptions;
 import net.arcadiusmc.factions.Faction;
 import net.arcadiusmc.factions.FactionProperty;
 import net.arcadiusmc.factions.FactionsPlugin;
@@ -142,17 +143,15 @@ public class CommandFactions {
 
   void leaveFaction(
       CommandSource source,
-      @Argument(F_ARG) Faction faction,
       @Argument("player") User user
   ) throws CommandSyntaxException {
-    boolean left = faction.leave(user);
+    Faction faction = plugin.getManager().getCurrentFaction(user.getUniqueId());
 
-    if (!left) {
-      throw Messages.render("factions.errors.notMemberOf")
-          .addValue("player", user)
-          .addValue("faction", faction.displayName(source))
-          .exception(source);
+    if (faction == null) {
+      throw FExceptions.notInFaction(source, user);
     }
+
+    faction.leave(user);
 
     source.sendSuccess(
         Messages.render("factions.cmd.left")

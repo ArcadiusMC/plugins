@@ -37,7 +37,7 @@ literal("join").argument(F_ARG, @faction).argument("player", user) {
   executes = joinFaction()
 }
 
-literal("leave").argument(F_ARG, @faction).argument("player", user) {
+literal("leave").argument("player", user) {
   map_result("player") = @result_to_user
   description = "Makes a player leave a faction"
   executes = leaveFaction()
