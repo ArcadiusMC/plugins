@@ -1,6 +1,8 @@
 package net.arcadiusmc.punish.listeners;
 
 import com.google.common.base.Strings;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import net.arcadiusmc.punish.PunishEntry;
 import net.arcadiusmc.punish.PunishManager;
@@ -9,6 +11,8 @@ import net.arcadiusmc.punish.Punishment;
 import net.arcadiusmc.punish.Punishments;
 import net.arcadiusmc.text.DefaultTextWriter;
 import net.arcadiusmc.text.TextWriters;
+import net.arcadiusmc.user.UserLookup.LookupEntry;
+import net.arcadiusmc.user.UserService;
 import net.arcadiusmc.user.Users;
 import net.kyori.adventure.text.Component;
 import org.bukkit.event.EventHandler;
@@ -28,13 +32,20 @@ class LoginListener implements Listener {
   }
 
   private Component testBanned(UUID userId) {
-    var alts = Users.getService();
-    var accounts = alts.getOtherAccounts(userId);
+    UserService users = Users.getService();
+
+    Set<UUID> accounts = new HashSet<>(users.getOtherAccounts(userId));
     accounts.add(userId);
 
     PunishManager punishments = Punishments.getManager();
 
     for (var accountId: accounts) {
+      LookupEntry lookupEntry = users.getLookup().getEntry(accountId);
+
+      if (lookupEntry == null) {
+        continue;
+      }
+
       PunishEntry entry = punishments.getEntry(accountId);
 
       Component msg = banMessage(entry, PunishType.BAN);
