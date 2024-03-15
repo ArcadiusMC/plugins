@@ -14,7 +14,15 @@ public final class WebMaps {
 
   private static final Logger LOGGER = Loggers.getLogger();
 
+  public static boolean isNop() {
+    return WebMap.map() instanceof NopMap;
+  }
+
   public static Optional<MapLayer> findOrDefineLayer(World world, String id, String name) {
+    if (isNop()) {
+      return Optional.empty();
+    }
+
     return WebMap.map().getLayer(world, id)
         .or(() -> {
           var result =  WebMap.map().createLayer(world, id, name)
@@ -31,6 +39,10 @@ public final class WebMaps {
       String name,
       Supplier<InputStream> dataSupplier
   ) {
+    if (isNop()) {
+      return Optional.empty();
+    }
+
     return WebMap.map().getIcon(id)
         .or(() -> {
           var result = WebMap.map().createIcon(id, name, dataSupplier.get())
