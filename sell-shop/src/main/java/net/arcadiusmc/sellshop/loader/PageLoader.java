@@ -46,6 +46,7 @@ import org.slf4j.Logger;
 public class PageLoader {
 
   private static final String ITEMS = "items";
+  private static final String EXAMPLE = "example";
 
   private static final Logger LOGGER = Loggers.getLogger();
 
@@ -200,24 +201,30 @@ public class PageLoader {
 
   private void loadPage(Path path) throws IOException {
     JsonObject json = SerializationHelper.readAsJson(path);
+    String key = getKey(path);
 
     Optional<LoadingPage> pageOpt = SellShopCodecs.PAGE_CODEC.parse(JsonOps.INSTANCE, json)
         .mapError(s -> "Failed to load page '" + path + "': " + s)
-        .resultOrPartial(LOGGER::error);
+        .resultOrPartial(s -> {
+          if (key.equals(EXAMPLE)) {
+            return;
+          }
+
+          LOGGER.error(s);
+        });
 
     if (pageOpt.isEmpty()) {
       return;
     }
 
     LoadingPage page = pageOpt.get();
-    String key = getKey(path);
     page.ownKey = key;
 
     if (!loadItemValues(json, page)) {
       return;
     }
 
-    if (key.equals("example")) {
+    if (key.equals(EXAMPLE)) {
       LOGGER.debug("Found 'example' file... skipping");
       return;
     }
@@ -230,7 +237,7 @@ public class PageLoader {
   private boolean loadItemValues(JsonObject json, LoadingPage page) {
     String key = page.ownKey;
 
-    if (!json.has(ITEMS)) {
+    if (!json.has(ITEMS) || key.equals(EXAMPLE)) {
       return true;
     }
 
