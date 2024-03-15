@@ -104,11 +104,11 @@ public class Faction {
     }
   }
 
-  public boolean leave(User user) {
+  public void leave(User user) {
     FactionMember member = getActiveMember(user.getUniqueId());
 
     if (member == null) {
-      return false;
+      return;
     }
 
     member.setActive(false);
@@ -134,8 +134,6 @@ public class Faction {
     if (Factions.isDiscordEnabled()) {
       FactionsDiscord.onLeave(this, user);
     }
-
-    return true;
   }
 
   /* --------------------------- properties ---------------------------- */
