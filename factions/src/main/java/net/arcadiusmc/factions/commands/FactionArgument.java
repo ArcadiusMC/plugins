@@ -76,7 +76,7 @@ public enum FactionArgument implements ArgumentType<Faction> {
 
             if (!Strings.isNullOrEmpty(nick) && Completions.matches(token, nick)) {
               builder.suggest(nick);
-            } else if (Completions.matches(token, nick)) {
+            } else if (Completions.matches(token, name)) {
               builder.suggest(name);
             }
           });
