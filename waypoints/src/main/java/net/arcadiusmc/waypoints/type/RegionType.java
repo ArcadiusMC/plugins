@@ -78,6 +78,7 @@ public class RegionType extends WaypointType {
       });
 
       display.setItemStack(item);
+      display.addScoreboardTag(TAG);
     });
   }
 
