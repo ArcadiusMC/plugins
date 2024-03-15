@@ -41,6 +41,7 @@ public class FactionsPlugin extends JavaPlugin {
     FactionUsables.registerAll();
 
     reloadConfig();
+    manager.load();
 
     saver = PeriodicalSaver.create(this::save, Duration.ofMinutes(30));
     saver.start();
