@@ -3,8 +3,10 @@ package net.arcadiusmc.waypoints;
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.FloatArgumentType.floatArg;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
+import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
 import static com.mojang.serialization.Codec.BOOL;
 import static com.mojang.serialization.Codec.INT;
+import static com.mojang.serialization.Codec.STRING;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.serialization.Codec;
@@ -52,11 +54,10 @@ public class WaypointProperties {
       = new WaypointProperty<>("allows_marker", bool(), BOOL, true);
 
   /**
-   * Only applies to named regions, sets the waypoint's marker icon to be the donator icon instead
-   * of the normal icon.
+   * Only applies to named regions, sets the waypoint's marker icon
    */
-  public static final WaypointProperty<Boolean> SPECIAL_MARKER
-      = new WaypointProperty<>("special_marker", bool(), BOOL, false);
+  public static final WaypointProperty<String> MARKER_ICON
+      = new WaypointProperty<>("marker_icon", greedyString(), STRING, null);
 
   public static final WaypointProperty<Boolean> REQUIRES_DISCOVERY
       = new WaypointProperty<>("requires_discovery", bool(), BOOL, false)

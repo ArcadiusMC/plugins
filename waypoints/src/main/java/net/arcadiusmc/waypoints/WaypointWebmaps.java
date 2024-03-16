@@ -63,9 +63,14 @@ class WaypointWebmaps {
       return;
     }
 
-    Optional<MapIcon> iconOpt = waypoint.get(WaypointProperties.SPECIAL_MARKER)
-        ? getSpecialIcon()
-        : getNormalIcon();
+    String iconImage = waypoint.get(WaypointProperties.MARKER_ICON);
+
+    if (Strings.isNullOrEmpty(iconImage)) {
+      LOGGER.warn("Waypoint {} has no icon image set, cannot create/update marker", waypoint);
+      return;
+    }
+
+    Optional<MapIcon> iconOpt = getIcon(iconImage);
 
     if (iconOpt.isEmpty()) {
       return;
@@ -125,13 +130,5 @@ class WaypointWebmaps {
       var plugin = JavaPlugin.getPlugin(WaypointsPlugin.class);
       return plugin.getResource(id + ".png");
     });
-  }
-
-  static Optional<MapIcon> getNormalIcon() {
-    return getIcon(NORMAL_LABEL);
-  }
-
-  static Optional<MapIcon> getSpecialIcon() {
-    return getIcon(SPECIAL_LABEL);
   }
 }
