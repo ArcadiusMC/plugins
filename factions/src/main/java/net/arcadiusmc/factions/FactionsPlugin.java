@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import lombok.Getter;
 import net.arcadiusmc.factions.commands.FactionCommands;
+import net.arcadiusmc.factions.listeners.FactionListeners;
 import net.arcadiusmc.factions.usables.FactionUsables;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.loader.MessageList;
@@ -39,11 +40,12 @@ public class FactionsPlugin extends JavaPlugin {
     Properties.registerAll();
     manager = new FactionManager(this);
 
-    FactionCommands.createCommands(this);
-    FactionUsables.registerAll();
-
     reloadConfig();
     manager.load();
+
+    FactionCommands.createCommands(this);
+    FactionUsables.registerAll();
+    FactionListeners.registerAll(this);
 
     saver = PeriodicalSaver.create(this::save, Duration.ofMinutes(30));
     saver.start();

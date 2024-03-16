@@ -27,30 +27,7 @@ public class FactionsDiscord {
       return;
     }
 
-    JDA jda = DiscordSRV.getPlugin().getJda();
-    Member discMember = memberOpt.get();
-    Guild guild = discMember.getGuild();
-
-    long roleId = faction.get(Properties.ROLE_ID);
-    Role role = jda.getRoleById(roleId);
-
-    if (role != null) {
-      guild.removeRoleFromMember(discMember, role)
-          .submit()
-          .whenComplete((unused, throwable) -> {
-            if (throwable == null) {
-              return;
-            }
-
-            LOGGER.error("Error removing role {} from player {} (Discord User={})",
-                role.getName(), user.getName(), discMember.getEffectiveName(),
-                throwable
-            );
-          });
-    } else if (roleId != NULL_ID) {
-      LOGGER.error("Unknown role {} for faction {}", roleId, faction.getKey());
-    }
-
+    removeBenefits(faction, user, memberOpt.get());
   }
 
   static void onJoin(Faction faction, User user) {
@@ -61,8 +38,12 @@ public class FactionsDiscord {
       return;
     }
 
-    JDA jda = DiscordSRV.getPlugin().getJda();
     Member discMember = memberOpt.get();
+    giveFactionBenefits(faction, user, discMember);
+  }
+
+  public static void giveFactionBenefits(Faction faction, User user, Member discMember) {
+    JDA jda = DiscordSRV.getPlugin().getJda();
     Guild guild = discMember.getGuild();
 
     long channelId = faction.get(Properties.CHANNEL_ID);
@@ -108,6 +89,31 @@ public class FactionsDiscord {
           });
     } else if (roleId != NULL_ID) {
       LOGGER.error("Unknown role {} for faction {}", roleId, key);
+    }
+  }
+
+  public static void removeBenefits(Faction faction, User user, Member discMember) {
+    JDA jda = DiscordSRV.getPlugin().getJda();
+    Guild guild = discMember.getGuild();
+
+    long roleId = faction.get(Properties.ROLE_ID);
+    Role role = jda.getRoleById(roleId);
+
+    if (role != null) {
+      guild.removeRoleFromMember(discMember, role)
+          .submit()
+          .whenComplete((unused, throwable) -> {
+            if (throwable == null) {
+              return;
+            }
+
+            LOGGER.error("Error removing role {} from player {} (Discord User={})",
+                role.getName(), user.getName(), discMember.getEffectiveName(),
+                throwable
+            );
+          });
+    } else if (roleId != NULL_ID) {
+      LOGGER.error("Unknown role {} for faction {}", roleId, faction.getKey());
     }
   }
 }
