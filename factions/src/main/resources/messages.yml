@@ -9,8 +9,10 @@ factions:
     alreadyMember.same:   "${player} is already a member of the ${faction} faction!"
     alreadyMember.other:  "${player} is a member of the ${faction}! Cannot join 2 factions at once!"
     notMemberOf:          "${player} is not a member of ${faction}!"
+    neverMember:          "${player} has never been a member of the ${faction} faction."
 
   names.format:           "[${base}]"
+  profileField:           "Faction"
 
   joined:                 "&eJoined the &6${faction}&6 faction!"
   left:                   "&7Left the &e${faction}&7 faction. &8(Reputation with ${faction} dropped by ${reputationDrop})"
@@ -27,6 +29,12 @@ factions:
     deleted:              "Deleted the ${faction} faction."
     joined:               "Made &e${player}&r join the &f${faction}&r faction."
     left:                 "Made &e${player}&r leave the &f${faction}&r faction."
+
+    reputation:
+      get:                "&e${player}&r's &6${faction}&r reputation: &f${reputation}&r (Base value: ${base})"
+      set:                "Set &e${player} &6${faction}&r reputation to &f${newValue}&r (Was: ${oldValue})"
+      added:              "Added ${change} to &e${player} &6${faction}&r reputation (Was: ${oldValue})"
+      subtracted:         "Removed ${change} from &e${player} &6${faction}&r reputation (Was: ${oldValue})"
 
     property:
       set:                "Set &6${faction}&r property &e${property}&r to &f${value}."

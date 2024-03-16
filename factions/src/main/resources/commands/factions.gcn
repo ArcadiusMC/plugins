@@ -43,6 +43,55 @@ literal("leave").argument("player", user) {
   executes = leaveFaction()
 }
 
+literal("reputation") {
+  literal("get").argument("player", user) {
+    map_result("player") = @result_to_user
+    executes = getReputation()
+    description = "Gets a player's reputation in their current faction"
+
+    argument(F_ARG, @faction) {
+      executes = getReputation()
+      description = "Gets a players reputation in a specific faction"
+    }
+  }
+
+  literal("add").argument("player", user).argument("amount", int(min=1)) {
+    map_result("player") = @result_to_user
+    executes = addReputation()
+    description = "Adds to a player's base-reputation in their current faction"
+
+    argument(F_ARG, @faction) {
+      map_result("player") = @result_to_user
+      executes = addReputation()
+      description = "Adds to a player's base-reputation in a specific faction"
+    }
+  }
+
+  literal("subtract").argument("player", user).argument("amount", int(min=1)) {
+    map_result("player") = @result_to_user
+    executes = subtractReputation()
+    description = "Subtracts from a player's base-reputation in their current faction"
+
+    argument(F_ARG, @faction) {
+      map_result("player") = @result_to_user
+      executes = subtractReputation()
+      description = "Subtracts from a player's base-reputation in a specific faction"
+    }
+  }
+
+  literal("set").argument("player", user).argument("amount", int) {
+    map_result("player") = @result_to_user
+    executes = setReputation()
+    description = "Sets a player's base-reputation in their current faction"
+
+    argument(F_ARG, @faction) {
+      map_result("player") = @result_to_user
+      executes = setReputation()
+      description = "Sets a player's base-reputation in a specific faction"
+    }
+  }
+}
+
 literal("property") {
   literal("list").argument(F_ARG, @faction) {
     executes = listProperties()

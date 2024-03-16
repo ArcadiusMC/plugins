@@ -13,6 +13,7 @@ import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.arguments.RegistryArguments;
 import net.arcadiusmc.factions.FExceptions;
 import net.arcadiusmc.factions.Faction;
+import net.arcadiusmc.factions.FactionMember;
 import net.arcadiusmc.factions.FactionProperty;
 import net.arcadiusmc.factions.FactionsPlugin;
 import net.arcadiusmc.factions.Properties;
@@ -255,6 +256,131 @@ public class CommandFactions {
             .addValue("faction", faction.displayName(source))
             .addValue("property", property.getKey())
             .create(source)
+    );
+  }
+
+  private Faction getFaction(CommandSource source, User user, Faction fromArgument)
+      throws CommandSyntaxException
+  {
+    if (fromArgument != null) {
+      return fromArgument;
+    }
+
+    Faction current = plugin.getManager().getCurrentFaction(user.getUniqueId());
+    if (current == null) {
+      throw FExceptions.notInFaction(source, user);
+    }
+
+    return current;
+  }
+
+  private FactionMember getMember(CommandSource source, User user, Faction faction)
+      throws CommandSyntaxException
+  {
+    FactionMember member = faction.getMember(user.getUniqueId());
+
+    if (member == null) {
+      throw Messages.render("factions.errors.neverMember")
+          .addValue("player", user)
+          .addValue("faction", faction.displayName(source))
+          .exception(source);
+    }
+
+    return member;
+  }
+
+  void getReputation(
+      CommandSource source,
+      @Argument(value = F_ARG, optional = true) Faction fromArgument,
+      @Argument("player") User user
+  ) throws CommandSyntaxException {
+    Faction faction = getFaction(source, user, fromArgument);
+    FactionMember member = getMember(source, user, faction);
+
+    int reputation = member.getReputation();
+    int base = member.getBaseReputation();
+
+    source.sendMessage(
+        Messages.render("factions.cmd.reputation.get")
+            .addValue("reputation", reputation)
+            .addValue("base", base)
+            .addValue("player", user)
+            .addValue("faction", faction.displayName(source))
+            .create(source)
+    );
+  }
+
+  Component reputationMessage(
+      String key,
+      CommandSource source,
+      Faction faction,
+      User user,
+      int old,
+      int newV,
+      int change
+  ) {
+    return Messages.render("factions.cmd.reputation", key)
+        .addValue("faction", faction.displayName(source))
+        .addValue("player", user)
+        .addValue("oldValue", old)
+        .addValue("newValue", newV)
+        .addValue("change", change)
+        .create(source);
+  }
+
+  void addReputation(
+      CommandSource source,
+      @Argument(value = F_ARG, optional = true) Faction fromArgument,
+      @Argument("player") User user,
+      @Argument("amount") int amount
+  ) throws CommandSyntaxException {
+    Faction faction = getFaction(source, user, fromArgument);
+    FactionMember member = getMember(source, user, faction);
+
+    int oldValue = member.getBaseReputation();
+    int newValue = oldValue + amount;
+
+    member.setBaseReputation(newValue);
+
+    source.sendSuccess(
+        reputationMessage("added", source, faction, user, oldValue, newValue, amount)
+    );
+  }
+
+  void subtractReputation(
+      CommandSource source,
+      @Argument(value = F_ARG, optional = true) Faction fromArgument,
+      @Argument("player") User user,
+      @Argument("amount") int amount
+  ) throws CommandSyntaxException {
+    Faction faction = getFaction(source, user, fromArgument);
+    FactionMember member = getMember(source, user, faction);
+
+    int oldValue = member.getBaseReputation();
+    int newValue = oldValue - amount;
+
+    member.setBaseReputation(newValue);
+
+    source.sendSuccess(
+        reputationMessage("subtracted", source, faction, user, oldValue, newValue, amount)
+    );
+  }
+
+  void setReputation(
+      CommandSource source,
+      @Argument(value = F_ARG, optional = true) Faction fromArgument,
+      @Argument("player") User user,
+      @Argument("amount") int amount
+  ) throws CommandSyntaxException {
+    Faction faction = getFaction(source, user, fromArgument);
+    FactionMember member = getMember(source, user, faction);
+
+    int oldValue = member.getBaseReputation();
+
+    member.setBaseReputation(amount);
+
+    source.sendSuccess(
+        reputationMessage("set", source, faction, user, oldValue, amount, amount)
     );
   }
 }
