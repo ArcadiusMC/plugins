@@ -20,6 +20,8 @@ public class FactionsConfig {
 
   private int reputationPenalty = 100;
 
+  private int startingReputation = 10;
+
   private int minReputation = -100;
   private int maxReputation = 100;
 
@@ -58,6 +60,10 @@ public class FactionsConfig {
       builder.optional("channel-url-template", Codec.STRING)
           .getter(config -> config.channelUrlTemplate)
           .setter((config, s) -> config.channelUrlTemplate = s);
+
+      builder.optional("starting-reputation", Codec.INT)
+          .getter(config -> config.startingReputation)
+          .setter((config, integer) -> config.startingReputation = integer);
     });
   }
 }

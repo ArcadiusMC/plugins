@@ -31,6 +31,11 @@ max-reputation: 100
 min-reputation: -100
 
 #
+# The reputation every player starts with when they join a guild
+#
+starting-reputation: 10
+
+#
 # Template used to create a URL for players to click on to
 # go to their faction's discord channel
 #

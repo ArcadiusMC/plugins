@@ -83,7 +83,14 @@ public class Faction {
   }
 
   public void join(User user) {
-    FactionMember member = memberMap.computeIfAbsent(user.getUniqueId(), FactionMember::new);
+    FactionMember member = memberMap.get(user.getUniqueId());
+
+    if (member == null) {
+      FactionsConfig config = Factions.getConfig();
+      member = new FactionMember(user.getUniqueId());
+      member.setBaseReputation(config.getStartingReputation());
+    }
+
     member.setActive(true);
 
     if (user.isOnline()) {
