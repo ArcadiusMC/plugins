@@ -9,6 +9,8 @@ import net.arcadiusmc.factions.usables.FactionUsables;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.loader.MessageList;
 import net.arcadiusmc.text.loader.MessageLoader;
+import net.arcadiusmc.user.Users;
+import net.arcadiusmc.user.name.UserNameFactory;
 import net.arcadiusmc.utils.PeriodicalSaver;
 import net.arcadiusmc.utils.io.PluginJar;
 import net.arcadiusmc.utils.io.SerializationHelper;
@@ -45,11 +47,17 @@ public class FactionsPlugin extends JavaPlugin {
 
     saver = PeriodicalSaver.create(this::save, Duration.ofMinutes(30));
     saver.start();
+
+    UserNameFactory factory = Users.getService().getNameFactory();
+    factory.addProfileField("faction", 35, new FactionProfileElement());
   }
 
   @Override
   public void onDisable() {
     Messages.MESSAGE_LIST.removeChild(getName());
+
+    UserNameFactory factory = Users.getService().getNameFactory();
+    factory.removeField("faction");
 
     if (manager != null) {
       manager.save();
