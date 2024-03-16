@@ -79,7 +79,7 @@ public class Faction {
         .addValue("base", baseName)
         .create(viewer);
 
-    return message;
+    return message.color(get(Properties.NAME_COLOR));
   }
 
   public void join(User user) {

@@ -14,6 +14,7 @@ import net.arcadiusmc.text.ViewerAwareMessage;
 import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 
 public final class Properties {
   private Properties() {}
@@ -52,11 +53,16 @@ public final class Properties {
       .defaultValue(() -> NULL_ID)
       .build();
 
+  static final FactionProperty<TextColor> NAME_COLOR = FactionProperty.builder(ExtraCodecs.COLOR)
+      .argumentType(Arguments.COLOR)
+      .build();
+
   static void registerAll() {
     REGISTRY.register("display_name", DISPLAY_NAME);
     REGISTRY.register("lp_group", LP_GROUP);
     REGISTRY.register("text_channel_id", CHANNEL_ID);
     REGISTRY.register("discord_role_id", ROLE_ID);
+    REGISTRY.register("name_color", NAME_COLOR);
 
     REGISTRY.freeze();
   }
