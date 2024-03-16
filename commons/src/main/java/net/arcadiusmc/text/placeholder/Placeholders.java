@@ -104,4 +104,8 @@ public final class Placeholders {
   public static Component render(Component text) {
     return newRenderer().useDefaults().render(text);
   }
+
+  public static Component render(Component text, Audience viewer) {
+    return newRenderer().useDefaults().render(text, viewer);
+  }
 }
