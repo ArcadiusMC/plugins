@@ -49,7 +49,7 @@ public class FactionsPlugin extends JavaPlugin {
     saver.start();
 
     UserNameFactory factory = Users.getService().getNameFactory();
-    factory.addProfileField("faction", 35, new FactionProfileElement());
+    factory.addProfileField(FactionProfileElement.ID, 35, new FactionProfileElement());
   }
 
   @Override
@@ -57,7 +57,7 @@ public class FactionsPlugin extends JavaPlugin {
     Messages.MESSAGE_LIST.removeChild(getName());
 
     UserNameFactory factory = Users.getService().getNameFactory();
-    factory.removeField("faction");
+    factory.removeField(FactionProfileElement.ID);
 
     if (manager != null) {
       manager.save();

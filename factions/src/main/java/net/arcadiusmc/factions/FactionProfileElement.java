@@ -9,6 +9,8 @@ import net.arcadiusmc.user.name.ProfileDisplayElement;
 
 public class FactionProfileElement implements ProfileDisplayElement {
 
+  static final String ID = "faction";
+
   @Override
   public void write(TextWriter writer, User user, DisplayContext context) {
     if (!context.profileViewable()) {
