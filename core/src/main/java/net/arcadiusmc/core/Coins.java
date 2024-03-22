@@ -13,6 +13,7 @@ import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.inventory.ItemArrayList;
 import net.arcadiusmc.utils.inventory.ItemList;
 import net.arcadiusmc.utils.inventory.ItemStacks;
+import net.forthecrown.nbt.BinaryTags;
 import net.forthecrown.nbt.CompoundTag;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -56,7 +57,12 @@ public final class Coins {
     CoinCreationEvent event = new CoinCreationEvent(builder, user, amount);
     event.callEvent();
 
-    return builder.build();
+    ItemStack item = builder.build();
+    item.editMeta(meta -> {
+      ItemStacks.setTagElement(meta, NBT_TAG, BinaryTags.byteTag(1));
+    });
+
+    return item;
   }
 
   public static boolean isCoin(ItemStack item) {
