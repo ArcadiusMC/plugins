@@ -23,7 +23,10 @@ import net.arcadiusmc.utils.io.PluginJar;
 import net.arcadiusmc.utils.io.SerializationHelper;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.Style.Builder;
 import net.kyori.adventure.text.format.Style.Merge.Strategy;
+import org.apache.commons.lang3.mutable.Mutable;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -223,10 +226,12 @@ public class MessageLoader {
           continue;
         }
 
-        Style.Builder builder = Style.style();
-        parseStyle(value.getAsString(), builder, ctx);
+        Mutable<StyleScope> mutable = new MutableObject<>();
+        parseStyle(value.getAsString(), mutable, ctx);
 
-        ctx.addStyle(name, builder.build());
+        if (mutable.getValue() != null) {
+          ctx.addStyle(name, mutable.getValue());
+        }
       }
     }
 
@@ -243,12 +248,13 @@ public class MessageLoader {
     boolean stylePushed = false;
 
     if (obj.has(STYLE_KEY)) {
-      Style.Builder builder = Style.style();
-      parseStyle(obj.get(STYLE_KEY).getAsString(), builder, ctx);
+      Mutable<StyleScope> mutable = new MutableObject<>();
+      parseStyle(obj.get(STYLE_KEY).getAsString(), mutable, ctx);
 
-      stylePushed = true;
-
-      ctx.pushStyle(builder.build());
+      if (mutable.getValue() != null) {
+        stylePushed = true;
+        ctx.pushStyle(mutable.getValue());
+      }
     }
 
     for (Entry<String, JsonElement> entry : obj.entrySet()) {
@@ -295,38 +301,47 @@ public class MessageLoader {
     }
   }
 
-  private static void parseStyle(String string, Style.Builder builder, LoadContext ctx) {
+  private static void parseStyle(String string, Mutable<StyleScope> out, LoadContext ctx) {
 
     // Style variable reference
     if (string.startsWith("$")) {
       String variableRef = string.substring(1);
-      Style style = ctx.getStyle(variableRef);
+      StyleScope style = ctx.getStyle(variableRef);
 
       if (style == null) {
         LOGGER.warn("Unknown variable reference '{}' in {}", variableRef, ctx.prefix());
         return;
       }
 
-      builder.merge(style, Strategy.IF_ABSENT_ON_TARGET);
+      out.setValue(style);
+      return;
+    }
+
+    if (string.trim().equalsIgnoreCase("reset")) {
+      out.setValue(StyleReset.RESET);
       return;
     }
 
     try {
       StringReader reader = new StringReader(string);
+      Builder builder = Style.style();
+
       StyleStringCodec.parseStyle(reader, builder);
+
+      out.setValue(new SimpleStyleScope(builder.build()));
     } catch (CommandSyntaxException exc) {
       LOGGER.error("Error parsing style string at {}: {}", ctx.prefix(), exc.getMessage());
     }
   }
 
   private static class LoadContext {
-    private final Stack<Style> styleStack = new Stack<>();
+    private final Stack<StyleScope> styleStack = new Stack<>();
     private final Stack<String> prefixes = new Stack<>();
 
     private Style cachedStyle = Style.empty();
     private String cachedPrefix = "";
 
-    private final Map<String, Style> styles = new HashMap<>();
+    private final Map<String, StyleScope> styles = new HashMap<>();
 
     private int loadCounter = 0;
 
@@ -334,11 +349,11 @@ public class MessageLoader {
       loadCounter++;
     }
 
-    void addStyle(String label, Style style) {
+    void addStyle(String label, StyleScope style) {
       styles.put(label, style);
     }
 
-    Style getStyle(String name) {
+    StyleScope getStyle(String name) {
       return styles.get(name);
     }
 
@@ -360,7 +375,7 @@ public class MessageLoader {
       cachePrefix();
     }
 
-    void pushStyle(Style style) {
+    void pushStyle(StyleScope style) {
       styleStack.push(style);
       cacheStyle();
     }
@@ -387,10 +402,32 @@ public class MessageLoader {
       Style.Builder builder = Style.style();
 
       for (var s : styleStack) {
-        builder.merge(s, Style.Merge.Strategy.IF_ABSENT_ON_TARGET);
+        builder = s.combine(builder);
       }
 
       cachedStyle = builder.build();
+    }
+  }
+
+  interface StyleScope {
+
+    Style.Builder combine(Style.Builder builder);
+  }
+
+  record SimpleStyleScope(Style style) implements StyleScope {
+
+    @Override
+    public Builder combine(Builder builder) {
+      return builder.merge(style, Strategy.IF_ABSENT_ON_TARGET);
+    }
+  }
+
+  enum StyleReset implements StyleScope {
+    RESET;
+
+    @Override
+    public Builder combine(Builder builder) {
+      return Style.style();
     }
   }
 }
