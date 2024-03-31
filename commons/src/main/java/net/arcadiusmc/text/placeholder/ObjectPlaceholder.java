@@ -22,6 +22,7 @@ import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.arcadiusmc.utils.math.Vectors;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.nbt.paper.PaperNbt;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.World;
@@ -38,6 +39,17 @@ public interface ObjectPlaceholder<T> {
     return switch (fieldName) {
       case "floor" -> value.longValue();
       case "roman" -> text(RomanNumeral.arabicToRoman(value.longValue()));
+
+      case "signed" -> {
+        double doubleValue = value.doubleValue();
+
+        if (doubleValue < 0) {
+          yield Text.formatNumber(value);
+        }
+
+        yield Component.textOfChildren(text("+"), Text.formatNumber(value));
+      }
+
       default -> Text.formatNumber(value);
     };
   };
