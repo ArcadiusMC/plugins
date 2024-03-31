@@ -75,6 +75,10 @@ public class PluginScriptRuntime {
     );
 
     NativeVectors.init(object);
+
+    JsCommandStorage storage = new JsCommandStorage();
+    storage.setParentScope(object);
+    putConstProperty(object, "serverStorage", storage);
   }
 
   static Object runString(CommandSource sender, Object[] args, int argsStart) {
