@@ -110,6 +110,7 @@ literal("property") {
   {
     map_result("property") = @holder_to_value
     executes = setProperty()
+    suggests = suggestPropertyValues()
     description = "Sets a faction's property"
   }
 

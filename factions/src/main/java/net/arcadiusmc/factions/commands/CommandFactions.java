@@ -5,9 +5,12 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.StringRange;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.arguments.RegistryArguments;
@@ -238,6 +241,14 @@ public class CommandFactions {
             .addValue("value", value)
             .create(source)
     );
+  }
+
+  CompletableFuture<Suggestions> suggestPropertyValues(
+      CommandContext<CommandSource> context,
+      SuggestionsBuilder builder,
+      @Argument("property") FactionProperty<Object> property
+  ) {
+    return property.getArgumentType().listSuggestions(context, builder);
   }
 
   void unsetProperty(
