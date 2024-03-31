@@ -22,10 +22,11 @@ public class CommandUsables extends BaseCommand {
 
   @Override
   public void populateUsages(UsageFactory factory) {
-    for (UsableCommand cmd : UsablesCommands.usableCommands) {
-      UsageFactory prefixed = factory.withPrefix(cmd.getArgumentName()).withCondition(cmd::canUse);
-      cmd.populateUsages(prefixed);
-    }
+    factory.usage("reload")
+        .addInfo("Reloads the usables plugin");
+
+    factory.usage("save")
+        .addInfo("Saves the usables plugin's data.");
   }
 
   @Override
@@ -45,12 +46,5 @@ public class CommandUsables extends BaseCommand {
           return 0;
         })
     );
-
-    for (var node: UsablesCommands.usableCommands) {
-      var literal = literal(node.getArgumentName());
-      literal.requires(node::canUse);
-      node.create(literal);
-      command.then(literal);
-    }
   }
 }

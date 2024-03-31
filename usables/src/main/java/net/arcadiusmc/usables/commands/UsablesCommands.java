@@ -6,8 +6,6 @@ import net.arcadiusmc.usables.UsablesPlugin;
 
 public class UsablesCommands {
 
-  static UsableCommand[] usableCommands;
-
   static ListCommands<Action> actions;
   static ListCommands<Condition> conditions;
 
@@ -15,18 +13,13 @@ public class UsablesCommands {
     actions = new ListCommands<>("actions", "Action", plugin.getActions());
     conditions = new ListCommands<>("tests", "Condition", plugin.getConditions());
 
-    usableCommands = new UsableCommand[]{
-        new UsableBlockCommand(),
-        new UsableEntityCommand(),
-        new UsableItemCommand(),
-        new UsableTriggerCommand(plugin.getTriggers()),
-        new KitCommand(plugin.getKits()),
-        new WarpCommand(plugin.getWarps())
-    };
-
-    for (UsableCommand usableCommand : usableCommands) {
-      usableCommand.register();
-    }
+    new UsableBlockCommand().register();
+    new UsableEntityCommand().register();
+    new UsableItemCommand().register();
+    new UsableTriggerCommand(plugin.getTriggers()).register();
+    new UsableVirtualCommand().register();
+    new KitCommand(plugin.getKits()).register();
+    new WarpCommand(plugin.getWarps()).register();
 
     new CommandUsables(plugin).register();
   }

@@ -18,8 +18,8 @@ import org.bukkit.block.TileState;
 public class UsableBlockCommand extends InWorldUsableCommand<UsableBlock> {
 
   public UsableBlockCommand() {
-    super("usableblock", "block");
-    setAliases("usable_block");
+    super("usableblock");
+    setAliases("usable_block", "usable-block");
     setPermission(UPermissions.BLOCK);
   }
 

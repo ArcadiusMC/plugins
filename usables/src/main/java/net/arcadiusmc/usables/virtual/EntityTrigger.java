@@ -20,9 +20,11 @@ import net.arcadiusmc.utils.EntityRef;
 import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.types.ArgumentTypes;
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @Getter
 public class EntityTrigger implements Trigger {
@@ -42,6 +44,11 @@ public class EntityTrigger implements Trigger {
   @Override
   public ObjectType<? extends UsableComponent> getType() {
     return action.type;
+  }
+
+  @Override
+  public @Nullable Component displayInfo() {
+    return Component.text(reference.toString());
   }
 }
 

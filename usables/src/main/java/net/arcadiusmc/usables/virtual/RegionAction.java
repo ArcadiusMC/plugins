@@ -18,17 +18,12 @@ public enum RegionAction {
 
   RegionTriggerType type;
 
-  static {
+  static void registerAll(Registry<ObjectType<? extends Trigger>> r) {
     var triggers = UsablesPlugin.get().getTriggers();
     var argumentType = new TriggerArgumentType(triggers);
 
-    for (RegionAction value : values()) {
-      value.type = new RegionTriggerType(value, argumentType);
-    }
-  }
-
-  static void registerAll(Registry<ObjectType<? extends Trigger>> r) {
     for (var value : values()) {
+      value.type = new RegionTriggerType(value, argumentType);
       r.register(value.name().toLowerCase(), value.type);
     }
   }

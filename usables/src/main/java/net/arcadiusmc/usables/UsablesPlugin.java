@@ -11,6 +11,7 @@ import net.arcadiusmc.usables.listeners.UsablesListeners;
 import net.arcadiusmc.usables.objects.Kit;
 import net.arcadiusmc.usables.objects.Warp;
 import net.arcadiusmc.usables.trigger.TriggerManager;
+import net.arcadiusmc.usables.virtual.VirtualUsableManager;
 import net.arcadiusmc.utils.PeriodicalSaver;
 import net.arcadiusmc.utils.TomlConfigs;
 import net.arcadiusmc.utils.io.PathUtil;
@@ -26,6 +27,7 @@ public class UsablesPlugin extends JavaPlugin {
   private CmdUsables<Kit> kits;
 
   private TriggerManager triggers;
+  private VirtualUsableManager virtuals;
 
   private PeriodicalSaver saver;
 
@@ -48,6 +50,7 @@ public class UsablesPlugin extends JavaPlugin {
     warps = new CmdUsables<>(dir.resolve("warps.dat"), Warp::new);
 
     triggers = new TriggerManager(dir.resolve("triggers.dat"));
+    virtuals = new VirtualUsableManager(dir.resolve("virtuals.dat"));
 
     UsablesListeners.registerAll(this);
 
@@ -60,6 +63,7 @@ public class UsablesPlugin extends JavaPlugin {
     warps.save();
     kits.save();
     triggers.save();
+    virtuals.save();
   }
 
   @Override
@@ -74,6 +78,7 @@ public class UsablesPlugin extends JavaPlugin {
     warps.load();
     kits.load();
     triggers.load();
+    virtuals.load();
   }
 
   @Override
@@ -89,5 +94,9 @@ public class UsablesPlugin extends JavaPlugin {
   public void freezeRegistries() {
     actions.freeze();
     conditions.freeze();
+
+    virtuals.initialize();
+    virtuals.lockSystems();
+    virtuals.getTriggerTypes().freeze();
   }
 }

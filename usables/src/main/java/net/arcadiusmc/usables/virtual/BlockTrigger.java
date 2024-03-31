@@ -21,11 +21,13 @@ import net.arcadiusmc.utils.math.Vectors;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.forthecrown.grenadier.types.ParsedPosition;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.math.vector.Vector3i;
 
 @Getter
@@ -56,6 +58,11 @@ public class BlockTrigger implements Trigger {
 
   public ObjectType<? extends UsableComponent> getType() {
     return action.type;
+  }
+
+  @Override
+  public @Nullable Component displayInfo() {
+    return Component.text("world=" + world + ", position=" + position);
   }
 }
 

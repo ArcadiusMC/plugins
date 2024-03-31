@@ -10,9 +10,5 @@ public interface TriggerSystem<T extends Trigger> {
 
   void onTriggerAdd(VirtualUsable usable, T trigger);
 
-  default void onTriggerUnload(VirtualUsable usable, T trigger) {
-    onTriggerRemove(usable, trigger);
-  }
-
   void onTriggerRemove(VirtualUsable usable, T trigger);
 }

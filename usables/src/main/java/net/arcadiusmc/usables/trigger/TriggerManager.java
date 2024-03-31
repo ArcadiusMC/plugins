@@ -131,7 +131,12 @@ public class TriggerManager {
         RegionAction.ON_REGION_MOVE_INSIDE_OF
     );
 
-    private void runExternal(AreaTrigger trigger, Player player, Set<RegionAction> actions) {
+    private void runExternal(
+        AreaTrigger trigger,
+        Player player,
+        Set<RegionAction> actions,
+        Type regionAction
+    ) {
       var refs = trigger.getExternalTriggers().getAll(actions);
 
       if (refs.isEmpty()) {
@@ -141,9 +146,11 @@ public class TriggerManager {
       Triggers.runReferences(
           refs, player, null,
           interaction -> {
-            var ctx = interaction.getContext();
+            Map<String, Object> ctx = interaction.getContext();
+
             ctx.put("triggerName", trigger.getName());
             ctx.put("area", trigger.getArea());
+            ctx.put("regionAction", regionAction);
           },
           null
       );
@@ -155,7 +162,7 @@ public class TriggerManager {
         trigger.interact(source);
       }
 
-      runExternal(trigger, source, ON_ENTER);
+      runExternal(trigger, source, ON_ENTER, Type.ENTER);
     }
 
     @Override
@@ -164,7 +171,7 @@ public class TriggerManager {
         trigger.interact(source);
       }
 
-      runExternal(trigger, source, ON_EXIT);
+      runExternal(trigger, source, ON_EXIT, Type.EXIT);
     }
 
     @Override
@@ -173,7 +180,7 @@ public class TriggerManager {
         trigger.interact(source);
       }
 
-      runExternal(trigger, source, ON_MOVE_INSIDE);
+      runExternal(trigger, source, ON_MOVE_INSIDE, Type.MOVE);
     }
   }
 }

@@ -12,7 +12,7 @@ import net.arcadiusmc.usables.objects.UsableItem;
 public class UsableItemCommand extends InWorldUsableCommand<UsableItem> {
 
   public UsableItemCommand() {
-    super("usableitem", "item");
+    super("usableitem");
     setAliases("usable_item");
     setPermission(UPermissions.ITEM);
   }

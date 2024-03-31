@@ -8,36 +8,73 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import java.util.List;
 import java.util.function.Predicate;
-import lombok.Getter;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.DataCommands;
 import net.arcadiusmc.command.DataCommands.DataAccessor;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.text.Text;
 import net.arcadiusmc.usables.UPermissions;
 import net.arcadiusmc.usables.objects.UsableObject;
+import net.arcadiusmc.usables.objects.VanillaCancelState;
+import net.arcadiusmc.usables.objects.VanillaCancellable;
 import net.arcadiusmc.user.User;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
+import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.forthecrown.nbt.BinaryTags;
 import net.forthecrown.nbt.CompoundTag;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 
 public abstract class UsableCommand<H extends UsableObject> extends BaseCommand {
 
-  @Getter
-  private final String argumentName;
-
   protected boolean generateUseArgument = true;
 
-  public UsableCommand(String name, String argumentName) {
+  public UsableCommand(String name) {
     super(name);
-    this.argumentName = argumentName;
   }
 
   @Override
   public void createCommand(GrenadierCommand command) {
     create(command);
+  }
+
+  static <H extends VanillaCancellable> LiteralArgumentBuilder<CommandSource> vanillaCancelArguments(
+      UsableProvider<H> provider
+  ) {
+    return literal("cancel-interaction")
+        .executes(c -> {
+          H holder = provider.get(c);
+
+          c.getSource().sendMessage(
+              Text.format("&e{0}&r cancels vanilla interactions: &f{1}&r.",
+                  NamedTextColor.GRAY,
+                  holder.displayName(),
+                  holder.getCancelVanilla()
+              )
+          );
+          return 0;
+        })
+
+        .then(argument("state", ArgumentTypes.enumType(VanillaCancelState.class))
+            .executes(c -> {
+              H holder = provider.get(c);
+              VanillaCancelState state = c.getArgument("state", VanillaCancelState.class);
+
+              holder.setCancelVanilla(state);
+              provider.postEdit(holder);
+
+              c.getSource().sendMessage(
+                  Text.format("&e{0}&r now cancels vanilla interactions: &f{1}&r.",
+                      NamedTextColor.GRAY,
+                      holder.displayName(),
+                      holder.getCancelVanilla()
+                  )
+              );
+              return 0;
+            })
+        );
   }
 
   @Override
@@ -64,8 +101,8 @@ public abstract class UsableCommand<H extends UsableObject> extends BaseCommand 
     factory.usage("info", "Shows general info");
 
     if (generateUseArgument) {
-      factory.usage("use", "Makes you use a " + argumentName);
-      factory.usage("use <players>", "Makes a list of players use a " + argumentName);
+      factory.usage("use", "Makes you use the usable");
+      factory.usage("use <players>", "Makes a list of players use the usable");
     }
 
     DataCommands.addUsages(factory.withPrefix("data"), "Usable", null);

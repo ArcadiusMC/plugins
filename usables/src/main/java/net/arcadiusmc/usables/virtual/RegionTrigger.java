@@ -16,7 +16,9 @@ import net.arcadiusmc.usables.ObjectType;
 import net.arcadiusmc.usables.UsableComponent;
 import net.arcadiusmc.usables.commands.UsableTriggerCommand.TriggerArgumentType;
 import net.arcadiusmc.usables.trigger.AreaTrigger;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @Getter
 public class RegionTrigger implements Trigger {
@@ -32,6 +34,11 @@ public class RegionTrigger implements Trigger {
   @Override
   public ObjectType<? extends UsableComponent> getType() {
     return action.type;
+  }
+
+  @Override
+  public @Nullable Component displayInfo() {
+    return Component.text(regionName);
   }
 }
 

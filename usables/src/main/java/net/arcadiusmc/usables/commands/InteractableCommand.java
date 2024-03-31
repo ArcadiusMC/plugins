@@ -8,7 +8,6 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.arguments.Arguments;
@@ -17,20 +16,21 @@ import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.TextWriter;
 import net.arcadiusmc.text.TextWriters;
 import net.arcadiusmc.usables.Action;
-import net.arcadiusmc.usables.ComponentList;
 import net.arcadiusmc.usables.Condition;
 import net.arcadiusmc.usables.ObjectType;
+import net.arcadiusmc.usables.list.ComponentList;
+import net.arcadiusmc.usables.list.ComponentsArray;
+import net.arcadiusmc.usables.list.ConditionsList;
 import net.arcadiusmc.usables.objects.Usable;
 import net.arcadiusmc.usables.objects.UsableObject;
 import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.types.IntRangeArgument.IntRange;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 public abstract class InteractableCommand<H extends Usable> extends UsableCommand<H> {
 
-  public InteractableCommand(String name, String argumentName) {
-    super(name, argumentName);
+  public InteractableCommand(String name) {
+    super(name);
   }
 
   @Override
@@ -111,10 +111,9 @@ public abstract class InteractableCommand<H extends Usable> extends UsableComman
         .then(literal("list")
             .executes(c -> {
               H holder = provider.get(c);
-              String[] overrides = holder.getErrorOverrides();
-              ComponentList<Condition> conditions = holder.getConditions();
+              ConditionsList conditions = holder.getConditions();
 
-              if (overrides == null || overrides.length < 1) {
+              if (conditions.isEmpty()) {
                 throw Exceptions.NOTHING_TO_LIST.exception(c.getSource());
               }
 
@@ -122,18 +121,10 @@ public abstract class InteractableCommand<H extends Usable> extends UsableComman
 
               for (int i = 0; i < conditions.size(); i++) {
                 ObjectType<Condition> type = conditions.getType(i);
-                String override;
+                String override = conditions.getError(i);
 
-                if (i >= overrides.length) {
+                if (Strings.isNullOrEmpty(override)) {
                   override = "";
-                } else {
-                  String str = overrides[i];
-
-                  if (Strings.isNullOrEmpty(str)) {
-                    override = "";
-                  } else {
-                    override = str;
-                  }
                 }
 
                 writer.formattedLine("{0, number}) {1} {2}",
@@ -193,7 +184,7 @@ public abstract class InteractableCommand<H extends Usable> extends UsableComman
         .then(literal("clear")
             .executes(c -> {
               H holder = provider.get(c);
-              holder.setErrorOverrides(null);
+              holder.getConditions().clearErrorMessages();
               provider.postEdit(holder);
 
               c.getSource().sendSuccess(
@@ -219,22 +210,18 @@ public abstract class InteractableCommand<H extends Usable> extends UsableComman
     H holder = provider.get(c);
     int index = c.getArgument("index", Integer.class);
 
-    String[] overrides = holder.getErrorOverrides();
-    ComponentList<Condition> conditions = holder.getConditions();
+    ConditionsList conditions = holder.getConditions();
     int size = conditions.size();
 
     Commands.ensureIndexValid(index, size);
 
-    String existing = index >= overrides.length
-        ? null
-        : overrides[index - 1];
+    String existing = conditions.getError(index - 1);
 
     if (Strings.isNullOrEmpty(existing)) {
       throw Exceptions.create("Nothing changed");
     }
 
-    overrides[index - 1] = null;
-    holder.setErrorOverrides(overrides);
+    conditions.setError(index - 1, null);
     provider.postEdit(holder);
 
     c.getSource().sendSuccess(
@@ -295,22 +282,11 @@ public abstract class InteractableCommand<H extends Usable> extends UsableComman
     int index = c.getArgument("index", Integer.class);
     String text = c.getArgument("text", String.class);
 
-    String[] overrides = holder.getErrorOverrides();
-    ComponentList<Condition> conditions = holder.getConditions();
+    ConditionsList conditions = holder.getConditions();
 
     Commands.ensureIndexValid(index, conditions.size());
 
-    String[] correctSize;
-
-    if (overrides == null || overrides.length == 0) {
-      correctSize = new String[conditions.size()];
-    } else {
-      correctSize = ObjectArrays.ensureCapacity(overrides, index + 1);
-    }
-
-    correctSize[index - 1] = text;
-
-    holder.setErrorOverrides(correctSize);
+    conditions.setError(index - 1, text);
     provider.postEdit(holder);
 
     c.getSource().sendMessage(
@@ -331,7 +307,7 @@ public abstract class InteractableCommand<H extends Usable> extends UsableComman
   ) implements ListHolder<Action> {
 
     @Override
-    public ComponentList<Action> getList() {
+    public ComponentsArray<Action> getList() {
       return usable.getActions();
     }
 
@@ -364,39 +340,6 @@ public abstract class InteractableCommand<H extends Usable> extends UsableComman
     @Override
     public UsableObject object() {
       return usable;
-    }
-
-    @Override
-    public void onRemove(IntRange removeRange) {
-      ComponentList<Condition> conditions = getList();
-      String[] errorOverrides = usable().getErrorOverrides();
-
-      if (errorOverrides == null || errorOverrides.length < 1) {
-        return;
-      }
-
-      int min = removeRange.min().orElse(0);
-      int max = removeRange.max().orElse(conditions.size());
-
-      if (min == 0 && max >= conditions.size()) {
-        usable.setErrorOverrides(null);
-        return;
-      }
-
-      for (int i = min; i < max; i++) {
-        if (errorOverrides.length <= i) {
-          continue;
-        }
-
-        errorOverrides[i] = null;
-        continue;
-      }
-
-    }
-
-    @Override
-    public void onClear() {
-      usable.setErrorOverrides(null);
     }
   }
 }

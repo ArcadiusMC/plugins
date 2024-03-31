@@ -5,14 +5,19 @@ import java.util.Map;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
-import net.forthecrown.nbt.CompoundTag;
+import net.arcadiusmc.text.Text;
+import net.arcadiusmc.text.TextWriter;
 import net.arcadiusmc.usables.objects.Usable;
 import net.arcadiusmc.usables.virtual.RegionAction;
 import net.arcadiusmc.usables.virtual.TriggerMap;
 import net.arcadiusmc.utils.io.TagOps;
 import net.arcadiusmc.utils.io.TagUtil;
 import net.arcadiusmc.utils.math.WorldBounds3i;
+import net.forthecrown.nbt.CompoundTag;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.spongepowered.math.vector.Vector3i;
 
 @Getter
 public class AreaTrigger extends Usable {
@@ -29,12 +34,28 @@ public class AreaTrigger extends Usable {
   final TriggerMap<RegionAction> externalTriggers;
 
   public AreaTrigger() {
-    externalTriggers = new TriggerMap<>(RegionAction.CODEC);
+    this.externalTriggers = new TriggerMap<>(RegionAction.CODEC);
+    this.type = Type.ENTER;
   }
 
   @Override
   public Component name() {
     return Component.text(getName());
+  }
+
+  @Override
+  public void write(TextWriter writer) {
+    writer.field("Type", type.name().toLowerCase());
+    writer.field("Region", clickableRegion());
+    super.write(writer);
+  }
+
+  Component clickableRegion() {
+    Vector3i min = area.min();
+    Vector3i max = area.max();
+
+    return Text.format("({0, vector} -> {1, vector})", NamedTextColor.GRAY, min, max)
+        .clickEvent(ClickEvent.runCommand(getCommandPrefix() + " select"));
   }
 
   @Override
@@ -54,7 +75,7 @@ public class AreaTrigger extends Usable {
 
   @Override
   public String getCommandPrefix() {
-    return "/triggers " + getName() + " ";
+    return "/triggers " + getName();
   }
 
   @Override

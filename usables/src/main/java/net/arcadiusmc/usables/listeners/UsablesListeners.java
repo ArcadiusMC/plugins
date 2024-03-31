@@ -9,6 +9,7 @@ import net.arcadiusmc.Loggers;
 import net.arcadiusmc.usables.Interaction;
 import net.arcadiusmc.usables.UsablesPlugin;
 import net.arcadiusmc.usables.objects.InWorldUsable;
+import net.arcadiusmc.usables.objects.VanillaCancelState;
 import net.arcadiusmc.utils.Cooldown;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
@@ -34,8 +35,9 @@ public final class UsablesListeners {
     Optional<Player> playerOpt = interaction.getPlayer();
 
     boolean originalCancelState = cancellable.isCancelled();
+    boolean cancelState = usable.getCancelVanilla().cancelEvent(false);
 
-    if (usable.isCancelVanilla()) {
+    if (cancelState) {
       cancellable.setCancelled(true);
     }
 
@@ -51,10 +53,16 @@ public final class UsablesListeners {
       }
     }
 
-    usable.interact(interaction);
+    boolean testsPassed = usable.interact(interaction);
+
+    boolean cancelVanilla = interaction.getValue(CANCEL_VANILLA, VanillaCancelState.class)
+        .or(() -> Optional.of(usable.getCancelVanilla()))
+        .map(vanillaCancelState -> vanillaCancelState.cancelEvent(testsPassed))
+        .orElse(false);
+
     usable.save();
 
-    if (interaction.getBoolean(CANCEL_VANILLA).orElse(usable.isCancelVanilla())) {
+    if (cancelVanilla) {
       cancellable.setCancelled(true);
     } else {
       cancellable.setCancelled(originalCancelState);

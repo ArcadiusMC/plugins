@@ -13,16 +13,15 @@ import lombok.Setter;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.text.TextWriter;
 import net.arcadiusmc.usables.Action;
-import net.arcadiusmc.usables.ComponentList;
 import net.arcadiusmc.usables.Condition;
 import net.arcadiusmc.usables.Interaction;
+import net.arcadiusmc.usables.list.ActionsList;
+import net.arcadiusmc.usables.list.ComponentList;
+import net.arcadiusmc.usables.list.ConditionsList;
 import net.arcadiusmc.utils.io.Results;
 import net.arcadiusmc.utils.io.TagOps;
 import net.forthecrown.nbt.BinaryTag;
-import net.forthecrown.nbt.BinaryTags;
 import net.forthecrown.nbt.CompoundTag;
-import net.forthecrown.nbt.ListTag;
-import net.forthecrown.nbt.TagTypes;
 import net.forthecrown.nbt.TypeIds;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
@@ -41,23 +40,20 @@ public abstract class Usable implements ConditionHolder {
   @Setter
   private boolean silent;
 
-  private final ComponentList<Condition> conditions;
-  private final ComponentList<Action> actions;
-
-  @Setter
-  private String[] errorOverrides = null;
+  private final ConditionsList conditions;
+  private final ActionsList actions;
 
   @Setter
   private String globalErrorOverride = null;
 
   public Usable() {
-    this.conditions = ComponentList.newConditionList();
-    this.actions = ComponentList.newActionList();
+    this.conditions = new ConditionsList();
+    this.actions = new ActionsList();
   }
 
   @Override
   public int getFailureIndex(Interaction interaction) {
-    ComponentList<Condition> conditions = getConditions();
+    ConditionsList conditions = getConditions();
 
     for (int i = 0; i < conditions.size(); i++) {
       Condition condition = conditions.get(i);
@@ -74,7 +70,7 @@ public abstract class Usable implements ConditionHolder {
 
   @Override
   public boolean runConditions(Interaction interaction) {
-    ComponentList<Condition> conditions = getConditions();
+    ConditionsList conditions = getConditions();
     int failedIndex = getFailureIndex(interaction);
 
     if (failedIndex == NO_FAILURE) {
@@ -98,14 +94,12 @@ public abstract class Usable implements ConditionHolder {
     Condition condition = conditions.get(failedIndex);
     Component message;
     String errorOverride;
+    String errorAt = conditions.getError(failedIndex);
 
-    if (errorOverrides == null
-        || errorOverrides.length < failedIndex
-        || Strings.isNullOrEmpty(errorOverrides[failedIndex])
-    ) {
+    if (Strings.isNullOrEmpty(errorAt)) {
       errorOverride = globalErrorOverride;
     } else {
-      errorOverride = errorOverrides[failedIndex];
+      errorOverride = errorAt;
     }
 
     if (Strings.isNullOrEmpty(errorOverride)) {
@@ -160,17 +154,6 @@ public abstract class Usable implements ConditionHolder {
     if (!Strings.isNullOrEmpty(globalErrorOverride)) {
       tag.putString(KEY_G_ERROR_OVERRIDE, globalErrorOverride);
     }
-
-    if (errorOverrides != null && errorOverrides.length > 0) {
-      ListTag listTag = BinaryTags.listTag();
-
-      for (String errorOverride : errorOverrides) {
-        String str = Strings.nullToEmpty(errorOverride);
-        listTag.addString(str);
-      }
-
-      tag.put(KEY_ERROR_OVERRIDES, listTag);
-    }
   }
 
   @Override
@@ -181,20 +164,9 @@ public abstract class Usable implements ConditionHolder {
     load(tag.get(KEY_CONDITIONS), conditions);
 
     this.globalErrorOverride = tag.getString(KEY_G_ERROR_OVERRIDE);
-
-    if (tag.contains(KEY_ERROR_OVERRIDES, TagTypes.listType())) {
-      ListTag listTag = tag.getList(KEY_ERROR_OVERRIDES, TagTypes.stringType());
-      int size = listTag.size();
-
-      this.errorOverrides = new String[size];
-
-      for (int i = 0; i < size; i++) {
-        this.errorOverrides[i] = listTag.getString(i, "");
-      }
-    }
   }
 
-  static void save(ComponentList<?> list, CompoundTag container, String key) {
+  public static void save(ComponentList<?> list, CompoundTag container, String key) {
     list.save(TagOps.OPS)
         .flatMap(binaryTag -> {
           if (binaryTag == null || binaryTag.getId() == TypeIds.END) {
@@ -207,7 +179,7 @@ public abstract class Usable implements ConditionHolder {
         .ifPresent(binaryTag -> container.put(key, binaryTag));
   }
 
-  static void load(BinaryTag tag, ComponentList<?> list) {
+  public static void load(BinaryTag tag, ComponentList<?> list) {
     if (tag == null) {
       list.clear();
       return;

@@ -16,8 +16,8 @@ import org.bukkit.entity.Entity;
 public class UsableEntityCommand extends InWorldUsableCommand<UsableEntity> {
 
   public UsableEntityCommand() {
-    super("usableentity", "entity");
-    setAliases("usable_entity");
+    super("usableentity");
+    setAliases("usable_entity", "usable-entity");
     setPermission(UPermissions.ENTITY);
   }
 

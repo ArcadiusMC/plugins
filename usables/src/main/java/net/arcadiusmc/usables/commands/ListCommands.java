@@ -19,20 +19,20 @@ import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.arguments.RegistryArguments;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.registry.Holder;
+import net.arcadiusmc.registry.Registry;
+import net.arcadiusmc.text.Text;
+import net.arcadiusmc.text.TextWriters;
 import net.arcadiusmc.usables.Condition.TransientCondition;
+import net.arcadiusmc.usables.ObjectType;
+import net.arcadiusmc.usables.UsableComponent;
+import net.arcadiusmc.usables.list.ComponentList;
 import net.forthecrown.grenadier.CommandContexts;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Completions;
 import net.forthecrown.grenadier.Grenadier;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.forthecrown.grenadier.types.IntRangeArgument.IntRange;
-import net.arcadiusmc.registry.Holder;
-import net.arcadiusmc.registry.Registry;
-import net.arcadiusmc.text.Text;
-import net.arcadiusmc.text.TextWriters;
-import net.arcadiusmc.usables.ComponentList;
-import net.arcadiusmc.usables.UsableComponent;
-import net.arcadiusmc.usables.ObjectType;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
@@ -187,7 +187,6 @@ public class ListCommands<T extends UsableComponent> {
             );
           }
 
-          holder.onRemove(range);
           holder.postEdit();
 
           c.getSource().sendSuccess(message);
@@ -236,7 +235,6 @@ public class ListCommands<T extends UsableComponent> {
       }
 
       list.clear();
-      holder.onClear();
       holder.postEdit();
 
       c.getSource().sendSuccess(
@@ -268,7 +266,7 @@ public class ListCommands<T extends UsableComponent> {
           continue;
         }
 
-        Component hover = list.displayEntry(i);
+        Component hover = list.displayEntry(i, holder.object().getCommandPrefix());
         builder.suggest(suggestion, Grenadier.toMessage(hover));
       }
 

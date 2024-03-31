@@ -33,7 +33,7 @@ public abstract class CmdUsableCommand<T extends CommandUsable> extends Interact
       CmdUsables<T> usables,
       Class<T> typeClass
   ) {
-    super(name, name);
+    super(name);
 
     this.usables = usables;
     this.displayName = Text.capitalizeFully(name);

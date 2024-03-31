@@ -8,13 +8,15 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import com.sk89q.worldedit.LocalSession;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.entity.Player;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.regions.selector.CuboidRegionSelector;
 import java.util.concurrent.CompletableFuture;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.help.UsageFactory;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.Completions;
-import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.usables.UPermissions;
 import net.arcadiusmc.usables.UsablesPlugin;
@@ -22,15 +24,20 @@ import net.arcadiusmc.usables.trigger.AreaTrigger;
 import net.arcadiusmc.usables.trigger.AreaTrigger.Type;
 import net.arcadiusmc.usables.trigger.TriggerManager;
 import net.arcadiusmc.utils.math.WorldBounds3i;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.Completions;
+import net.forthecrown.grenadier.types.ArgumentTypes;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
+import org.spongepowered.math.vector.Vector3i;
 
 public class UsableTriggerCommand extends InteractableCommand<AreaTrigger> {
 
   private final TriggerManager manager;
 
   public UsableTriggerCommand(TriggerManager manager) {
-    super("usabletriggers", "triggers");
+    super("usabletriggers");
     setAliases("usable_triggers", "triggers");
     setPermission(UPermissions.TRIGGER);
 
@@ -54,6 +61,9 @@ public class UsableTriggerCommand extends InteractableCommand<AreaTrigger> {
 
     factory.usage("redefine <trigger name>")
         .addInfo("Redefines a trigger to your current world edit selection");
+
+    factory.usage("select")
+        .addInfo("Makes a trigger become your WorldEdit selection.");
 
     factory.usage("remove").addInfo("Removes a trigger");
 
@@ -162,6 +172,30 @@ public class UsableTriggerCommand extends InteractableCommand<AreaTrigger> {
                   trigger.displayName(), newArea
               )
           );
+          return 0;
+        })
+    );
+
+    argument.then(literal("select")
+        .executes(c -> {
+          AreaTrigger trigger = provider.get(c);
+
+          Vector3i min = trigger.getArea().min();
+          Vector3i max = trigger.getArea().max();
+
+          CuboidRegionSelector region = new CuboidRegionSelector(
+              BukkitAdapter.adapt(trigger.getArea().getWorld()),
+              BlockVector3.at(min.x(), min.y(), min.z()),
+              BlockVector3.at(max.x(), max.y(), max.z())
+          );
+
+          Player wePlayer = BukkitAdapter.adapt(c.getSource().asPlayer());
+          LocalSession session = wePlayer.getSession();
+
+          session.setRegionSelector(region.getWorld(), region);
+          region.explainRegionAdjust(wePlayer, session);
+
+          c.getSource().sendMessage(Component.text("Region selected!", NamedTextColor.GRAY));
           return 0;
         })
     );

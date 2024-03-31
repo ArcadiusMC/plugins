@@ -3,10 +3,9 @@ package net.arcadiusmc.usables.objects;
 import java.util.Map;
 import java.util.Objects;
 import lombok.Getter;
-import net.arcadiusmc.usables.ComponentList;
-import net.arcadiusmc.usables.Condition;
 import net.arcadiusmc.usables.Condition.TransientCondition;
 import net.arcadiusmc.usables.Interaction;
+import net.arcadiusmc.usables.list.ConditionsList;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 
@@ -55,8 +54,8 @@ public abstract class CommandUsable extends Usable {
   protected abstract void onInteract(Player player, boolean adminInteraction);
 
   @Override
-  public ComponentList<Condition> getConditions() {
-    ComponentList<Condition> list = super.getConditions();
+  public ConditionsList getConditions() {
+    ConditionsList list = super.getConditions();
 
     if (additional != null) {
       int index = list.indexOf(additional);
