@@ -10,13 +10,12 @@ import java.util.Locale;
 import java.util.Map;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.utils.math.Rotation;
+import net.arcadiusmc.utils.math.Vectors;
 import net.forthecrown.nbt.CompoundTag;
 import net.forthecrown.nbt.paper.TagTranslators;
-import net.arcadiusmc.utils.math.Vectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -28,14 +27,13 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.LeverBlock;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.storage.CommandStorage;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
@@ -259,18 +257,23 @@ public final class VanillaAccess {
     BlockPos pos = craft.getPosition();
     BlockState state = craft.getNMS();
 
-    world.updateNeighborsAt(pos, Blocks.LEVER);
-    world.updateNeighborsAt(pos.relative(getConnectedDirection(state).getOpposite()), Blocks.LEVER);
+    world.updateNeighborsAt(pos, state.getBlock());
   }
 
-  // Copy and pasted method from LeverBlock class, it was protected there
-  // So I had to lol
-  protected static Direction getConnectedDirection(BlockState state) {
-    return switch (state.getValue(LeverBlock.FACE)) {
-      case CEILING -> Direction.DOWN;
-      case FLOOR -> Direction.UP;
-      default -> state.getValue(LeverBlock.FACING);
-    };
+  public static CompoundTag getStoredData(NamespacedKey key) {
+    DedicatedServer server = getServer();
+    CommandStorage storage = server.getCommandStorage();
+    net.minecraft.nbt.CompoundTag nmsTag = storage.get(CraftNamespacedKey.toMinecraft(key));
+    return TagTranslators.COMPOUND.toApiType(nmsTag);
+  }
+
+  public static void setStoredData(NamespacedKey key, CompoundTag data) {
+    DedicatedServer server = getServer();
+    CommandStorage storage = server.getCommandStorage();
+    storage.set(
+        CraftNamespacedKey.toMinecraft(key),
+        TagTranslators.COMPOUND.toMinecraft(data)
+    );
   }
 
   public static CommandSender getSender(TileState sender) {
