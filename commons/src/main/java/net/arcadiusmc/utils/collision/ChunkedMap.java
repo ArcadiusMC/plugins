@@ -40,7 +40,7 @@ import org.spongepowered.math.vector.Vector3i;
  * @param <T> The type this map holds
  */
 @RequiredArgsConstructor
-public class ChunkedMap<T> {
+public class ChunkedMap<T> implements SpatialMap<T> {
   /* ----------------------------- CONSTANTS ------------------------------ */
   /**
    * Constant returned by {@link #findNearest(Vector3d)} when no near object was found
@@ -144,6 +144,7 @@ public class ChunkedMap<T> {
    * @param bounds3i The bounds to find overlapping entries for
    * @return All overlapping entries, empty, if none found
    */
+  @Override
   public @NotNull Set<T> getOverlapping(@NotNull AbstractBounds3i<?> bounds3i) {
     Objects.requireNonNull(bounds3i, "Bounds");
 
@@ -182,7 +183,8 @@ public class ChunkedMap<T> {
     return result;
   }
 
-  void getColliding(World world, AbstractBounds3i<?> bounds3i, CollisionSet<T> out) {
+  @Override
+  public void getColliding(World world, Bounds3i bounds3i, CollisionSet<T> out) {
     Objects.requireNonNull(bounds3i, "Null bounds");
 
     if (isEmpty() || !totalArea.overlaps(bounds3i)) {
@@ -220,6 +222,7 @@ public class ChunkedMap<T> {
    * @param pos The position to query entries for
    * @return All entries at the given position, empty, if none found
    */
+  @Override
   public @NotNull Set<T> get(@NotNull Vector3i pos) {
     Objects.requireNonNull(pos, "pos");
 
@@ -280,6 +283,7 @@ public class ChunkedMap<T> {
    * @param value The entry to add
    * @return True, if the map changed as a result of this method call, false otherwise
    */
+  @Override
   public boolean add(@NotNull T value, Bounds3i bounds) {
     Objects.requireNonNull(value, "Value");
     Entry<T> existing = entries.get(value);
@@ -342,6 +346,7 @@ public class ChunkedMap<T> {
    * @param point The point to find the nearest to
    * @return The nearest result.
    */
+  @Override
   @SuppressWarnings("unchecked")
   public @NotNull ObjectDoublePair<T> findNearest(@NotNull Vector3d point) {
     Objects.requireNonNull(point);
@@ -387,6 +392,7 @@ public class ChunkedMap<T> {
    * @param value The value to remove
    * @return True, if this map changed as a result of this method call, false otherwise
    */
+  @Override
   public boolean remove(@NotNull T value) {
     Objects.requireNonNull(value);
     Entry<T> entry = entries.remove(value);
@@ -427,6 +433,7 @@ public class ChunkedMap<T> {
   /**
    * Clears this map.
    */
+  @Override
   public void clear() {
     chunkMap.clear();
     totalArea = null;
@@ -439,6 +446,7 @@ public class ChunkedMap<T> {
    *
    * @return This map's size
    */
+  @Override
   public int size() {
     return entries.size();
   }
@@ -448,10 +456,12 @@ public class ChunkedMap<T> {
    *
    * @return True, if this map is empty, false otherwise
    */
+  @Override
   public boolean isEmpty() {
     return entries.isEmpty() || totalArea == null;
   }
 
+  @Override
   public Set<T> values() {
     return Collections.unmodifiableSet(entries.keySet());
   }
