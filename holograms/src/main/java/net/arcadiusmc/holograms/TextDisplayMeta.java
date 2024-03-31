@@ -21,7 +21,7 @@ import org.spongepowered.math.vector.Vector3f;
 
 @Getter @Setter
 @NoArgsConstructor
-public class TextDisplayMeta {
+public class TextDisplayMeta implements HologramMeta {
 
   public static final int DEFAULT_LINE_WIDTH = 200;
   public static final Color DEFAULT_COLOR = Color.fromARGB(0x40000000);
@@ -131,7 +131,10 @@ public class TextDisplayMeta {
     this.opacity = opacity;
   }
 
-  public void copyFrom(TextDisplayMeta meta) {
+  @Override
+  public void copyFrom(HologramMeta metaApi) {
+    TextDisplayMeta meta = (TextDisplayMeta) metaApi;
+
     if (!meta.scale.equals(Vector3f.ONE)) {
       this.scale = meta.scale;
     }
@@ -153,16 +156,19 @@ public class TextDisplayMeta {
     this.opacity = meta.opacity;
   }
 
+  @Override
   public void setScale(Vector3f scale) {
     Objects.requireNonNull(scale, "Null scale");
     this.scale = scale;
   }
 
+  @Override
   public void setTranslation(Vector3f translation) {
     Objects.requireNonNull(translation, "Null translation");
     this.translation = translation;
   }
 
+  @Override
   public void apply(TextDisplay display) {
     if (lineWidth != -1) {
       display.setLineWidth(lineWidth);

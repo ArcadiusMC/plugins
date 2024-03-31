@@ -1,5 +1,6 @@
 package net.arcadiusmc.holograms;
 
+import com.google.common.base.Strings;
 import com.mojang.serialization.Codec;
 import net.arcadiusmc.holograms.Leaderboard.Order;
 import net.arcadiusmc.registry.Holder;
@@ -9,8 +10,8 @@ import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.forthecrown.grenadier.types.IntRangeArgument.IntRange;
 
-public final class LeaderboardCodecs {
-  private LeaderboardCodecs() {}
+public final class HologramCodecs {
+  private HologramCodecs() {}
 
   static final Codec<Holder<LeaderboardSource>> sourceCodec
       = Codec.STRING.comapFlatMap(LeaderboardSources::get, Holder::getKey);
@@ -21,14 +22,20 @@ public final class LeaderboardCodecs {
           IntRange::toString
       );
 
+  static final ExistingObjectCodec<TextImpl> TEXT_CODEC = ExistingObjectCodec.create(builder -> {
+    addFields(builder);
+    builder.optional("text", Codec.STRING)
+        .getter(TextImpl::getText)
+        .setter(TextImpl::setText)
+        .excludeIf(Strings::isNullOrEmpty);
+  });
+
   static final ExistingObjectCodec<BoardImpl> BOARD_CODEC = ExistingObjectCodec.create(builder -> {
+    addFields(builder);
+
     builder.optional("source", sourceCodec)
         .setter((board, o) -> board.source = o)
         .getter(board -> board.source);
-
-    builder.optional("location", ExtraCodecs.LOCATION_CODEC)
-        .getter(BoardImpl::getLocation)
-        .setter(BoardImpl::setLocation);
 
     builder.optional("footer", PlayerMessage.CODEC)
         .excludeIf(m -> m == null || m.getMessage().isEmpty())
@@ -72,18 +79,24 @@ public final class LeaderboardCodecs {
         .getter(BoardImpl::fillMissingSlots)
         .setter(BoardImpl::setFillMissingSlots);
 
-    builder.optional("display_meta", TextDisplayMeta.CODEC)
-        .getter(BoardImpl::getDisplayMeta)
-        .setter(BoardImpl::setDisplayMeta);
-
-    builder.optional("spawned", Codec.BOOL)
-        .excludeIf(aBoolean -> !aBoolean)
-        .getter(BoardImpl::isSpawned)
-        .setter(BoardImpl::setSpawned);
-
     builder.optional("include_you", Codec.BOOL)
         .excludeIf(aBoolean -> !aBoolean)
         .getter(BoardImpl::isIncludeYou)
         .setter(BoardImpl::setIncludeYou);
   });
+
+  static <T extends Hologram> void addFields(ExistingObjectCodec.Builder<T> builder) {
+    builder.optional("spawned", Codec.BOOL)
+        .excludeIf(aBoolean -> !aBoolean)
+        .getter(Hologram::isSpawned)
+        .setter(Hologram::setSpawned);
+
+    builder.optional("display_meta", TextDisplayMeta.CODEC)
+        .getter(Hologram::getDisplayMeta)
+        .setter(Hologram::setDisplayMeta);
+
+    builder.optional("location", ExtraCodecs.LOCATION_CODEC)
+        .getter(Hologram::getLocation)
+        .setter(Hologram::setLocation);
+  }
 }

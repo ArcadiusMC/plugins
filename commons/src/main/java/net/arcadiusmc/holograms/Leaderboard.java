@@ -3,29 +3,16 @@ package net.arcadiusmc.holograms;
 import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.text.PlayerMessage;
 import net.forthecrown.grenadier.types.IntRangeArgument.IntRange;
-import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public interface Leaderboard {
+public interface Leaderboard extends HolographicDisplay {
 
   int DEFAULT_MAX_SIZE = 10;
-
-  boolean update();
-
-  boolean kill();
-
-  boolean spawn();
-
-  boolean isSpawned();
 
   Holder<LeaderboardSource> getSource();
 
   void setSource(Holder<LeaderboardSource> source);
-
-  @Nullable Location getLocation();
-
-  void setLocation(@Nullable Location location);
 
   @Nullable
   PlayerMessage getFooter();

@@ -6,14 +6,14 @@ import static net.arcadiusmc.BukkitServices.loadOrThrow;
 import java.util.function.Consumer;
 import net.arcadiusmc.registry.Registry;
 
-public final class Leaderboards {
-  private Leaderboards() {}
+public final class Holograms {
+  private Holograms() {}
 
-  static LeaderboardService service;
+  static HologramService service;
 
-  public static LeaderboardService getService() {
+  public static HologramService getService() {
     return service == null
-        ? (service = loadOrThrow(LeaderboardService.class))
+        ? (service = loadOrThrow(HologramService.class))
         : service;
   }
 
@@ -30,20 +30,20 @@ public final class Leaderboards {
     });
   }
 
-  public static void ifLoaded(Consumer<LeaderboardService> consumer) {
+  public static void ifLoaded(Consumer<HologramService> consumer) {
     if (service != null) {
       consumer.accept(service);
       return;
     }
 
-    load(LeaderboardService.class).ifPresent(leaderboardService -> {
-      service = leaderboardService;
+    load(HologramService.class).ifPresent(hologramService -> {
+      service = hologramService;
       consumer.accept(service);
     });
   }
 
-  public static void setService(LeaderboardService service) {
-    Leaderboards.service = service;
+  public static void setService(HologramService service) {
+    Holograms.service = service;
   }
 
   public static Registry<LeaderboardSource> getSources() {

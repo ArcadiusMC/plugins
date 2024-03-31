@@ -4,8 +4,8 @@ import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.holograms.HologramPlugin;
 import net.forthecrown.grenadier.annotations.AnnotatedCommandContext;
 
-public final class LeaderboardCommands {
-  private LeaderboardCommands() {}
+public final class HologramCommands {
+  private HologramCommands() {}
 
   public static void createCommands(HologramPlugin plugin) {
     AnnotatedCommandContext ctx = Commands.createAnnotationContext();

@@ -21,8 +21,8 @@ public class BoardRenderTriggers {
 
   private final HologramPlugin plugin;
 
-  private final WorldChunkMap<BoardImpl> chunkMap;
-  private final CollisionSystem<Player, BoardImpl> system;
+  private final WorldChunkMap<Hologram> chunkMap;
+  private final CollisionSystem<Player, Hologram> system;
 
   public BoardRenderTriggers(HologramPlugin plugin) {
     this.plugin = plugin;
@@ -45,7 +45,7 @@ public class BoardRenderTriggers {
     return Bounds3i.of(Vector3i.ZERO, radius);
   }
 
-  public void onAdded(BoardImpl board) {
+  public void onAdded(Hologram board) {
     var loc = board.location;
     if (loc == null) {
       return;
@@ -55,7 +55,7 @@ public class BoardRenderTriggers {
     chunkMap.add(loc.getWorld(), bounds, board);
   }
 
-  public void onRemoved(BoardImpl board) {
+  public void onRemoved(Hologram board) {
     var loc = board.location;
 
     if (loc == null) {
@@ -70,7 +70,7 @@ public class BoardRenderTriggers {
     chunkMap.remove(world, board);
   }
 
-  public void onLocationSet(BoardImpl board, Location newLocation) {
+  public void onLocationSet(Hologram board, Location newLocation) {
     Location loc = board.getLocation();
     if (loc != null) {
       chunkMap.remove(loc.getWorld(), board);
@@ -99,14 +99,14 @@ public class BoardRenderTriggers {
       return;
     }
 
-    for (BoardImpl board : overlapping) {
+    for (Hologram board : overlapping) {
       system.getListener().onEnter(player, board);
     }
   }
 
-  public void onUpdate(BoardImpl board) {
+  public void onUpdate(Hologram board) {
     var loc = board.getLocation();
-    var opt = board.getDisplay();
+    var opt = board.getEntity();
 
     if (loc == null || opt.isEmpty()) {
       return;
@@ -121,7 +121,7 @@ public class BoardRenderTriggers {
     }
   }
 
-  private class BoardCollisionListener implements CollisionListener<Player, BoardImpl> {
+  private class BoardCollisionListener implements CollisionListener<Player, Hologram> {
 
     PacketListeners packets;
 
@@ -130,22 +130,22 @@ public class BoardRenderTriggers {
     }
 
     @Override
-    public void onEnter(Player source, BoardImpl board) {
-      board.getDisplay().ifPresent(display -> {
+    public void onEnter(Player source, Hologram board) {
+      board.getEntity().ifPresent(display -> {
         Component renderedText = board.renderText(source);
         packets.setEntityDisplay(display, source, renderedText);
       });
     }
 
     @Override
-    public void onExit(Player source, BoardImpl board) {
-      board.getDisplay().ifPresent(display -> {
+    public void onExit(Player source, Hologram board) {
+      board.getEntity().ifPresent(display -> {
         packets.setEntityDisplay(display, source, null);
       });
     }
 
     @Override
-    public void onMoveInside(Player source, BoardImpl board) {
+    public void onMoveInside(Player source, Hologram board) {
       // No op
     }
   }

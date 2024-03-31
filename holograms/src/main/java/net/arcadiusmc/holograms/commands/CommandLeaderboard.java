@@ -16,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.Exceptions;
+import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.arguments.chat.MessageSuggestions;
 import net.arcadiusmc.holograms.BoardImpl;
 import net.arcadiusmc.holograms.Leaderboard.Order;
@@ -81,7 +82,7 @@ public class CommandLeaderboard {
   void initVars(Map<String, Object> vars) {
     vars.put("lb", new LeaderboardArgument(service));
     vars.put("source", new SourceArgument(service));
-    vars.put("color", new ColorArgument());
+    vars.put("color", Arguments.COLOR);
     vars.put("filter", ArgumentTypes.intRange());
     vars.put("alignment", ArgumentTypes.enumType(TextAlignment.class));
     vars.put("billboard", ArgumentTypes.enumType(Billboard.class));

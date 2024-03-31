@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import lombok.Getter;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.registry.Holder;
@@ -25,24 +26,30 @@ import net.arcadiusmc.utils.io.SerializationHelper;
 import org.slf4j.Logger;
 
 @Getter
-public class ServiceImpl implements LeaderboardService {
+public class ServiceImpl implements HologramService {
 
   private static final Logger LOGGER = Loggers.getLogger();
 
-  private final Path path;
+  private final Path leaderboardsFile;
+  private final Path hologramsFile;
 
   private final Map<String, BoardImpl> boards = new Object2ObjectOpenHashMap<>();
+  private final Map<String, TextImpl> texts = new Object2ObjectOpenHashMap<>();
 
   private final BoardRenderTriggers triggers;
 
   public ServiceImpl(HologramPlugin plugin) {
-    this.path = plugin.getDataFolder().toPath().resolve("leaderboards.json");
+    Path pluginDir = plugin.getDataFolder().toPath();
+
+    this.leaderboardsFile = pluginDir.resolve("leaderboards.json");
+    this.hologramsFile = pluginDir.resolve("holograms.json");
+
     this.triggers = new BoardRenderTriggers(plugin);
   }
 
   public void createDefaultSources() {
     UserService service = Users.getService();
-    var registry = getSources();
+    Registry<LeaderboardSource> registry = getSources();
 
     registry.register("rhines", new ScoreMapSource(service.getBalances()));
     registry.register("gems", new ScoreMapSource(service.getGems()));
@@ -57,25 +64,55 @@ public class ServiceImpl implements LeaderboardService {
   }
 
   public void save() {
-    SerializationHelper.writeJsonFile(path, this::saveTo);
+    SerializationHelper.writeJsonFile(leaderboardsFile, this::saveLeaderboardsTo);
+    SerializationHelper.writeJsonFile(hologramsFile, this::saveHologramsTo);
   }
 
   public void load() {
-    SerializationHelper.readAsJson(path, this::loadFrom);
+    clear();
+
+    SerializationHelper.readAsJson(leaderboardsFile, this::loadLeaderboardsFrom);
+    SerializationHelper.readAsJson(hologramsFile, this::loadHologramsFrom);
   }
 
-  private void saveTo(JsonWrapper json) {
+  private void saveHologramsTo(JsonWrapper json) {
+    texts.forEach((key, text) -> {
+      HologramCodecs.TEXT_CODEC.encode(JsonOps.INSTANCE, text)
+          .mapError(s -> "Failed to save hologram '" + key + "': " + s)
+          .resultOrPartial(LOGGER::error)
+          .ifPresent(jsonElement -> json.add(key, jsonElement));
+    });
+  }
+
+  private void loadHologramsFrom(JsonObject json) {
+    for (Entry<String, JsonElement> entry : json.entrySet()) {
+      String key = entry.getKey();
+      JsonElement element = entry.getValue();
+
+      if (!element.isJsonObject()) {
+        LOGGER.error("Can't load hologram '{}': Not a JSON object", key);
+        continue;
+      }
+
+      TextImpl text = new TextImpl(key);
+
+      HologramCodecs.TEXT_CODEC.decode(JsonOps.INSTANCE, element, text)
+          .mapError(s -> "Failed to load hologram '" + text + "': " + s)
+          .resultOrPartial(LOGGER::error)
+          .ifPresent(this::addHologram);
+    }
+  }
+
+  private void saveLeaderboardsTo(JsonWrapper json) {
     boards.forEach((key, board) -> {
-      LeaderboardCodecs.BOARD_CODEC.encode(JsonOps.INSTANCE, board)
+      HologramCodecs.BOARD_CODEC.encode(JsonOps.INSTANCE, board)
           .mapError(s -> "Failed to save leaderboard '" + key + "': " + s)
           .resultOrPartial(LOGGER::error)
           .ifPresent(element -> json.add(key, element));
     });
   }
 
-  private void loadFrom(JsonObject jsonWrapper) {
-    clear();
-
+  private void loadLeaderboardsFrom(JsonObject jsonWrapper) {
     for (Entry<String, JsonElement> entry : jsonWrapper.entrySet()) {
       String key = entry.getKey();
       JsonElement element = entry.getValue();
@@ -87,7 +124,7 @@ public class ServiceImpl implements LeaderboardService {
 
       BoardImpl board = new BoardImpl(key);
 
-      LeaderboardCodecs.BOARD_CODEC.decode(JsonOps.INSTANCE, element, board)
+      HologramCodecs.BOARD_CODEC.decode(JsonOps.INSTANCE, element, board)
           .mapError(s -> "Failed to load leaderboard '" + s + "': " + s)
           .resultOrPartial(LOGGER::error)
           .ifPresent(this::addLeaderboard);
@@ -104,6 +141,11 @@ public class ServiceImpl implements LeaderboardService {
     return Optional.ofNullable(boards.get(name));
   }
 
+  @Override
+  public Optional<TextHologram> getHologram(String name) {
+    return Optional.ofNullable(texts.get(name));
+  }
+
   // Returns non-API version of leaderboard
   public Optional<BoardImpl> getBoard(String name) {
     return Optional.ofNullable(boards.get(name));
@@ -111,34 +153,68 @@ public class ServiceImpl implements LeaderboardService {
 
   @Override
   public Result<Leaderboard> createLeaderboard(String name) {
+    return create(name, boards, BoardImpl::new).map(board -> board);
+  }
+
+  @Override
+  public Result<TextHologram> createHologram(String name) {
+    return create(name, texts, TextImpl::new).map(text -> text);
+  }
+
+  private <T extends Hologram> Result<T> create(
+      String name,
+      Map<String, T> map,
+      Function<String, T> ctor
+  ) {
     if (Strings.isNullOrEmpty(name)) {
       return Result.error("Null/blank name");
     }
     if (!Registries.isValidKey(name)) {
       return Result.error("Invalid key, must match pattern %s", Registries.VALID_KEY_REGEX);
     }
-    if (boards.containsKey(name)) {
+    if (map.containsKey(name)) {
       return Result.error("Name already in use");
     }
 
-    BoardImpl board = new BoardImpl(name);
-    addLeaderboard(board);
+    T value = ctor.apply(name);
+    add(value, map);
 
-    return Result.success(board);
+    return Result.success(value);
   }
 
   public void addLeaderboard(BoardImpl board) {
-    Objects.requireNonNull(board.getName(), "Boards name is null when adding");
-    boards.put(board.getName(), board);
-    board.service = this;
+    add(board, boards);
+  }
 
-    triggers.onAdded(board);
-    board.update();
+  public void addHologram(TextImpl text) {
+    add(text, texts);
+  }
+
+  private <T extends Hologram> void add(T value, Map<String, T> map) {
+    String name = value.getName();
+    Objects.requireNonNull(name, "Boards name is null when adding");
+
+    map.put(name, value);
+    value.service = this;
+
+    triggers.onAdded(value);
+    value.update();
   }
 
   @Override
   public boolean removeLeaderboard(String name) {
-    var removed = boards.remove(name);
+    return remove(name, boards);
+  }
+
+  @Override
+  public boolean removeHologram(String name) {
+    return remove(name, texts);
+  }
+
+  private boolean remove(String name, Map<String, ? extends Hologram> map) {
+    Objects.requireNonNull(name, "Null name");
+
+    Hologram removed = map.remove(name);
     if (removed == null) {
       return false;
     }
@@ -152,12 +228,17 @@ public class ServiceImpl implements LeaderboardService {
   }
 
   public void clear() {
-    boards.forEach((s, board) -> {
-      board.kill();
-      board.service = null;
-    });
-    boards.clear();
+    clearMap(boards);
+    clearMap(texts);
     triggers.clear();
+  }
+
+  private void clearMap(Map<String, ? extends Hologram> map) {
+    map.forEach((s, text) -> {
+      text.kill();
+      text.service = null;
+    });
+    map.clear();
   }
 
   @Override
@@ -174,5 +255,10 @@ public class ServiceImpl implements LeaderboardService {
   @Override
   public Set<String> getExistingLeaderboards() {
     return Collections.unmodifiableSet(boards.keySet());
+  }
+
+  @Override
+  public Set<String> getExistingHolograms() {
+    return Collections.unmodifiableSet(texts.keySet());
   }
 }
