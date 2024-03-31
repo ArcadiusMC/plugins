@@ -43,7 +43,7 @@ public class FunctionInfo {
       FUNCTION_CMD_PREFIX = "function_build";
 
   private static final ArgumentOption<String> FUNC_ARG
-      = Options.argument(Arguments.FTC_KEY)
+      = Options.argument(Arguments.RESOURCE_KEY)
       .setLabel(FUNCTION_CMD_PREFIX)
       .build();
 

@@ -1,7 +1,6 @@
 package net.arcadiusmc.structure;
 
 import java.util.Random;
-import lombok.experimental.UtilityClass;
 import net.arcadiusmc.structure.BlockRotProcessor.IntegrityProvider;
 import net.arcadiusmc.utils.VanillaAccess;
 import net.arcadiusmc.utils.math.Transform;
@@ -13,25 +12,25 @@ import org.spongepowered.math.vector.Vector3i;
 /**
  * Utility class for methods and constants related to {@link BlockProcessor}s
  */
-public @UtilityClass class BlockProcessors {
+public final class BlockProcessors {
   /* ----------------------------- CONSTANTS ------------------------------ */
 
   /**
    * A block processor which will either return the original block's data or the data of the
    * previous processor, depending on if the previous result was null or not
    */
-  public final BlockProcessor NON_NULL_PROCESSOR = new NonNullProcessor();
+  public static final BlockProcessor NON_NULL_PROCESSOR = new NonNullProcessor();
 
   /**
    * A processor which rotates every given block, according to a given
    * {@link StructurePlaceConfig}'s rotation value
    */
-  public final BlockProcessor ROTATION_PROCESSOR = new RotationProcessor();
+  public static final BlockProcessor ROTATION_PROCESSOR = new RotationProcessor();
 
   /**
    * Block processor which will ignore all air blocks and not place them
    */
-  public final BlockProcessor IGNORE_AIR = new IgnoreAirProcessor();
+  public static final BlockProcessor IGNORE_AIR = new IgnoreAirProcessor();
 
   /* ----------------------------- FACTORIES ------------------------------ */
 
@@ -40,32 +39,32 @@ public @UtilityClass class BlockProcessors {
   }
 
   public static BlockRotProcessor rot(IntegrityProvider provider,
-                                      Random random
+      Random random
   ) {
     return new BlockRotProcessor(provider, random);
   }
 
   /* ---------------------------- SUB CLASSES ----------------------------- */
 
-  private class NonNullProcessor implements BlockProcessor {
+  private static class NonNullProcessor implements BlockProcessor {
 
     @Override
     public @Nullable BlockInfo process(@NotNull BlockInfo original,
-                                       @Nullable BlockInfo previous,
-                                       @NotNull StructurePlaceConfig context,
-                                       Mutable<Vector3i> position
+        @Nullable BlockInfo previous,
+        @NotNull StructurePlaceConfig context,
+        Mutable<Vector3i> position
     ) {
       return previous == null ? original : previous;
     }
   }
 
-  private class IgnoreAirProcessor implements BlockProcessor {
+  private static class IgnoreAirProcessor implements BlockProcessor {
 
     @Override
     public @Nullable BlockInfo process(@NotNull BlockInfo original,
-                                       @Nullable BlockInfo previous,
-                                       @NotNull StructurePlaceConfig config,
-                                       Mutable<Vector3i> position
+        @Nullable BlockInfo previous,
+        @NotNull StructurePlaceConfig config,
+        Mutable<Vector3i> position
     ) {
       if (previous == null) {
         return null;
@@ -79,13 +78,13 @@ public @UtilityClass class BlockProcessors {
     }
   }
 
-  private class RotationProcessor implements BlockProcessor {
+  private static class RotationProcessor implements BlockProcessor {
 
     @Override
     public @Nullable BlockInfo process(@NotNull BlockInfo original,
-                                       @Nullable BlockInfo previous,
-                                       @NotNull StructurePlaceConfig context,
-                                       Mutable<Vector3i> position
+        @Nullable BlockInfo previous,
+        @NotNull StructurePlaceConfig context,
+        Mutable<Vector3i> position
     ) {
       if (previous == null
           || context.getTransform() == null

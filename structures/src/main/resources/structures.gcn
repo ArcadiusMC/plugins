@@ -1,6 +1,6 @@
 name = "ftc-structures"
 description = "FTC structures command"
-aliases "ftc_struct" | "struct" | "structures"
+aliases = "ftc_struct" | "struct" | "structures"
 
 literal("create").argument("name", ftc_key) {
   argument("options", @create_options) {

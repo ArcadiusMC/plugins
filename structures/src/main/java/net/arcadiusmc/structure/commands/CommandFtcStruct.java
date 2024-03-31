@@ -16,15 +16,25 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
-import net.arcadiusmc.Permissions;
 import net.arcadiusmc.WorldEditHook;
+import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.DataCommands;
 import net.arcadiusmc.command.DataCommands.DataAccessor;
 import net.arcadiusmc.command.Exceptions;
-import net.arcadiusmc.command.FtcCommand;
 import net.arcadiusmc.command.arguments.Arguments;
-import net.arcadiusmc.command.arguments.FtcKeyArgument;
+import net.arcadiusmc.command.arguments.ResourceKeyArgument;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.registry.Holder;
+import net.arcadiusmc.structure.BlockProcessors;
+import net.arcadiusmc.structure.BlockStructure;
+import net.arcadiusmc.structure.StructureFillConfig;
+import net.arcadiusmc.structure.StructurePlaceConfig;
+import net.arcadiusmc.structure.Structures;
+import net.arcadiusmc.text.Text;
+import net.arcadiusmc.utils.math.AreaSelection;
+import net.arcadiusmc.utils.math.Rotation;
+import net.arcadiusmc.utils.math.Transform;
+import net.arcadiusmc.utils.math.Vectors;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Completions;
 import net.forthecrown.grenadier.GrenadierCommand;
@@ -37,17 +47,6 @@ import net.forthecrown.grenadier.types.options.Options;
 import net.forthecrown.grenadier.types.options.OptionsArgument;
 import net.forthecrown.grenadier.types.options.ParsedOptions;
 import net.forthecrown.nbt.CompoundTag;
-import net.arcadiusmc.registry.Holder;
-import net.arcadiusmc.structure.BlockProcessors;
-import net.arcadiusmc.structure.BlockStructure;
-import net.arcadiusmc.structure.StructureFillConfig;
-import net.arcadiusmc.structure.StructurePlaceConfig;
-import net.arcadiusmc.structure.Structures;
-import net.arcadiusmc.text.Text;
-import net.arcadiusmc.utils.math.AreaSelection;
-import net.arcadiusmc.utils.math.Rotation;
-import net.arcadiusmc.utils.math.Transform;
-import net.arcadiusmc.utils.math.Vectors;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -59,7 +58,7 @@ import org.spongepowered.math.vector.Vector3d;
 import org.spongepowered.math.vector.Vector3i;
 
 @SuppressWarnings("unchecked")
-public class CommandFtcStruct extends FtcCommand {
+public class CommandFtcStruct extends BaseCommand {
   /* ----------------------------- CREATION ARGUMENTS ------------------------------ */
 
   private static final ArgumentOption<List<EntityType>> IGNORE_ENT_ARG
@@ -161,7 +160,6 @@ public class CommandFtcStruct extends FtcCommand {
     super("FtcStruct");
 
     setAliases("ftcstructure", "structure", "struct");
-    setPermission(Permissions.ADMIN);
     setDescription("Command to place, create and manage FTC structures");
 
     register();
@@ -263,7 +261,7 @@ public class CommandFtcStruct extends FtcCommand {
         }))
 
         .then(literal("create")
-            .then(argument("name", Arguments.FTC_KEY)
+            .then(argument("name", Arguments.RESOURCE_KEY)
                 .executes(c -> create(c, EMPTY))
 
                 .then(argument("args", FILL_ARGS)
@@ -421,7 +419,7 @@ public class CommandFtcStruct extends FtcCommand {
     var registry = Structures.get().getRegistry();
 
     if (registry.contains(key)) {
-      throw Exceptions.alreadyExists("Structure", key);
+      throw Exceptions.format("Structure named '{0}' already exists", key);
     }
 
     BlockStructure structure = new BlockStructure();
@@ -441,7 +439,7 @@ public class CommandFtcStruct extends FtcCommand {
                     ParsedOptions args
   ) throws CommandSyntaxException {
     Player player = c.getSource().asPlayer();
-    AreaSelection selection = WorldEditHook.hook().getSelectedBlocks(player);
+    AreaSelection selection = WorldEditHook.getSelectedBlocks(player);
 
     if (selection == null) {
       throw Exceptions.NO_REGION_SELECTION;
@@ -531,7 +529,7 @@ public class CommandFtcStruct extends FtcCommand {
     }
   }
 
-  private static class PaletteParser extends FtcKeyArgument {
+  private static class PaletteParser extends ResourceKeyArgument {
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context,

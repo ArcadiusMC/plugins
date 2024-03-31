@@ -1,10 +1,10 @@
 package net.arcadiusmc.structure.commands;
 
-import net.arcadiusmc.command.FtcCommand;
-import net.forthecrown.grenadier.GrenadierCommand;
+import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.structure.FunctionInfo;
+import net.forthecrown.grenadier.GrenadierCommand;
 
-public class CommandStructFunction extends FtcCommand {
+public class CommandStructFunction extends BaseCommand {
 
   public static final String COMMAND_NAME = "StructFunction";
 

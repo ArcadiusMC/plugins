@@ -18,10 +18,7 @@ public class ImmediateBlockBuffer implements BlockBuffer {
   }
 
   @Override
-  public CompletableFuture<Void> place(World world,
-                                       Transform transform,
-                                       boolean updatePhysics
-  ) {
+  public CompletableFuture<Void> place(World world, Transform transform, boolean updatePhysics) {
     return CompletableFuture.completedFuture(null);
   }
 

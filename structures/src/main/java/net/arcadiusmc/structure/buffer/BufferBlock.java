@@ -20,19 +20,11 @@ public record BufferBlock(BlockData data, CompoundTag tag) {
     }
   }
 
-  @Override
-  public CompoundTag tag() {
-    return tag == null ? null : tag.copy();
-  }
-
   public void applyTo(Block block, boolean update) {
     block.setBlockData(data, update);
     var state = block.getState();
 
-    if (state instanceof TileState tile
-        && tag != null
-        && !tag.isEmpty()
-    ) {
+    if (state instanceof TileState tile && tag != null && !tag.isEmpty()) {
       PaperNbt.loadBlockEntity(tile, tag);
       tile.update(true, update);
     }

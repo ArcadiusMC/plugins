@@ -32,7 +32,7 @@ public class BlockRotProcessor implements BlockProcessor {
       return null;
     }
 
-    var pos = config.getTransform().apply(position.getValue());
+    Vector3i pos = config.getTransform().apply(position.getValue());
     double rotLevel = integrityProvider.getIntegrity(pos);
 
     if (random.nextFloat() > rotLevel) {

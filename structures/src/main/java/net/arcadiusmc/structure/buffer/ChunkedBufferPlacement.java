@@ -28,10 +28,11 @@ class ChunkedBufferPlacement implements Runnable {
   private long sectionsScheduled = 0;
   private long sectionsPlaced = 0;
 
-  public ChunkedBufferPlacement(World world,
-                                ChunkedBlockBuffer buffer,
-                                Transform transform,
-                                boolean updatePhysics
+  public ChunkedBufferPlacement(
+      World world,
+      ChunkedBlockBuffer buffer,
+      Transform transform,
+      boolean updatePhysics
   ) {
     this.buffer = Objects.requireNonNull(buffer);
     this.world = Objects.requireNonNull(world);

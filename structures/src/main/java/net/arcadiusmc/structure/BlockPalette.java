@@ -25,11 +25,10 @@ import org.spongepowered.math.vector.Vector3i;
 public class BlockPalette {
   /* ----------------------------- CONSTANTS ------------------------------ */
 
-  public static final String
-      TAG_ENTITIES = "entities",
-      TAG_POS_LIST = "positions",
-      TAG_BLOCKS = "blocks",
-      TAG_SIZE = "size";
+  public static final String TAG_ENTITIES = "entities";
+  public static final String TAG_POS_LIST = "positions";
+  public static final String TAG_BLOCKS = "blocks";
+  public static final String TAG_SIZE = "size";
 
   /* ----------------------------- INSTANCE FIELDS ------------------------------ */
 
