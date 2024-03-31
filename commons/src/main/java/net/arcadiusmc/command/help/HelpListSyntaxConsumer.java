@@ -1,6 +1,6 @@
 package net.arcadiusmc.command.help;
 
-import static net.arcadiusmc.command.help.AbstractHelpEntry.packageNameToCategory;
+import static net.arcadiusmc.command.help.CommandHelpEntry.packageNameToCategory;
 
 import com.google.common.base.Joiner;
 import java.util.Collection;
@@ -20,13 +20,14 @@ public class HelpListSyntaxConsumer implements SyntaxConsumer {
   private static final Logger LOGGER = Loggers.getLogger();
 
   @Override
-  public void accept(GrenadierCommandNode node,
-                     Object command,
-                     String argument,
-                     Component info,
-                     @Nullable Predicate<CommandSource> condition
+  public void accept(
+      GrenadierCommandNode node,
+      Object command,
+      String argument,
+      Component info,
+      @Nullable Predicate<CommandSource> condition
   ) {
-    var helpMap = ArcadiusHelpList.helpList();
+    ArcadiusHelpList helpMap = ArcadiusHelpList.helpList();
     Collection<HelpEntry> entries = helpMap.getEntries(node.getLiteral());
 
     if (entries.size() > 1) {
@@ -40,19 +41,19 @@ public class HelpListSyntaxConsumer implements SyntaxConsumer {
       return;
     }
 
-    AnnotatedHelpEntry entry;
+    CommandHelpEntry entry;
     boolean addAfter;
 
     if (entries.isEmpty()) {
-      entry = new AnnotatedHelpEntry(node);
+      entry = new CommandHelpEntry();
       addAfter = true;
     } else {
-      var helpEntry = entries.iterator().next();
+      HelpEntry helpEntry = entries.iterator().next();
 
-      if (!(helpEntry instanceof AnnotatedHelpEntry annotated)) {
+      if (!(helpEntry instanceof CommandHelpEntry found)) {
         LOGGER.warn(
             "Cannot add usage info to command '{}' existing help entry is "
-                + "not an annotated command entry",
+                + "not a command entry",
 
             node.getLiteral()
         );
@@ -60,7 +61,7 @@ public class HelpListSyntaxConsumer implements SyntaxConsumer {
         return;
       }
 
-      entry = annotated;
+      entry = found;
       addAfter = false;
     }
 
@@ -69,6 +70,10 @@ public class HelpListSyntaxConsumer implements SyntaxConsumer {
     String category = packageNameToCategory(command.getClass().getPackageName());
 
     entry.setCategory(category);
+    entry.setLabel(node.getLiteral());
+    entry.setDescription(node.description());
+    entry.setAliases(node.getAliases());
+    entry.setPermission(node.getPermission());
 
     args = ArrayUtils.remove(args, 0);
     String newArgument = Joiner.on(' ').join(args);

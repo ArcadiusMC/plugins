@@ -15,6 +15,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectIntPair;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -41,6 +42,7 @@ import net.arcadiusmc.utils.io.SerializationHelper;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Completions;
 import net.forthecrown.grenadier.Grenadier;
+import net.kyori.adventure.text.Component;
 import org.slf4j.Logger;
 
 public class HelpListImpl implements ArcadiusHelpList {
@@ -67,7 +69,7 @@ public class HelpListImpl implements ArcadiusHelpList {
   }
 
   public HelpListImpl() {
-    this.topicsFile = PathUtil.pluginPath("help_topics.yml");
+    this.topicsFile = PathUtil.pluginPath("help-topics.yml");
     this.usagesFile = PathUtil.pluginPath("extra-command-help.yml");
   }
 
@@ -242,7 +244,13 @@ public class HelpListImpl implements ArcadiusHelpList {
         return;
       }
 
-      CommandHelpEntry entry = new CommandHelpEntry(command);
+      CommandHelpEntry entry = new CommandHelpEntry();
+      entry.setLabel(command.getHelpListName());
+      entry.setAliases(command.getAliases());
+      entry.setDescription(Component.text(command.getDescription()));
+      entry.setPermission(command.getPermission());
+      entry.setCategory(CommandHelpEntry.packageNameToCategory(command.getClass().getPackageName()));
+      entry.setUsages(new ArrayList<>());
 
       UsageFactory factory = arguments -> {
         Usage usage = new Usage(arguments);
@@ -277,7 +285,7 @@ public class HelpListImpl implements ArcadiusHelpList {
   private void clearDynamicallyLoaded() {
     entries.removeIf(entry -> {
       return entry instanceof LoadedHelpEntry
-          || entry instanceof LoadedCommandEntry;
+          || entry instanceof CommandEntryLoader;
     });
 
     existingCommands.values().removeIf(cmd -> cmd instanceof LoadedEntryCommand);
@@ -299,7 +307,7 @@ public class HelpListImpl implements ArcadiusHelpList {
   public void load() {
     clearDynamicallyLoaded();
 
-    PluginJar.saveResources("help_topics.yml");
+    PluginJar.saveResources("help-topics.yml");
     PluginJar.saveResources("extra-command-help.yml");
 
     SerializationHelper.readAsJson(topicsFile, this::loadHelpEntriesFrom);
@@ -307,12 +315,12 @@ public class HelpListImpl implements ArcadiusHelpList {
   }
 
   private void loadCommandEntriesFrom(JsonObject obj) {
-    LoadedCommandEntry.MAP_CODEC.parse(JsonOps.INSTANCE, obj)
+    CommandEntryLoader.MAP_CODEC.parse(JsonOps.INSTANCE, obj)
         .mapError(string -> "Failed to load extra command help info: " + string)
         .resultOrPartial(LOGGER::error)
         .ifPresent(map -> {
-          for (Entry<String, LoadedCommandEntry> entry : map.entrySet()) {
-            LoadedCommandEntry loaded = entry.getValue();
+          for (Entry<String, CommandHelpEntry> entry : map.entrySet()) {
+            CommandHelpEntry loaded = entry.getValue();
             String key = entry.getKey();
 
             if (key.equals("example")) {

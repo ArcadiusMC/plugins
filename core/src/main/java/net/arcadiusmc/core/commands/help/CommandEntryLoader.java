@@ -1,6 +1,5 @@
 package net.arcadiusmc.core.commands.help;
 
-import com.google.common.base.Strings;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -8,17 +7,14 @@ import java.util.List;
 import java.util.Map;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import net.arcadiusmc.command.help.AbstractHelpEntry;
-import net.arcadiusmc.command.help.CommandDisplayInfo;
+import net.arcadiusmc.command.help.CommandHelpEntry;
 import net.arcadiusmc.command.help.Usage;
 import net.arcadiusmc.utils.io.ExtraCodecs;
-import net.forthecrown.grenadier.CommandSource;
 import net.kyori.adventure.text.Component;
 
 @Getter
 @RequiredArgsConstructor
-class LoadedCommandEntry extends AbstractHelpEntry {
+class CommandEntryLoader {
 
   private static final Codec<String[]> INFO_CODEC
       = Codec.either(Codec.STRING, ExtraCodecs.arrayOf(Codec.STRING, String.class))
@@ -57,62 +53,35 @@ class LoadedCommandEntry extends AbstractHelpEntry {
         });
   });
 
-  private static final Codec<LoadedCommandEntry> CODEC = RecordCodecBuilder.create(instance -> {
+  private static final Codec<CommandHelpEntry> CODEC = RecordCodecBuilder.create(instance -> {
     return instance
         .group(
             Codec.STRING.listOf().optionalFieldOf("aliases", List.of())
-                .forGetter(o -> o.aliases),
+                .forGetter(CommandHelpEntry::getAliases),
 
             ExtraCodecs.COMPONENT.optionalFieldOf("description", Component.empty())
-                .forGetter(o -> o.description),
+                .forGetter(CommandHelpEntry::getDescription),
 
             Codec.STRING.optionalFieldOf("permission", "")
-                .forGetter(o -> o.permission),
+                .forGetter(CommandHelpEntry::getPermission),
 
             Codec.STRING.optionalFieldOf("category", "general")
-                .forGetter(o -> o.category),
+                .forGetter(CommandHelpEntry::getCategory),
 
             USAGE_CODEC.listOf().optionalFieldOf("usages", List.of())
-                .forGetter(o -> o.usages)
+                .forGetter(CommandHelpEntry::getUsages)
         )
-        .apply(instance, LoadedCommandEntry::new);
+        .apply(instance, (aliases, desc, permission, category, usages) -> {
+          CommandHelpEntry entry = new CommandHelpEntry();
+          entry.setAliases(aliases);
+          entry.setDescription(desc);
+          entry.setPermission(permission);
+          entry.setCategory(category);
+          entry.setUsages(usages);
+          return entry;
+        });
   });
 
-  static final Codec<Map<String, LoadedCommandEntry>> MAP_CODEC
+  static final Codec<Map<String, CommandHelpEntry>> MAP_CODEC
       = Codec.unboundedMap(Codec.STRING, CODEC);
-
-  private final List<String> aliases;
-  private final Component description;
-  private final String permission;
-  private final String category;
-  private final List<Usage> usages;
-
-  @Setter
-  private String label;
-
-  @Override
-  public CommandDisplayInfo createDisplay() {
-    return new CommandDisplayInfo(
-        label,
-        permission,
-        description,
-        source -> true,
-        usages,
-        aliases,
-        category
-    );
-  }
-
-  @Override
-  public String getCategory() {
-    return category;
-  }
-
-  @Override
-  public boolean test(CommandSource source) {
-    if (Strings.isNullOrEmpty(permission)) {
-      return true;
-    }
-    return source.hasPermission(permission);
-  }
 }
