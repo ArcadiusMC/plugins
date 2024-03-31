@@ -22,7 +22,7 @@ import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.core.CoreConfig;
 import net.arcadiusmc.core.CorePlugin;
 import net.arcadiusmc.core.user.PropertyImpl.BuilderImpl;
-import net.arcadiusmc.holograms.Leaderboards;
+import net.arcadiusmc.holograms.Holograms;
 import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.registry.Registries;
 import net.arcadiusmc.registry.Registry;
@@ -255,8 +255,8 @@ public class UserServiceImpl implements UserService {
       playtime.add(user.getUniqueId(), seconds);
       monthlyPlaytime.add(user.getUniqueId(), seconds);
 
-      Leaderboards.updateWithSource("playtime/total");
-      Leaderboards.updateWithSource("playtime/monthly");
+      Holograms.updateWithSource("playtime/total");
+      Holograms.updateWithSource("playtime/monthly");
     });
 
     LOGGER.debug("calling unloadUser on onUserLeave");
