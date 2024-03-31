@@ -7,12 +7,13 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.arcadiusmc.command.Exceptions;
+import net.arcadiusmc.text.Text;
+import net.arcadiusmc.text.placeholder.OptionedPlaceholder;
+import net.arcadiusmc.text.placeholder.PlaceholderContext;
 import net.forthecrown.grenadier.types.options.ArgumentOption;
 import net.forthecrown.grenadier.types.options.Options;
 import net.forthecrown.grenadier.types.options.OptionsArgument;
 import net.forthecrown.grenadier.types.options.ParsedOptions;
-import net.arcadiusmc.text.placeholder.OptionedPlaceholder;
-import net.arcadiusmc.text.placeholder.PlaceholderContext;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -92,7 +93,7 @@ class ComponentPlaceholder extends OptionedPlaceholder {
 
   @Override
   public @Nullable Component render(ParsedOptions options, PlaceholderContext render) {
-    Style style = loadStyle(options);
+    Style style = loadStyle(options, render);
 
     if (options.has(TEXT)) {
       return text(options.getValue(TEXT), style);
@@ -113,7 +114,7 @@ class ComponentPlaceholder extends OptionedPlaceholder {
     return null;
   }
 
-  private Style loadStyle(ParsedOptions options) {
+  private Style loadStyle(ParsedOptions options, PlaceholderContext context) {
     var builder = Style.style();
 
     options.getValueOptional(COLOR).ifPresent(builder::color);
@@ -155,7 +156,9 @@ class ComponentPlaceholder extends OptionedPlaceholder {
     });
 
     options.getValueOptional(HOVER).ifPresent(string -> {
-      builder.hoverEvent(text(string));
+      Component component = Text.valueOf(string, context.viewer());
+      component = context.renderer().render(component, context.viewer(), context.context());
+      builder.hoverEvent(component);
     });
 
     return builder.build();
