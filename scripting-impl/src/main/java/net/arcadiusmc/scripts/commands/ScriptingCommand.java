@@ -31,6 +31,7 @@ import net.forthecrown.grenadier.types.options.OptionsArgument;
 import net.forthecrown.grenadier.types.options.ParsedOptions;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
 
@@ -157,11 +158,15 @@ public class ScriptingCommand {
     }
 
     result.result().ifPresentOrElse(o -> {
+      Context context = script.context();
+
       source.sendSuccess(
           Messages.render("scripts.executed.regular")
               .addValue("result", toText(o, source))
               .create(source)
       );
+
+      context.close();
     }, () -> {
       source.sendSuccess(Messages.renderText("scripts.executed.noResult", source));
     });
