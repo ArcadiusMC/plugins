@@ -32,6 +32,8 @@ include("holograms")
 include("waypoints")
 include("factions")
 include("usables")
+include("dungeons")
+include("structures")
 
 include("mail")
 include("mail-impl")
