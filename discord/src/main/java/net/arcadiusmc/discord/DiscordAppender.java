@@ -38,7 +38,10 @@ class DiscordAppender extends AbstractAppender {
       "BuycraftX",
 
       // Advancement errors
-      "net.minecraft.stats.RecipeBookServer"
+      "net.minecraft.stats.RecipeBookServer",
+
+      // Display entityNo key sky in MapLike[{}]; No key block in MapLike[{}]
+      "net.minecraft.world.entity.Display"
   );
 
   private final Config config;
