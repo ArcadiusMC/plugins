@@ -34,6 +34,7 @@ waypoints:
     removed:                "Removed ${player} from ${waypoint} discovered-players."
     title:                  ""
     subtitle:               "&7Discovered &e${waypoint}"
+    hover.not:              "&c(Waypoint not discovered)"
 
   invites:
     blocked:                "&c${player} doesn't accept region invites"

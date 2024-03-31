@@ -41,6 +41,7 @@ import net.arcadiusmc.text.TextWriters;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
 import net.arcadiusmc.utils.ArrayIterator;
+import net.arcadiusmc.utils.Audiences;
 import net.arcadiusmc.utils.Time;
 import net.arcadiusmc.utils.inventory.ItemBuilder;
 import net.arcadiusmc.utils.inventory.ItemStacks;
@@ -1058,9 +1059,31 @@ public class Waypoint {
         .clickEvent(ClickEvent.suggestCommand("/visit " + effectiveName));
   }
 
+  private void writeDiscovered(TextWriter writer) {
+    if (!get(WaypointProperties.REQUIRES_DISCOVERY)) {
+      return;
+    }
+
+    boolean discovered;
+    User viewingUser = Audiences.getUser(writer.viewer());
+
+    if (viewingUser != null) {
+      discovered = hasDiscovered(viewingUser.getUniqueId());
+    } else {
+      return;
+    }
+
+    if (discovered) {
+      return;
+    }
+
+    writer.line(Messages.renderText("waypoints.discovered.hover.not", writer.viewer()));
+  }
+
   public void writeHover(TextWriter writer) {
     if (description != null) {
       writer.line(description);
+      writeDiscovered(writer);
 
       writer.newLine();
       writer.newLine();
@@ -1075,6 +1098,8 @@ public class Waypoint {
           writer.getFieldStyle(),
           getType().getDisplayName()
       );
+
+      writeDiscovered(writer);
 
       writer.newLine();
       writer.newLine();
