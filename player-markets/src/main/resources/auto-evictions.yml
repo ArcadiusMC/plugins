@@ -1,0 +1,128 @@
+
+#
+# Whether the auto eviction system is enabled.
+#
+enabled: true
+
+#
+# Interval at which shops are checked against these settings.
+#
+validation-interval: "5days"
+
+#
+# Delay between a shop being marked for eviction and the eviction
+# actually happening.
+#
+eviction-delay: "2weeks"
+
+#
+# Base aggression value (0..1)
+#
+# The eviction system uses a simple concept of "aggression", the
+# idea is that as more shops become occupied, the more aggressive
+# the system becomes in trying to keep markets open in each region.
+#
+# Since changing the base values of each criterion is unfair to
+# players (Shifting rules are harder to follow), then the only
+# variable in play is which rules are enforced and not what qualifies
+# under those rules.
+#
+# If this system turns out to be terrible, this base value can always
+# be set to a flat 1 or the threshold of each criterion lowered to 0.
+#
+#
+# Aggression formula:
+# aggression = base-aggression + ((owned_shops / total_shops) * aggression-multiplier)
+#
+base-aggression: 0.1
+
+#
+# Multiplier on the shop ownership ratio (see above)
+#
+aggression-multiplier: 1.0
+
+#
+# Changes whether 'aggression' is calculated relative to each
+# market group (region), or whether it's calculated globally.
+#
+# See the 'groups.yml' for more info on market groups.
+#
+# Default: true
+#
+localized-aggression: true
+
+#
+# Eviction criteria list.
+#
+# If you want to completely disable one of the criteria
+# then set its aggression-threshold to be above 1, aggression
+# is maxed out at 1, so any values above 1 become unreachable.
+#
+# Values per entry:
+# base:
+#     Base value for the criteria
+#
+# persistence (default: 1):
+#     Over how many scans does this issue have to
+#     persist, for the criteria to be used
+#
+# aggression-threshold (default: 0.5; values 0..1)
+#     What does the current aggression value have to be
+#     to use the criteria.
+#
+criteria:
+  #
+  # shop-count:
+  #
+  # Triggers after the amount of sign-shops in a market
+  # drops below a set amount.
+  #
+  shop-count:
+    base: 5
+    persistence: 3
+    aggression-threshold: 0
+
+  #
+  # average-stock-rate (values in range 0..1):
+  #
+  # Triggers after the average amount of out-of-stock sign-shops
+  # in a market goes over a certain ratio.
+  #
+  average-stock-rate:
+    base: 0.75
+    persistence: 3
+    aggression-threshold: 0.25
+
+  #
+  # max-offline-time (base values as time strings, eg: "1m", "3months"):
+  #
+  # Triggers after a market owner has been offline for a certain
+  # amount of time.
+  #
+  max-offline-time:
+    base: "1month"
+    persistence: 1
+    aggression-threshold: 0.5
+
+  #
+  # average-shop-unused-time (base values as time strings, eg: "1m", "3months"):
+  #
+  # Averages out the last time each shop in a market was used and
+  # triggers eviction if the time between that average and the present
+  # surpasses the specified duration.
+  #
+  average-shop-unused-time:
+    base: "2weeks"
+    persistence: 1
+    aggression-threshold: 0.75
+
+  #
+  # missed-rents:
+  #
+  # Triggers after the set amount of rent (In Denarii) is left
+  # unpaid.
+  #
+  missed-rents:
+    base: 1 # Any rent missed causes eviction
+    persistence: 1
+    aggression-threshold: 0

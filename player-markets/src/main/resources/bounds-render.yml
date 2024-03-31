@@ -1,0 +1,43 @@
+
+#
+# Sets how long the bounds are visible for
+# Default: 30s (30 seconds)
+#
+visibility-period: "30s"
+
+#
+# Changes which type of render is used to render borders
+#
+# Possible values:
+# - particles
+# - blocks
+#
+# Particles:
+#  Renders the outline of the border using particles,
+#  settings for this value are in the 'particle-render'
+#  section
+#
+# Blocks:
+#  Creates an outline using blocks of the shop's claim
+#
+# Default: particles
+#
+preferred-render: "particles"
+
+#
+# Sets the particle used if preferred-render is set to 'particles'
+#
+particle: "minecraft:flame"
+
+#
+# Sets the distance between each individual particle if
+# preferred-render is set to 'particles'
+#
+particle-distance: 0.25
+
+#
+# List of blocks used if preferred-render is set to 'blocks'
+#
+block-render-materials:
+  - "black_concrete"
+  - "yellow_concrete"

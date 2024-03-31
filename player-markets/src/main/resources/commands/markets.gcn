@@ -1,0 +1,179 @@
+name = "markets"
+aliases = "playershops"
+description = "Player Shops admin command"
+
+literal("reload-config") {
+  executes = reloadConfig()
+  description = "Reloads the markets config."
+}
+
+literal("reload-plugin") {
+  executes = reloadPlugin()
+  description = "Reloads the entire markets plugin."
+}
+
+literal("save") {
+  executes = savePlugin()
+  description = "Saves the plugin."
+}
+
+literal("list") {
+  executes = listMarkets()
+
+  argument("page", int(min=1)) {
+    executes = listMarkets()
+    label = "[<page>]"
+
+    argument("page-size", int(min=5, max=20)) {
+      label = "[<page-size>]"
+      executes = listMarkets()
+      description = "Lists existing markets"
+    }
+  }
+}
+
+literal("create").argument("region", string) {
+  executes = createMarket()
+  suggests = suggestRegionNames()
+  description = "Creates a market."
+}
+
+literal("remove").argument("market", @market) {
+  executes = removeMarket()
+  description = "Deletes a market"
+}
+
+literal("claim").argument("market", @market).argument("user", user) {
+  map_result("user") = @result_to_user
+  executes = claim()
+  description = "Claims a market for a player"
+}
+
+literal("unclaim").argument("market", @market) {
+  executes = unclaim()
+  description = "Unclaims a market. (Does NOT reset the market.)"
+}
+
+literal("reset").argument("market", @market) {
+  executes = reset()
+  description = "Resets a market"
+}
+
+literal("merge").argument("market", @market).argument("other", @market) {
+  executes = merge()
+  description = "Merges 2 markets together."
+}
+
+literal("unmerge").argument("market", @market) {
+  executes = unmerge()
+  description = "Unmerges 2 markets"
+}
+
+literal("eviction") {
+  literal("start").argument("market", @market).argument("reason", string) {
+    suggests = suggestReasons()
+    executes = startEviction()
+
+    description = "Starts an eviction"
+
+    argument("delay", time) {
+      executes = startEviction()
+      description = "Starts an eviction with a set delay until eviction"
+    }
+  }
+
+  literal("stop").argument("market", @market) {
+    executes = stopEviction()
+    description = "Stops a market from being evicted"
+  }
+
+  literal("info").argument("market", @market) {
+    executes = showEvictionInfo()
+    description = "Shows info about an eviction"
+  }
+}
+
+literal("price") {
+  literal("set").argument("market", @market).argument("value", int(min=0)) {
+    executes = setPrice()
+    description = "Sets a market's price."
+  }
+  literal("unset").argument("market", @market) {
+    executes = setPrice()
+    description = "Unsets a market's price."
+  }
+}
+
+literal("rent") {
+  literal("set").argument("market", @market).argument("value", int(min=0)) {
+    executes = setRent()
+    description = "Sets a market's rent."
+  }
+  literal("unset").argument("market", @market) {
+    executes = setRent()
+    description = "Unsets a market's rent."
+  }
+}
+
+literal("connections") {
+  literal("list").argument("market", @market) {
+    executes = listConnections()
+    description = "Lists all the markets the specified market is connected to."
+  }
+
+  literal("add").argument("market", @market).argument("other", @market) {
+    executes = connect()
+    description = "Connects 2 market shops together."
+  }
+
+  literal("remove").argument("market", @market).argument("other", @market) {
+    executes = disconnect()
+    description = "Disconnects 2 markets."
+  }
+
+  literal("clear").argument("market", @market) {
+    executes = clearConnections()
+    description = "Clears all connected markets a market has."
+  }
+}
+
+literal("entrances") {
+  literal("list").argument("market", @market) {
+    executes = listEntrances()
+    description = "Lists a market's entrances."
+  }
+
+  literal("add").argument("market", @market) {
+    executes = addEntrance()
+    description = [
+      "Adds an entrance to a market",
+      "Adds the entrance by using the position the player is",
+      "standing at as the lectern's position,",
+      "and the first non-air block above the player as the block",
+      "the entrance sign is placed on."
+    ]
+  }
+
+  literal("remove").argument("market", @market).argument("index", int(min=1)) {
+    executes = removeEntrance()
+    description = "Removes an entrance at an index (use '/markets entrances list')"
+  }
+}
+
+literal("group") {
+  literal("get").argument("market", @market) {
+    executes = getGroup()
+    description = "Gets a market's group."
+  }
+
+  literal("set").argument("market", @market).argument("group", string) {
+    suggests = suggestGroups()
+    executes = setGroup()
+    description = "Sets a market's group."
+  }
+
+  literal("unset").argument("market", @market) {
+    executes = unsetGroup()
+    description = "Sets a market's group."
+  }
+}

@@ -1,0 +1,72 @@
+
+#
+# The default rent price of a market.
+# Can be overridden for each market.
+#
+base-rent: 200
+
+#
+# The default price of a market
+# Can be overridden for each market.
+#
+default-price: 50000
+
+#
+# Interval at which rent is charged.
+#
+# Rent times are localized for each market from the time
+# they were bought.
+#
+rent-interval: "1week"
+
+#
+# Interval at which tax rates are reset for market shops
+#
+tax-reset-interval: "1month"
+
+#
+# Sets the cooldown for performing market actions. "actions"
+# are things a player can do in terms of market ownership.
+#
+# Set to "0" to remove the cooldown.
+#
+# Actions list:
+# - Purchasing a market
+# - Transferring a market
+# - Un-claiming a market
+# - Merging a market
+# - Un-merging a market
+#
+# Default: "1day"
+#
+action-cooldown: "1day"
+
+#
+# List of tax brackets.
+#
+# Taxes are paid like they are in the real world, you pay
+# x% taxes off your first y Denarii earned and z% on the
+# next w Denarii etc.
+#
+# Values:
+# - earnings-range:
+#     The range of earnings a market will have had to
+#     make to qualify for the bracket.
+#
+#     if multiple entries in the bracket list have the
+#     same range, then the first one to appear in the
+#     list will be used.
+#
+#     examples: 1..2 (Range between 1 and 2)
+#               1..  (Range between 1 and infinity)
+#               ..2  (Range between negative infinity and 2)
+#               ..   (Unlimited range)
+#
+# - tax-rage:
+#     A 0 to 1 number setting the rate paid
+#
+tax-brackets:
+  - earnings-range: 10000..30000
+    tax-rate: 0.2
+  - earnings-range: 50000..
+    tax-rate: 0.3

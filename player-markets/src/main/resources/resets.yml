@@ -1,0 +1,49 @@
+#
+# Offset at which market templates are, relative to the market's
+# current position.
+#
+# The x,y,z coordinates are added onto the market's origin
+# coordinates. (When doing '/rg info', the origin coordinates
+# are the first coordinates that appear in the 'Bounds:' field
+#
+# Thus, to find the template position of a market do:
+# reset-position = shop-origin + template-offset
+#
+# Values:
+# - world (Optional, uses the world each market is in if not set):
+#     Specifies the world the templates are copied from,
+#     Default:  (Empty)
+#
+# - x: X offset
+# - y: Y offset
+# - z: Z offset
+#
+template-offset:
+  world: "world"
+  x: 0
+  y: 0
+  z: 0
+
+#
+# Allows setting different offsets for each market group
+#
+# Follows same logic as the above-mentioned 'template-offset'
+#
+per-group-offsets:
+  example_group:
+    world: "world"
+    x: 0
+    y: 0
+    z: 0
+
+#
+# Whether to copy a market when it is claimed to its template area
+# or not.
+#
+# If set to true, then everytime a market is copied, a copy of it
+# is pasted at the area specified by 'template-offset'
+#
+# If set to false, the area at the 'template-offset' is treated as
+# a read-only structure that will only be used when resetting
+#
+copy-on-claim: false

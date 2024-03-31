@@ -1,0 +1,250 @@
+markets.evictionReasons:
+  shop-count:               "&eToo few shops!&7 At least ${amount} sign-shops are required in a player shop."
+  average-stock-rate:       "&eToo little stock!&7 At least ${percent}% of sign-shops need to be stocked!"
+  max-offline-time:         "&eInactive for too long!&7 Don't be inactive for long periods of time :shrug:"
+  average-shop-unused-time: "&eUnused shops!&7 Shops that don't get used often get evicted!"
+  missed-taxes:             "&eMissed tax payments&7 You have ${missedTaxes} of missed tax payments!"
+  missed-rents:             "&eMissed rent payments&7 You have ${missedTaxes} of missed rent payments!"
+
+markets:
+  _style: "gray"
+
+  taxed:                    "You were taxed &e${taxed}&8 (${taxRate}%)"
+  claimed:                  "&6&l$ &aClaimed player shop for &e${price}&7.\n&7You will be charged &e${rent}&7 rent every &e${rentInterval}&7.\nFor more info, see ${text: content='/marketmenu' color=white run_command='/marketmenu' hover='Click me!'}"
+
+  trusted:                  "&eTrusted ${player} in your shop."
+  untrusted:                "Untrusted ${player} from your shop."
+
+  banned:                   "&eBanned ${player} from your shop."
+  unbanned:                 "Unbanned ${player} from your shop."
+
+  evictionStart:            "Your player shop is being evicted!\nReason: &f${reason}&r.\nEviction date: &e${date}&r."
+
+  entrance:
+    _style: "reset"
+    info:                   "sign-pos=${sign}, facing=${facing} entity-pos=${entity}"
+
+  memberEditing:
+    allowed:                "&eShop members can now edit sign shops!"
+    denied:                 "Shop members can no longer edit sign shops!"
+
+  cmd:
+    reloaded.plugin:        "Reloaded Player-Markets plugin."
+    reloaded.config:        "Reloaded Player-Markets config."
+    saved:                  "Saved Player-Markets plugin."
+    created:                "Created&e market&r linked to region &e${region}&r."
+    price.set:              "Set &6${market}&r price to &e${price}&r."
+    price.unset:            "Set &6${market}&r price back to&e default&r."
+    rent.set:               "Set &6${market}&r rent to &e${rent}&r."
+    rent.unset:             "Set &6${market}&r rent back to&e default&r."
+    group.get:              "&6${market}&r's group: &e${group}&r."
+    group.set:              "Set &6${market}&r group to &e${group}&r."
+    group.unset:            "Removed &6${market}&r's group."
+    list.header:            "Existing Markets"
+    removed:                "Removed &6${market}&r."
+    claimed:                "Claimed &6${market}&e for &e${player}&r."
+    unclaimed:              "Unclaimed &6${market}&r."
+    reset:                  "Reset &6${market}&r."
+    merged:                 "Merged &6${market}&r and &6${other}&r."
+
+    eviction:
+      begin:                "Began eviction of &6${market}&r, reason='&f${reason}&r' eviction-date=&e${date}&r"
+      stopped:              "Stopped &6${market}&r eviction."
+      info:                 "&6${market}&r eviction info:\nreason: &f${reason}&r\nsource: &f${source}&r\ndate: &f${date}&r"
+
+    connections:
+      created:              "Connected &6${market}&r and &6${other}&r."
+      cleared:              "Cleared &6${market}&r's connections."
+      removed:              "Disconnected &e${market}&r and &e${other}&r."
+
+    entrances:
+      removed:              "Removed &6${market}&r entrance at index &e${index}&r."
+      added:                "Added shop entrance."
+      list.header:          "${market} entrances:${list}"
+      list.format:          "\n- &f${entrance}"
+
+
+  merge:
+    unmerged:               "Shop unmerged."
+    merged:                 "&eShop merged with &6${player}&e."
+    cancelled.sender:       "Cancelled shop merge request."
+    cancelled.target:       "&e${target}&r cancelled their shop merge request."
+    denied.sender:          "&e${target}&r denied your shop merge request."
+    denied.target:          "Denied shop merge request."
+    sent.sender:            "&eSent shop merge request to &6${target}&e. ${cancel}"
+    sent.target:            "&e${sender} wants to merge their shop with yours. ${accept} ${deny}"
+    cancel:                 "${text: content='[Cancel]' color=aqua hover='Click to cancel request'}"
+
+  transfer:
+    _style: "yellow"
+    needsConfirmation:      "Are you sure you want to transfer your shop to &6${target}&r? ${confirm}"
+    confirm:                "${text: content='[Confirm]' color=aqua hover='Click to confirm'}"
+    done.sender:            "Transferred shop to &6${target}&r!"
+    done.target:            "&6${sender}&r transferred their shop to you!"
+
+  unclaim:
+    needsConfirmation:      "Are you sure you want to unclaim your shop? (The shop will be reset)\n${confirm}"
+    confirm:                "${text: content='[Confirm Unclaiming]' color=aqua hover='Click to confirm'}"
+    done:                   "Shop unclaimed."
+
+  errors:
+    _style: "red"
+
+    unknownMarket:          "Unknown market: '${name}'"
+    ownsNoMarket:           "${player} does not own a player shop."
+    alreadyOwned:           "You already own a market"
+    noMarketOwned:          "You do not own a player shop."
+    notMerged:              "Your shop is not merged with anyone else's"
+    alreadyTrusted:         "${player} is already trusted in your shop."
+    notTrusted:             "${player} isn't trusted in your shop."
+    alreadyBanned:          "${player} is already banned in your shop."
+    notBanned:              "${player} is not banned in your shop."
+    noRegionsInWorld:       "No regions in current world. (???)"
+    unknownRegion:          "Unknown world guard region: '${region}'"
+    alreadyExists:          "There is already a market attached to the ${region} region."
+    alreadyUngrouped:       "${market} already has no group."
+    alreadyConnected:       "${market} is already connected to ${other}"
+    notConnected:           "${market} is not connected to ${other}."
+    alreadyClaimed:         "${market} has already been claimed."
+    alreadyOwnsShop:        "${player} already owns a shop."
+    notClaimed:             "${market} has not been claimed."
+    alreadyMerged:          "${market} has already merged with ${other}."
+    notMerged.with:         "${market} has not been merged."
+
+    merges:
+      self:                 "Cannot merge with your own shop."
+      noIncoming.player:    "No merge request from ${player}."
+      noIncoming:           "No incoming merge requests."
+      noOutgoing.player:    "No merge requests sent to ${player}."
+      noOutgoing:           "No outgoing merge requests."
+      notConnected:         "Your shop is not connected to ${player}'s shop &7(If you believe this is an error, contact staff)"
+      alreadyIs.self:       "Your shop is already merged."
+      alreadyIs.target:     "${player}'s shop has already been merged."
+      blocked.self:         "You blocked ${target}."
+      blocked.target:       "${target} blocked you."
+
+  rents:
+    paid:                   "&6&l$ &7Paid &6${money}&7 in rent for your player shop."
+    debt.added:             "&4Unable to pay shop rent: &cinsufficient shop rent!&7 Added ${money} of debt (Total debt: ${totalDebt}) ${text: content='[?]' color=aqua hover=\"You can pay debt at any faction region's town hall\\\\nUnpaid debt will cause you to get evicted!\"}"
+
+  entrances:
+    _style: "reset"
+    purchasePrompt:         "Purchase shop!"
+
+    claimed:
+      line1:                ""
+      line2:                "${player}'s"
+      line3:                "Player Shop"
+      line4:                ""
+
+    unclaimed:
+      line1:                ""
+      line2:                "Unclaimed"
+      line3:                "Player Shop"
+      line4:                ""
+
+  modifiers:
+    _style: "reset"
+    noDisplay:              "Reason not set"
+    discount_base:          "&1${value.signed}% base:&r ${reason}"
+    discount_stacking:      "&1${value.signed}%:&r ${reason}"
+    add_multiplied_base:    "&1${value.signed}% base:&r ${reason}"
+    multiply:               "&1${value.signed}%:&r ${reason}"
+
+  gui:
+    _style: "reset"
+
+    title:
+      claiming:             "&lPurchase shop?"
+      info:                 "&lShop Info"
+      members:              "&lMembers"
+      bannedCustomers:      "&lBanned Customers"
+      taxes:                "&lTax Info"
+      rent:                 "&lRent Info"
+
+    footer:
+      info:                 "Members -->"
+      members:              "Banned customers -->"
+      bannedCustomers:      "Tax Info -->"
+      taxes:                "Rent Info -->"
+
+    buttons:
+      rent.available:       "${text: content='[Rent]' hover='Click to rent shop.' color=green bold=true}"
+      rent.unavailable:     "${text: content='[Rent]' hover='Cannot afford the shop.' color=red bold=true}"
+      showBounds:           "${text: content='[Show shop size]' hover='Click to show shop claim size' color=blue bold=true}"
+
+    merged.none:            "none"
+    merged.not:             "not merged"
+
+    listFormat.removable:   "&c${button}&r ${player}"
+    listFormat.unRemovable: "${player}"
+
+    noTaxBracket:           "none"
+    add:                    "${text: content='[add]' color=dark_green hover='Click me!'}"
+
+    content.info: |-
+      
+      Merged with:
+      &l${merged}&r
+      
+      Shop members:
+      &l${members.totalCount}&r
+      
+      
+        ${showClaimSize}
+         ${text: content='[Transfer Shop]' bold=true color=blue hover='Use \'\&e/transfer-shop\&r\' to transfer your shop to another player.' suggest_command='/transfer-shop '}
+          ${text: content='[Unclaim Shop]' bold=true color=blue hover='Use \'\&e/unclaim-shop\&r\' to unclaim your shop.' suggest_command='/unclaim-shop'}
+
+    content.members: |-
+      
+      Players can edit shops:
+      ${edit.yes} ${edit.no}
+      
+      Members (${members.count}) ${members.add}:
+      ${members.list}
+      
+      From merged shop (${members.mergedCount}):
+      ${members.mergedList}
+
+    content.bannedCustomers: |-
+      
+      Banned (${banned.count}) ${banned.add}:
+      ${banned.list}
+      
+      From merged shop (${banned.mergedCount}):
+      ${banned.mergedList}
+
+    content.taxes: |-
+      
+      Tax rate: &l${taxes.rate}&r
+      Base tax rate: &l${taxes.baseRate}&r
+      Current tax bracket: &l${taxes.bracket}&r
+      Next tax reset: 
+      &l${taxes.nextReset}&r
+      
+      Tax modifiers (${taxes.modifierCount}):
+      ${taxes.modifierList}
+
+    content.rent: |-
+      
+      Rent: &l${rent}&r
+      Base rent: &l${rent.base}&r
+      Next rent payment: 
+      &l${rent.nextPaymentDate}&r
+      
+      Rent modifiers (${rent.modifierCount}):
+      ${rent.modifierList}
+
+    content.claiming: |-
+
+      Price:
+      &l${price}&r.
+      
+      Rent:
+      &l${rent}&r.
+      
+      ${entranceCount} entrances.
+      &l${size.x}x${size.y}x${size.z}&r blocks.
+      
+       &l${showClaimSize}
+              ${rentButton}
