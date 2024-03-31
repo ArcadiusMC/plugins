@@ -14,6 +14,10 @@ import lombok.Getter;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.Text;
+import net.arcadiusmc.text.TextWriter;
+import net.arcadiusmc.text.TextWriters;
+import net.arcadiusmc.text.placeholder.Placeholders;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.ArrayIterator;
 import net.arcadiusmc.utils.io.TagOps;
@@ -23,6 +27,8 @@ import net.forthecrown.nbt.BinaryTags;
 import net.forthecrown.nbt.CompoundTag;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -65,22 +71,72 @@ public class Faction {
     return member;
   }
 
-  public Component displayName(Audience viewer) {
-    Component baseName;
+  /* --------------------------- display ---------------------------- */
+
+  public Component name(Audience viewer) {
     Component displayName = get(Properties.DISPLAY_NAME);
 
     if (displayName == null) {
-      baseName = Component.text(key);
+      return Component.text(key);
     } else {
-      baseName = displayName;
+      return Placeholders.render(displayName, viewer);
     }
+  }
 
+  public Component displayName(Audience viewer) {
     Component message = Messages.render("factions.names.format")
-        .addValue("base", baseName)
+        .addValue("base", name(viewer))
         .create(viewer);
 
-    return message.color(get(Properties.NAME_COLOR));
+    return message
+        .color(get(Properties.NAME_COLOR))
+        .hoverEvent(hoverText(viewer));
   }
+
+  public Component hoverText(Audience viewer) {
+    TextWriter writer = TextWriters.newWriter();
+    writer.viewer(viewer);
+
+    configureWriter(writer);
+
+    writer.line(name(viewer));
+
+    writeHover(writer);
+
+    return writer.asComponent();
+  }
+
+  public void configureWriter(TextWriter writer) {
+    writer.setFieldStyle(Style.style(NamedTextColor.GRAY));
+    writer.setFieldValueStyle(Style.style(NamedTextColor.YELLOW));
+    writer.setFieldSeparator(Component.text(": ", NamedTextColor.GRAY));
+  }
+
+  public void writeHover(TextWriter writer) {
+    Component desc = get(Properties.DESCRIPTION);
+    if (!Text.isEmpty(desc)) {
+      writer.line(Placeholders.render(desc, writer.viewer()));
+      writer.newLine();
+    }
+
+    writer.newLine();
+
+    long activeMembers = memberMap.values()
+        .stream()
+        .filter(FactionMember::isActive)
+        .count();
+
+    writer.field(Messages.render("factions.hover.activeMembers"), Text.formatNumber(activeMembers));
+
+    String waypoint = get(Properties.WAYPOINT_NAME);
+    if (!Strings.isNullOrEmpty(waypoint)) {
+      writer.field(Messages.render("factions.hover.waypoint"), waypoint);
+    }
+
+    writer.newLine();
+  }
+
+  /* --------------------------- joining and leaving ---------------------------- */
 
   public void join(User user) {
     FactionMember member = memberMap.get(user.getUniqueId());

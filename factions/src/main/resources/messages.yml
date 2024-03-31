@@ -17,6 +17,10 @@ factions:
   joined:                 "&eJoined the &6${faction}&6 faction!"
   left:                   "&7Left the &e${faction}&7 faction. &8(Reputation with ${faction} dropped by ${reputationDrop})"
 
+  hover:
+    activeMembers:        "Active Members"
+    waypoint:             "Waypoint"
+
   cmd:
     _style: "gray"
 
