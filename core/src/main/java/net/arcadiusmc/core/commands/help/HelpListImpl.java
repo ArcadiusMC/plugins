@@ -237,8 +237,6 @@ public class HelpListImpl implements ArcadiusHelpList {
    * properly index every keyword, alias and command label.
    */
   public void update() {
-    entries.removeIf(entry -> entry instanceof CommandHelpEntry);
-
     existingCommands.forEach((s, command) -> {
       if (command instanceof LoadedEntryCommand) {
         return;
@@ -263,8 +261,14 @@ public class HelpListImpl implements ArcadiusHelpList {
       }
 
       command.populateUsages(factory);
+
+      removeCommandEntry(entry.getLabel());
       addEntry(entry);
     });
+  }
+
+  private void removeCommandEntry(String commandName) {
+    entries.removeIf(entry -> entry.getMainLabel().equals(commandName));
   }
 
   @Override
