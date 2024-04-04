@@ -52,12 +52,14 @@ public class BlueWebmap implements WebMap {
     }
 
     return api()
-        .flatMap(blueMapAPI -> blueMapAPI.getWorld(world))
+        .flatMap(api -> api.getWorld(world))
         .map(w -> {
           var maps = w.getMaps();
-          if (maps.size() != 1) {
+
+          if (maps.isEmpty()) {
             return (BlueMapMap) null; // Don't let IntelliJ fool you, this cast is required
           }
+
           return maps.iterator().next();
         });
   }
@@ -91,20 +93,20 @@ public class BlueWebmap implements WebMap {
     if (world == null) {
       return Result.error("Null world");
     }
-    var opt = getMap(world);
+    Optional<BlueMapMap> opt = getMap(world);
 
     if (opt.isEmpty()) {
       return Result.error("BlueMap does not have the '%s' world", world.getName());
     }
 
-    var mapMap = opt.get();
-    var existing = mapMap.getMarkerSets().get(id);
+    BlueMapMap mapMap = opt.get();
+    MarkerSet existing = mapMap.getMarkerSets().get(id);
 
     if (existing != null) {
       return Result.error("Layer with ID '%s' is already defined", id);
     }
 
-    var set = new MarkerSet(name);
+    MarkerSet set = new MarkerSet(name);
     pluginSets.put(id, world.getName());
 
     return Result.success(new BlueMapLayer(id, set, world, mapMap, this));
@@ -147,6 +149,11 @@ public class BlueWebmap implements WebMap {
   public void setPlayerVisible(OfflinePlayer player, boolean visible) {
     Objects.requireNonNull(player, "Null player");
     api().ifPresent(api -> api.getWebApp().setPlayerVisibility(player.getUniqueId(), visible));
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return api().isPresent();
   }
 
   public void save() {

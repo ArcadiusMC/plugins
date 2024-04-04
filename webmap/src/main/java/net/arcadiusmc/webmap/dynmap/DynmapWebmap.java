@@ -152,4 +152,9 @@ public class DynmapWebmap implements WebMap {
     Objects.requireNonNull(player, "Null player");
     apiOptional().ifPresent(api -> api.setPlayerVisiblity(getId(player), visible));
   }
+
+  @Override
+  public boolean isEnabled() {
+    return apiOptional().isPresent();
+  }
 }

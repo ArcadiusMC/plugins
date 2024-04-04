@@ -108,4 +108,10 @@ public interface WebMap {
    * @throws NullPointerException If the specified {@code player} is {@code null}
    */
   void setPlayerVisible(OfflinePlayer player, boolean visible);
+
+  /**
+   * Tests if the webmap service is enabled
+   * @return {@code true}, if enabled and ready to be used, {@code false} otherwise
+   */
+  boolean isEnabled();
 }
