@@ -21,6 +21,7 @@ import net.arcadiusmc.command.arguments.ParseResult;
 import net.arcadiusmc.command.arguments.chat.MessageSuggestions;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.waypoints.WExceptions;
+import net.arcadiusmc.waypoints.WaypointWebmaps;
 import net.forthecrown.grenadier.CommandContexts;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Completions;
@@ -279,6 +280,13 @@ public class CommandWaypoints {
 
         false
     );
+  }
+
+  public void updateDynmap(CommandSource source, @Argument("waypoint") Waypoint waypoint) {
+    WaypointWebmaps.updateMarker(waypoint);
+    makeWaypointMessage(waypoint, source, like -> {
+      return Text.format("Updated webmap marker for &e{0}&r.", NamedTextColor.GRAY, like);
+    });
   }
 
   public void updateWaypoint(CommandSource source, @Argument("waypoint") Waypoint waypoint)
