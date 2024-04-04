@@ -19,6 +19,7 @@ import net.arcadiusmc.scripts.module.JsModule;
 import net.arcadiusmc.scripts.module.ModuleManager;
 import net.arcadiusmc.scripts.module.ScriptModule;
 import net.arcadiusmc.scripts.module.ScriptableModule;
+import net.arcadiusmc.scripts.modules.IoModule;
 import net.arcadiusmc.scripts.modules.ParticlesModule;
 import net.arcadiusmc.scripts.modules.ScoreboardModule;
 import net.arcadiusmc.scripts.modules.WorldsObject;
@@ -48,6 +49,7 @@ class ModuleManagerImpl implements ModuleManager {
     addModule("scoreboard", ScoreboardModule.MODULE);
     addModule("worlds",     WorldsObject.MODULE);
     addModule("particles",  ParticlesModule.MODULE);
+    addModule("io",         IoModule.MODULE);
   }
 
   @Override

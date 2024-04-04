@@ -24,7 +24,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.NativeJavaClass;
 import org.mozilla.javascript.NativeJavaMethod;
 import org.mozilla.javascript.NativeObject;
@@ -81,6 +80,10 @@ public class RhinoScript implements Script {
 
     this.events = new EventsExtension(service.getScriptPlugin(), this);
     this.scheduler = new SchedulerExtension(service.getScriptPlugin(), this);
+  }
+
+  public static Script fromScope(Scriptable scope) {
+    return ScriptableObject.getTypedProperty(scope, "__scriptInstance", Script.class);
   }
 
   @Override
@@ -256,9 +259,11 @@ public class RhinoScript implements Script {
       bindingScope.setParentScope(topLevelScope);
       evaluationScope.setParentScope(bindingScope);
 
-      put("args", createArgsArray());
+      put("args", createArgsArray(ctx));
       put("logger", logger);
-      put("_script", Context.javaToJS(this, bindingScope, ctx));
+      put("_script", bindingScope);
+      put("__scriptInstance", this);
+      ScriptableObject.putProperty(evaluationScope, "__scriptInstance", this);
 
       put("events", events);
       put("scheduler", scheduler);
@@ -284,12 +289,14 @@ public class RhinoScript implements Script {
     return this;
   }
 
-  private NativeArray createArgsArray() {
-    NativeArray array = new NativeArray(arguments.length);
+  private Scriptable createArgsArray(Context cx) {
+    Scriptable array = cx.newArray(evaluationScope, arguments.length);
+
     for (int i = 0; i < arguments.length; i++) {
       String arg = arguments[i];
       ScriptableObject.putProperty(array, i, arg);
     }
+
     return array;
   }
 
