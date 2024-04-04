@@ -2,23 +2,22 @@ package net.arcadiusmc.waypoints;
 
 import com.google.common.base.Strings;
 import java.util.Optional;
-import lombok.experimental.UtilityClass;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.utils.Result;
 import net.arcadiusmc.webmap.MapIcon;
 import net.arcadiusmc.webmap.MapLayer;
 import net.arcadiusmc.webmap.MapMarker;
 import net.arcadiusmc.webmap.MapPointMarker;
+import net.arcadiusmc.webmap.WebMap;
 import net.arcadiusmc.webmap.WebMaps;
 import org.bukkit.World;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.slf4j.Logger;
 
 /**
  * Methods relating to Waypoints and their Dynmap markers.
  */
-@UtilityClass
-class WaypointWebmaps {
+public final class WaypointWebmaps {
+  private WaypointWebmaps() {}
 
   private static final Logger LOGGER = Loggers.getLogger();
 
@@ -32,10 +31,6 @@ class WaypointWebmaps {
    */
   public static final String SET_NAME = "Waypoints";
 
-  public static final String NORMAL_LABEL = "region_pole_normal";
-
-  public static final String SPECIAL_LABEL = "region_pole_special";
-
   /**
    * Updates the marker of the given waypoint.
    * <p>
@@ -44,7 +39,11 @@ class WaypointWebmaps {
    * If the marker should exist, but doesn't, it's created, if it does exist, it's data is updated
    * to be in sync with the actual waypoint
    */
-  static void updateMarker(Waypoint waypoint) {
+  public static void updateMarker(Waypoint waypoint) {
+    if (!WebMaps.isEnabled()) {
+      return;
+    }
+
     Optional<MapLayer> layerOpt = getSet(waypoint.getWorld());
     if (layerOpt.isEmpty()) {
       return;
@@ -73,6 +72,7 @@ class WaypointWebmaps {
     Optional<MapIcon> iconOpt = getIcon(iconImage);
 
     if (iconOpt.isEmpty()) {
+      LOGGER.error("Couldn't find icon for waypoint marker! '{}'", iconImage);
       return;
     }
 
@@ -126,9 +126,6 @@ class WaypointWebmaps {
   }
 
   static Optional<MapIcon> getIcon(String id) {
-    return WebMaps.findOrDefineIcon(id, id, () -> {
-      var plugin = JavaPlugin.getPlugin(WaypointsPlugin.class);
-      return plugin.getResource(id + ".png");
-    });
+    return WebMap.map().getIcon(id);
   }
 }
