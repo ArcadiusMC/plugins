@@ -44,4 +44,9 @@ class NopMap implements WebMap {
   public void setPlayerVisible(OfflinePlayer player, boolean visible) {
 
   }
+
+  @Override
+  public boolean isEnabled() {
+    return false;
+  }
 }
