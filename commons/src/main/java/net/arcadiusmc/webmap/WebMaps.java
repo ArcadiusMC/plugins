@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.util.Optional;
 import java.util.function.Supplier;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.utils.Result;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Color;
 import org.bukkit.World;
@@ -25,7 +26,8 @@ public final class WebMaps {
 
     return WebMap.map().getLayer(world, id)
         .or(() -> {
-          var result =  WebMap.map().createLayer(world, id, name)
+          Result<MapLayer> result =  WebMap.map()
+              .createLayer(world, id, name)
               .mapError(string -> "Error creating marker set: " + string);
 
           result.applyError(LOGGER::error);
@@ -45,7 +47,8 @@ public final class WebMaps {
 
     return WebMap.map().getIcon(id)
         .or(() -> {
-          var result = WebMap.map().createIcon(id, name, dataSupplier.get())
+          var result = WebMap.map()
+              .createIcon(id, name, dataSupplier.get())
               .mapError(string -> "Failed to create map icon: " + string);
 
           result.applyError(LOGGER::error);
@@ -67,5 +70,9 @@ public final class WebMaps {
 
   public static Color setAlpha(Color base, double alpha) {
     return setAlpha(base, (int) alpha * 255);
+  }
+
+  public static boolean isEnabled() {
+    return !isNop() && WebMap.map().isEnabled();
   }
 }
