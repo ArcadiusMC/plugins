@@ -179,6 +179,8 @@ public class ScriptingCommand {
 
   static Component toText(Object o, Audience viewer) {
     try {
+      o = Context.jsToJava(o, Object.class);
+
       if (o instanceof Scriptable object) {
         var obj = ScriptRuntime.toString(object);
         return Text.valueOf(obj, viewer);
