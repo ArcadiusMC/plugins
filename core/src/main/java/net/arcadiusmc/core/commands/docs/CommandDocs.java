@@ -1,6 +1,9 @@
 package net.arcadiusmc.core.commands.docs;
 
 import com.google.common.base.Strings;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.io.BufferedWriter;
@@ -24,7 +27,11 @@ import net.arcadiusmc.command.help.Usage;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.utils.ArrayIterator;
 import net.arcadiusmc.utils.PluginUtil;
+import net.arcadiusmc.utils.io.JsonUtils;
+import net.arcadiusmc.utils.io.JsonWrapper;
 import net.arcadiusmc.utils.io.PathUtil;
+import net.luckperms.api.model.group.Group;
+import net.luckperms.api.util.Tristate;
 
 @Getter @Setter
 @RequiredArgsConstructor
@@ -40,6 +47,8 @@ public class CommandDocs {
 
   private Collection<String> included = List.of();
   private Collection<String> excluded = List.of();
+
+  private Collection<Group> playerGroups = List.of();
 
   public void fill() {
     boolean noCustomFilter = included.isEmpty() && excluded.isEmpty();
@@ -95,9 +104,10 @@ public class CommandDocs {
     String name = entry.getLabel();
     String perm = entry.getPermission();
     String desc = Text.plain(entry.getDescription());
+    String cat = entry.getCategory();
     List<String> aliases = entry.getAliases();
 
-    CommandDocument document = new CommandDocument(name, perm, aliases, desc);
+    CommandDocument document = new CommandDocument(name, perm, aliases, desc, cat);
     document.usages.addAll(entry.getUsages());
 
     document.clickId = category.toLowerCase()
@@ -310,6 +320,37 @@ public class CommandDocs {
     writer.write(Text.NUMBER_FORMAT.format(written));
   }
 
+  public boolean isAdminPermission(String permission) {
+    if (Strings.isNullOrEmpty(permission)) {
+      return false;
+    }
+
+    for (Group group : playerGroups) {
+      Tristate state = group.getCachedData().getPermissionData().checkPermission(permission);
+
+      if (state == Tristate.UNDEFINED) {
+        continue;
+      }
+
+      return !state.asBoolean();
+    }
+
+    return true;
+  }
+
+  public void writeJson(Path output) throws IOException {
+    JsonArray array = new JsonArray();
+
+    documents.values()
+        .stream()
+        .flatMap(Collection::stream)
+        .forEach(commandDocument -> {
+          commandDocument.writeJson(array);
+        });
+
+    JsonUtils.writeFile(array, output);
+  }
+
   @RequiredArgsConstructor
   class CommandDocument {
     private final String name;
@@ -317,8 +358,57 @@ public class CommandDocs {
     private final List<String> aliases;
     private final String description;
     private final List<Usage> usages = new ObjectArrayList<>();
+    private final String category;
 
     private String clickId;
+
+    public void writeJson(JsonArray array) {
+      JsonObject object = new JsonObject();
+      object.addProperty("name", name);
+
+      if (!Strings.isNullOrEmpty(permission)) {
+        object.addProperty("permission", permission);
+        object.addProperty("adminCommand", isAdminPermission(permission));
+      }
+
+      if (aliases != null && !aliases.isEmpty()) {
+        object.add("aliases", JsonUtils.ofStream(aliases.stream().map(JsonPrimitive::new)));
+      }
+
+      if (!Strings.isNullOrEmpty(description)) {
+        object.addProperty("description", description);
+      }
+
+      if (!Strings.isNullOrEmpty(category)) {
+        object.addProperty("category", category);
+      }
+
+      if (!usages.isEmpty()) {
+        JsonArray usesArray = JsonUtils.ofStream(
+            usages.stream()
+                .map(usage -> {
+                  JsonWrapper json = JsonWrapper.create();
+                  json.add("arguments", usage.getArguments());
+
+                  if (usage.getInfo() != null) {
+                    json.addArray("info", usage.getInfo(), JsonPrimitive::new);
+                  } else {
+                    json.add("info", new JsonArray());
+                  }
+
+                  if (!Strings.isNullOrEmpty(usage.getPermission())) {
+                    json.add("adminUse", isAdminPermission(usage.getPermission()));
+                  }
+
+                  return json.getSource();
+                })
+        );
+
+        object.add("usages", usesArray);
+      }
+
+      array.add(object);
+    }
 
     public void write(BufferedWriter writer, int headerLevel) throws IOException {
       writer.newLine();
