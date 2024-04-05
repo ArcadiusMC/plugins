@@ -41,7 +41,6 @@ public class UsablesPlugin extends JavaPlugin {
   public void onEnable() {
     actions = Registries.newFreezable();
     conditions = Registries.newFreezable();
-    registerDefaults();
 
     reloadConfig();
 
@@ -86,7 +85,7 @@ public class UsablesPlugin extends JavaPlugin {
     usablesConfig = TomlConfigs.loadPluginConfig(this, UsablesConfig.class);
   }
 
-  private void registerDefaults() {
+  public void registerDefaults() {
     Actions.registerAll(actions);
     Conditions.registerAll(conditions);
   }

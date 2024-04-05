@@ -11,6 +11,7 @@ class ServerListener implements Listener {
   @EventHandler(ignoreCancelled = true)
   public void onServerLoad(ServerLoadEvent event) {
     UsablesPlugin plugin = UsablesPlugin.get();
+    plugin.registerDefaults();
     plugin.freezeRegistries();
     plugin.reload();
   }
