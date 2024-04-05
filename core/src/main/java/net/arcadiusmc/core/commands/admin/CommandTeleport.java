@@ -8,6 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import net.arcadiusmc.command.Exceptions;
+import net.arcadiusmc.text.Text;
+import net.arcadiusmc.user.User;
+import net.arcadiusmc.user.UserTeleport.Type;
+import net.arcadiusmc.user.Users;
 import net.forthecrown.grenadier.CommandContexts;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Grenadier;
@@ -16,8 +20,6 @@ import net.forthecrown.grenadier.annotations.Argument;
 import net.forthecrown.grenadier.annotations.CommandFile;
 import net.forthecrown.grenadier.annotations.VariableInitializer;
 import net.forthecrown.grenadier.types.EntitySelector;
-import net.arcadiusmc.text.Text;
-import net.arcadiusmc.user.Users;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
@@ -183,6 +185,17 @@ public class CommandTeleport {
   }
 
   private boolean teleportTo(Entity e, Location l) {
+    if (e instanceof Player player) {
+      User user = Users.get(player);
+
+      user.createTeleport(() -> l, Type.TELEPORT)
+          .setDelay(null)
+          .setSilent(true)
+          .start();
+
+      return true;
+    }
+
     return e.teleport(l.clone(),
         TeleportCause.COMMAND,
         EntityState.RETAIN_PASSENGERS,
