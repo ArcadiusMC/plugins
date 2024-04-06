@@ -169,10 +169,6 @@ public class ServerListDisplay {
           icon = new DisplayEntry(period, icons, condition, motdPart, prio, protocol, versionText);
         }
 
-        if (icon.getIcons().isEmpty()) {
-          continue;
-        }
-
         registry.register(e.getKey(), icon);
         LOGGER.debug("Loaded serverlist display entry {}", e.getKey());
       }
