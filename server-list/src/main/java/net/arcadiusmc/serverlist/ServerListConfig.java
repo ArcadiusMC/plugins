@@ -13,5 +13,6 @@ public class ServerListConfig {
   private boolean allowChangingProtocolVersions = true;
   private boolean allowChangingVersionText = true;
   private boolean appearOffline = false;
+  private boolean hidePlayers = false;
   private String baseMotd = "&6&ArcadiusMC &7- &e${message}\n&7Currently on ${version}";
 }

@@ -55,6 +55,9 @@ public class ServerlistListener implements Listener {
       event.setCancelled(true);
       return;
     }
+    if (config.hidePlayers()) {
+      event.getPlayerSample().clear();
+    }
 
     int playerCountRange = config.maxPlayerRandomRange();
 

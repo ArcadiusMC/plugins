@@ -52,6 +52,13 @@ allowChangingVersionText = true
 appearOffline = false
 
 #
+# Hides all players what would appear when you hover over the player count
+#
+# Default: false
+#
+hidePlayers = false
+
+#
 # Base motd the serverlist uses
 #
 baseMotd = "${message}\n&7Currently on ${version}"
