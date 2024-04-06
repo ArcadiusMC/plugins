@@ -135,12 +135,9 @@ public class ServerListDisplay {
         if (element.isJsonPrimitive() || element.isJsonArray()) {
           icon = new DisplayEntry(null, readIconList(element), null, null, 0, -1,null);
         } else {
-          var json = JsonWrapper.wrap(element.getAsJsonObject());
+          JsonWrapper json = JsonWrapper.wrap(element.getAsJsonObject());
 
-          List<CachedServerIcon> icons = readIconList(
-              json.get("icons")
-          );
-
+          List<CachedServerIcon> icons = readIconList(json.get("icons"));
           MonthDayPeriod period = MonthDayPeriod.ALL;
           Script condition = null;
           Component motdPart = null;
@@ -185,6 +182,10 @@ public class ServerListDisplay {
   }
 
   private List<CachedServerIcon> readIconList(JsonElement element) {
+    if (element == null) {
+      return List.of();
+    }
+
     if (element.isJsonPrimitive()) {
       var stringPath = element.getAsString();
       Path path = iconDirectory.resolve(stringPath);
