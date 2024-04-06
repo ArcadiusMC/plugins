@@ -1,6 +1,7 @@
 package net.arcadiusmc.afk.listeners;
 
 import net.arcadiusmc.afk.Afk;
+import net.arcadiusmc.afk.PlayerAfkState;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
 import net.arcadiusmc.user.event.UserJoinEvent;
@@ -16,38 +17,45 @@ import org.bukkit.event.player.PlayerMoveEvent;
 
 public class AfkListener implements Listener {
 
-  public static void checkUnafk(PlayerEvent event) {
+  private final Afk afk;
+
+  public AfkListener(Afk afk) {
+    this.afk = afk;
+  }
+
+  private void checkUnafk(PlayerEvent event) {
     checkUnafk(event.getPlayer());
   }
 
-  public static void checkUnafk(Player player) {
+  private void checkUnafk(Player player) {
     User user = Users.get(player);
 
-    if (!Afk.isAfk(user)) {
-      Afk.delayAutoAfk(user);
-      return;
-    }
+    afk.getState(user).ifPresent(state -> {
+      if (!state.isAfk()) {
+        state.setAfkTicks(0);
+        return;
+      }
 
-    Afk.unafk(user);
+      state.unafk();
+    });
   }
 
   @EventHandler(ignoreCancelled = true)
   public void onUserJoin(UserJoinEvent event) {
-    Afk.setAfk(event.getUser(), false, null);
+    afk.addEntry(event.getPlayer().getUniqueId());
   }
 
   @EventHandler(ignoreCancelled = true)
   public void onUserLeave(UserLeaveEvent event) {
     User user = event.getUser();
 
-    Afk.getState(user).ifPresent(afkState -> {
-      if (afkState.isAfk()) {
-        Afk.logAfkTime(user);
-      }
+    afk.getState(user)
+        .filter(PlayerAfkState::isAfk)
+        .ifPresent(state -> {
+          state.logAfkTime(user);
+        });
 
-      afkState.cancelAutoAfk();
-      afkState.cancelPunishTask();
-    });
+    afk.removeEntry(user.getUniqueId());
   }
 
   @EventHandler(ignoreCancelled = true)

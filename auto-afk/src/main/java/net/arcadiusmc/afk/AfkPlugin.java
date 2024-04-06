@@ -17,33 +17,42 @@ public class AfkPlugin extends JavaPlugin {
   @Getter
   private AfkConfig afkConfig;
 
+  @Getter
+  private Afk afk;
+
   private final MessageList messageList = MessageList.create();
 
-  static AfkPlugin plugin() {
+  public static AfkPlugin plugin() {
     return getPlugin(AfkPlugin.class);
   }
 
   @Override
   public void onEnable() {
-    Messages.MESSAGE_LIST.addChild("afk", messageList);
+    Messages.MESSAGE_LIST.addChild(getName(), messageList);
 
     reloadConfig();
 
-    new CommandAfk();
-    Events.register(new AfkListener());
+    afk = new Afk(this);
+
+    new CommandAfk(this);
+    Events.register(new AfkListener(afk));
 
     UserNameFactory factory = Users.getService().getNameFactory();
-    factory.addSuffix("afk.suffix", 1, new AfkNameElement());
-    factory.addProfileField("afk.reason", 31, new AfkProfileField());
+    factory.addSuffix("afk.suffix", 1, new AfkNameElement(afk));
+    factory.addProfileField("afk.reason", 31, new AfkProfileField(afk));
+
+    afk.startTicking();
   }
 
   @Override
   public void onDisable() {
+    afk.stopTicking();
+
     UserNameFactory factory = Users.getService().getNameFactory();
     factory.removeSuffix("afk.suffix");
     factory.removeField("afk.reason");
 
-    Messages.MESSAGE_LIST.removeChild("afk");
+    Messages.MESSAGE_LIST.removeChild(getName());
   }
 
   @Override

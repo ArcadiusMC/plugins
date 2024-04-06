@@ -2,7 +2,7 @@
 #
 # Sets if automatic AFK-ing of players is enabled
 #
-autoAFkEnabled = true
+autoAfkEnabled = true
 
 #
 # Delay until an unmoving player is automatically set as AFK
@@ -17,12 +17,18 @@ autoAfkDelay = "10m"
 allowedAfkTime = "1h"
 
 #
+# The minimum amount of time a player will be tempbanned for
+#
+minTempbanTime = "4h"
+
+#
 # What action is taken when the maximum 'allowedAfkTime' is surpassed by a player
 #
 # Possible values:
 # - 'none': Nothing happens :I
 # - 'kick': The player is kicked
-# - 'tempban' The player is tempbanned until 00:00:00 server time
+# - 'tempban' The player is tempbanned until 00:00:00 server time or for minTempbanTime if the next
+#             day is less than minTempbanTime away
 # - 'permban': lmao
 #
 allowedTimeSurpassed = "kick"

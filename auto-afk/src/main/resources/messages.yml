@@ -1,6 +1,8 @@
 afk:
   _style: "gray"
 
+  reloaded.config:  "Reloaded AFK config."
+
   suffix:           " [AFK]"
   profileField:     "AFK"
 
@@ -14,3 +16,4 @@ afk:
   unafk.other:      "${player} is no longer AFK."
 
   autoAfkReason:    "Automatic, has not moved for longer than ${time}"
+  punishmentReason: "AFK for longer than ${maxAfkTime}."
