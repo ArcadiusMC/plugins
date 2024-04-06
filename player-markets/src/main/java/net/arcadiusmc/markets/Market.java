@@ -104,6 +104,9 @@ public class Market {
   @Getter
   final ValueModifierList priceModifiers = new ValueModifierList();
 
+  @Getter @Setter
+  private int boundRenderOffset = 0;
+
   public Market(String worldName, String regionName) {
     Objects.requireNonNull(worldName, "Null world");
     Objects.requireNonNull(regionName, "Null region name");
@@ -673,6 +676,11 @@ public class Market {
         .getter(market -> market.taxModifiers)
         .setter((market, list) -> market.taxModifiers.addAll(list))
         .excludeIf(ValueModifierList::isEmpty);
+
+    builder.optional("bound_render_offset", Codec.INT)
+        .getter(market -> market.boundRenderOffset)
+        .setter((market, integer) -> market.boundRenderOffset = integer)
+        .excludeIf(integer -> integer == 0);
 
     CODEC = builder.build().codec(initialCodec);
   }

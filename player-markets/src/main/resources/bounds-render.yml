@@ -25,6 +25,14 @@ visibility-period: "30s"
 preferred-render: "particles"
 
 #
+# Forces all markets to be rendered as squares instead of
+# their actual shapes.
+#
+# Default: true
+#
+force-square: true
+
+#
 # Sets the particle used if preferred-render is set to 'particles'
 #
 particle: "minecraft:flame"

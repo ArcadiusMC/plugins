@@ -670,4 +670,30 @@ public class CommandMarkets {
             .filter(Objects::nonNull)
     );
   }
+
+  void getRenderSize(CommandSource source, @Argument("market") Market market) {
+    int off = market.getBoundRenderOffset();
+
+    source.sendMessage(
+        Messages.render("markets.cmd.sizeOffset.get")
+            .addValue("market", market.displayName())
+            .addValue("value", off)
+            .create(source)
+    );
+  }
+
+  void setRenderSize(
+      CommandSource source,
+      @Argument("market") Market market,
+      @Argument("value") int off
+  ) {
+    market.setBoundRenderOffset(off);
+
+    source.sendSuccess(
+        Messages.render("markets.cmd.sizeOffset.get")
+            .addValue("market", market.displayName())
+            .addValue("value", off)
+            .create(source)
+    );
+  }
 }

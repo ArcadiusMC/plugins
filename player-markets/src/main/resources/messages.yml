@@ -47,6 +47,9 @@ markets:
     reset:                  "Reset &6${market}&r."
     merged:                 "Merged &6${market}&r and &6${other}&r."
 
+    sizeOffset.get:         "&6${market}&r highlighter size offset: &e${value}&r."
+    sizeOffset.set:         "Set &6${market}&r highlighter size offset to &e${value}&r."
+
     eviction:
       begin:                "Began eviction of &6${market}&r, reason='&f${reason}&r' eviction-date=&e${date}&r"
       stopped:              "Stopped &6${market}&r eviction."

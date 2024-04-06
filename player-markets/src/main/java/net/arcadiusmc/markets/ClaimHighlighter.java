@@ -95,7 +95,7 @@ public class ClaimHighlighter {
     }
 
     ProtectedRegion region = opt.get();
-    Line[] shape = createShape(region);
+    Line[] shape = createShape(region, market.getBoundRenderOffset());
 
     ClaimRender render;
 
@@ -146,17 +146,24 @@ public class ClaimHighlighter {
     }
   }
 
-  private Line[] createShape(ProtectedRegion region) {
+  private Line[] createShape(ProtectedRegion region, int sizeOffset) {
     if (region.getType() == RegionType.GLOBAL) {
       return new Line[0];
     }
 
-    if (region.getType() == RegionType.CUBOID) {
+    Vector3d sizeOff = Vector3d.from(sizeOffset);
+
+    if (region.getType() == RegionType.CUBOID || config.forceSquare) {
       BlockVector3 weMin = region.getMinimumPoint();
       BlockVector3 weMax = region.getMaximumPoint();
 
-      Vector3d min = Vector3d.from(weMin.getX(), weMin.getY(), weMin.getZ());
-      Vector3d max = Vector3d.from(weMax.getX(), weMax.getY(), weMax.getZ()).add(Vector3d.ONE);
+      Vector3d min = Vector3d.from(weMin.getX(), weMin.getY(), weMin.getZ())
+          .sub(sizeOff);
+
+      Vector3d max = Vector3d.from(weMax.getX(), weMax.getY(), weMax.getZ())
+          .add(Vector3d.ONE)
+          .add(sizeOff);
+
       Line[] shape = new Line[12];
 
       Vector3d[] points = {
@@ -361,6 +368,7 @@ public class ClaimHighlighter {
   private record Config(
       Duration visibilityPeriod,
       RenderType preferred,
+      boolean forceSquare,
       Particle particle,
       double particleDistance,
       List<BlockData> blocks
@@ -368,6 +376,7 @@ public class ClaimHighlighter {
     static final Config EMPTY = new Config(
         Duration.ofSeconds(30),
         RenderType.PARTICLES,
+        true,
         Particle.FLAME,
         .25d,
         List.of(
@@ -391,6 +400,9 @@ public class ClaimHighlighter {
               ExtraCodecs.enumCodec(RenderType.class)
                   .optionalFieldOf("preferred-render", EMPTY.preferred)
                   .forGetter(Config::preferred),
+
+              Codec.BOOL.optionalFieldOf("force-square", EMPTY.forceSquare)
+                  .forGetter(Config::forceSquare),
 
               ExtraCodecs.registryCodec(Registry.PARTICLE_TYPE)
                   .optionalFieldOf("particle", EMPTY.particle)

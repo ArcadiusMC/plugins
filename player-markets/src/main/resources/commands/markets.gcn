@@ -177,3 +177,15 @@ literal("group") {
     description = "Sets a market's group."
   }
 }
+
+literal("render-size-increase") {
+  literal("get").argument("market", @market) {
+    executes = getRenderSize()
+    description = "Shows the size-increase of the claim highlighter bounding box"
+  }
+
+  literal("set").argument("market", @market).argument("value", int(min=0, max=10)) {
+    executes = setRenderSize()
+    description = "Sets the size-increase of the claim highlighter of a market"
+  }
+}
