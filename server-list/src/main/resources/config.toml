@@ -6,6 +6,8 @@
 #
 # Set to 0 or below to disable randomization
 #
+# Default: 5
+#
 maxPlayerRandomRange = 5
 
 #
@@ -13,6 +15,8 @@ maxPlayerRandomRange = 5
 #
 # This may sometimes not work or cause wrong profiles to be connected to the
 # wrong IP due to dynamic IP addresses
+#
+# Default: true
 #
 inferPlayerBasedOffIp = true
 
@@ -24,6 +28,8 @@ inferPlayerBasedOffIp = true
 # version when the whitelist is enabled or the server is otherwise not accessible
 # to regular players
 #
+# Default: true
+#
 allowChangingProtocolVersions = true
 
 #
@@ -33,13 +39,19 @@ allowChangingProtocolVersions = true
 # next to the 5 connection bars. If this (and allowChangingProtocolVersions) are enabled,
 # That text can be changed.
 #
+# Default: true
+#
 allowChangingVersionText = true
 
 #
 # Forces the server to close all ping requests without sending a reply, thus
 # appearing as offline
 #
+# Default: false
+#
 appearOffline = false
 
+#
 # Base motd the serverlist uses
+#
 baseMotd = "${message}\n&7Currently on ${version}"
