@@ -17,7 +17,8 @@ autoAfkDelay = "10m"
 allowedAfkTime = "1h"
 
 #
-# The minimum amount of time a player will be tempbanned for
+# The minimum amount of time a player will be tempbanned for, if
+# allowedTimeSurpased is set to "tempban"
 #
 minTempbanTime = "4h"
 
@@ -25,10 +26,10 @@ minTempbanTime = "4h"
 # What action is taken when the maximum 'allowedAfkTime' is surpassed by a player
 #
 # Possible values:
-# - 'none': Nothing happens :I
-# - 'kick': The player is kicked
-# - 'tempban' The player is tempbanned until 00:00:00 server time or for minTempbanTime if the next
-#             day is less than minTempbanTime away
-# - 'permban': lmao
+# - "none": Nothing happens :I
+# - "kick": The player is kicked
+# - "tempban": The player is tempbanned until 00:00:00 server time or for minTempbanTime if the next
+#              day is less than minTempbanTime away
+# - "permban": lmao
 #
 allowedTimeSurpassed = "kick"
