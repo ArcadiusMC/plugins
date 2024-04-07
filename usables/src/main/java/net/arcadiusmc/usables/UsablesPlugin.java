@@ -54,6 +54,7 @@ public class UsablesPlugin extends JavaPlugin {
     UsablesListeners.registerAll(this);
 
     saver = PeriodicalSaver.create(this::save, () -> Duration.ofMinutes(30));
+    saver.start();
 
     UsablesCommands.createCommands(this);
   }
@@ -67,6 +68,9 @@ public class UsablesPlugin extends JavaPlugin {
 
   @Override
   public void onDisable() {
+    save();
+    saver.stop();
+
     actions = null;
     conditions = null;
   }
