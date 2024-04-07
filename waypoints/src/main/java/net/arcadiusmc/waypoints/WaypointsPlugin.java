@@ -69,6 +69,7 @@ public class WaypointsPlugin extends JavaPlugin {
     WaypointManager m = WaypointManager.getInstance();
     m.discoverer.stopListening();
     m.clear();
+    m.save();
 
     Registry<SignRenderer> renderers = PacketListeners.listeners().getSignRenderers();
     renderers.remove("waypoint_edit_sign");
