@@ -1,29 +1,21 @@
 package net.arcadiusmc.sellshop.loader;
 
-import static net.arcadiusmc.menu.Menus.MAX_INV_SIZE;
-import static net.arcadiusmc.menu.Menus.MIN_INV_SIZE;
-
-import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
+import net.arcadiusmc.menu.MenuCodecs;
 import net.arcadiusmc.menu.Menus;
 import net.arcadiusmc.sellshop.loader.PageLoader.LoadingPage;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.loader.StyleStringCodec;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.arcadiusmc.utils.io.ExtraCodecs;
-import net.arcadiusmc.utils.io.Results;
-import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
@@ -34,32 +26,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 final class SellShopCodecs {
   private SellShopCodecs() {}
-
-  public static final Codec<Integer> INV_SIZE_INT = Codec.INT.comapFlatMap(integer -> {
-    if (Menus.isValidSize(integer)) {
-      return Results.success(integer);
-    }
-    return Results.error("Invalid inventory size: %s", integer);
-  }, Function.identity());
-
-  public static final Codec<Integer> INV_SIZE_STRING;
-  public static final Codec<Integer> INVENTORY_SIZE;
-
-  static {
-    Map<String, Integer> suffixes = new HashMap<>();
-    suffixes.put("row", 9);
-    suffixes.put("rows", 9);
-    suffixes.put("r", 9);
-
-    ArgumentType<Integer> sizeParser
-        = ArgumentTypes.suffixedInt(suffixes, MIN_INV_SIZE, MAX_INV_SIZE);
-
-    INV_SIZE_STRING = Codec.STRING.comapFlatMap(string -> {
-      return ExtraCodecs.safeParse(string, sizeParser);
-    }, String::valueOf);
-
-    INVENTORY_SIZE = ExtraCodecs.combine(INV_SIZE_INT, INV_SIZE_STRING);
-  }
 
   /* ------------------------------------------------------- */
 
@@ -78,7 +44,7 @@ final class SellShopCodecs {
   static final Codec<LoadingPage> PAGE_CODEC = RecordCodecBuilder.create(instance -> {
     return instance
         .group(
-            INVENTORY_SIZE
+            MenuCodecs.INVENTORY_SIZE
                 .optionalFieldOf("size", -1)
                 .forGetter(o -> o.size),
 
