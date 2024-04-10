@@ -29,6 +29,7 @@ import net.arcadiusmc.mail.Mail;
 import net.arcadiusmc.markets.MarketsConfig.TaxBracket;
 import net.arcadiusmc.signshops.SignShopFlags;
 import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.PlayerMessage;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.TextWriter;
 import net.arcadiusmc.text.TextWriters;
@@ -106,6 +107,9 @@ public class Market {
 
   @Getter @Setter
   private int boundRenderOffset = 0;
+
+  @Getter @Setter
+  private PlayerMessage description;
 
   public Market(String worldName, String regionName) {
     Objects.requireNonNull(worldName, "Null world");
@@ -422,6 +426,7 @@ public class Market {
 
     setOwnerId(null);
     setClaimDate(null);
+    setDescription(null);
     getMembers().clear();
     setMemberEditingAllowed(false);
     syncRegion();
@@ -542,6 +547,12 @@ public class Market {
   }
 
   public void writeInfo(TextWriter writer) {
+    if (description != null) {
+      writer.line(description);
+      writer.newLine();
+      writer.newLine();
+    }
+
     writer.field("World Name", worldName);
     writer.field("Region name", regionName);
 
@@ -681,6 +692,10 @@ public class Market {
         .getter(market -> market.boundRenderOffset)
         .setter((market, integer) -> market.boundRenderOffset = integer)
         .excludeIf(integer -> integer == 0);
+
+    builder.optional("description", PlayerMessage.CODEC)
+        .getter(Market::getDescription)
+        .setter(Market::setDescription);
 
     CODEC = builder.build().codec(initialCodec);
   }
