@@ -29,6 +29,9 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.spongepowered.math.vector.Vector2d;
+import org.spongepowered.math.vector.Vector2f;
+import org.spongepowered.math.vector.Vector2i;
 import org.spongepowered.math.vector.Vectord;
 import org.spongepowered.math.vector.Vectorf;
 import org.spongepowered.math.vector.Vectori;
@@ -230,8 +233,29 @@ public interface ObjectPlaceholder<T> {
       case "z" -> value.toArray()[2];
       case "w" -> value.toArray()[3];
 
+      case "xy" -> {
+        var arr = value.toArray();
+        yield Vector2i.from(arr[0], arr[1]);
+      }
+
+      case "xz" -> {
+        var arr = value.toArray();
+        yield Vector2i.from(arr[0], arr[2]);
+      }
+
       case "length" -> value.length();
       case "negate" -> value.negate();
+
+      case "volume" -> {
+        var arr = value.toArray();
+        double result = 1;
+
+        for (var v : arr) {
+          result *= v;
+        }
+
+        yield result;
+      }
 
       default -> TextFormatTypes.VECTOR.resolve(value, "", ctx.viewer());
     };
@@ -244,8 +268,29 @@ public interface ObjectPlaceholder<T> {
       case "z" -> value.toArray()[2];
       case "w" -> value.toArray()[3];
 
+      case "xy" -> {
+        var arr = value.toArray();
+        yield Vector2f.from(arr[0], arr[1]);
+      }
+
+      case "xz" -> {
+        var arr = value.toArray();
+        yield Vector2f.from(arr[0], arr[2]);
+      }
+
       case "length" -> value.length();
       case "negate" -> value.negate();
+
+      case "volume" -> {
+        var arr = value.toArray();
+        double result = 1;
+
+        for (var v : arr) {
+          result *= v;
+        }
+
+        yield result;
+      }
 
       default -> TextFormatTypes.VECTOR.resolve(value, "", ctx.viewer());
     };
@@ -258,8 +303,29 @@ public interface ObjectPlaceholder<T> {
       case "z" -> value.toArray()[2];
       case "w" -> value.toArray()[3];
 
+      case "xy" -> {
+        var arr = value.toArray();
+        yield Vector2d.from(arr[0], arr[1]);
+      }
+
+      case "xz" -> {
+        var arr = value.toArray();
+        yield Vector2d.from(arr[0], arr[2]);
+      }
+
       case "length" -> value.length();
       case "negate" -> value.negate();
+
+      case "volume" -> {
+        var arr = value.toArray();
+        double result = 1;
+
+        for (var v : arr) {
+          result *= v;
+        }
+
+        yield result;
+      }
 
       default -> TextFormatTypes.VECTOR.resolve(value, "", ctx.viewer());
     };
