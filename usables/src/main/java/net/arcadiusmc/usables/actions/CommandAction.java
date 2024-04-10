@@ -12,14 +12,13 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import lombok.Getter;
 import net.arcadiusmc.command.Commands;
-import net.forthecrown.grenadier.CommandSource;
-import net.forthecrown.grenadier.Grenadier;
 import net.arcadiusmc.usables.Action;
 import net.arcadiusmc.usables.Interaction;
-import net.arcadiusmc.usables.UsableComponent;
 import net.arcadiusmc.usables.ObjectType;
+import net.arcadiusmc.usables.UsableComponent;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.Grenadier;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -65,7 +64,19 @@ public class CommandAction implements Action {
     }
 
     CommandSender sender = interaction.getObject().getCommandSender();
-    Bukkit.dispatchCommand(sender, formattedCommand);
+    CommandSource source = optionallyMute(sender, interaction);
+
+    Grenadier.dispatch(source, formattedCommand);
+  }
+
+  private CommandSource optionallyMute(CommandSender base, Interaction interaction) {
+    CommandSource source = Grenadier.createSource(base);
+
+    if (!interaction.getBoolean("silent").orElse(false)) {
+      return source;
+    }
+
+    return source.silent();
   }
 
   @Override
