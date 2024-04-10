@@ -138,6 +138,10 @@ public class AutoEvictions {
     Collection<Market> markets = manager.getMarkets();
 
     for (Market market : markets) {
+      if (market.getOwnerId() == null) {
+        continue;
+      }
+
       scanMarket(market, manager, aggressionMap);
     }
 
