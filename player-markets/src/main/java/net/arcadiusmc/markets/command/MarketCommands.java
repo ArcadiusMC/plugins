@@ -17,6 +17,8 @@ public class MarketCommands {
 
     new CommandMarketBounds(plugin);
     new CommandMergeShop();
+    new CommandMarketsList(plugin.getLists());
+    new CommandMarketDescription();
 
     AnnotatedCommandContext ctx = Commands.createAnnotationContext();
     ctx.registerCommand(new CommandMarkets(plugin));

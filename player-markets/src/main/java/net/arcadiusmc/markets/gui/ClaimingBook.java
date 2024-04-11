@@ -3,7 +3,6 @@ package net.arcadiusmc.markets.gui;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.sk89q.worldedit.math.BlockVector3;
 import net.arcadiusmc.command.Exceptions;
-import net.arcadiusmc.markets.Debts;
 import net.arcadiusmc.markets.Market;
 import net.arcadiusmc.markets.Markets;
 import net.arcadiusmc.markets.MarketsConfig;
@@ -32,9 +31,7 @@ public final class ClaimingBook {
         .author(Component.text(Bukkit.getName()))
         .addCentered(title);
 
-    Debts debts = MarketsPlugin.plugin().getDebts();
-
-    int price = market.getPrice() + debts.getDebts().get(user.getUniqueId());
+    int price = market.getPriceFor(user);
     int rent = market.getBaseRent();
     int entrances = market.getEntrances().size();
 

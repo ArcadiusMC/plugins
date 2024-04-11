@@ -1,0 +1,69 @@
+#
+# Settings
+#
+settings:
+  #
+  # Whether the names of header items are aligned to the middle
+  #
+  # Default: true
+  #
+  align-header-names: true
+
+  #
+  # Name shown on taken player shops
+  #
+  taken-name: "&4${owner}'s player shop."
+
+  #
+  # Name shown on available player shops in the inventory
+  #
+  available-name: "&a&lAvailable player shop."
+
+  #
+  # First line of every shop's description
+  #
+  first-line: "&6&nClick to locate shop."
+
+  #
+  # Price line text
+  #
+  price-line: "&ePrice: &7${price}."
+
+#
+# Example section to show how the file is formatted
+#
+# (Values are required unless stated otherwise)
+#
+example:
+  #
+  # Inventory title
+  #
+  title: "Menu Title"
+
+  #
+  # Header item display name
+  #
+  header-title: "&a&lHeader item name"
+
+  #
+  # All market groups included in this menu, you can see what
+  # group a player shop belongs to by doing `/markets groups get <market name>`
+  #
+  # Use '*' if it accepts all player shops.
+  #
+  market-groups: ["group1", "group2", "*"]
+
+  #
+  # Size of the inventory
+  #
+  # Optional value, default: 5rows (45 slots)
+  #
+  size: "5rows"
+
+  #
+  # Description shown in the lore of the header item.
+  #
+  description:
+    - "&7Below is a list of all example shops"
+    - "&7line 2 :3"
+

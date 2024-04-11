@@ -10,6 +10,7 @@ dependencies {
   compileOnly(project(":commons"))
   compileOnly(project(":sign-shops"))
   compileOnly(project(":mail"))
+  compileOnly(project(":menus"))
 }
 
 pluginYml {

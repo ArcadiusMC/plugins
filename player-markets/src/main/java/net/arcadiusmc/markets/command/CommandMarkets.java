@@ -615,7 +615,7 @@ public class CommandMarkets {
     }
 
     source.sendMessage(
-        Messages.render("markets.cmd.groups.get")
+        Messages.render("markets.cmd.group.get")
             .addValue("group", group)
             .addValue("market", market.displayName())
             .create(source)

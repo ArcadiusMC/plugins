@@ -28,6 +28,8 @@ markets:
     allowed:                "&eShop members can now edit sign shops!"
     denied:                 "Shop members can no longer edit sign shops!"
 
+  description.set:          "Set shop description to &f${description}"
+
   cmd:
     reloaded.plugin:        "Reloaded Player-Markets plugin."
     reloaded.config:        "Reloaded Player-Markets config."
@@ -132,7 +134,7 @@ markets:
 
   entrances:
     _style: "reset"
-    purchasePrompt:         "Purchase shop!"
+    purchasePrompt:         "&aPurchase shop!"
 
     claimed:
       line1:                ""
@@ -193,9 +195,9 @@ markets:
       Shop members:
       &l${members.totalCount}&r
       
-      
+        &f.&r${text: content='[Set Description]' color=blue bold=true suggest_command='/shop-description' hover='Use \'\&e/shop-description\&r\' to set your shop\'s description.'}
         ${showClaimSize}
-         ${text: content='[Transfer Shop]' bold=true color=blue hover='Use \'\&e/transfer-shop\&r\' to transfer your shop to another player.' suggest_command='/transfer-shop '}
+        ${text: content='[Transfer Shop]' bold=true color=blue hover='Use \'\&e/transfer-shop\&r\' to transfer your shop to another player.' suggest_command='/transfer-shop '}
           ${text: content='[Unclaim Shop]' bold=true color=blue hover='Use \'\&e/unclaim-shop\&r\' to unclaim your shop.' suggest_command='/unclaim-shop'}
 
     content.members: |-
@@ -247,7 +249,7 @@ markets:
       &l${rent}&r.
       
       ${entranceCount} entrances.
-      &l${size.x}x${size.y}x${size.z}&r blocks.
+      &l${size.xz.volume}&r blocks²
       
        &l${showClaimSize}
               ${rentButton}

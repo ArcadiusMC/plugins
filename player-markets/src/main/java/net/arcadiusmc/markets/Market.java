@@ -36,9 +36,12 @@ import net.arcadiusmc.text.TextWriters;
 import net.arcadiusmc.text.UnitFormat;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
+import net.arcadiusmc.utils.Audiences;
+import net.arcadiusmc.utils.ScoreIntMap;
 import net.arcadiusmc.utils.io.ExistingObjectCodec;
 import net.arcadiusmc.utils.io.ExistingObjectCodec.Builder;
 import net.arcadiusmc.utils.io.ExtraCodecs;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
@@ -207,6 +210,20 @@ public class Market {
   public int getPrice() {
     int base = getBasePrice();
     return priceModifiers.apply(base);
+  }
+
+  public int getPriceFor(Audience viewer) {
+    User user = Audiences.getUser(viewer);
+    int price = getPrice();
+
+    if (user == null || manager == null) {
+      return price;
+    }
+
+    ScoreIntMap<UUID> debts = manager.getPlugin().getDebts().getDebts();
+    int debt = debts.get(user.getUniqueId());
+
+    return debt + price;
   }
 
   public boolean isRentSet() {

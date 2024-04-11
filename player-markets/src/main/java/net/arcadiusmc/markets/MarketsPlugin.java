@@ -5,6 +5,7 @@ import java.time.Duration;
 import lombok.Getter;
 import net.arcadiusmc.markets.autoevict.AutoEvictions;
 import net.arcadiusmc.markets.command.MarketCommands;
+import net.arcadiusmc.markets.gui.ShopLists;
 import net.arcadiusmc.markets.listeners.MarketListeners;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.loader.MessageList;
@@ -28,6 +29,7 @@ public class MarketsPlugin extends JavaPlugin {
   private MarketResets resets;
   private Debts debts;
   private ClaimHighlighter highlighter;
+  private ShopLists lists;
 
   public static MarketsPlugin plugin() {
     return getPlugin(MarketsPlugin.class);
@@ -45,6 +47,7 @@ public class MarketsPlugin extends JavaPlugin {
     resets = new MarketResets(this);
     debts = new Debts(this);
     highlighter = new ClaimHighlighter(this);
+    lists = new ShopLists(this);
 
     reload();
 
@@ -76,6 +79,7 @@ public class MarketsPlugin extends JavaPlugin {
 
     resets.load();
     highlighter.load();
+    lists.load();
 
     if (manager.isServerLoaded()) {
       manager.scheduleMarketTicker();
