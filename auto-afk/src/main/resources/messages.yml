@@ -4,7 +4,7 @@ afk:
   reloaded.config:  "Reloaded AFK config."
 
   suffix:           " [AFK]"
-  profileField:     "AFK"
+  profileField:     "&eAFK"
 
   self.noMessage:   "You are now AFK."
   self.message:     "You are AFK: ${message}"
