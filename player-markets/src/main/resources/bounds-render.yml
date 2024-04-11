@@ -13,9 +13,7 @@ visibility-period: "30s"
 # - blocks
 #
 # Particles:
-#  Renders the outline of the border using particles,
-#  settings for this value are in the 'particle-render'
-#  section
+#  Renders the outline of the border using particles.
 #
 # Blocks:
 #  Creates an outline using blocks of the shop's claim
