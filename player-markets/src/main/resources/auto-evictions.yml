@@ -45,8 +45,6 @@ aggression-multiplier: 1.0
 # Changes whether 'aggression' is calculated relative to each
 # market group (region), or whether it's calculated globally.
 #
-# See the 'groups.yml' for more info on market groups.
-#
 # Default: true
 #
 localized-aggression: true
