@@ -20,6 +20,7 @@ import net.arcadiusmc.factions.FactionMember;
 import net.arcadiusmc.factions.FactionProperty;
 import net.arcadiusmc.factions.FactionsPlugin;
 import net.arcadiusmc.factions.Properties;
+import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.TextJoiner;
 import net.arcadiusmc.user.User;
@@ -246,9 +247,9 @@ public class CommandFactions {
   CompletableFuture<Suggestions> suggestPropertyValues(
       CommandContext<CommandSource> context,
       SuggestionsBuilder builder,
-      @Argument("property") FactionProperty<Object> property
+      @Argument("property") Holder<FactionProperty<Object>> property
   ) {
-    return property.getArgumentType().listSuggestions(context, builder);
+    return property.getValue().getArgumentType().listSuggestions(context, builder);
   }
 
   void unsetProperty(
