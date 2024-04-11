@@ -4,6 +4,7 @@ import static net.arcadiusmc.text.Messages.MESSAGE_LIST;
 
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.serialization.JsonOps;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
@@ -15,16 +16,17 @@ import java.util.Random;
 import java.util.Set;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.text.loader.MessageRef;
-import net.arcadiusmc.utils.io.JsonUtils;
+import net.arcadiusmc.utils.VanillaAccess;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.JsonWrapper;
 import net.arcadiusmc.utils.io.PathUtil;
 import net.arcadiusmc.utils.io.PluginJar;
 import net.arcadiusmc.utils.io.SerializationHelper;
 import org.bukkit.HeightMap;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
-import org.bukkit.block.Biome;
 import org.bukkit.entity.Player;
 import org.slf4j.Logger;
 
@@ -38,7 +40,7 @@ public class Wild {
   private final Path path;
   private final Random random;
 
-  private final Set<Biome> bannedBiomes = new ObjectOpenHashSet<>();
+  private final Set<NamespacedKey> bannedBiomes = new ObjectOpenHashSet<>();
 
   private int maxRange = 15000;
   private int maxAttempts = 1024;
@@ -65,6 +67,8 @@ public class Wild {
   }
 
   public Location findWild(World world) {
+    com.sk89q.worldedit.world.World weWorld = BukkitAdapter.adapt(world);
+
     int[] limitsX = { 0, 0 };
     int[] limitsZ = { 0, 0 };
 
@@ -83,7 +87,7 @@ public class Wild {
 
     int attempts = 0;
 
-    while (true) {
+    outer: while (true) {
       attempts++;
 
       if (attempts >= maxAttempts) {
@@ -129,10 +133,12 @@ public class Wild {
         validationY--;
       }
 
-      Biome biome = world.getBiome(x, validationY, z);
+      for (NamespacedKey bannedBiome : bannedBiomes) {
+        if (!VanillaAccess.biomeMatches(world, x, validationY, z, bannedBiome)) {
+          continue;
+        }
 
-      if (bannedBiomes.contains(biome)) {
-        continue;
+        continue outer;
       }
 
       if (!isPassable(world, x, y, z) || !isPassable(world, x, y + 1, z)) {
@@ -172,11 +178,16 @@ public class Wild {
   private void load(JsonObject obj) {
     JsonWrapper json = JsonWrapper.wrap(obj);
 
-    maxRange = json.getInt("spawn_range", 15_000);
-    maxAttempts = json.getInt("max_attempts", 1024);
+    maxRange = json.getInt("spawn-range", 15_000);
+    maxAttempts = json.getInt("max-attempts", 1024);
 
-    bannedBiomes.addAll(json.getList("banned_biomes", e -> JsonUtils.readEnum(Biome.class, e)));
-    fallingWild = json.getBool("falling_wild", false);
+    fallingWild = json.getBool("falling-wild", false);
+
+    ExtraCodecs.NAMESPACED_KEY.listOf()
+        .parse(JsonOps.INSTANCE, obj.get("banned-biomes"))
+        .mapError(s -> "Failed to load banned_biomes: " + s)
+        .resultOrPartial(LOGGER::error)
+        .ifPresentOrElse(bannedBiomes::addAll, bannedBiomes::clear);
   }
 
   public boolean fallingWild() {

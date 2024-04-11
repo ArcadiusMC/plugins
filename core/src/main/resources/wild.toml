@@ -1,23 +1,35 @@
 
 # The max range /wild will move you to in a world
-spawn_range = 15000
+spawn-range = 15000
 
 # Max attempts made to find a wild destination location
-max_attempts = 1024
+max-attempts = 1024
 
 # Determines if /wild teleports you into the air and gives you slow falling
 # or teleports you to the highest non-air block at a location
-falling_wild = false
+falling-wild = false
 
 # Biomes you cannot /wild into
-banned_biomes = [
-  "ocean",
-  "frozen_ocean",
-  "deep_ocean",
-  "warm_ocean",
-  "lukewarm_ocean",
-  "cold_ocean",
-  "deep_lukewarm_ocean",
-  "deep_cold_ocean",
-  "deep_frozen_ocean"
+banned-biomes = [
+  "minecraft:ocean",
+  "minecraft:frozen_ocean",
+  "minecraft:deep_ocean",
+  "minecraft:warm_ocean",
+  "minecraft:lukewarm_ocean",
+  "minecraft:cold_ocean",
+  "minecraft:deep_lukewarm_ocean",
+  "minecraft:deep_cold_ocean",
+  "minecraft:deep_frozen_ocean",
+  "terra:arcadius/arcadius/tropical_deep_ocean",
+  "terra:arcadius/arcadius/cold_ocean",
+  "terra:arcadius/arcadius/frozen_ocean",
+  "terra:arcadius/arcadius/subtropical_ocean",
+  "terra:arcadius/arcadius/coral_ocean",
+  "terra:arcadius/arcadius/tropical_ocean",
+  "terra:arcadius/arcadius/frozen_deep_ocean",
+  "terra:arcadius/arcadius/cold_deep_ocean",
+  "terra:arcadius/arcadius/subtropical_deep_ocean",
+  "terra:arcadius/arcadius/iceberg_ocean",
+  "terra:arcadius/arcadius/ocean",
+  "terra:arcadius/arcadius/deep_ocean",
 ]
