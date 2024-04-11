@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import net.arcadiusmc.command.ArcSuggestions;
@@ -20,6 +21,7 @@ import net.forthecrown.grenadier.types.EntitySelector;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 
 public class ExpandedEntityArgument implements ArgumentType<EntitySelector> {
 
@@ -52,8 +54,8 @@ public class ExpandedEntityArgument implements ArgumentType<EntitySelector> {
       UUID uuid = UUID.fromString(str);
       Entity entity = Bukkit.getEntity(uuid);
 
-      if (entity == null) {
-        throw Grenadier.exceptions().noEntityFound();
+      if (entity != null) {
+        return new DirectResult(entity);
       }
     } catch (IllegalArgumentException exc) {
       // Ignored, move onto parsing from username
@@ -100,5 +102,77 @@ public class ExpandedEntityArgument implements ArgumentType<EntitySelector> {
       Completions.suggest(builder, entities);
       ArcSuggestions.suggestPlayerNames(s, builder1, false);
     });
+  }
+
+  record DirectResult(Entity entity) implements EntitySelector {
+
+    Player getPlayer(CommandSource source) {
+      if (!source.canSee(entity)) {
+        return null;
+      }
+      if (!(entity instanceof Player player)) {
+        return null;
+      }
+      return player;
+    }
+
+    @Override
+    public Player findPlayer(CommandSource source) throws CommandSyntaxException {
+      Player player = getPlayer(source);
+      if (player != null) {
+        return player;
+      }
+
+      throw Grenadier.exceptions().noPlayerFound();
+    }
+
+    @Override
+    public Entity findEntity(CommandSource source) throws CommandSyntaxException {
+      if (!source.canSee(entity)) {
+        throw Grenadier.exceptions().noEntityFound();
+      }
+
+      return entity;
+    }
+
+    @Override
+    public List<Player> findPlayers(CommandSource source) throws CommandSyntaxException {
+      Player player = getPlayer(source);
+
+      if (player == null) {
+        return List.of();
+      }
+
+      return List.of(player);
+    }
+
+    @Override
+    public List<Entity> findEntities(CommandSource source) throws CommandSyntaxException {
+      if (!source.canSee(entity)) {
+        return List.of();
+      }
+
+      return List.of(entity);
+    }
+
+    @Override
+    public boolean isSelfSelector() {
+      return false;
+    }
+
+    @Override
+    public boolean isWorldLimited() {
+      return false;
+    }
+
+    @Override
+    public boolean includesEntities() {
+      return true;
+    }
+
+    @Override
+    public int getMaxResults() {
+      return 1;
+    }
   }
 }
