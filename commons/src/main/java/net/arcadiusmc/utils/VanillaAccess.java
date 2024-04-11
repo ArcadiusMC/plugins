@@ -16,6 +16,7 @@ import net.forthecrown.nbt.paper.TagTranslators;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -27,6 +28,7 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -330,5 +332,11 @@ public final class VanillaAccess {
     }
 
     return GlobalTranslator.translator().translate(key, locale) != null;
+  }
+
+  public static boolean biomeMatches(World world, int x, int y, int z, NamespacedKey key) {
+    ServerLevel level = getLevel(world);
+    Holder<Biome> holder = level.getBiome(new BlockPos(x, y, z));
+    return holder.is(CraftNamespacedKey.toMinecraft(key));
   }
 }
