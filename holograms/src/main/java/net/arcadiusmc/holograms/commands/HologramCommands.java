@@ -10,5 +10,6 @@ public final class HologramCommands {
   public static void createCommands(HologramPlugin plugin) {
     AnnotatedCommandContext ctx = Commands.createAnnotationContext();
     ctx.registerCommand(new CommandLeaderboard(plugin));
+    ctx.registerCommand(new CommandHologram(plugin));
   }
 }

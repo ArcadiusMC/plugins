@@ -1,0 +1,156 @@
+
+literal("info").argument("display" @display) {
+  executes = showInfo()
+  description = "Shows info about a leaderboard"
+}
+
+literal("update").argument("display" @display) {
+  executes = updateDisplay()
+  description = "Updates a leaderboard"
+}
+
+literal("update-all") {
+  executes = updateAll()
+  description = "Updates all leaderboards"
+}
+
+literal("kill").argument("display" @display) {
+  executes = killDisplay()
+  description = "Kills a leaderboard"
+}
+
+literal("spawn").argument("display" @display) {
+  executes = spawnDisplay()
+  description = "Spawns a leaderboard"
+}
+
+literal("location").argument("display" @display) {
+  executes = setLocation()
+  description = "Moves a leaderboard to where you're standing"
+
+  argument("pos", vec3d) {
+    label = "<pos: x y z>"
+    executes = setLocation()
+    map_result = result.apply()
+    description = "Moves a leaderboard to the specified xyz coordinates"
+  }
+}
+
+literal("list") {
+  executes = listDisplays()
+  description = "Lists all displays"
+
+  argument("page", int(min=1)) {
+    label = "[<page size>]"
+    executes = listDisplays()
+
+    argument("pageSize", int(min=5, max=20)) {
+      label = "[<page size>]"
+      executes = listDisplays()
+      description = "Lists all displays on a specific page"
+    }
+  }
+}
+
+literal("entity") {
+  literal("yaw").argument("display" @display).argument("value", float(min=-180, max=180)) {
+    executes = setYaw()
+    description = "Sets the yaw (x rotation) of a display"
+  }
+  literal("pitch").argument("display" @display).argument("value", float(min=-180, max=180)) {
+    executes = setPitch()
+    description = "Sets the pitch (y rotation) of a display"
+  }
+
+  literal("scale") {
+    literal("set").argument("display" @display).argument("value", vec3d) {
+      executes = setScale()
+      description = "Sets a display's scale"
+    }
+    literal("unset").argument("display" @display) {
+      executes = setScale()
+      description = "Removes a set scale value from a display"
+    }
+  }
+
+  literal("translation") {
+    literal("set").argument("display" @display).argument("value", vec3d) {
+      executes = setTranslation()
+      description = "Sets the transformation offset of a display"
+    }
+    literal("unset").argument("display" @display) {
+      executes = setTranslation()
+      description = "Removes a set offset value from a display"
+    }
+  }
+
+  literal("billboard").argument("display" @display).argument("value", @billboard) {
+    executes = setBillboard()
+    description = [
+      "Sets the 'billboard' value of a display",
+      "A 'billboard' decides if a display is always rotated to face you",
+      "or is at a fixed angle"
+    ]
+  }
+  literal("text-align").argument("display" @display).argument("value", @alignment) {
+    executes = setAlign()
+    description = "Sets the text alignment of a display (left, right, or center)"
+  }
+
+  literal("background-color") {
+    literal("set").argument("display" @display).argument("value", @color) {
+      executes = setBackColor()
+      description = "Sets the background color of a display"
+    }
+    literal("unset").argument("display" @display) {
+      executes = setBackColor()
+      description = "Removes a set background color value from a display"
+    }
+  }
+
+  literal("brightness") {
+    literal("set").argument("display" @display)
+        .argument("skylight", int(min=0, max=15))
+        .argument("blocklight", int(min=0, max=15))
+    {
+      executes = setBrightness()
+      description = "Sets the 'brightness' of a display"
+    }
+    literal("unset").argument("display" @display) {
+      executes = setBrightness()
+      description = "Removes a set 'brightness' value from a display"
+    }
+  }
+
+  literal("shadowed").argument("display" @display).argument("value", bool) {
+    label = "<true|false>"
+    executes = setShadowed()
+    description = "Sets the background color of a display"
+  }
+  literal("see-through").argument("display" @display).argument("value", bool) {
+    executes = setSeeThrough()
+    description = "Sets if a display can be seen through"
+  }
+
+  literal("line-width") {
+    literal("set").argument("display" @display).argument("value", int(min=1)) {
+      executes = setLineWidth()
+      description = "Sets a display's line width"
+    }
+    literal("unset").argument("display" @display) {
+      executes = setLineWidth()
+      description = "Removes a display's set line-width value"
+    }
+  }
+
+  literal("text-opacity") {
+    literal("set").argument("display" @display).argument("value", int(min=0, max=127)) {
+      executes = setOpacity()
+      description = "Sets the text opacity of a display"
+    }
+    literal("unset").argument("display" @display) {
+      executes = setOpacity()
+      description = "Removes the set text opacity value of display"
+    }
+  }
+}

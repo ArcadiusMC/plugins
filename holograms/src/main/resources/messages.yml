@@ -1,3 +1,25 @@
+holograms:
+  _style: "gray"
+
+  errors:
+    _style: "red"
+    notSpawned:           "Hologram has not been spawned."
+    alreadyExists:        "A hologram with the name '${name}' already exists!"
+    alreadyInactive:      "Hologram is already inactive."
+    alreadySpawned:       "Hologram has already been spawned."
+    copySelf:             "Cannot copy from self."
+
+  spawned:                "Spawned hologram &e${board}&r."
+  updated:                "Updated hologram &e${board}&r."
+  killed:                 "Killed hologram &e${board}&r."
+  updateAll:              "Updated ${count} holograms."
+  list.header:            "&eHolograms"
+  location:               "Moved hologram &e${board}&r to &6${location}&r."
+  copied:                 "Copied all style data from &e${source}&r to &6${target}&r."
+  text.set:               "Set &6${board}&r content to '&f${value}&r'"
+  removed:                "Removed hologram &e${board}&r."
+  created:                "Created hologram named '&e${board}&r'"
+
 leaderboards:
   _style: "gray"
 
@@ -7,7 +29,7 @@ leaderboards:
     alreadyExists:        "A leaderboard with the name '${name}' already exists!"
     alreadyInactive:      "Leaderboard is already inactive."
     alreadySpawned:       "Leaderboard has already been spawned."
-    copySelf:             "Cannot copy from self"
+    copySelf:             "Cannot copy from self."
 
   you:                    "You"
 

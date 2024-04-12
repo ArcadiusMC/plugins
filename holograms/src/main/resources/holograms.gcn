@@ -1,0 +1,26 @@
+name = "holograms"
+aliases = "hg" | "holo"
+description = "Holograms admin command"
+
+literal("create").argument("name", rkey) {
+  executes = createHologram()
+  description = "Creates a hologram."
+}
+
+literal("remove").argument("hologram", @holo) {
+  executes = removeHologram()
+  description = "Deletes a hologram."
+}
+
+literal("copy").argument("hologram", @holo).literal("from").argument("from", @holo) {
+  executes = copyHologram()
+  description = "Copies all the data from one hologram to another."
+}
+
+literal("content").argument("hologram", @holo).argument("text", greedy_string) {
+  suggests = suggestChat()
+  executes = setContent()
+  description = "Sets the content of the hologram."
+}
+
+#paste(generic.gcn)
