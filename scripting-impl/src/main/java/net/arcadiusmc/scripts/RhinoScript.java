@@ -36,6 +36,8 @@ import org.slf4j.Logger;
 @Accessors(chain = true)
 public class RhinoScript implements Script {
 
+  private static final String SCRIPT_INST = "__scriptInstance";
+
   public static final String[] EMPTY_STRING_ARRAY = {};
   public static final Object[] EMPTY_OBJECT_ARRAY = {};
 
@@ -83,7 +85,20 @@ public class RhinoScript implements Script {
   }
 
   public static Script fromScope(Scriptable scope) {
-    return ScriptableObject.getTypedProperty(scope, "__scriptInstance", Script.class);
+    Object value;
+
+    while (scope != null) {
+      value = ScriptableObject.getProperty(scope, SCRIPT_INST);
+
+      if (value == Scriptable.NOT_FOUND || !(value instanceof Script script)) {
+        scope = scope.getParentScope();
+        continue;
+      }
+
+      return script;
+    }
+
+    return null;
   }
 
   @Override
@@ -262,8 +277,8 @@ public class RhinoScript implements Script {
       put("args", createArgsArray(ctx));
       put("logger", logger);
       put("_script", bindingScope);
-      put("__scriptInstance", this);
-      ScriptableObject.putProperty(evaluationScope, "__scriptInstance", this);
+      put(SCRIPT_INST, this);
+      ScriptableObject.putProperty(evaluationScope, SCRIPT_INST, this);
 
       put("events", events);
       put("scheduler", scheduler);
