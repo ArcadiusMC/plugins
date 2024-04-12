@@ -8,15 +8,10 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.concurrent.CompletableFuture;
 import net.arcadiusmc.command.arguments.Arguments;
-import net.arcadiusmc.factions.FExceptions;
 import net.arcadiusmc.factions.Faction;
 import net.arcadiusmc.factions.FactionManager;
 import net.arcadiusmc.factions.Factions;
 import net.arcadiusmc.text.Messages;
-import net.arcadiusmc.user.User;
-import net.arcadiusmc.user.UserLookup.LookupEntry;
-import net.arcadiusmc.user.UserService;
-import net.arcadiusmc.user.Users;
 import net.forthecrown.grenadier.Completions;
 
 public enum FactionArgument implements ArgumentType<Faction> {
@@ -32,19 +27,6 @@ public enum FactionArgument implements ArgumentType<Faction> {
 
     if (found != null) {
       return found;
-    }
-
-    UserService service = Users.getService();
-    LookupEntry entry = service.getLookup().query(resourceKey);
-
-    if (entry != null) {
-      Faction active = manager.getCurrentFaction(entry.getUniqueId());
-      if (active != null) {
-        return active;
-      }
-
-      User user = service.getUser(entry);
-      throw FExceptions.notInFaction(null, user);
     }
 
     reader.setCursor(start);
