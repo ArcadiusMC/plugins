@@ -14,6 +14,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 import org.jetbrains.annotations.NotNull;
 
 public class EventsExtension {
@@ -30,13 +31,13 @@ public class EventsExtension {
   /* ---------------------------- REGISTRATION ---------------------------- */
 
   public <E extends Event> void register(Class<E> eventClass, Consumer<E> mirror) {
-    register(eventClass, mirror, true, EventPriority.NORMAL);
+    register(eventClass, mirror, true);
   }
 
   public <E extends Event> void register(
       Class<E> eventClass,
       Consumer<E> mirror,
-      EventPriority priority
+      String priority
   ) {
     register(eventClass, mirror, true, priority);
   }
@@ -46,22 +47,31 @@ public class EventsExtension {
       Consumer<E> mirror,
       boolean ignoreCancelled
   ) {
-    register(eventClass, mirror, ignoreCancelled, EventPriority.NORMAL);
+    register(eventClass, mirror, ignoreCancelled, "normal");
   }
 
   public <E extends Event> void register(
       Class<E> eventClass,
       Consumer<E> mirror,
       boolean ignoreCancelled,
-      EventPriority priority
+      String priorityName
   ) {
     Objects.requireNonNull(eventClass, "Null event class");
     Objects.requireNonNull(mirror, "Null function");
-    Objects.requireNonNull(priority, "Null priority");
+    Objects.requireNonNull(priorityName, "Null priority");
 
     ExecutorWrapper<E> wrapper = new ExecutorWrapper<>(eventClass, mirror, ignoreCancelled);
 
-    var manager = Bukkit.getPluginManager();
+    EventPriority priority = switch (priorityName.toLowerCase()) {
+      case "lowest" -> EventPriority.LOWEST;
+      case "low" -> EventPriority.LOW;
+      case "high" -> EventPriority.HIGH;
+      case "highest" -> EventPriority.HIGHEST;
+      case "monitor" -> EventPriority.MONITOR;
+      default -> EventPriority.NORMAL;
+    };
+
+    PluginManager manager = Bukkit.getPluginManager();
     manager.registerEvent(eventClass, wrapper, priority, wrapper, plugin, ignoreCancelled);
 
     wrappers.add(wrapper);
