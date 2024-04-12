@@ -1,16 +1,16 @@
 package net.arcadiusmc.scripts.builtin;
 
+import net.arcadiusmc.scripts.NonCtorFunction;
 import net.arcadiusmc.scripts.ScriptUtils;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.Sound.Source;
-import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
 
-public class PlaySoundFunction implements Callable {
+public class PlaySoundFunction extends NonCtorFunction {
 
   @Override
   public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {

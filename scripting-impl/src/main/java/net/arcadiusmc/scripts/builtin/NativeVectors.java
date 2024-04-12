@@ -3,6 +3,7 @@ package net.arcadiusmc.scripts.builtin;
 import static org.mozilla.javascript.Context.javaToJS;
 import static org.mozilla.javascript.Context.jsToJava;
 
+import net.arcadiusmc.scripts.NonCtorFunction;
 import net.forthecrown.grenadier.CommandSource;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -38,7 +39,7 @@ final class NativeVectors {
     ScriptableObject.putConstProperty(scriptable, "lerp",   LERP);
   }
 
-  static class LerpFunction implements Callable {
+  static class LerpFunction extends NonCtorFunction {
 
     @Override
     public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
@@ -73,7 +74,7 @@ final class NativeVectors {
     }
   }
 
-  static class Vec3MixedFunction implements Callable {
+  static class Vec3MixedFunction extends NonCtorFunction {
     final boolean inputIsXZ;
 
     public Vec3MixedFunction(boolean inputIsXZ) {
@@ -107,7 +108,7 @@ final class NativeVectors {
         y = v.y;
 
         if (args.length > 1) {
-          z = ScriptRuntime.toNumber(1);
+          z = ScriptRuntime.toNumber(args, 1);
         } else {
           z = 0;
         }
@@ -117,7 +118,7 @@ final class NativeVectors {
     }
   }
 
-  static class Vec2MixedFunction implements Callable {
+  static class Vec2MixedFunction extends NonCtorFunction {
     final boolean inputIsXZ;
 
     public Vec2MixedFunction(boolean inputIsXZ) {
@@ -146,7 +147,7 @@ final class NativeVectors {
     }
   }
 
-  static class Vec2Function implements Callable {
+  static class Vec2Function extends NonCtorFunction {
 
     @Override
     public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
@@ -177,7 +178,7 @@ final class NativeVectors {
     }
   }
 
-  static class Vec3Function implements Callable {
+  static class Vec3Function extends NonCtorFunction {
     @Override
     public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
       int len = Math.min(args.length, 3);

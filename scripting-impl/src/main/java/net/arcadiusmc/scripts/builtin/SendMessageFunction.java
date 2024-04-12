@@ -1,16 +1,16 @@
 package net.arcadiusmc.scripts.builtin;
 
 import lombok.RequiredArgsConstructor;
+import net.arcadiusmc.scripts.NonCtorFunction;
 import net.arcadiusmc.scripts.ScriptUtils;
 import net.forthecrown.grenadier.CommandSource;
 import net.kyori.adventure.text.Component;
-import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
 
 @RequiredArgsConstructor
-public class SendMessageFunction implements Callable {
+public class SendMessageFunction extends NonCtorFunction {
 
   private final boolean actionbar;
 

@@ -1,5 +1,6 @@
 package net.arcadiusmc.scripts.builtin;
 
+import net.arcadiusmc.scripts.NonCtorFunction;
 import net.arcadiusmc.scripts.ScriptUtils;
 import net.forthecrown.grenadier.CommandSource;
 import net.arcadiusmc.text.placeholder.PlaceholderContext;
@@ -15,7 +16,7 @@ import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
-public class RenderPlaceholdersFunction implements Callable {
+public class RenderPlaceholdersFunction extends NonCtorFunction {
 
   @Override
   public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {

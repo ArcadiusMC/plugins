@@ -1,19 +1,19 @@
 package net.arcadiusmc.scripts.builtin;
 
-import net.forthecrown.grenadier.CommandSource;
+import net.arcadiusmc.scripts.NonCtorFunction;
 import net.arcadiusmc.scripts.ScriptUtils;
 import net.arcadiusmc.utils.inventory.ItemStacks;
+import net.forthecrown.grenadier.CommandSource;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
 
-public class GiveItemFunction implements Callable {
+public class GiveItemFunction extends NonCtorFunction {
 
   @Override
   public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
