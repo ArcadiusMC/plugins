@@ -1,5 +1,6 @@
 package net.arcadiusmc.core.listeners;
 
+import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -25,7 +26,8 @@ public class PlayerTeleportListener implements Listener {
 
   @EventHandler(ignoreCancelled = true)
   public void onPlayerDeath(PlayerDeathEvent event) {
-    var user = Users.get(event.getPlayer());
+    User user = Users.get(event.getPlayer());
+    user.setReturnLocation(user.getLocation());
 
     if (!user.isTeleporting()) {
       return;
