@@ -3,6 +3,7 @@ package net.arcadiusmc.holograms;
 import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.Setter;
+import net.arcadiusmc.text.TextWriter;
 import net.arcadiusmc.text.parse.ChatParser;
 import net.arcadiusmc.text.parse.TextContext;
 import net.arcadiusmc.text.placeholder.Placeholders;
@@ -40,5 +41,18 @@ public class TextImpl extends Hologram implements TextHologram {
   public void copyFrom(TextImpl source) {
     this.text = source.text;
     displayMeta.copyFrom(source.displayMeta);
+  }
+
+  @Override
+  protected void writeHover(TextWriter writer) {
+    super.writeHover(writer);
+
+    if (!Strings.isNullOrEmpty(text)) {
+      writer.field("Text", editableTextFormat("/holograms content %s %s", text));
+      writer.newLine();
+      writer.newLine();
+    }
+
+    displayMeta.write(writer);
   }
 }
