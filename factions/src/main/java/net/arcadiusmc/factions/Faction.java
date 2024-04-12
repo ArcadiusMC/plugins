@@ -13,6 +13,8 @@ import java.util.stream.Stream;
 import lombok.Getter;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.command.Commands;
+import net.arcadiusmc.factions.event.FactionJoinEvent;
+import net.arcadiusmc.factions.event.FactionLeaveEvent;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.TextWriter;
@@ -165,6 +167,9 @@ public class Faction {
     if (Factions.isDiscordEnabled()) {
       FactionsDiscord.onJoin(this, user);
     }
+
+    FactionJoinEvent event = new FactionJoinEvent(user, this);
+    event.callEvent();
   }
 
   public void leave(User user) {
@@ -197,6 +202,9 @@ public class Faction {
     if (Factions.isDiscordEnabled()) {
       FactionsDiscord.onLeave(this, user);
     }
+
+    FactionLeaveEvent event = new FactionLeaveEvent(user, this);
+    event.callEvent();
   }
 
   /* --------------------------- properties ---------------------------- */
