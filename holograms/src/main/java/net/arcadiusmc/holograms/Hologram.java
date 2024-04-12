@@ -114,7 +114,7 @@ public abstract class Hologram implements HolographicDisplay {
       return true;
     }
 
-    var opt = getEntity();
+    Optional<TextDisplay> opt = getEntity();
     if (opt.isEmpty()) {
       return false;
     }
@@ -252,19 +252,18 @@ public abstract class Hologram implements HolographicDisplay {
     return writer.asComponent();
   }
 
-  protected Component editableTextFormat(String argName, PlayerMessage message) {
+  protected Component editableTextFormat(String format, PlayerMessage message) {
+    return editableTextFormat(format, message.getMessage());
+  }
+
+  protected Component editableTextFormat(String format, String message) {
     return text()
         .append(text("[", NamedTextColor.AQUA))
-        .append(text(message.getMessage()))
+        .append(text(message))
         .append(text("]", NamedTextColor.AQUA))
 
         .hoverEvent(text("Click to edit"))
-
-        .clickEvent(ClickEvent.suggestCommand(
-            argName.contains("you-format")
-                ? String.format("/lb %s set %s %s", argName, name, message.getMessage())
-                : String.format("/lb %s %s %s", argName, name, message.getMessage())
-        ))
+        .clickEvent(ClickEvent.suggestCommand(String.format(format, name, message)))
 
         .build();
   }
