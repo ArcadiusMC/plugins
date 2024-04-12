@@ -10,6 +10,7 @@ repositories {
 dependencies {
   compileOnly(project(":commons"))
   compileOnly(project(":usables"))
+  compileOnly(project(":player-markets"))
 
   compileOnly(project(":discord"))
   compileOnly("com.discordsrv:discordsrv:1.27.1-SNAPSHOT")
