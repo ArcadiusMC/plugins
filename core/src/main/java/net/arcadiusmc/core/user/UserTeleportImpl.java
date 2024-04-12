@@ -91,13 +91,16 @@ public class UserTeleportImpl implements UserTeleport {
       // If we should use async tp for players and we've selected
       // to use async for this, then TP async, else in sync
       if (async) {
-        player.teleportAsync(dest);
+        player.teleportAsync(dest)
+            .whenComplete((aBoolean, throwable) -> {
+              user.playSound(Sound.ENTITY_ENDERMAN_TELEPORT, 1, 1);
+            });
       } else {
         // Ignore passengers and dismount the player if they're riding
         // another entity
         player.teleport(dest, EntityState.RETAIN_PASSENGERS);
+        user.playSound(Sound.ENTITY_ENDERMAN_TELEPORT, 1, 1);
       }
-      user.playSound(Sound.ENTITY_ENDERMAN_TELEPORT, 1, 1);
 
       if (setReturn) {
         user.setReturnLocation(location);
