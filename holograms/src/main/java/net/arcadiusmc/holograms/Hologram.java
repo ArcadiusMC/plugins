@@ -272,4 +272,21 @@ public abstract class Hologram implements HolographicDisplay {
   protected void writeHover(TextWriter writer) {
 
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Hologram hologram)) {
+      return false;
+    }
+    return Objects.equals(entityKey, hologram.entityKey)
+        && Objects.equals(name, hologram.name);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(entityKey, name);
+  }
 }
