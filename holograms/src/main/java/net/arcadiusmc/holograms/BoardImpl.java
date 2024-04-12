@@ -143,6 +143,9 @@ public class BoardImpl extends Hologram implements Leaderboard {
     if (board.youFormat != null) {
       this.youFormat = board.youFormat;
     }
+    if (board.emptyFormat != null) {
+      this.emptyFormat = board.emptyFormat;
+    }
 
     if (board.maxEntries != DEFAULT_MAX_SIZE) {
       this.maxEntries = board.maxEntries;
