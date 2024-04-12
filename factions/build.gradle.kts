@@ -21,6 +21,7 @@ pluginYml {
   main = "net.arcadiusmc.factions.FactionsPlugin"
 
   depends {
+    optional("project:player-markets")
     optional("project:discord")
     optional("DiscordSRV")
   }

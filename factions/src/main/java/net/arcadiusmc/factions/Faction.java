@@ -168,6 +168,11 @@ public class Faction {
       FactionsDiscord.onJoin(this, user);
     }
 
+    String marketGroup = get(Properties.MARKET_GROUP);
+    if (!Strings.isNullOrEmpty(marketGroup) && FactionMarkets.isEnabled()) {
+      FactionMarkets.stopMarketEviction(user, marketGroup, this);
+    }
+
     FactionJoinEvent event = new FactionJoinEvent(user, this);
     event.callEvent();
   }
@@ -201,6 +206,11 @@ public class Faction {
 
     if (Factions.isDiscordEnabled()) {
       FactionsDiscord.onLeave(this, user);
+    }
+
+    String marketGroup = get(Properties.MARKET_GROUP);
+    if (!Strings.isNullOrEmpty(marketGroup) && FactionMarkets.isEnabled()) {
+      FactionMarkets.onLeave(user, this, marketGroup);
     }
 
     FactionLeaveEvent event = new FactionLeaveEvent(user, this);
