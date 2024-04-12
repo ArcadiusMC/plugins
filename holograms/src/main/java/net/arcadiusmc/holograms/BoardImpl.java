@@ -25,7 +25,6 @@ import net.forthecrown.grenadier.types.IntRangeArgument.IntRange;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -74,39 +73,26 @@ public class BoardImpl extends Hologram implements Leaderboard {
   }
 
   public void writeHover(TextWriter writer) {
-    writer.field("State",
-        isSpawned()
-            ? text("spawned", NamedTextColor.GREEN)
-            : text("inactive", NamedTextColor.GRAY)
-    );
-
-    writer.newLine();
-    writer.newLine();
+    super.writeHover(writer);
 
     if (source != null) {
       writer.field("Source", source.getKey());
     }
 
-    if (location != null) {
-      writer.formattedField("Location", "{0, location, -c -w}", location);
-      writer.newLine();
-      writer.newLine();
-    }
-
     if (header != null) {
-      writer.field("Header", editableTextFormat("header", header));
+      writer.field("Header", editableTextFormat("/lb header %s %s", header));
     }
     if (format != null) {
-      writer.field("Format", editableTextFormat("format", format));
+      writer.field("Format", editableTextFormat("/lb format %s %s", format));
     }
     if (footer != null) {
-      writer.field("Footer", editableTextFormat("footer", footer));
+      writer.field("Footer", editableTextFormat("/lb footer %s %s", footer));
     }
     if (youFormat != null) {
-      writer.field("You-format", editableTextFormat("you-format", youFormat));
+      writer.field("You-format", editableTextFormat("/lb you-format set %s %s", youFormat));
     }
     if (emptyFormat != null) {
-      writer.field("Empty-format", editableTextFormat("empty-format", emptyFormat));
+      writer.field("Empty-format", editableTextFormat("/lb empty-format set %s %s", emptyFormat));
     }
 
     writer.field("Include-you", includeYou);
@@ -118,6 +104,8 @@ public class BoardImpl extends Hologram implements Leaderboard {
     if (filter != null) {
       writer.field("Filter", filter);
     }
+
+    displayMeta.write(writer);
   }
 
   public void setOrder(@NotNull Order order) {
