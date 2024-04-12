@@ -270,6 +270,18 @@ public abstract class Hologram implements HolographicDisplay {
   }
 
   protected void writeHover(TextWriter writer) {
+    writer.field("State",
+        spawned
+            ? text("spawned", NamedTextColor.GREEN)
+            : text("inactive", NamedTextColor.GRAY)
+    );
+
+    writer.newLine();
+    writer.newLine();
+
+    if (location != null) {
+      writer.formattedField("Location", "{0, location, -c -w}", location);
+    }
 
   }
 
