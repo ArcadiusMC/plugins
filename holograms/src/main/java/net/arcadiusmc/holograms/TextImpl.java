@@ -8,9 +8,15 @@ import net.arcadiusmc.text.parse.TextContext;
 import net.arcadiusmc.text.placeholder.Placeholders;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextReplacementConfig;
 import org.jetbrains.annotations.Nullable;
 
 public class TextImpl extends Hologram implements TextHologram {
+
+  static final TextReplacementConfig NEWLINES = TextReplacementConfig.builder()
+      .matchLiteral("\\n")
+      .replacement("\n")
+      .build();
 
   @Getter @Setter
   private String text;
@@ -26,8 +32,13 @@ public class TextImpl extends Hologram implements TextHologram {
     }
 
     TextContext context = TextContext.of(TEXT_FLAGS, viewer);
-    Component component = ChatParser.parser().parse(text, context);
+    Component component = ChatParser.parser().parse(text, context).replaceText(NEWLINES);
 
     return Placeholders.render(component, viewer);
+  }
+
+  public void copyFrom(TextImpl source) {
+    this.text = source.text;
+    displayMeta.copyFrom(source.displayMeta);
   }
 }
