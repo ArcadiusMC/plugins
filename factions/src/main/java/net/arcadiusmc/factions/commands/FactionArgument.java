@@ -1,6 +1,5 @@
 package net.arcadiusmc.factions.commands;
 
-import com.google.common.base.Strings;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -64,22 +63,11 @@ public enum FactionArgument implements ArgumentType<Faction> {
     String token = builder.getRemainingLowerCase();
 
     for (Faction faction : manager.getFactions()) {
-      if (Completions.matches(token, faction.getKey())) {
-        builder.suggest(faction.getKey());
+      if (!Completions.matches(token, faction.getKey())) {
+        continue;
       }
 
-      faction.getActiveMembers()
-          .map(member -> Users.get(member.getPlayerId()))
-          .forEach(user -> {
-            String name = user.getName();
-            String nick = user.getNickname();
-
-            if (!Strings.isNullOrEmpty(nick) && Completions.matches(token, nick)) {
-              builder.suggest(nick);
-            } else if (Completions.matches(token, name)) {
-              builder.suggest(name);
-            }
-          });
+      builder.suggest(faction.getKey());
     }
 
     return builder.buildFuture();
