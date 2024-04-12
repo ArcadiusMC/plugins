@@ -7,6 +7,7 @@ import java.util.Optional;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import net.arcadiusmc.text.TextWriter;
 import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.Results;
 import net.arcadiusmc.utils.math.Vectors;
@@ -197,5 +198,39 @@ public class TextDisplayMeta implements HologramMeta {
         new AxisAngle4f()
     );
     display.setTransformation(transformation);
+  }
+
+  public void write(TextWriter writer) {
+    if (opacity != -1) {
+      writer.field("Opacity", opacity);
+    }
+    if (lineWidth != -1) {
+      writer.field("Line Width", lineWidth);
+    }
+    if (shadowed) {
+      writer.field("Shadowed", true);
+    }
+    if (seeThrough) {
+      writer.field("See through", true);
+    }
+    writer.field("Yaw", yaw);
+    writer.field("Pitch", pitch);
+
+    if (!Objects.equals(Vector3f.ZERO, translation)) {
+      writer.formattedField("Translate", "{0, vector}", translation);
+    }
+    if (!Objects.equals(Vector3f.ONE, scale)) {
+      writer.formattedField("scale", "{0, vector}", scale);
+    }
+
+    writer.field("Billboard", billboard);
+    writer.field("Text Align", align);
+
+    if (backgroundColor != null) {
+      writer.field("Background Color", backgroundColor);
+    }
+    if (brightness != null) {
+      writer.field("Brightness", brightness);
+    }
   }
 }
