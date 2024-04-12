@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 public class MarketPurchaseAttemptEvent extends UserEvent implements Cancellable {
 
   @Getter
-  private static HandlerList handlerList = new HandlerList();
+  private static final HandlerList handlerList = new HandlerList();
 
   @Getter
   private final Market market;
