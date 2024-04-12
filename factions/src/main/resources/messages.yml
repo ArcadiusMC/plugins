@@ -21,6 +21,10 @@ factions:
     activeMembers:        "Active Members"
     waypoint:             "Waypoint"
 
+  markets:
+    purchaseDeny:         "&cOnly ${faction} members can own shops here!"
+    evictionReason:       "Only ${faction} members can own shops here!"
+
   cmd:
     _style: "gray"
 
