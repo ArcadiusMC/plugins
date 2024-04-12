@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -260,5 +261,9 @@ public class ServiceImpl implements HologramService {
   @Override
   public Set<String> getExistingHolograms() {
     return Collections.unmodifiableSet(texts.keySet());
+  }
+
+  public Collection<TextImpl> getHolograms() {
+    return texts.values();
   }
 }
