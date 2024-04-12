@@ -52,6 +52,10 @@ public final class ScriptUtils {
     );
   }
 
+  public static RuntimeException notConstructor() {
+    return ScriptRuntime.typeError("Cannot be invoked as constructor");
+  }
+
   public static RuntimeException cantLoad(String typename, Object v) {
     return ScriptRuntime.typeError("Don't know how to load " + typename + " from: " + v);
   }
@@ -294,7 +298,7 @@ public final class ScriptUtils {
       return source;
     }
 
-    return null;
+    throw cantLoad("CommandSource", o);
   }
 
   public static String concatArgs(Object[] args, int startArg) {
