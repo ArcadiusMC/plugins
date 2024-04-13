@@ -61,7 +61,7 @@ public final class ClaimingBook {
   private static Component purchaseButton(Market market, User user, int price) {
     MarketPurchaseAttemptEvent event = callPurchaseEvent(user, market, price);
 
-    boolean canPurchase = event.isCancelled();
+    boolean canPurchase = !event.isCancelled();
     Component denyReason = event.getDenyReason();
 
     ClickEvent clickEvent = ClickEvent.callback(
