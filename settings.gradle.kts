@@ -34,6 +34,7 @@ include("factions")
 include("usables")
 include("dungeons")
 include("structures")
+include("kingmaker")
 
 include("mail")
 include("mail-impl")

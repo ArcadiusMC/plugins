@@ -1,0 +1,22 @@
+kingmaker:
+  errors:
+    _style: "red"
+    noMonarch:      "There is no set monarch."
+    alreadySet:     "${player} is already the monarch."
+    standAdded:     "Monarch stand for entity ${entity} has already been added."
+
+  reloaded.plugin:  "&7Reloaded kingmaker plugin."
+  reloaded.config:  "&7Reloaded kingmaker config."
+  saved:            "&7Saved kingmaker plugin."
+
+  set:              "&7Made &e${player}&7 monarch."
+  unset:            "&7Removed monarch."
+  get:              "&7The current monarch is &e${player}&7."
+
+  stands:
+    added:          "&7Added monarch stand."
+    cleared:        "&7Cleared monarch stand list."
+    removed:        "&7Removed monarch stand at index &e${index}&7."
+    updatedAll:     "&7Updated all monarch stands."
+    list.header:    "&6Monarch stands: ${list}"
+    list.format:    "\n${index}) ${entity}"

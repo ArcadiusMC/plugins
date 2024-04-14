@@ -1,0 +1,5 @@
+#
+# Permission group given to players that become emperor
+# Default: "" (None)
+#
+monarch-permission-group: ""

@@ -1,0 +1,65 @@
+name = "kingmaker"
+description = "Emperor/Empress management command."
+aliases = "emperor" | "empress"
+
+literal("reload-config") {
+  description = "Reloads the kingmaker config."
+  executes = reloadConfig()
+}
+
+literal("reload-plugin") {
+  description = "Reloads the kingmaker plugin."
+  executes = reloadPlugin()
+}
+
+literal("save") {
+  description = "Saves the kingmaker plugin."
+  executes = savePlugin()
+}
+
+literal("get") {
+  executes = getMonarch()
+  description = "Shows who the current monarch is."
+}
+
+literal("set").argument("player", f_user) {
+  map_result("player") = @result_to_user
+  executes = setMonarch
+  description = "Sets the monarch."
+}
+
+literal("unset") {
+  executes = unsetMonarch()
+  description = "Removes the current monarch."
+}
+
+literal("stands") {
+  literal("list") {
+    executes = listStands()
+    description = "Lists all existing monarch armor stands"
+  }
+
+  literal("clear") {
+    executes = clearStands()
+    description = "Clears all existing monarch armor stands."
+  }
+
+  literal("remove").argument("index", int(min=1)) {
+    executes = removeStand()
+    description = "Removes a monarch armor stand."
+  }
+
+  literal("add").argument("entity", entity) {
+    executes = addStand()
+    description = [
+      "Adds a monarch armor stand.",
+      "(Will not create the armor stand, simply marks an existing",
+      "armor stand as a monarch stand)"
+    ]
+  }
+
+  literal("update-all") {
+    description = "Updates all monarch stands."
+    executes = updateAll()
+  }
+}
