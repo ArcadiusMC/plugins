@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
 import lombok.Getter;
+import net.arcadiusmc.usables.Interaction;
 import net.forthecrown.nbt.BinaryTags;
 import net.forthecrown.nbt.CompoundTag;
 import net.arcadiusmc.usables.trigger.AreaTrigger.Type;
@@ -135,7 +136,7 @@ public class TriggerManager {
         AreaTrigger trigger,
         Player player,
         Set<RegionAction> actions,
-        Type regionAction
+        String regionAction
     ) {
       var refs = trigger.getExternalTriggers().getAll(actions);
 
@@ -148,8 +149,7 @@ public class TriggerManager {
           interaction -> {
             Map<String, Object> ctx = interaction.getContext();
 
-            ctx.put("triggerName", trigger.getName());
-            ctx.put("area", trigger.getArea());
+            trigger.fillContext(ctx);
             ctx.put("regionAction", regionAction);
           },
           null
@@ -159,28 +159,37 @@ public class TriggerManager {
     @Override
     public void onEnter(Player source, AreaTrigger trigger) {
       if (VALID_ENTER_TYPES.contains(trigger.getType())) {
-        trigger.interact(source);
+        Interaction interaction = trigger.createInteraction(source);
+        interaction.getContext().put("regionAction", "enter");
+
+        trigger.interact(interaction);
       }
 
-      runExternal(trigger, source, ON_ENTER, Type.ENTER);
+      runExternal(trigger, source, ON_ENTER, "enter");
     }
 
     @Override
     public void onExit(Player source, AreaTrigger trigger) {
       if (VALID_EXIT_TYPES.contains(trigger.getType())) {
-        trigger.interact(source);
+        Interaction interaction = trigger.createInteraction(source);
+        interaction.getContext().put("regionAction", "exit");
+
+        trigger.interact(interaction);
       }
 
-      runExternal(trigger, source, ON_EXIT, Type.EXIT);
+      runExternal(trigger, source, ON_EXIT, "exit");
     }
 
     @Override
     public void onMoveInside(Player source, AreaTrigger trigger) {
       if (trigger.getType() == Type.MOVE) {
-        trigger.interact(source);
+        Interaction interaction = trigger.createInteraction(source);
+        interaction.getContext().put("regionAction", "move_inside");
+
+        trigger.interact(interaction);
       }
 
-      runExternal(trigger, source, ON_MOVE_INSIDE, Type.MOVE);
+      runExternal(trigger, source, ON_MOVE_INSIDE, "move_inside");
     }
   }
 }
