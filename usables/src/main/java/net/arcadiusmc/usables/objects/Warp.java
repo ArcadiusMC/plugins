@@ -1,5 +1,6 @@
 package net.arcadiusmc.usables.objects;
 
+import java.util.Map;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,6 +34,13 @@ public class Warp extends CommandUsable {
   @Override
   public String getCommandPrefix() {
     return "/warp " + getName();
+  }
+
+  @Override
+  public void fillContext(Map<String, Object> context) {
+    super.fillContext(context);
+    context.put("location", destination.clone());
+    context.put("world", destination.getWorld());
   }
 
   @Override

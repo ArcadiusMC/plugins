@@ -36,6 +36,7 @@ public class UsableBlock extends InWorldUsable {
     super.fillContext(context);
     context.put("block", block);
     context.put("location", block.getLocation());
+    context.put("world", block.getWorld());
   }
 
   @Override

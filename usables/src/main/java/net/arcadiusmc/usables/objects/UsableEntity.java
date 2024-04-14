@@ -25,6 +25,7 @@ public class UsableEntity extends InWorldUsable {
   public void fillContext(Map<String, Object> context) {
     super.fillContext(context);
     context.put("location", entity.getLocation());
+    context.put("world", entity.getWorld());
     context.put("entity", entity);
   }
 
