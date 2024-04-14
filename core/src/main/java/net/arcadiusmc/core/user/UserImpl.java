@@ -528,11 +528,11 @@ public final class UserImpl implements User {
   }
 
   @Override
-  public void setPermission(String permission) {
+  public void setPermission(String permission, boolean state) {
     Objects.requireNonNull(permission, "Null permission");
 
     modifyLpUser(user -> {
-      Node node = Node.builder(permission).build();
+      Node node = Node.builder(permission).value(state).build();
       user.data().add(node);
     });
   }
