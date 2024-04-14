@@ -62,6 +62,9 @@ public final class Triggers {
 
       if (interactionConsumer != null) {
         interactionConsumer.accept(interaction);
+
+        // Above consumer call may change context value
+        usable.fillContext(interaction.getContext());
       }
 
       usable.interact(interaction);
