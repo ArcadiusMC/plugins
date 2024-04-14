@@ -147,6 +147,7 @@ public class Faction {
       FactionsConfig config = Factions.getConfig();
       member = new FactionMember(user.getUniqueId());
       member.setBaseReputation(config.getStartingReputation());
+      memberMap.put(user.getUniqueId(), member);
     }
 
     member.setActive(true);
@@ -253,7 +254,7 @@ public class Faction {
       CompoundTag propertyTag = BinaryTags.compoundTag();
 
       if (unknownProperties != null && !unknownProperties.isEmpty()) {
-        tag.putAll(unknownProperties);
+        propertyTag.putAll(unknownProperties);
       }
 
       while (it.hasNext()) {
