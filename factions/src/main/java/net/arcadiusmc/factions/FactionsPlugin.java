@@ -61,9 +61,7 @@ public class FactionsPlugin extends JavaPlugin {
     UserNameFactory factory = Users.getService().getNameFactory();
     factory.removeField(FactionProfileElement.ID);
 
-    if (manager != null) {
-      manager.save();
-    }
+    save();
 
     if (saver != null) {
       saver.stop();
@@ -71,7 +69,9 @@ public class FactionsPlugin extends JavaPlugin {
   }
 
   public void save() {
-    manager.save();
+    if (manager != null) {
+      manager.save();
+    }
   }
 
   @Override
