@@ -115,6 +115,7 @@ markets:
     notClaimed:             "${market} has not been claimed."
     alreadyMerged:          "${market} has already merged with ${other}."
     notMerged.with:         "${market} has not been merged."
+    purchaseForbidden:      "You aren't allowed to purchase this shop."
 
     merges:
       self:                 "Cannot merge with your own shop."
@@ -174,8 +175,8 @@ markets:
       taxes:                "Rent Info -->"
 
     buttons:
-      rent.available:       "${text: content='[Rent]' hover='Click to rent shop.' color=green bold=true}"
-      rent.unavailable:     "${text: content='[Rent]' hover='Cannot afford the shop.' color=red bold=true}"
+      rent.available:       "${text: content='[Rent]' color=green bold=true}"
+      rent.unavailable:     "${text: content='[Rent]' color=red bold=true}"
       showBounds:           "${text: content='[Show shop size]' hover='Click to show shop claim size' color=blue bold=true}"
 
     merged.none:            "none"
