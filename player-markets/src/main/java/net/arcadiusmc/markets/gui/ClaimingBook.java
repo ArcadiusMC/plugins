@@ -128,9 +128,14 @@ public final class ClaimingBook {
   private static MarketPurchaseAttemptEvent callPurchaseEvent(User user, Market market, int price) {
     MarketPurchaseAttemptEvent event = new MarketPurchaseAttemptEvent(user, market);
 
+    Component actionDenyMessage = Markets.actionCooldown(user);
+
     if (!user.hasBalance(price)) {
       event.setCancelled(true);
       event.setDenyReason(Exceptions.cannotAffordText(user, price));
+    } else if (actionDenyMessage != null) {
+      event.setCancelled(true);
+      event.setDenyReason(actionDenyMessage);
     }
 
     event.callEvent();
