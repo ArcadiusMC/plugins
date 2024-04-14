@@ -1,7 +1,5 @@
 package net.arcadiusmc.factions;
 
-import static net.arcadiusmc.factions.FactionsDiscord.NULL_ID;
-
 import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.serialization.Codec;
@@ -49,13 +47,8 @@ public final class Properties {
 
   public static final FactionProperty<String> WAYPOINT_NAME = stringProperty().build();
 
-  public static final FactionProperty<Long> CHANNEL_ID = longProperty()
-      .defaultValue(() -> NULL_ID)
-      .build();
-
-  public static final FactionProperty<Long> ROLE_ID = longProperty()
-      .defaultValue(() -> NULL_ID)
-      .build();
+  public static final FactionProperty<String> CHANNEL_ID = stringProperty().build();
+  public static final FactionProperty<String> ROLE_ID = stringProperty().build();
 
   public static final FactionProperty<TextColor> NAME_COLOR
       = FactionProperty.builder(ExtraCodecs.COLOR)
@@ -67,12 +60,12 @@ public final class Properties {
   static void registerAll() {
     REGISTRY.register("display_name", DISPLAY_NAME);
     REGISTRY.register("lp_group", LP_GROUP);
-    REGISTRY.register("text_channel_id", CHANNEL_ID);
-    REGISTRY.register("discord_role_id", ROLE_ID);
     REGISTRY.register("name_color", NAME_COLOR);
     REGISTRY.register("description", DESCRIPTION);
     REGISTRY.register("waypoint_name", WAYPOINT_NAME);
     REGISTRY.register("market_group", MARKET_GROUP);
+    REGISTRY.register("discord/text_channel_id", CHANNEL_ID);
+    REGISTRY.register("discord/role_id", ROLE_ID);
 
     REGISTRY.freeze();
   }

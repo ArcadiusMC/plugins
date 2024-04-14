@@ -1,5 +1,6 @@
 package net.arcadiusmc.factions;
 
+import com.google.common.base.Strings;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.JDA;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.Guild;
@@ -17,7 +18,6 @@ import org.slf4j.Logger;
 
 public class FactionsDiscord {
 
-  public static final long NULL_ID = 0L;
   private static final Logger LOGGER = Loggers.getLogger();
 
   static void onLeave(Faction faction, User user) {
@@ -42,12 +42,16 @@ public class FactionsDiscord {
     giveFactionBenefits(faction, user, discMember);
   }
 
+  private static Optional<String> optionalId(String str) {
+    return Optional.ofNullable(Strings.emptyToNull(str));
+  }
+
   public static void giveFactionBenefits(Faction faction, User user, Member discMember) {
     JDA jda = DiscordSRV.getPlugin().getJda();
     Guild guild = discMember.getGuild();
 
-    long channelId = faction.get(Properties.CHANNEL_ID);
-    TextChannel channel = jda.getTextChannelById(channelId);
+    String channelId = faction.get(Properties.CHANNEL_ID);
+    TextChannel channel = optionalId(channelId).map(jda::getTextChannelById).orElse(null);
 
     String key = faction.getKey();
 
@@ -67,12 +71,12 @@ public class FactionsDiscord {
           .create(user);
 
       user.sendMessage(message);
-    } else if (channelId != NULL_ID) {
+    } else if (channelId != null) {
       LOGGER.error("Unknown text channel {} for faction {}", channelId, key);
     }
 
-    long roleId = faction.get(Properties.ROLE_ID);
-    Role role = jda.getRoleById(roleId);
+    String roleId = faction.get(Properties.ROLE_ID);
+    Role role = optionalId(roleId).map(jda::getRoleById).orElse(null);
 
     if (role != null) {
       guild.addRoleToMember(discMember, role)
@@ -87,7 +91,7 @@ public class FactionsDiscord {
                 throwable
             );
           });
-    } else if (roleId != NULL_ID) {
+    } else if (roleId != null) {
       LOGGER.error("Unknown role {} for faction {}", roleId, key);
     }
   }
@@ -96,8 +100,8 @@ public class FactionsDiscord {
     JDA jda = DiscordSRV.getPlugin().getJda();
     Guild guild = discMember.getGuild();
 
-    long roleId = faction.get(Properties.ROLE_ID);
-    Role role = jda.getRoleById(roleId);
+    String roleId = faction.get(Properties.ROLE_ID);
+    Role role = optionalId(roleId).map(jda::getRoleById).orElse(null);
 
     if (role != null) {
       guild.removeRoleFromMember(discMember, role)
@@ -112,7 +116,7 @@ public class FactionsDiscord {
                 throwable
             );
           });
-    } else if (roleId != NULL_ID) {
+    } else if (roleId != null) {
       LOGGER.error("Unknown role {} for faction {}", roleId, faction.getKey());
     }
   }
