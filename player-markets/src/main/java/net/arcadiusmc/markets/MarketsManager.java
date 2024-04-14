@@ -71,9 +71,8 @@ public class MarketsManager {
       market.onAdded(this);
     });
 
-    Instant now = Instant.now();
     evictions.forEach((string, eviction) -> {
-      eviction.task = Tasks.runLater(eviction, eviction.getDelay(now));
+      eviction.schedule();
     });
 
     scheduleMarketTicker();
@@ -143,12 +142,11 @@ public class MarketsManager {
 
   private void addEviction(Eviction eviction) {
     eviction.manager = this;
+    evictions.put(eviction.getMarketName(), eviction);
 
     if (serverLoaded) {
-      eviction.task = Tasks.runLater(eviction, eviction.getDelay(Instant.now()));
+      eviction.schedule();
     }
-
-    evictions.put(eviction.getMarketName(), eviction);
   }
 
   public boolean stopEviction(Market market) {

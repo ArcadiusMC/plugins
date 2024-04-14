@@ -65,7 +65,7 @@ public class Eviction implements Runnable {
   }
 
   Duration getDelay(Instant now) {
-    return Duration.between(date, now);
+    return Duration.between(now, date);
   }
 
   @Override
@@ -94,5 +94,16 @@ public class Eviction implements Runnable {
 
   void cancel() {
     this.task = Tasks.cancel(task);
+  }
+
+  void schedule() {
+    Instant now = Instant.now();
+
+    if (now.isAfter(date)) {
+      run();
+    } else {
+      Duration delay = Duration.between(now, date);
+      task = Tasks.runLater(this, delay);
+    }
   }
 }
