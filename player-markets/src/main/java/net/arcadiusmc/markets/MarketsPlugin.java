@@ -7,6 +7,7 @@ import net.arcadiusmc.markets.autoevict.AutoEvictions;
 import net.arcadiusmc.markets.command.MarketCommands;
 import net.arcadiusmc.markets.gui.ShopLists;
 import net.arcadiusmc.markets.listeners.MarketListeners;
+import net.arcadiusmc.markets.placeholders.MarketPlaceholders;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.loader.MessageList;
 import net.arcadiusmc.text.loader.MessageLoader;
@@ -55,11 +56,14 @@ public class MarketsPlugin extends JavaPlugin {
 
     MarketListeners.registerAll(this);
     MarketCommands.registerAll(this);
+    MarketPlaceholders.registerAll();
   }
 
   @Override
   public void onDisable() {
     Messages.MESSAGE_LIST.removeChild(getName());
+    MarketPlaceholders.unregisterAll();
+
     save();
   }
 
