@@ -369,23 +369,83 @@ public interface User extends ForwardingAudience.Single {
 
   /* ----------------------------- PERMISSIONS ------------------------------ */
 
+  /**
+   * Tests if a user has a specified {@code permission}.
+   * <p>
+   * Works regardless of player being online or not.
+   *
+   * @param permission Permission to test
+   * @return {@code true}, if the user has the permission or if they inherit it,
+   *         {@code false} otherwise
+   */
   boolean hasPermission(String permission);
 
+  /**
+   * Tests if a user has a specified {@code permission}.
+   * <p>
+   * Works regardless of player being online or not.
+   *
+   * @param permission Permission to test
+   * @return {@code true}, if the user has the permission or if they inherit it,
+   *         {@code false} otherwise
+   */
   default boolean hasPermission(Permission permission) {
     return hasPermission(permission.getName());
   }
 
-  void setPermission(String permission);
+  /**
+   * Sets if a player explicitly has or does not have a permission
+   * @param permission Permission to set the state of
+   * @param state Permission State
+   */
+  void setPermission(String permission, boolean state);
 
-  default void setPermission(Permission permission) {
-    setPermission(permission.getName());
+  /**
+   * Sets if a player explicitly has or does not have a permission
+   * @param permission Permission to set the state of
+   * @param state Permission State
+   */
+  default void setPermission(Permission permission, boolean state) {
+    setPermission(permission.getName(), state);
   }
 
+  /**
+   * Removes an explicitly set permission node
+   * @param permission Permission to unset the state of
+   */
   void unsetPermission(String permission);
 
+  /**
+   * Removes an explicitly set permission node
+   * @param permission Permission to unset the state of
+   */
   default void unsetPermission(Permission permission) {
     unsetPermission(permission.getName());
   }
+
+  /**
+   * Tests if a player has a permission group
+   * <p>
+   * This is identical to {@code user.hasPermission("group." + groupName)}
+   *
+   * @param groupName Group name
+   * @return {@code true} if the player inherits from the specified {@code groupName},
+   *         {@code false} otherwise
+   */
+  boolean hasPermissionGroup(String groupName);
+
+  /**
+   * Explicitly sets if a player inherits from a permission group or not
+   * @param group Group name
+   * @param state Inheritance state
+   */
+  void setPermissionGroup(String group, boolean state);
+
+  /**
+   * Remove any inheritance from the {@code group} group.
+   * @param group Group name
+   */
+  void unsetPermissionGroup(String group);
 
   /* ----------------------------- UPDATE METHODS ------------------------------ */
 

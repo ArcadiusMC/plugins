@@ -16,6 +16,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import lombok.Getter;
 import lombok.Setter;
@@ -49,8 +50,9 @@ import net.forthecrown.grenadier.Grenadier;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.luckperms.api.LuckPermsProvider;
+import net.luckperms.api.model.user.UserManager;
 import net.luckperms.api.node.Node;
-import net.luckperms.api.node.types.PermissionNode;
+import net.luckperms.api.node.types.InheritanceNode;
 import net.luckperms.api.query.Flag;
 import net.luckperms.api.query.QueryMode;
 import net.luckperms.api.query.QueryOptions;
@@ -483,8 +485,13 @@ public final class UserImpl implements User {
     getComponent(PropertyMap.class).set(property, value);
   }
 
+  private void modifyLpUser(Consumer<net.luckperms.api.model.user.User> lpConsumer) {
+    UserManager lpManager = LuckPermsProvider.get().getUserManager();
+    lpManager.modifyUser(getUniqueId(), lpConsumer);
+  }
+
   private CompletableFuture<net.luckperms.api.model.user.User> getLuckPermsUser() {
-    var lpManager = LuckPermsProvider.get().getUserManager();
+    UserManager lpManager = LuckPermsProvider.get().getUserManager();
 
     if (lpManager.isLoaded(uniqueId)) {
       var user = lpManager.getUser(uniqueId);
@@ -522,22 +529,49 @@ public final class UserImpl implements User {
 
   @Override
   public void setPermission(String permission) {
-    getLuckPermsUser().thenAccept(user -> {
-      Node node = PermissionNode.builder(permission)
-          .value(true)
-          .build();
+    Objects.requireNonNull(permission, "Null permission");
 
+    modifyLpUser(user -> {
+      Node node = Node.builder(permission).build();
       user.data().add(node);
     });
   }
 
   @Override
   public void unsetPermission(String permission) {
-    getLuckPermsUser().thenAccept(user -> {
-      Node node = PermissionNode.builder(permission)
-          .value(true)
+    Objects.requireNonNull(permission, "Null permission");
+
+    modifyLpUser(user -> {
+      Node node = Node.builder(permission).build();
+      user.data().remove(node);
+    });
+  }
+
+  @Override
+  public boolean hasPermissionGroup(String groupName) {
+    Objects.requireNonNull(groupName, "Null groupName");
+    return hasPermission("group." + groupName);
+  }
+
+  @Override
+  public void setPermissionGroup(String group, boolean state) {
+    Objects.requireNonNull(group, "Null groupName");
+
+    modifyLpUser(user -> {
+      InheritanceNode node = InheritanceNode.builder(group)
+          .value(state)
           .build();
 
+      user.data().remove(node);
+    });
+  }
+
+  @Override
+  public void unsetPermissionGroup(String group) {
+    Objects.requireNonNull(group, "Null groupName");
+
+    modifyLpUser(user -> {
+      InheritanceNode node = InheritanceNode.builder(group).build();
       user.data().remove(node);
     });
   }
