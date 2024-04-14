@@ -58,13 +58,13 @@ public class EntityRef {
     }
 
     Chunk c = w.getChunkAt(chunk.x(), chunk.y());
-    var result = w.getEntity(getUniqueId());
+    Entity[] e = c.getEntities();
+
+    Entity result = w.getEntity(getUniqueId());
 
     if (result != null) {
       return result;
     }
-
-    Entity[] e = c.getEntities();
 
     for (Entity entity : e) {
       if (entity.getUniqueId().equals(uniqueId)) {
