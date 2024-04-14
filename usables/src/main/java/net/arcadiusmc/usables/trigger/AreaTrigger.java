@@ -17,6 +17,8 @@ import net.forthecrown.nbt.CompoundTag;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Location;
+import org.spongepowered.math.vector.Vector3d;
 import org.spongepowered.math.vector.Vector3i;
 
 @Getter
@@ -97,6 +99,12 @@ public class AreaTrigger extends Usable {
     super.fillContext(context);
     context.put("area", area);
     context.put("triggerName", name);
+
+    Vector3d center = area.center();
+    Location location = new Location(area.getWorld(), center.x(), center.y(), center.z());
+
+    context.put("location", location);
+    context.put("world", area.getWorld());
   }
 
   public void setArea(WorldBounds3i area) {
