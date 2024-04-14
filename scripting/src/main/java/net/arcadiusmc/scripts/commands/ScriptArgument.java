@@ -81,7 +81,7 @@ public class ScriptArgument implements ArgumentType<Source> {
       return Suggestions.empty();
     }
 
-    List<String> result = PathUtil.findAllFiles(dir, true, path -> {
+    List<String> result = PathUtil.findAllFiles(dir, false, path -> {
       String name = path.getFileName().toString();
       return name.endsWith(".js") || name.endsWith(".ts");
     });
