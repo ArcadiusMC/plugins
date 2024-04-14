@@ -73,6 +73,10 @@ public class FactionReputationTest implements Condition {
       return false;
     }
 
+    if (reputationRange == IntRange.UNLIMITED || reputationRange == null) {
+      return true;
+    }
+
     int reputation = member.getReputation();
     return reputationRange.contains(reputation);
   }
@@ -88,7 +92,7 @@ public class FactionReputationTest implements Condition {
 
     String messageKey;
 
-    if (reputationRange != IntRange.UNLIMITED) {
+    if (reputationRange != IntRange.UNLIMITED || reputationRange == null) {
       messageKey = "factions.errors.tooLittleReputation";
     } else {
       messageKey = "factions.errors.notFactionMember";
@@ -121,10 +125,12 @@ enum FactionMemberType implements ObjectType<FactionReputationTest> {
                     ExtraCodecs.KEY_CODEC.fieldOf("faction_key")
                         .forGetter(o -> o.factionKey),
 
-                    UsableCodecs.INT_RANGE.optionalFieldOf("range", IntRange.UNLIMITED)
-                        .forGetter(o -> o.reputationRange)
+                    UsableCodecs.INT_RANGE.optionalFieldOf("range")
+                        .forGetter(o -> Optional.ofNullable(o.reputationRange))
                 )
-                .apply(instance, FactionReputationTest::new);
+                .apply(instance, (s, intRange) -> {
+                  return new FactionReputationTest(s, intRange.orElse(IntRange.UNLIMITED));
+                });
           }),
 
           ExtraCodecs.KEY_CODEC
@@ -133,7 +139,7 @@ enum FactionMemberType implements ObjectType<FactionReputationTest> {
       .xmap(
           either -> either.map(Function.identity(), Function.identity()),
           test -> {
-            if (test.reputationRange == IntRange.UNLIMITED) {
+            if (test.reputationRange == IntRange.UNLIMITED || test.reputationRange == null) {
               return Either.right(test);
             }
 
