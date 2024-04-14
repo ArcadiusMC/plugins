@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import lombok.Getter;
 import net.arcadiusmc.text.Text;
 import net.kyori.adventure.text.Component;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -16,10 +17,13 @@ import org.bukkit.persistence.PersistentDataType;
 @Getter
 public class UsableItem extends InWorldUsable {
 
+  private final Player holder;
   private final ItemStack item;
 
-  public UsableItem(ItemStack item) {
+  public UsableItem(Player holder, ItemStack item) {
     Objects.requireNonNull(item);
+    Objects.requireNonNull(holder);
+    this.holder = holder;
     this.item = item;
   }
 
@@ -27,6 +31,7 @@ public class UsableItem extends InWorldUsable {
   public void fillContext(Map<String, Object> context) {
     super.fillContext(context);
     context.put("item", item);
+    context.put("location", holder.getLocation());
   }
 
   @Override

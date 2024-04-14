@@ -18,7 +18,7 @@ public class ItemListener implements Listener {
       return;
     }
 
-    UsableItem item = Usables.item(held);
+    UsableItem item = Usables.item(held, player);
     item.load();
 
     UsablesListeners.executeInteract(item, player, event);

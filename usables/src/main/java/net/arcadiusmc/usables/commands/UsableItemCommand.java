@@ -35,7 +35,7 @@ public class UsableItemCommand extends InWorldUsableCommand<UsableItem> {
         var player = context.getSource().asPlayer();
         var held = Commands.getHeldItem(player);
 
-        var usable = Usables.item(held);
+        var usable = Usables.item(held, player);
 
         if (Usables.isUsable(held)) {
           usable.load();
