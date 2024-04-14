@@ -73,8 +73,8 @@ public final class Usables {
     return new UsableBlock(block);
   }
 
-  public static UsableItem item(ItemStack itemStack) {
-    return new UsableItem(itemStack);
+  public static UsableItem item(ItemStack itemStack, Player holder) {
+    return new UsableItem(holder, itemStack);
   }
 
   public static String boundsDisplay(IntRange ints) {
