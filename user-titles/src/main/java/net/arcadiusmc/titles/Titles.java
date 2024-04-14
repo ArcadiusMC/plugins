@@ -3,6 +3,7 @@ package net.arcadiusmc.titles;
 import static net.arcadiusmc.titles.TitleSettings.SEE_RANKS;
 
 import com.google.common.collect.ImmutableList;
+import net.arcadiusmc.Permissions;
 import net.arcadiusmc.menu.Slot;
 import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.registry.Ref;
@@ -26,14 +27,17 @@ public final class Titles {
       public void onRegister(Holder<Title> value) {
         Title title = value.getValue();
         Tier tier = title.getTier();
-        tier.getRanks().add(title);
+        tier.getRanks().add(value);
+
+        String permission = UserTitles.getTitlePermission(value);
+        Permissions.register(permission);
       }
 
       @Override
       public void onUnregister(Holder<Title> value) {
         Title title = value.getValue();
         Tier tier = title.getTier();
-        tier.getRanks().remove(title);
+        tier.getRanks().remove(value);
       }
     });
   }
@@ -49,13 +53,10 @@ public final class Titles {
       Slot.of(1, 1),
       ImmutableList.of(),
       true,
-      true,
       false
   );
 
-  static {
-    REGISTRY.register(DEFAULT_NAME, DEFAULT);
-  }
+  public static final Holder<Title> DEFAULT_HOLDER = REGISTRY.register(DEFAULT_NAME, DEFAULT);
 
   public static boolean showRank(DisplayContext context) {
     // Don't display rank prefix if the user has disabled it,

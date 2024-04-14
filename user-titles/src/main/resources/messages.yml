@@ -4,23 +4,8 @@ _styles:
 
 cmd.ranks:
   _style: $normal
-
-  error:
-    _style: $err
-    titleAlreadySet:  "${title} is already ${player}'s title."
-    tierAlreadySet:   "${tier} is already ${player}'s tier"
-    alreadyOwned:     "${player} already has the title ${title}."
-    notOwned:         "${player} doesn't have the title ${title}."
-    defaultTitle:     "${title} is a tier-default title and cannot be removed/added."
-
-  reloaded:           "Reloaded user ranks."
-  set:                "Set ${title} as ${player}'s title."
-  added.single:       "Gave ${player} the ${title}."
-  added.multiple:     "Gave ${player} ${titles} titles."
-  removed.single:     "Removed title ${title} from ${player}."
-  removed.multiple:   "Removed ${titles} titles from ${player}."
-
-  tier.set:           "Set ${tier} as ${player}'s tier."
+  reloaded.plugin:    "Reloaded ranks plugin."
+  reloaded.config:    "Reloaded user ranks config."
 
 ranksmenu:
   _style: $normal

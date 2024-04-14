@@ -4,16 +4,17 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
+import lombok.Getter;
 import net.arcadiusmc.ArcadiusServer;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.command.Commands;
-import net.arcadiusmc.events.Events;
+import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.registry.Registry;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.loader.MessageList;
 import net.arcadiusmc.text.loader.MessageLoader;
 import net.arcadiusmc.titles.commands.TitlesCommand;
-import net.arcadiusmc.titles.listener.PlayerJoinListener;
 import net.arcadiusmc.user.UserService;
 import net.arcadiusmc.user.Users;
 import net.arcadiusmc.user.name.UserNameFactory;
@@ -32,16 +33,24 @@ public class TitlesPlugin extends JavaPlugin {
   private Path ranksFile;
   private Path tiersFile;
 
+  @Getter
+  private ActiveTitleMap titleMap;
+
+  public static TitlesPlugin plugin() {
+    return getPlugin(TitlesPlugin.class);
+  }
+
   @Override
   public void onEnable() {
     Path dataFolder = getDataFolder().toPath();
     ranksFile = dataFolder.resolve("ranks.yml");
     tiersFile = dataFolder.resolve("tiers.yml");
 
-    Messages.MESSAGE_LIST.addChild("titles", messageList);
+    Messages.MESSAGE_LIST.addChild(getName(), messageList);
+
+    titleMap = new ActiveTitleMap(dataFolder.resolve("userdata.json"));
 
     UserService service = Users.getService();
-    service.registerComponent(UserTitles.class);
     addNameElements(service.getNameFactory());
 
     load();
@@ -49,29 +58,37 @@ public class TitlesPlugin extends JavaPlugin {
     AnnotatedCommandContext ctx = Commands.createAnnotationContext();
     ctx.registerCommand(new TitlesCommand());
 
-    Events.register(new PlayerJoinListener());
-
     ArcadiusServer server = ArcadiusServer.server();
     TitleSettings.add(server.getGlobalSettingsBook());
 
     TitlePlaceholders.registerAll();
-
-    reloadConfig();
   }
 
   @Override
   public void onDisable() {
-    Messages.MESSAGE_LIST.removeChild("titles");
+    Messages.MESSAGE_LIST.removeChild(getName());
 
-    var nameFactory = Users.getService().getNameFactory();
+    titleMap.save();
+
+    UserNameFactory nameFactory = Users.getService().getNameFactory();
     nameFactory.removePrefix("title_prefix");
     nameFactory.removeField("title");
+
     TitlePlaceholders.unregister();
   }
 
   @Override
   public void reloadConfig() {
     MessageLoader.loadPluginMessages(this, messageList);
+
+    clearNonConstants(Titles.REGISTRY);
+    clearNonConstants(Tiers.REGISTRY);
+
+    PluginJar.saveResources("ranks.yml", ranksFile);
+    PluginJar.saveResources("tiers.yml", tiersFile);
+
+    loadToRegistry(tiersFile, "tiers", Tiers.REGISTRY, TitleCodecs.TIER_MAP);
+    loadToRegistry(ranksFile, "ranks", Titles.REGISTRY, TitleCodecs.RANK_MAP);
   }
 
   void addNameElements(UserNameFactory factory) {
@@ -84,26 +101,23 @@ public class TitlesPlugin extends JavaPlugin {
         return null;
       }
 
-      UserTitles titles = user.getComponent(UserTitles.class);
-      Title rank = titles.getTitle();
-
-      if (rank == Titles.DEFAULT) {
+      Optional<Holder<Title>> rankOpt = titleMap.getTitle(user.getUniqueId());
+      if (rankOpt.isEmpty()) {
         return null;
       }
 
-      return rank.getPrefix();
+      Holder<Title> rank = rankOpt.get();
+      if (rank == Titles.DEFAULT_HOLDER) {
+        return null;
+      }
+
+      return rank.getValue().getPrefix();
     });
   }
 
   public void load() {
-    clearNonConstants(Titles.REGISTRY);
-    clearNonConstants(Tiers.REGISTRY);
-
-    PluginJar.saveResources("ranks.yml", ranksFile);
-    PluginJar.saveResources("tiers.yml", tiersFile);
-
-    loadToRegistry(tiersFile, "tiers", Tiers.REGISTRY, TitleCodecs.TIER_MAP);
-    loadToRegistry(ranksFile, "ranks", Titles.REGISTRY, TitleCodecs.RANK_MAP);
+    reloadConfig();
+    titleMap.load();
   }
 
   static <R> void loadToRegistry(

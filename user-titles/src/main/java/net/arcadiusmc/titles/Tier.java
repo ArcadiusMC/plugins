@@ -9,6 +9,7 @@ import lombok.Setter;
 import net.arcadiusmc.menu.MenuNode;
 import net.arcadiusmc.menu.Slot;
 import net.arcadiusmc.menu.page.MenuPage;
+import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.TextJoiner;
 import net.arcadiusmc.utils.inventory.ItemStacks;
@@ -28,10 +29,11 @@ public class Tier implements ReloadableElement, Comparable<Tier> {
   private final int priority;
   private final List<MenuDecoration> decorations;
   private final boolean permissionSync;
+  private final boolean hidden;
 
   private final boolean reloadable;
 
-  private final List<Title> ranks = new ArrayList<>();
+  private final List<Holder<Title>> ranks = new ArrayList<>();
 
   private MenuNode cachedNode;
   private Component cachedDisplayName;

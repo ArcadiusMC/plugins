@@ -57,10 +57,13 @@ public class TitleCodecs {
                 .forGetter(Tier::getDecorations),
 
             Codec.BOOL.optionalFieldOf("permission-sync", true)
-                .forGetter(Tier::isPermissionSync)
+                .forGetter(Tier::isPermissionSync),
+
+            Codec.BOOL.optionalFieldOf("hidden", false)
+                .forGetter(Tier::isHidden)
         )
-        .apply(instance, (name, item, desc, group, prio, decos, sync) -> {
-          return new Tier(name, item, desc, group, prio, decos, sync, true);
+        .apply(instance, (name, item, desc, group, prio, decos, sync, hide) -> {
+          return new Tier(name, item, desc, group, prio, decos, sync, hide, true);
         });
   });
 
@@ -85,23 +88,19 @@ public class TitleCodecs {
 
             DESC_MAP_CODEC.forGetter(Title::getDescription),
 
-            Codec.BOOL.optionalFieldOf("default-title", false)
-                .forGetter(Title::isDefaultTitle),
-
             Codec.BOOL.optionalFieldOf("hidden", false)
                 .forGetter(Title::isHidden),
 
             PRICE_CODEC.optionalFieldOf("prices", CurrencyMaps.emptyMap())
                 .forGetter(Title::getPrice)
         )
-        .apply(instance, (tier, prefix, genderEq, slot, desc, defaultTitle, hidden, prices) -> {
+        .apply(instance, (tier, prefix, genderEq, slot, desc, hidden, prices) -> {
           Title t = new Title(
               tier,
               prefix,
               genderEq,
               slot.orElse(null),
               desc,
-              defaultTitle,
               hidden,
               true
           );
@@ -114,10 +113,6 @@ public class TitleCodecs {
       // flatMap in which verification checks are ran
       .comapFlatMap(
           rank -> {
-            if (rank.isDefaultTitle() && rank.getMenuSlot() == null) {
-              return Results.error("Default titles MUST have a menu slot defined");
-            }
-
             if (!rank.getPrice().isEmpty() && rank.isHidden()) {
               return Results.error("Titles with a price cannot also be hidden");
             }

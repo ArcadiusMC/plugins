@@ -31,10 +31,10 @@
 #     considered higher than others
 #     Default: 0
 #
-# - permission-sync:
-#     Determines if the tier and luck perms groups are kept
-#     synced.
-#     Default: true
+# - hidden:
+#     If a player doesn't have this tier, it won't be shown to
+#     them when using the /ranks menu.
+#     Default: false
 #
 example:
   permission-group: "default"
@@ -45,7 +45,7 @@ example:
   display-name: "Example Tier"
   description: "This is a description :)"
 
-  permission-sync: true
+  hidden: false
 
   menu-decorations:
     - slot: 1,2

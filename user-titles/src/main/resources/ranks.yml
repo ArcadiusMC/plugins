@@ -7,18 +7,6 @@
 # ------------------------------------------------------------------------------
 # Format:
 # ------------------------------------------------------------------------------
-# 'tier' (required):
-#  Determines the rank's tier, can be one any of the values specified in
-#  'tiers.yml'.
-#
-#  This value MUST be specified for each rank, otherwise an error will be thrown
-#
-# examples:
-# - tier: tier_3
-# - tier: tier_2
-# - tier: tier_1
-# - tier: free
-# ------------------------------------------------------------------------------
 # 'prefix' (required):
 #  The rank's prefix, shown in the TAB menu, and optionally in chat. This value,
 #  like the above one, MUST be set, otherwise, error.
@@ -41,17 +29,6 @@
 # examples:
 # - hidden: true
 # - hidden: false
-# ------------------------------------------------------------------------------
-# 'default-title' (optional, false by default):
-#  Determines if a rank becomes available when a user gets the rank's tier, or
-#  if it has to be earned separately.
-#
-#  If this is set to true, then the 'slot' value (documented below) must also
-#  be set.
-#
-# examples:
-# - default-title: true
-# - default-title: false
 # ------------------------------------------------------------------------------
 # 'description' (optional):
 #  Specifies an array of text that makes up the rank's description, which is

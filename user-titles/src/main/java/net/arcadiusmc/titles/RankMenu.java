@@ -2,9 +2,9 @@ package net.arcadiusmc.titles;
 
 import static net.arcadiusmc.menu.Menus.MAX_INV_SIZE;
 
+import com.google.common.base.Strings;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
@@ -14,6 +14,7 @@ import net.arcadiusmc.menu.MenuNode;
 import net.arcadiusmc.menu.Menus;
 import net.arcadiusmc.menu.page.ListPage;
 import net.arcadiusmc.menu.page.MenuPage;
+import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.registry.Registry;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.titles.Tier.MenuDecoration;
@@ -41,16 +42,30 @@ public final class RankMenu {
   }
 
   public void open(User user) {
-    var titles = user.getComponent(UserTitles.class);
+    var titles = UserTitles.load(user);
     var tier = titles.getTier();
     open(user, tier);
   }
 
-  private Tier getNext(Tier tier) {
+  private Holder<Tier> getNext(Holder<Tier> tier, User user) {
     Registry<Tier> reg = Tiers.REGISTRY;
+    List<Holder<Tier>> arr = new ArrayList<>(reg.entries());
 
-    List<Tier> arr = new ArrayList<>(reg.values());
-    arr.sort(Comparator.naturalOrder());
+    arr.removeIf(holder -> {
+      Tier t = holder.getValue();
+      if (!t.isHidden()) {
+        return false;
+      }
+      String permission = UserTitles.getTierPermission(holder);
+
+      if (Strings.isNullOrEmpty(permission)) {
+        return false;
+      }
+
+      return !user.hasPermission(permission);
+    });
+
+    arr.sort(Tiers.BY_PRIORITY);
 
     int index = arr.indexOf(tier);
 
@@ -62,46 +77,50 @@ public final class RankMenu {
     return arr.get(nextIndex);
   }
 
-  private void openNext(User user, Tier tier) {
-    open(user, getNext(tier));
+  private void openNext(User user, Holder<Tier> tier) {
+    open(user, getNext(tier, user));
   }
 
-  private void open(User user, Tier tier) {
+  private void open(User user, Holder<Tier> holder) {
+    Tier tier = holder.getValue();
+
     if (tier.getPage() == null) {
-      tier.setPage(new RankPage(tier));
+      tier.setPage(new RankPage(holder));
     }
 
     tier.getPage().getMenu().open(user, SET.createContext());
   }
 
-  public static List<Title> getExtraRanks(User user, Tier tier) {
-    var titles = user.getComponent(UserTitles.class);
+  public static List<Holder<Title>> getExtraRanks(User user, Tier tier) {
+    UserTitles titles = UserTitles.load(user);
 
     return tier.getRanks()
         .stream()
-        .filter(rank -> {
-          if (rank.getMenuSlot() != null) {
+        .filter(holder -> {
+          Title title = holder.getValue();
+
+          if (title.getMenuSlot() != null) {
             return false;
           }
 
-          boolean has = titles.hasTitle(rank);
-          return has || !rank.isHidden();
+          boolean has = titles.hasTitle(holder);
+          return has || !title.isHidden();
         })
         .collect(Collectors.toList());
   }
 
   private class RankPage extends MenuPage {
-    private final Tier tier;
+    private final Holder<Tier> tier;
     private final ExtraRankListPage listPage;
 
-    public RankPage(Tier tier) {
+    public RankPage(Holder<Tier> tier) {
       super(null);
 
       this.tier = tier;
       this.listPage = new ExtraRankListPage(this, tier);
 
       initMenu(
-          Menus.builder(MAX_INV_SIZE).setTitle(tier.displayName()),
+          Menus.builder(MAX_INV_SIZE).setTitle(tier.getValue().displayName()),
           true
       );
     }
@@ -109,7 +128,7 @@ public final class RankMenu {
     @Override
     protected void createMenu(MenuBuilder builder) {
       decorateMenu(builder);
-      fillMenu(builder, tier);
+      fillMenu(builder, tier.getValue());
 
       builder.add(8,
           MenuNode.builder()
@@ -129,47 +148,44 @@ public final class RankMenu {
               .build()
       );
 
-      builder.add(4, 5, Titles.DEFAULT.getMenuNode());
+      builder.add(4, 5, new TitleMenuNode(Titles.DEFAULT_HOLDER));
     }
 
     private void fillMenu(MenuBuilder builder, Tier tier) {
       tier.getRanks()
           .stream()
-          .filter(rank -> rank.getMenuSlot() != null)
-          .filter(rank -> rank != Titles.DEFAULT)
+          .filter(rank -> rank.getValue().getMenuSlot() != null)
+          .filter(rank -> rank != Titles.DEFAULT_HOLDER)
           .forEach(rank -> {
-            builder.add(rank.getMenuSlot(), rank.getMenuNode());
+            builder.add(rank.getValue().getMenuSlot(), new TitleMenuNode(rank));
           });
 
       for (int i = 1; i < 8; i++) {
         int finalI = i;
+        final int index = finalI - 1;
 
         builder.add(i, 4,
             MenuNode.builder()
                 .setItem((user, context) -> {
-                  var extra = getExtraRanks(user, tier);
-                  int index = finalI - 1;
+                  List<Holder<Title>> extra = getExtraRanks(user, tier);
 
                   if (index >= extra.size()) {
                     return null;
                   }
 
-                  return extra.get(index)
-                      .getMenuNode()
-                      .createItem(user, context);
+                  Holder<Title> holder = extra.get(index);
+                  return TitleMenuNode.createItem(holder, user, context);
                 })
 
                 .setRunnable((user, context, click) -> {
-                  var extra = getExtraRanks(user, tier);
-                  int index = finalI - 1;
+                  List<Holder<Title>> extra = getExtraRanks(user, tier);
 
                   if (index >= extra.size()) {
                     return;
                   }
 
-                  extra.get(index)
-                      .getMenuNode()
-                      .onClick(user, context, click);
+                  Holder<Title> holder = extra.get(index);
+                  TitleMenuNode.onClick(holder, user, context, click);
                 })
 
                 .build()
@@ -186,23 +202,23 @@ public final class RankMenu {
         builder.add(i, 3, Menus.defaultBorderItem());
       }
 
-      for (MenuDecoration decoration : tier.getDecorations()) {
+      for (MenuDecoration decoration : tier.getValue().getDecorations()) {
         builder.add(decoration.slot(), Menus.createBorderItem(decoration.material()));
       }
     }
 
     @Override
     public @Nullable ItemStack createItem(@NotNull User user, @NotNull Context context) {
-      return tier.getNode().createItem(user, context);
+      return tier.getValue().getNode().createItem(user, context);
     }
   }
 
-  private static class ExtraRankListPage extends ListPage<Title> {
-    private final Tier tier;
+  private static class ExtraRankListPage extends ListPage<Holder<Title>> {
+    private final Holder<Tier> tier;
 
     public static final int MAX_DISPLAY_RANKS = 7;
 
-    public ExtraRankListPage(MenuPage parent, Tier tier) {
+    public ExtraRankListPage(MenuPage parent, Holder<Tier> tier) {
       super(parent, PAGE);
       this.tier = tier;
 
@@ -211,7 +227,7 @@ public final class RankMenu {
               Menus.sizeFromRows(5),
 
               Messages.render("ranksmenu.extras.title")
-                  .addValue("tier", tier.getDisplayItem())
+                  .addValue("tier", tier.getValue().getDisplayItem())
                   .asComponent()
           ),
           true
@@ -219,25 +235,25 @@ public final class RankMenu {
     }
 
     @Override
-    protected List<Title> getList(User user, Context context) {
-      return getExtraRanks(user, tier);
+    protected List<Holder<Title>> getList(User user, Context context) {
+      return getExtraRanks(user, tier.getValue());
     }
 
     @Override
-    protected ItemStack getItem(User user, Title entry, Context context) {
-      return entry.getMenuNode().createItem(user, context);
+    protected ItemStack getItem(User user, Holder<Title> entry, Context context) {
+      return TitleMenuNode.createItem(entry, user, context);
     }
 
     @Override
-    protected void onClick(User user, Title entry, Context context, ClickContext click)
+    protected void onClick(User user, Holder<Title> entry, Context context, ClickContext click)
         throws CommandSyntaxException
     {
-      entry.getMenuNode().onClick(user, context, click);
+      TitleMenuNode.onClick(entry, user, context, click);
     }
 
     @Override
     public @Nullable ItemStack createItem(@NotNull User user, @NotNull Context context) {
-      List<Title> extra = getExtraRanks(user, tier);
+      List<Holder<Title>> extra = getExtraRanks(user, tier.getValue());
 
       if (extra.size() <= MAX_DISPLAY_RANKS) {
         return null;
@@ -257,7 +273,7 @@ public final class RankMenu {
     public void onClick(User user, Context context, ClickContext click)
         throws CommandSyntaxException
     {
-      var extra = getExtraRanks(user, tier);
+      var extra = getExtraRanks(user, tier.getValue());
 
       if (extra.size() <= MAX_DISPLAY_RANKS) {
         return;
