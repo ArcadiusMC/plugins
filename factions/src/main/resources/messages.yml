@@ -55,4 +55,4 @@ factions:
   discord:
     link:                 "&7Link your discord account with &b/discord link &7to be added to your&e faction's chat&7!"
     added:                "&7You've been added to your&e faction's discord chat&7! ${channelLink}"
-    channelLink:          "${text: content='[Click to see]' color=cyan hover='Click me!'}"
+    channelLink:          "${text: content='[Click to see]' color=aqua hover='Click me!'}"
