@@ -460,21 +460,29 @@ public final class Text {
    * @return The formatted and clickable message
    * @see #prettyLocation(Location, boolean)
    */
-  public static TextComponent clickableLocation(
-      Location l,
-      boolean includeWorld
-  ) {
+  public static TextComponent clickableLocation(Location l, boolean includeWorld) {
     return prettyLocation(l, includeWorld)
         .hoverEvent(text("Click to teleport!"))
+        .clickEvent(locationClickEvent(l));
+  }
 
-        .clickEvent(ClickEvent.runCommand(
-            "/tp_exact x=%s y=%s z=%s yaw=%s pitch=%s world=%s".formatted(
-                l.getX(), l.getY(), l.getZ(),
-                l.getYaw(),
-                l.getPitch(),
-                l.getWorld().getName()
-            )
-        ));
+  /**
+   * Creates a click event that teleports the executor to the exact location specified.
+   * <p>
+   * Uses the {@code /tp_exact} command.
+   *
+   * @param l Location to teleport to
+   * @return Click event
+   */
+  public static ClickEvent locationClickEvent(Location l) {
+    return ClickEvent.runCommand(
+        "/tp_exact x=%s y=%s z=%s yaw=%s pitch=%s world=%s".formatted(
+            l.getX(), l.getY(), l.getZ(),
+            l.getYaw(),
+            l.getPitch(),
+            l.getWorld().getName()
+        )
+    );
   }
 
   /**
