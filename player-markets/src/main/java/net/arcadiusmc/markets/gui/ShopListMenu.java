@@ -241,6 +241,7 @@ public class ShopListMenu extends ListPage<Market> {
     builder.setProfile(HEADER);
 
     List<Component> desc = config.description();
+    Component name = Placeholders.render(config.headerName());
 
     if (settings.alignItemNames()) {
       int maxLen = 0;
@@ -250,7 +251,7 @@ public class ShopListMenu extends ListPage<Market> {
         maxLen = Math.max(lineLen, maxLen);
       }
 
-      int nameLen = TextInfo.length(config.headerName());
+      int nameLen = TextInfo.length(name);
       int dif = maxLen - nameLen;
       int spaces = (dif / 2) / TextInfo.getCharPxWidth(' ');
 
@@ -258,17 +259,19 @@ public class ShopListMenu extends ListPage<Market> {
         builder.setName(
             Component.textOfChildren(
                 Component.text(" ".repeat(spaces)),
-                config.headerName()
+                name
             )
         );
       } else {
-        builder.setName(config.headerName());
+        builder.setName(name);
       }
     } else {
-      builder.setName(config.headerName());
+      builder.setName(name);
     }
 
-    builder.addLore(desc);
+    desc.stream()
+        .map(Placeholders::render)
+        .forEach(builder::addLore);
 
     return builder.build();
   }
