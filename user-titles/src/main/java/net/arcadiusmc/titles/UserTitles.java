@@ -15,7 +15,7 @@ import net.arcadiusmc.user.User;
 @AllArgsConstructor
 public class UserTitles {
 
-  static final String TIER_PERMISSION_PREFIX = "arcadius.ranktier.";
+  static final String TIER_PERMISSION_PREFIX = "group.ranktier.";
   static final String TITLE_PERMISSION_PREFIX = "arcadius.rank.";
 
   private final User user;
