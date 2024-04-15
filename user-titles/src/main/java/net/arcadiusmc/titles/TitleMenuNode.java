@@ -15,7 +15,6 @@ import net.arcadiusmc.utils.context.Context;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
@@ -164,13 +163,7 @@ public class TitleMenuNode implements MenuNode {
         );
 
     title.getDescription().forEach(component -> {
-      builder.addLoreRaw(
-          Component.text()
-              .decoration(TextDecoration.ITALIC, false)
-              .color(NamedTextColor.GRAY)
-              .append(component)
-              .build()
-      );
+      builder.addLore(component.colorIfAbsent(NamedTextColor.GRAY));
     });
 
     if (!title.getDescription().isEmpty()) {
