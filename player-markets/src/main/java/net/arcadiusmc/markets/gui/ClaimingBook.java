@@ -85,10 +85,6 @@ public final class ClaimingBook {
   private static void attemptPurchase(Market market, User user, int price)
       throws CommandSyntaxException
   {
-    if (!user.hasBalance(price)) {
-      throw Exceptions.cannotAfford(user, price);
-    }
-
     MarketPurchaseAttemptEvent event = callPurchaseEvent(user, market, price);
     if (event.isCancelled()) {
       Component reason = event.getDenyReason();
@@ -100,16 +96,7 @@ public final class ClaimingBook {
       throw Exceptions.create(event.getDenyReason());
     }
 
-    MarketsManager manager = market.getManager();
-    Market alreadyOwned = manager.getByOwner(user.getUniqueId());
-
-    if (alreadyOwned != null) {
-      throw Messages.render("markets.errors.alreadyOwned").exception(user);
-    }
-
     MarketsConfig config = MarketsPlugin.plugin().getPluginConfig();
-
-    Markets.validateActionCooldown(user);
 
     user.removeBalance(price);
     market.claim(user);
@@ -127,10 +114,14 @@ public final class ClaimingBook {
 
   private static MarketPurchaseAttemptEvent callPurchaseEvent(User user, Market market, int price) {
     MarketPurchaseAttemptEvent event = new MarketPurchaseAttemptEvent(user, market);
-
+    MarketsManager manager = market.getManager();
+    Market alreadyOwned = manager.getByOwner(user.getUniqueId());
     Component actionDenyMessage = Markets.actionCooldown(user);
 
-    if (!user.hasBalance(price)) {
+    if (alreadyOwned != null) {
+      event.setCancelled(true);
+      event.setDenyReason(Messages.renderText("markets.errors.alreadyOwned"));
+    } else if (!user.hasBalance(price)) {
       event.setCancelled(true);
       event.setDenyReason(Exceptions.cannotAffordText(user, price));
     } else if (actionDenyMessage != null) {
