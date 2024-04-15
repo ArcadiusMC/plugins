@@ -1,7 +1,6 @@
 package net.arcadiusmc.titles;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -21,8 +20,8 @@ import org.bukkit.Registry;
 public class TitleCodecs {
 
   static final MapCodec<ImmutableList<Component>> DESC_MAP_CODEC
-      = Codec.either(ExtraCodecs.COMPONENT, ExtraCodecs.immutableList(ExtraCodecs.COMPONENT))
-      .xmap(either -> either.map(ImmutableList::of, components -> components), Either::right)
+      = ExtraCodecs.listOrValue(ExtraCodecs.COMPONENT)
+      .xmap(ImmutableList::copyOf, Function.identity())
       .optionalFieldOf("description", ImmutableList.of());
 
   static final Codec<MenuDecoration> DECORATION_CODEC = RecordCodecBuilder.create(instance -> {
