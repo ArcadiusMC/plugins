@@ -109,6 +109,7 @@ public final class ShopEditBook {
     render.addValue("members.mergedList", mergedList);
     render.addValue("members.add",
         Messages.renderText("markets.gui.add", user)
+            .hoverEvent(Messages.renderText("markets.gui.add.hover.member", user))
             .clickEvent(ClickEvent.suggestCommand("/shop-trust "))
     );
 
@@ -149,6 +150,7 @@ public final class ShopEditBook {
         render.addValue("banned.mergedList", mergedBannedList);
         render.addValue("banned.add",
             Messages.renderText("markets.gui.add", user)
+                .hoverEvent(Messages.renderText("markets.gui.add.hover.banned", user))
                 .clickEvent(ClickEvent.suggestCommand("/shop-ban "))
         );
       }
