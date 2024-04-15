@@ -186,7 +186,9 @@ markets:
     listFormat.unRemovable: "${player}"
 
     noTaxBracket:           "none"
-    add:                    "${text: content='[add]' color=dark_green hover='Click me!'}"
+    add:                    "${text: content='[add]' color=dark_green}"
+    add.hover.banned:       "Use &e/shopban <player>&r to ban a player from your shop."
+    add.hover.member:       "Use &e/shoptrust <player>&r to trust someone in your shop."
 
     content.info: |-
       
