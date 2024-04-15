@@ -416,7 +416,7 @@ public class CommandMarkets {
     source.sendSuccess(
         Messages.render("markets.cmd.rent", messageKeySuffix)
             .addValue("market", market.displayName())
-            .addValue("price", UnitFormat.currency(value))
+            .addValue("rent", UnitFormat.currency(value))
             .create(source)
     );
   }
