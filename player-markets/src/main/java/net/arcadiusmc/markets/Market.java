@@ -232,7 +232,7 @@ public class Market {
 
   public int getBaseRent() {
     if (rent != UNSET || manager == null) {
-      return price;
+      return rent;
     }
     return manager.getPlugin().getPluginConfig().baseRent();
   }
