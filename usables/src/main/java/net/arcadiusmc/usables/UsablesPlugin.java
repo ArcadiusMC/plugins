@@ -20,8 +20,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 @Getter
 public class UsablesPlugin extends JavaPlugin {
 
-  private Registry<ObjectType<? extends Action>> actions;
-  private Registry<ObjectType<? extends Condition>> conditions;
+  private final Registry<ObjectType<? extends Action>> actions = Registries.newFreezable();
+  private final Registry<ObjectType<? extends Condition>> conditions = Registries.newFreezable();
 
   private CmdUsables<Warp> warps;
   private CmdUsables<Kit> kits;
@@ -39,9 +39,6 @@ public class UsablesPlugin extends JavaPlugin {
 
   @Override
   public void onEnable() {
-    actions = Registries.newFreezable();
-    conditions = Registries.newFreezable();
-
     reloadConfig();
 
     var dir = PathUtil.pluginPath();
@@ -70,9 +67,6 @@ public class UsablesPlugin extends JavaPlugin {
   public void onDisable() {
     save();
     saver.stop();
-
-    actions = null;
-    conditions = null;
   }
 
   public void reload() {
