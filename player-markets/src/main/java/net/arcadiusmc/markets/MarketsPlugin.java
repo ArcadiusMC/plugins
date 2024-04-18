@@ -57,6 +57,7 @@ public class MarketsPlugin extends JavaPlugin {
     MarketListeners.registerAll(this);
     MarketCommands.registerAll(this);
     MarketPlaceholders.registerAll();
+    MarketLeaderboards.registerAll(this);
   }
 
   @Override
