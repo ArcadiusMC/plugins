@@ -11,6 +11,7 @@ import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.TextWriter;
 import net.arcadiusmc.usables.Action;
 import net.arcadiusmc.usables.Condition;
@@ -111,7 +112,7 @@ public abstract class Usable implements ConditionHolder {
       message = formatString(errorOverride, player, ctx2);
     }
 
-    if (message != null) {
+    if (!Text.isEmpty(message)) {
       player.sendMessage(message);
     }
 
