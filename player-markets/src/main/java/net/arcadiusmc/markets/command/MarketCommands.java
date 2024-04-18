@@ -1,12 +1,21 @@
 package net.arcadiusmc.markets.command;
 
+import java.util.UUID;
 import net.arcadiusmc.command.Commands;
+import net.arcadiusmc.command.CurrencyCommand;
+import net.arcadiusmc.command.UserMapTopCommand;
 import net.arcadiusmc.markets.MExceptions;
 import net.arcadiusmc.markets.MarketsPlugin;
 import net.arcadiusmc.markets.gui.ShopEditBook;
 import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.UnitFormat;
+import net.arcadiusmc.user.UserService;
+import net.arcadiusmc.user.Users;
+import net.arcadiusmc.user.currency.Currency;
+import net.arcadiusmc.utils.ScoreIntMap;
 import net.forthecrown.grenadier.annotations.AnnotatedCommandContext;
 import net.kyori.adventure.inventory.Book;
+import net.kyori.adventure.text.Component;
 
 public class MarketCommands {
 
@@ -149,5 +158,44 @@ public class MarketCommands {
     gui.setDescription("Opens the player shop GUI");
     gui.setAliases("marketmenu", "market-menu", "shopgui", "shop-gui");
     gui.register();
+
+    ScoreIntMap<UUID> debts = plugin.getDebts().getDebts();
+
+    // Registers itself
+    new UserMapTopCommand("debttop", debts, UnitFormat::currency, Component.text("Debt Top"));
+
+    UserService service = Users.getService();
+    service.getCurrencies().get("balances").ifPresent(currency -> {
+      DebtCurrency debtCurrency = new DebtCurrency(debts, currency);
+      new CurrencyCommand("debt", debtCurrency);
+    });
+  }
+
+  record DebtCurrency(ScoreIntMap<UUID> map, Currency regularCurrency) implements Currency {
+
+    @Override
+    public String singularName() {
+      return regularCurrency.singularName();
+    }
+
+    @Override
+    public String pluralName() {
+      return regularCurrency.pluralName();
+    }
+
+    @Override
+    public Component format(int amount) {
+      return regularCurrency.format(amount);
+    }
+
+    @Override
+    public int get(UUID playerId) {
+      return map.get(playerId);
+    }
+
+    @Override
+    public void set(UUID playerId, int value) {
+      map.set(playerId, value);
+    }
   }
 }
