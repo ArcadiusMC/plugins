@@ -116,7 +116,7 @@ public final class Usables {
     }
   }
 
-  public static Component formatString(String str, Player viewer, Map<String, Object> context) {
+  public static Component formatString(String str, Audience viewer, Map<String, Object> context) {
     Component base = formatBaseString(str, viewer);
     PlaceholderRenderer list = Placeholders.newRenderer().useDefaults();
 
