@@ -15,6 +15,7 @@ import com.mojang.brigadier.context.StringRange;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
+import lombok.Getter;
 import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.command.arguments.RegistryArguments;
@@ -44,6 +45,8 @@ public class ListCommands<T extends UsableComponent> {
   static final int POS_AT     = 1;
 
   private final Registry<ObjectType<T>> registry;
+
+  @Getter
   private final RegistryArguments<ObjectType<T>> argument;
 
   private final String displayName;

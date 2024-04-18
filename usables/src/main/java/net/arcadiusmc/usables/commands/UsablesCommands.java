@@ -6,8 +6,8 @@ import net.arcadiusmc.usables.UsablesPlugin;
 
 public class UsablesCommands {
 
-  static ListCommands<Action> actions;
-  static ListCommands<Condition> conditions;
+  public static ListCommands<Action> actions;
+  public static ListCommands<Condition> conditions;
 
   public static void createCommands(UsablesPlugin plugin) {
     actions = new ListCommands<>("actions", "Action", plugin.getActions());

@@ -27,6 +27,7 @@ public class Conditions {
     r.register("does_not_have_items", ItemTestType.NOT);
     r.register("has_permission", TestPermission.TYPE);
     r.register("hand", HandCondition.TYPE);
+    r.register("not", NotCondition.TYPE);
 
     UserService service = Users.getService();
     Registry<Currency> currencies = service.getCurrencies();
