@@ -39,7 +39,7 @@ public class ScriptType implements ObjectType<ScriptInstance> {
     if (rawJs) {
       String remaining = reader.getRemaining();
       reader.setCursor(reader.getTotalLength());
-      source = Sources.direct(remaining, "<raw-js, by=" + cmdSource.textName() + ", js=" + remaining + ">");
+      source = Sources.direct(remaining, "<raw-js, by=" + cmdSource.textName() + ">");
     } else {
       source = ScriptArgument.SCRIPT.parse(reader);
       reader.skipWhitespace();
