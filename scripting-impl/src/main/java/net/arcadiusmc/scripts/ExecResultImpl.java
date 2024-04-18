@@ -216,7 +216,7 @@ class ExecResultImpl<T> implements ExecResult<T> {
     ExecResult<V> o = function.apply(script);
 
     if (o == null) {
-      return (ExecResult<V>) this;
+      return new ExecResultImpl<>(null, message, methodName, script, throwable);
     }
 
     return o;
