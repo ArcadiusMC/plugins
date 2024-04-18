@@ -67,12 +67,31 @@ public class ValueModifierList {
       return base;
     }
 
+    Instant now = Instant.now();
+
     float value = base;
     for (Modifier modifier : modifiers) {
+      if (modifier.ends != null && now.isAfter(modifier.ends)) {
+        continue;
+      }
+
       value = modifier.op.apply(base, value, modifier.amount);
     }
 
     return value;
+  }
+
+  public void clear() {
+    modifiers.clear();
+  }
+
+  public void removeTagged(String tag) {
+    modifiers.removeIf(modifier -> Objects.equals(tag, modifier.tag));
+  }
+
+  public void add(Modifier modifier) {
+    Objects.requireNonNull(modifier, "Null modifier");
+    modifiers.add(modifier);
   }
 
   public record Modifier(
@@ -114,6 +133,10 @@ public class ValueModifierList {
       this.displayName = Strings.nullToEmpty(displayName);
     }
 
+    public Modifier copy() {
+      return new Modifier(amount, op, ends, tag, displayName);
+    }
+
     public Component displayText(Audience viewer) {
       Component reason;
 
@@ -123,10 +146,16 @@ public class ValueModifierList {
         reason = Placeholders.renderString(displayName, viewer);
       }
 
-      float displayAmount = amount * 100.0f;
+      float displayAmount = amount;
+
+      if (op == ModifierOp.DISCOUNT_BASE || op == ModifierOp.DISCOUNT_STACKING) {
+        displayAmount = -displayAmount;
+      } else {
+        displayAmount--;
+      }
 
       return Messages.render("markets", "modifiers", op.name().toLowerCase())
-          .addValue("value", displayAmount)
+          .addValue("value", (displayAmount * 100f))
           .addValue("reason", reason)
           .create(viewer);
     }

@@ -5,6 +5,7 @@ import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.CurrencyCommand;
 import net.arcadiusmc.command.UserMapTopCommand;
 import net.arcadiusmc.markets.MExceptions;
+import net.arcadiusmc.markets.Market;
 import net.arcadiusmc.markets.MarketsPlugin;
 import net.arcadiusmc.markets.gui.ShopEditBook;
 import net.arcadiusmc.text.Messages;
@@ -20,9 +21,11 @@ import net.kyori.adventure.text.Component;
 public class MarketCommands {
 
   static MarketArgument argument;
+  static MarketListArgument listArgument;
 
   public static void registerAll(MarketsPlugin plugin) {
     argument = new MarketArgument(plugin);
+    listArgument = new MarketListArgument(plugin, argument);
 
     new CommandMarketBounds(plugin);
     new CommandMergeShop();
@@ -159,8 +162,9 @@ public class MarketCommands {
     gui.setAliases("marketmenu", "market-menu", "shopgui", "shop-gui");
     gui.register();
 
-    ScoreIntMap<UUID> debts = plugin.getDebts().getDebts();
 
+    // -- Debt commands --
+    ScoreIntMap<UUID> debts = plugin.getDebts().getDebts();
     // Registers itself
     new UserMapTopCommand("debttop", debts, UnitFormat::currency, Component.text("Debt Top"));
 
@@ -169,6 +173,37 @@ public class MarketCommands {
       DebtCurrency debtCurrency = new DebtCurrency(debts, currency);
       new CurrencyCommand("debt", debtCurrency);
     });
+
+    // -- Modifier commands --
+    ModifierListCommand priceMod = new ModifierListCommand(
+        plugin,
+        "market-price-modifiers",
+        Market::getPriceModifiers,
+        "markets.priceModifiers"
+    );
+    priceMod.setAliases("shop-price-mods", "market-price-mods");
+    priceMod.setDescription("Player shop price modifier managing.");
+    priceMod.register();
+
+    ModifierListCommand rentMod = new ModifierListCommand(
+        plugin,
+        "market-rent-modifiers",
+        Market::getRentModifiers,
+        "markets.rentModifiers"
+    );
+    rentMod.setAliases("shop-rent-mods", "market-rent-mods");
+    rentMod.setDescription("Player shop rent modifier managing.");
+    rentMod.register();
+
+    ModifierListCommand taxMod = new ModifierListCommand(
+        plugin,
+        "market-tax-modifiers",
+        Market::getRentModifiers,
+        "markets.taxModifiers"
+    );
+    taxMod.setAliases("shop-tax-mods", "market-tax-mods");
+    taxMod.setDescription("Player shop tax modifier managing.");
+    taxMod.register();
   }
 
   record DebtCurrency(ScoreIntMap<UUID> map, Currency regularCurrency) implements Currency {

@@ -68,6 +68,27 @@ markets:
       list.header:          "${market} entrances:${list}"
       list.format:          "\n- &f${entrance}"
 
+  taxModifiers:
+    cleared:                "Cleared tax modifiers for &e${label}&r (${count} shops)."
+    removed.index:          "Removed tax modifier at index &e${index}&r from &6${label}&r."
+    removed.tagged:         "Removed all tax modifiers tagged &e${tag}&r."
+    added:                  "Added tax modifier &e${modifier}&r to &6${label}&7 (${count} shops)."
+    list.header:            "${label} Tax modifiers:${list}"
+    list.format:            "\n&e${index}) &r${modifier}"
+  priceModifiers:
+    cleared:                "Cleared price modifiers for &e${label}&r (${count} shops)."
+    removed.index:          "Removed price modifier at index &e${index}&r from &6${label}&r."
+    removed.tagged:         "Removed all price modifiers tagged &e${tag}&r."
+    added:                  "Added price modifier &e${modifier}&r to &6${label}&7 (${count} shops)."
+    list.header:            "${label} Price modifiers:${list}"
+    list.format:            "\n&e${index}) &r${modifier}"
+  rentModifiers:
+    cleared:                "Cleared rent modifiers for &e${label}&r (${count} shops)."
+    removed.index:          "Removed rent modifier at index &e${index}&r from &6${label}&r."
+    removed.tagged:         "Removed all rent modifiers tagged &e${tag}&r."
+    added:                  "Added rent modifier &e${modifier}&r to &6${label}&7 (${count} shops)."
+    list.header:            "${label} Rent modifiers:${list}"
+    list.format:            "\n&e${index}) &r${modifier}"
 
   merge:
     unmerged:               "Shop unmerged."
@@ -116,6 +137,7 @@ markets:
     alreadyMerged:          "${market} has already merged with ${other}."
     notMerged.with:         "${market} has not been merged."
     purchaseForbidden:      "You aren't allowed to purchase this shop."
+    noneInGroup:            "No markets using the '${group}' group found."
 
     merges:
       self:                 "Cannot merge with your own shop."
@@ -152,10 +174,10 @@ markets:
   modifiers:
     _style: "reset"
     noDisplay:              "Reason not set"
-    discount_base:          "&1${value.signed}% base:&r ${reason}"
-    discount_stacking:      "&1${value.signed}%:&r ${reason}"
-    add_multiplied_base:    "&1${value.signed}% base:&r ${reason}"
-    multiply:               "&1${value.signed}%:&r ${reason}"
+    discount_base:          "&9${value.signed}% base:&r ${reason}"
+    discount_stacking:      "&9${value.signed}%:&r ${reason}"
+    add_multiplied_base:    "&9${value.signed}% base:&r ${reason}"
+    multiply:               "&9${value.signed}%:&r ${reason}"
 
   gui:
     _style: "reset"
