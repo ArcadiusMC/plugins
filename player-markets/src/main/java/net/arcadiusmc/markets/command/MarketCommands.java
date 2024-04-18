@@ -220,7 +220,10 @@ public class MarketCommands {
 
     @Override
     public Component format(int amount) {
-      return regularCurrency.format(amount);
+      return Component.text()
+          .append(regularCurrency.format(amount))
+          .append(Component.text(" of debt"))
+          .build();
     }
 
     @Override
