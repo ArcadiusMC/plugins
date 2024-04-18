@@ -11,9 +11,10 @@ public class FactionUsables {
   public static void registerAll() {
     UsablesPlugin plugin = UsablesPlugin.get();
 
-    Registry<ObjectType<? extends Condition>> conditionRegistry = plugin.getConditions();
-    Registry<ObjectType<? extends Action>> actionRegistry = plugin.getActions();
+    Registry<ObjectType<? extends Condition>> conditions = plugin.getConditions();
+    Registry<ObjectType<? extends Action>> actions = plugin.getActions();
 
-    conditionRegistry.register("is_faction_member", FactionMemberType.INSTANCE);
+    conditions.register("is_faction_member", FactionMemberType.INSTANCE);
+    conditions.register("in_any_faction", AnyFactionMemberTest.TYPE);
   }
 }

@@ -10,6 +10,7 @@ factions:
     alreadyMember.other:  "${player} is a member of the ${faction}! Cannot join 2 factions at once!"
     notMemberOf:          "${player} is not a member of ${faction}!"
     neverMember:          "${player} has never been a member of the ${faction} faction."
+    notInAnyFactions:     "You must be part of a faction to use this."
 
   names.format:           "[${base}]"
   profileField:           "Faction"
