@@ -1,5 +1,6 @@
 package net.arcadiusmc.command.arguments;
 
+import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.HashMap;
@@ -12,10 +13,11 @@ import net.arcadiusmc.command.arguments.chat.MessageArgument.Result;
 import net.arcadiusmc.text.PlayerMessage;
 import net.arcadiusmc.text.ViewerAwareMessage;
 import net.arcadiusmc.user.User;
+import net.arcadiusmc.utils.inventory.ItemList;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.forthecrown.grenadier.types.SuffixedNumberArgument;
-import net.arcadiusmc.utils.inventory.ItemList;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.command.CommandSender;
 
 public interface Arguments {
@@ -39,7 +41,11 @@ public interface Arguments {
 
   SuffixedNumberArgument<Integer> GAMETIME = createGametimeArgument();
 
-  ColorArgument COLOR = new ColorArgument();
+  ColorArgument BUKKIT_COLOR = new ColorArgument();
+
+  ArgumentType<TextColor> COLOR = ArgumentTypes.map(BUKKIT_COLOR, color -> {
+    return TextColor.color(color.getRed(), color.getGreen(), color.getBlue());
+  });
 
   static List<User> getUsers(CommandContext<CommandSource> c, String argument)
       throws CommandSyntaxException
