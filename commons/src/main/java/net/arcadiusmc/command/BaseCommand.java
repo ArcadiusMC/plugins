@@ -3,6 +3,7 @@ package net.arcadiusmc.command;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.Getter;
+import lombok.Setter;
 import net.arcadiusmc.Permissions;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
@@ -10,6 +11,7 @@ import net.arcadiusmc.command.help.ArcadiusHelpList;
 import net.arcadiusmc.command.help.UsageFactory;
 import net.forthecrown.grenadier.AbstractCommand;
 import net.forthecrown.grenadier.CommandSource;
+import org.bukkit.permissions.Permission;
 
 public abstract class BaseCommand extends AbstractCommand {
 
@@ -18,12 +20,15 @@ public abstract class BaseCommand extends AbstractCommand {
   @Getter
   private boolean simpleUsages = false;
 
+  @Getter @Setter
+  private Permission registeredPermission;
+
   public BaseCommand(String name) {
     super(name.toLowerCase());
 
     String perm = Commands.getDefaultPermission(getName());
 
-    setPermission(Permissions.register(perm));
+    setPermission(perm);
     setDescription(DEFAULT_DESCRIPTION);
 
     ArcadiusHelpList helpList = ArcadiusHelpList.helpList();

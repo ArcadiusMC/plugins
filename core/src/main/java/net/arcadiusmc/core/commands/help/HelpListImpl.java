@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.Permissions;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.help.ArcadiusHelpList;
@@ -43,6 +44,7 @@ import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Completions;
 import net.forthecrown.grenadier.Grenadier;
 import net.kyori.adventure.text.Component;
+import org.bukkit.permissions.Permission;
 import org.slf4j.Logger;
 
 public class HelpListImpl implements ArcadiusHelpList {
@@ -238,6 +240,8 @@ public class HelpListImpl implements ArcadiusHelpList {
    */
   public void update() {
     existingCommands.forEach((s, command) -> {
+      ensurePermissionRegistered(command);
+
       if (command instanceof LoadedEntryCommand) {
         return;
       }
@@ -265,6 +269,18 @@ public class HelpListImpl implements ArcadiusHelpList {
       removeCommandEntry(entry.getLabel());
       addEntry(entry);
     });
+  }
+
+  private void ensurePermissionRegistered(BaseCommand command) {
+    if (command.getRegisteredPermission() != null) {
+      return;
+    }
+    if (Strings.isNullOrEmpty(command.getPermission())) {
+      return;
+    }
+
+    Permission permission = Permissions.register(command.getPermission());
+    command.setRegisteredPermission(permission);
   }
 
   private void removeCommandEntry(String commandName) {
