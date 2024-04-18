@@ -3,6 +3,7 @@ package net.arcadiusmc.waypoints.type;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import net.arcadiusmc.text.TextWriter;
 import net.arcadiusmc.user.TimeField;
 import net.arcadiusmc.user.User;
@@ -53,7 +54,14 @@ public class PlayerWaypointType extends WaypointType {
       return;
     }
 
-    throw WExceptions.waypointAlreadySet(alreadyOwned.get());
+    Waypoint waypoint = alreadyOwned.get();
+    UUID owner = waypoint.get(WaypointProperties.OWNER);
+
+    if (!Objects.equals(creator.getUniqueId(), owner)) {
+      return;
+    }
+
+    throw WExceptions.waypointAlreadySet(waypoint);
   }
 
   @Override
