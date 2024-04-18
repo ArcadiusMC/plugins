@@ -76,7 +76,7 @@ public abstract class InteractableCommand<H extends Usable> extends UsableComman
               provider.postEdit(holder);
 
               c.getSource().sendSuccess(
-                  Text.format("&e{0}&r will now failure messages: &f{1}&r.",
+                  Text.format("&e{0}&r will now send failure messages: &f{1}&r.",
                       NamedTextColor.GRAY,
                       holder.displayName(),
                       !holder.isSilent()
