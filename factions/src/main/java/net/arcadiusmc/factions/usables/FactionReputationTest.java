@@ -92,7 +92,7 @@ public class FactionReputationTest implements Condition {
 
     String messageKey;
 
-    if (reputationRange != IntRange.UNLIMITED || reputationRange == null) {
+    if (reputationRange != IntRange.UNLIMITED && reputationRange != null) {
       messageKey = "factions.errors.tooLittleReputation";
     } else {
       messageKey = "factions.errors.notFactionMember";
