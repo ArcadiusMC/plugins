@@ -71,7 +71,7 @@ public abstract class DisplayCommand {
 
   @VariableInitializer
   void initVariables(Map<String, Object> vars) {
-    vars.put("color", Arguments.COLOR);
+    vars.put("color", Arguments.BUKKIT_COLOR);
     vars.put("alignment", ArgumentTypes.enumType(TextAlignment.class));
     vars.put("billboard", ArgumentTypes.enumType(Billboard.class));
   }
