@@ -152,10 +152,8 @@ public class CommandHelpEntry implements HelpEntry {
 
       if (!ArrayUtils.isEmpty(n.getInfo())) {
         writer.write(":");
+        Arrays.stream(n.getInfo()).forEach(s -> writer.line("  " + s, NamedTextColor.GRAY));
       }
-
-      Arrays.stream(n.getInfo())
-          .forEach(s -> writer.line("  " + s, NamedTextColor.GRAY));
     }
   }
 }
