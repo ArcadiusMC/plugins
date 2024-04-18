@@ -1,7 +1,5 @@
 package net.arcadiusmc.markets.command;
 
-import com.mojang.brigadier.LiteralMessage;
-import com.mojang.brigadier.Message;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -19,9 +17,6 @@ import net.forthecrown.grenadier.Completions;
 import net.forthecrown.grenadier.internal.SimpleVanillaMapped;
 
 public class MarketArgument implements ArgumentType<Market>, SimpleVanillaMapped {
-
-  private static final Message MARKET = new LiteralMessage("Market");
-  private static final Message PLAYER = new LiteralMessage("Player");
 
   private final MarketsPlugin plugin;
 
@@ -52,17 +47,7 @@ public class MarketArgument implements ArgumentType<Market>, SimpleVanillaMapped
       SuggestionsBuilder builder
   ) {
     Collection<Market> markets = plugin.getManager().getMarkets();
-    String token = builder.getRemainingLowerCase();
-
-    for (Market market : markets) {
-      String name = market.getRegionName();
-
-      if (Completions.matches(token, name)) {
-        builder.suggest(name, MARKET);
-      }
-    }
-
-    return builder.buildFuture();
+    return Completions.suggest(builder, markets.stream().map(Market::getRegionName));
   }
 
   @Override
