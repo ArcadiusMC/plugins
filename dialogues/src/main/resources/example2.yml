@@ -1,0 +1,50 @@
+#
+# Real life use case example:
+#
+# (This is just the Dorian server info NPC from FTC
+# translated to this new format)
+#
+
+settings:
+  entry-point: "greeting"
+  prefix: "\n[&6Explorer&r] &eDorian:\n"
+
+greeting:
+  settings:
+    prefix: ""
+
+  text:
+    - ""
+    - "&eHowdy partner, how can I help you?"
+    - ""
+    - "${link:dungeonswhat}"
+    - "${link:dungeonlvl1}"
+    - "${link:dungeonlvl2}"
+    - "${link:dungeonpartaking}"
+    - ""
+    - "For more information, visit the wiki at"
+    - "&arcadiusmc.net/wiki/dungeons/"
+
+dungeonswhat:
+  prompt: "What are the dungeons?"
+  text:
+    - "The &eDungeons&r are a set of PVE challenges for late game players (anyone can give them a try)."
+    - "Each &eDungeon level&r requires the player to gather &eDungeon Items&r in order to summon a boss at the end."
+
+dungeonlvl1:
+  prompt: "What is level one?"
+  text:
+    - "All the mobs are in the &ezombie&r family. The boss at the end is a Husk called &6Zhambie&r."
+    - "To summon &6Zhambie&r, you need to acquire different &edungeon items&r from various &ezombie&r mobs throughout the level."
+
+dungeonslvl2:
+  prompt: "What is level two?"
+  text:
+    - "All the mobs are in the &eskeleton&r family. The boss at the end is called &6Skalatan&r."
+    - "To summon &6Skalatan&r, you need to acquire different &edungeon items&r from various &eskeleton&r mobs throughout the level."
+
+dungeonpartaking:
+  prompt: "Why should I do the dungeons?"
+
+  text:
+    - "When completing a level in the dungeons, you receive a &eBoss Apple&r that you can use to access a &6Loot Room&r."

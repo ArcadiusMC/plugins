@@ -1,43 +1,25 @@
 package net.arcadiusmc.dialogues;
 
+import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import lombok.Getter;
-import net.arcadiusmc.Loggers;
-import net.arcadiusmc.registry.Registries;
-import net.arcadiusmc.utils.io.JsonWrapper;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.event.ClickCallback;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
+import lombok.Setter;
 
-public class Dialogue implements ClickCallback<Audience> {
+public class Dialogue {
 
-  public static final Logger LOGGER = Loggers.getLogger();
+  private final Map<String, DialogueNode> byName = new Object2ObjectOpenHashMap<>();
 
-  private final Map<String, DialogueNode> byName
-      = new Object2ObjectOpenHashMap<>();
-
-  @Getter
+  @Getter @Setter
   private DialogueOptions options;
 
+  @Getter @Setter
+  long randomId;
+
   public DialogueNode getEntryPoint() {
-    return options.getEntryPoint() != null
-        ? getNodeByName(options.getEntryPoint())
-        : null;
-  }
-
-  @Override
-  public void accept(@NotNull Audience audience) {
-    DialogueNode node = getEntryPoint();
-
-    if (node == null) {
-      LOGGER.error("No 'entry_node' set as entry point");
-      return;
-    }
-
-    node.accept(audience);
+    return options.getEntryNode() != null ? getNodeByName(options.getEntryNode()) : null;
   }
 
   public void addEntry(String name, DialogueNode node) {
@@ -53,34 +35,11 @@ public class Dialogue implements ClickCallback<Audience> {
     return byName.keySet();
   }
 
-  public static Dialogue deserialize(JsonWrapper json) {
-    Dialogue entry = new Dialogue();
+  public static String nodeIdentifier(String dialogueName, String nodeName) {
+    return dialogueName + (Strings.isNullOrEmpty(nodeName) ? "" : (";" + nodeName));
+  }
 
-    if (json.has("settings")) {
-      entry.options = DialogueOptions.load(json.get("settings"));
-      json.remove("settings");
-    } else {
-      entry.options = DialogueOptions.defaultOptions();
-    }
-
-    for (var e: json.entrySet()) {
-      String key = e.getKey();
-
-      if (!Registries.isValidKey(key)) {
-        Loggers.getLogger().error("Invalid key '{}', must follow pattern {}",
-            key, Registries.VALID_KEY_REGEX
-        );
-
-        continue;
-      }
-
-      var node = DialogueNode.deserialize(
-          JsonWrapper.wrap(e.getValue().getAsJsonObject())
-      );
-
-      entry.addEntry(key, node);
-    }
-
-    return entry;
+  public Collection<DialogueNode> getNodes() {
+    return byName.values();
   }
 }

@@ -1,207 +1,189 @@
 package net.arcadiusmc.dialogues;
 
-import com.google.common.collect.ImmutableList;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import java.time.Duration;
-import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import static net.arcadiusmc.usables.Usables.NO_FAILURE;
+
+import com.google.common.base.Strings;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.Accessors;
-import net.arcadiusmc.scripts.ExecResults;
-import net.arcadiusmc.scripts.Script;
-import net.arcadiusmc.scripts.Scripts;
+import net.arcadiusmc.Loggers;
+import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.TextJoiner;
-import net.arcadiusmc.text.UserClickCallback;
+import net.arcadiusmc.text.placeholder.Placeholders;
+import net.arcadiusmc.usables.Condition;
+import net.arcadiusmc.usables.Interaction;
+import net.arcadiusmc.usables.Usables;
+import net.arcadiusmc.usables.expr.ExprList;
 import net.arcadiusmc.user.User;
-import net.arcadiusmc.utils.io.JsonUtils;
-import net.arcadiusmc.utils.io.JsonWrapper;
-import net.arcadiusmc.utils.io.source.Source;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
-import org.apache.commons.lang3.ArrayUtils;
+import org.slf4j.Logger;
 
 @Getter
-public class DialogueNode implements Predicate<User>, UserClickCallback {
-  private static final Predicate<User> DEFAULT_CONDITION = user -> true;
+public class DialogueNode {
 
-  private final Predicate<User> condition;
-  private final Consumer<User> onView;
+  private static final Logger LOGGER = Loggers.getLogger();
 
-  private final ImmutableList<Component> content;
+  private final List<Component> content = new ArrayList<>();
+
+  private final List<Link> links = new ArrayList<>();
+
+  private final ExprList exprList = new ExprList();
+
+  @Setter
+  private DialogueOptions options = DialogueOptions.defaultOptions();
+
+  @Setter
+  private Component prompt = Component.empty();
+
+  @Setter
+  private Component promptHover = Component.empty();
 
   Dialogue entry;
+  String key;
 
-  ClickEvent clickEvent;
+  @Setter
+  long randomId;
 
-  private DialogueNode(Builder builder) {
-    this.condition = Objects.requireNonNullElse(
-        builder.condition,
-        DEFAULT_CONDITION
+  public DialogueNode() {
+
+  }
+
+  private ClickEvent getClickEvent(long interactionId) {
+    return ClickEvent.runCommand(
+        "/dialogue-callback "
+            + entry.getRandomId()
+            + " " + randomId
+            + " " + interactionId
     );
-
-    this.onView = builder.onView;
-    this.content = builder.content.build();
   }
 
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  public static DialogueNode deserialize(JsonWrapper json) {
-    var builder = builder();
-    JsonElement condition = json.get("condition");
-    builder.condition(loadCondition(condition));
-
-    var onView = json.get("on_view");
-    if (onView != null) {
-      var viewScriptSupplier = loadScript(onView, false);
-
-      builder.onView(user -> {
-        try (var viewScript = viewScriptSupplier.get()) {
-          viewScript.put("reader", user);
-          viewScript.evaluate().logError();
-        }
-      });
+  public Component button(
+      Interaction interaction,
+      ButtonType type,
+      Component promptOverride,
+      Component hoverOverride
+  ) {
+    if (entry == null) {
+      return null;
     }
 
-    if (json.has("text")) {
-      JsonArray text = json.getArray("text");
-      text.forEach(element -> {
-        Component c = JsonUtils.readText(element);
-        builder.content.add(c);
-      });
+    Audience viewer = interaction.getUser().orElse(null);
+    Component baseText;
+    DialogueRenderer renderer = new DialogueRenderer(interaction, this);
+
+    Component prompt;
+    Component promptHover;
+
+    if (Text.isEmpty(promptOverride)) {
+      prompt = this.prompt;
+    } else {
+      prompt = promptOverride;
     }
 
-    return builder.build();
-  }
+    if (Text.isEmpty(hoverOverride)) {
+      promptHover = this.promptHover;
+    } else {
+      promptHover = hoverOverride;
+    }
 
-  private static Supplier<Script> loadScript(JsonElement element, boolean assumeRawJs) {
-    Source source = Scripts.loadScriptSource(element, assumeRawJs);
-    String[] args;
+    if (Text.isEmpty(prompt)) {
+      if (Strings.isNullOrEmpty(key)) {
+        return null;
+      }
 
-    if (element.isJsonObject()) {
-      var obj = element.getAsJsonObject();
-      var jsonArgs = obj.get("args");
+      baseText = Component.text(key);
+    } else {
+      baseText = prompt;
+    }
 
-      if (jsonArgs != null) {
-        if (jsonArgs.isJsonPrimitive()) {
-          args = jsonArgs.getAsString().split(" ");
-        } else {
-          args = JsonUtils.stream(jsonArgs.getAsJsonArray())
-              .map(JsonElement::getAsString)
-              .toArray(String[]::new);
-        }
+    ButtonType endType;
+    Component hoverText;
+    int failedIndex = exprList.getFailureIndex(interaction);
+
+    if (failedIndex != NO_FAILURE) {
+      Condition failed = exprList.getConditions().get(failedIndex);
+      String errorOverride = exprList.getConditions().getError(failedIndex);
+      endType = ButtonType.UNAVAILABLE;
+
+      if (Strings.isNullOrEmpty(errorOverride)) {
+        hoverText = failed.failMessage(interaction);
       } else {
-        args = ArrayUtils.EMPTY_STRING_ARRAY;
+        hoverText = Usables.formatBaseString(errorOverride, viewer);
       }
     } else {
-      args = ArrayUtils.EMPTY_STRING_ARRAY;
-    }
+      endType = type == null ? ButtonType.REGULAR : type;
 
-    return () -> {
-      Script script = Scripts.newScript(source);
-      script.setArguments(args);
-      script.compile();
-      return script;
-    };
-  }
-
-  private static Predicate<User> loadCondition(JsonElement condition) {
-    if (condition == null) {
-      return DEFAULT_CONDITION;
-    }
-
-    if (condition.isJsonPrimitive() && condition.getAsJsonPrimitive().isBoolean()) {
-      final boolean constValue = condition.getAsBoolean();
-      return user -> constValue;
-    }
-
-    var supplier = loadScript(condition, true);
-
-    return user -> {
-      Script script = supplier.get();
-
-      script.put("reader", user);
-      var result = script.evaluate().logError();
-
-      if (!result.isSuccess()) {
-        script.close();
-        return false;
+      if (Text.isEmpty(promptHover)) {
+        hoverText = null;
+      } else {
+        hoverText = Placeholders.render(promptHover, viewer);
       }
-
-      script.close();
-      return ExecResults.toBoolean(result).result().orElse(false);
-    };
-  }
-
-  @Override
-  public boolean test(User user) {
-    return condition.test(user);
-  }
-
-  public ClickEvent getClickEvent() {
-    if (clickEvent != null) {
-      return clickEvent;
     }
 
-    clickEvent = ClickEvent.callback(
-        this,
-        builder -> builder.uses(-1).lifetime(Duration.ofDays(365))
-    );
+    Component buttonText = renderer.render(baseText);
+    renderer.getPlaceholders().add("buttonText", buttonText);
 
-    return clickEvent;
+    Component result = endType.render(renderer, hoverText);
+    long interactionId = renderer.getInteraction().getValue("__id", Long.class).orElse(0L);
+
+    return result.clickEvent(getClickEvent(interactionId));
   }
 
-  public Component createButton(Component text, User user, DialogueOptions options) {
-    boolean allowed = test(user);
-    return DialogueRenderer.buttonize(text, allowed, getClickEvent(), options);
-  }
-
-  @Override
-  public void accept(User user) {
-    if (!test(user)) {
+  public void use(Interaction interaction) {
+    if (!exprList.interact(interaction)) {
       return;
     }
 
-    view(user);
+    view(interaction);
   }
 
-  public void view(User user) {
-    if (onView != null) {
-      onView.accept(user);
-    }
+  private void view(Interaction interaction) {
+    Optional<User> playerOpt = interaction.getUser();
 
-    if (content.isEmpty()) {
+    if (content.isEmpty() || playerOpt.isEmpty()) {
       return;
     }
 
-    DialogueRenderer renderer = new DialogueRenderer(user, entry);
+    User user = playerOpt.get();
+
+    DialogueRenderer renderer = new DialogueRenderer(interaction, this);
     Component text = render(renderer);
+
     user.sendMessage(text);
   }
 
   public Component render(DialogueRenderer renderer) {
-    return TextJoiner.onNewLine()
-        .add(content.stream().map(renderer::render))
-        .asComponent();
-  }
+    TextJoiner joiner = TextJoiner.newJoiner();
 
-  @Getter
-  @Setter
-  @Accessors(chain = true, fluent = true)
-  public static class Builder {
-    private Predicate<User> condition;
-    private Consumer<User> onView;
+    DialogueOptions options = renderer.getOptions();
+    Component prefix = options.getPrefix();
+    Component suffix = options.getSuffix();
 
-    private final ImmutableList.Builder<Component> content
-        = ImmutableList.builder();
-
-    public DialogueNode build() {
-      return new DialogueNode(this);
+    if (!Text.isEmpty(prefix)) {
+      joiner.add(renderer.render(prefix));
     }
+
+    TextJoiner nlJoiner = TextJoiner.onNewLine();
+    nlJoiner.add(content.stream().map(renderer::render));
+
+    for (Link link : links) {
+      Component text = link.renderButton(renderer);
+      if (text == null) {
+        continue;
+      }
+      nlJoiner.add(text);
+    }
+
+    joiner.add(nlJoiner.asComponent());
+
+    if (!Text.isEmpty(suffix)) {
+      joiner.add(renderer.render(suffix));
+    }
+
+    return joiner.asComponent();
   }
 }

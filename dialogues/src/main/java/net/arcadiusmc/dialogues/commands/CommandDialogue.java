@@ -5,10 +5,12 @@ import java.util.List;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.ExpandedEntityArgument;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.dialogues.DialogueManager;
 import net.arcadiusmc.dialogues.DialogueNode;
 import net.arcadiusmc.dialogues.DialoguesPlugin;
 import net.arcadiusmc.dialogues.commands.DialogueArgument.Result;
 import net.arcadiusmc.text.Text;
+import net.arcadiusmc.usables.Interaction;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
 import net.forthecrown.grenadier.types.ArgumentTypes;
@@ -77,11 +79,18 @@ public class CommandDialogue extends BaseCommand {
       if (targetsGiven) {
         players = ArgumentTypes.getPlayers(c, "players");
       } else {
-        var player = c.getSource().asPlayer();
+        Player player = c.getSource().asPlayer();
         players = List.of(player);
       }
 
-      players.forEach(node::accept);
+      DialogueManager manager = plugin.getManager();
+
+      for (Player player : players) {
+        Interaction interaction = node.getExprList().createInteraction(player);
+        manager.genInteractionId(interaction);
+
+        node.use(interaction);
+      }
 
       c.getSource().sendSuccess(
           Text.format("Showed a dialogue node to {0, number} players", players.size())

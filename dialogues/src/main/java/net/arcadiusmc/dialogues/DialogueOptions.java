@@ -1,76 +1,90 @@
 package net.arcadiusmc.dialogues;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
+import java.util.Optional;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.Accessors;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.arcadiusmc.text.Text;
+import net.arcadiusmc.utils.io.ExtraCodecs;
+import net.kyori.adventure.text.Component;
 
-@Getter
+@AllArgsConstructor
+@Getter @Setter
 public class DialogueOptions {
 
-  public static final TextColor BUTTON_AVAILABLE = NamedTextColor.AQUA;
-  public static final TextColor BUTTON_UNAVAILABLE = NamedTextColor.GRAY;
+  static final Component DEFAULT_AVAILABLE = Text.renderString(" &b&l> &b${buttonText}");
+  static final Component DEFAULT_UNAVAILABLE = Text.renderString(" &8&l> &7${buttonText}");
+  static final Component DEFAULT_HIGHLIGHT = Text.renderString(" &6&l> &e${buttonText}");
 
-  private static final Gson GSON;
+  static final Codec<DialogueOptions> CODEC = RecordCodecBuilder.create(instance -> {
+    return instance
+        .group(
+            ExtraCodecs.COMPONENT.optionalFieldOf("available-format", DEFAULT_AVAILABLE)
+                .forGetter(DialogueOptions::getAvailableFormat),
 
-  static {
-    var builder =  new GsonBuilder()
-        .setPrettyPrinting();
+            ExtraCodecs.COMPONENT.optionalFieldOf("unavailable-format", DEFAULT_UNAVAILABLE)
+                .forGetter(DialogueOptions::getUnavailableFormat),
 
-    GsonComponentSerializer.gson()
-        .populator()
-        .apply(builder);
+            ExtraCodecs.COMPONENT.optionalFieldOf("highlight-format", DEFAULT_HIGHLIGHT)
+                .forGetter(DialogueOptions::getHighlightFormat),
 
-    GSON = builder.create();
-  }
+            ExtraCodecs.COMPONENT.optionalFieldOf("prefix")
+                .forGetter(o -> Optional.ofNullable(o.getPrefix())),
 
-  private final TextColor buttonAvailableColor;
-  private final TextColor buttonUnavailableColor;
-  private final String entryPoint;
+            ExtraCodecs.COMPONENT.optionalFieldOf("suffix")
+                .forGetter(o -> Optional.ofNullable(o.getSuffix())),
 
-  private DialogueOptions(Builder builder) {
-    this.buttonAvailableColor = Objects.requireNonNullElse(
-        builder.buttonAvailableColor,
-        BUTTON_AVAILABLE
-    );
+            ExtraCodecs.KEY_CODEC.optionalFieldOf("entry-node", "")
+                .forGetter(DialogueOptions::getEntryNode)
+        )
+        .apply(instance, (available, unavailable, highlight, prefix, suffix, entryPoint) -> {
+          return new DialogueOptions(
+              available,
+              unavailable,
+              highlight,
+              prefix.orElse(null),
+              suffix.orElse(null),
+              entryPoint
+          );
+        });
+  });
 
-    this.buttonUnavailableColor = Objects.requireNonNullElse(
-        builder.buttonUnavailableColor,
-        BUTTON_UNAVAILABLE
-    );
-
-    this.entryPoint = builder.entryPoint;
-  }
-
-  public static DialogueOptions load(JsonElement element) {
-    return GSON.fromJson(element, Builder.class).build();
-  }
+  private Component availableFormat;
+  private Component unavailableFormat;
+  private Component highlightFormat;
+  private Component prefix;
+  private Component suffix;
+  private String entryNode;
 
   public static DialogueOptions defaultOptions() {
-    return builder().build();
+    return new DialogueOptions(
+        DEFAULT_AVAILABLE,
+        DEFAULT_UNAVAILABLE,
+        DEFAULT_HIGHLIGHT,
+        null,
+        null,
+        ""
+    );
   }
 
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  @Getter
-  @Setter
-  @Accessors(fluent = true, chain = true)
-  public static class Builder {
-    TextColor buttonAvailableColor;
-    TextColor buttonUnavailableColor;
-
-    String entryPoint;
-
-    public DialogueOptions build() {
-      return new DialogueOptions(this);
+  public void mergeFrom(DialogueOptions options) {
+    if (Objects.equals(availableFormat, DEFAULT_AVAILABLE) || availableFormat == null) {
+      this.availableFormat = options.availableFormat;
+    }
+    if (Objects.equals(unavailableFormat, DEFAULT_UNAVAILABLE) || unavailableFormat == null) {
+      this.unavailableFormat = options.unavailableFormat;
+    }
+    if (Objects.equals(highlightFormat, DEFAULT_HIGHLIGHT) || highlightFormat == null) {
+      this.highlightFormat = options.highlightFormat;
+    }
+    if (this.prefix == null) {
+      this.prefix = options.prefix;
+    }
+    if (this.suffix == null) {
+      this.suffix = options.suffix;
     }
   }
 }

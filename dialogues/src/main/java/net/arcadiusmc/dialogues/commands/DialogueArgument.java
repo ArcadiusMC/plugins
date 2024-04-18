@@ -39,7 +39,7 @@ public class DialogueArgument implements ArgumentType<Result> {
   @Override
   public Result parse(StringReader reader) throws CommandSyntaxException {
     Holder<Dialogue> holder = dialogueParser.parse(reader);
-    var dialogue = holder.getValue();
+    Dialogue dialogue = holder.getValue();
 
     if (reader.canRead() && reader.peek() == ';') {
       reader.skip();
@@ -53,7 +53,7 @@ public class DialogueArgument implements ArgumentType<Result> {
       return new Result(holder.getKey(), key, node);
     }
 
-    var entry = dialogue.getEntryPoint();
+    DialogueNode entry = dialogue.getEntryPoint();
     if (entry == null) {
       throw Exceptions.format("Dialogue '{0}' has no entry node", holder.getKey());
     }
