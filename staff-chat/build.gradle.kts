@@ -18,4 +18,8 @@ pluginYml {
   depends {
     optional("project:discord")
   }
+
+  loadBefore {
+    regular("OpenInv")
+  }
 }
