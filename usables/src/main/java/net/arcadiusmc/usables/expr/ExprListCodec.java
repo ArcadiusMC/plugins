@@ -53,7 +53,7 @@ public class ExprListCodec {
         .group(
             CONDITION_STRING_CODEC.forGetter(ConditionEntry::condition),
 
-            Codec.STRING.optionalFieldOf("error-message", "")
+            ExtraCodecs.strictOptional(Codec.STRING, "error-message", "")
                 .forGetter(ConditionEntry::errorMessage)
         )
         .apply(instance, ConditionEntry::new);
