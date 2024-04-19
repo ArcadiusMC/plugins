@@ -64,6 +64,11 @@ rightClickDeposits = true
 #
 durabilityWarningThreshold = 0.1
 
+#
+# Amount of money that every player starts with.
+#
+startBalance = 100
+
 # Location a player will be teleported to when they first join the server
 [firstTimeSpawn]
 world = "minecraft:overworld"

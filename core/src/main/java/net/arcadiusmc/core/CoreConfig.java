@@ -46,6 +46,8 @@ public class CoreConfig {
 
   private double durabilityWarningThreshold = 0.1d;
 
+  private int startBalance = 100;
+
   private Location firstTimeSpawn;
 
   public Location firstTimeSpawn() {

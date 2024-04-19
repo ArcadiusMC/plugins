@@ -97,6 +97,9 @@ class PlayerLoggingListener implements Listener {
 
     if (firstJoin) {
       user.setTimeToNow(TimeField.FIRST_JOIN);
+
+      int startMoney = plugin.getCoreConfig().startBalance();
+      user.addBalance(startMoney);
     }
 
     user.setTimeToNow(TimeField.LAST_LOGIN);
