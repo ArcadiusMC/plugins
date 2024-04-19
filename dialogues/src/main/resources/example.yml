@@ -170,6 +170,19 @@ name-of-a-node:
 name-of-another-node:
   prompt: "I'm a button, click me"
 
+  #
+  # Invalidates the current interaction with the dialogue tree.
+  # This prevents the player from scrolling up in chat to click
+  # any dialogue buttons they're not meant to.
+  #
+  # This invalidation does also mean all nodes in this dialogue
+  # tree become unusable.
+  #
+  # If that's too extreme, use a condition like 'cooldown' or
+  # 'one_use_individual'
+  #
+  invalidate-interaction: true
+
   text:
     - "Thank you for clicking on me :)"
     - ""

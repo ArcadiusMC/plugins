@@ -42,6 +42,9 @@ public class DialogueNode {
   @Setter
   private Component promptHover = Component.empty();
 
+  @Setter
+  private boolean invalidateInteraction;
+
   Dialogue entry;
   String key;
 
@@ -148,6 +151,19 @@ public class DialogueNode {
     }
 
     view(interaction);
+
+    if (invalidateInteraction) {
+      long id = interaction.getValue("__id", Long.class).orElse(0L);
+
+      if (id == 0)  {
+        return;
+      }
+
+      DialogueManager manager = DialoguesPlugin.plugin().getManager();
+      manager.getInteractionIdMap().remove(id);
+      manager.freeId(id);
+      interaction.getContext().remove("__id");
+    }
   }
 
   private void view(Interaction interaction) {
