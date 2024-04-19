@@ -3,6 +3,8 @@ package net.arcadiusmc.webmap;
 import net.arcadiusmc.BukkitServices;
 import net.arcadiusmc.ArcadiusServer;
 import net.arcadiusmc.events.Events;
+import net.arcadiusmc.text.loader.MessageList;
+import net.arcadiusmc.text.loader.MessageLoader;
 import net.arcadiusmc.utils.PluginUtil;
 import net.arcadiusmc.webmap.bluemap.BlueWebmap;
 import net.arcadiusmc.webmap.dynmap.DynmapWebmap;
@@ -10,6 +12,8 @@ import net.arcadiusmc.webmap.listeners.GameModeListener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class WebmapPlugin extends JavaPlugin {
+
+  private final MessageList messageList = MessageList.create();
 
   private WebMap implementation;
 
@@ -41,6 +45,8 @@ public class WebmapPlugin extends JavaPlugin {
     BukkitServices.register(WebMap.class, implementation);
     HideSetting.createSetting(ArcadiusServer.server().getGlobalSettingsBook());
     Events.register(new GameModeListener());
+
+    MessageLoader.loadPluginMessages(this, messageList);
   }
 
   @Override

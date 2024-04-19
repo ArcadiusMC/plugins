@@ -1,0 +1,8 @@
+settings:
+  dynmaphide:
+    name:           "Webmap Hide"
+    description:    "Toggles being visible on the webmap."
+    on:             "Now hidden on the webmap."
+    off:            "No longer hidden on the webmap."
+    toggledesc.on:  "Become hidden."
+    toggledesc.off: "Become visible."
