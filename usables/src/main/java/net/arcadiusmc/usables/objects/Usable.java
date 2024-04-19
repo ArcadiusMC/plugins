@@ -24,6 +24,7 @@ import net.arcadiusmc.utils.io.TagOps;
 import net.forthecrown.nbt.BinaryTag;
 import net.forthecrown.nbt.CompoundTag;
 import net.forthecrown.nbt.TypeIds;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.slf4j.Logger;
@@ -92,8 +93,17 @@ public abstract class Usable implements ConditionHolder {
       return false;
     }
 
+    Component message = formatError(failedIndex, player, interaction);
+
+    if (!Text.isEmpty(message)) {
+      player.sendMessage(message);
+    }
+
+    return false;
+  }
+
+  public Component formatError(int failedIndex, Audience viewer, Interaction interaction) {
     Condition condition = conditions.get(failedIndex);
-    Component message;
     String errorOverride;
     String errorAt = conditions.getError(failedIndex);
 
@@ -104,19 +114,12 @@ public abstract class Usable implements ConditionHolder {
     }
 
     if (Strings.isNullOrEmpty(errorOverride)) {
-      message = condition.failMessage(interaction);
-    } else {
-      Map<String, Object> ctx2 = new HashMap<>(interaction.getContext());
-      ctx2.put("original", condition.failMessage(interaction));
-
-      message = formatString(errorOverride, player, ctx2);
+      return condition.failMessage(interaction);
     }
 
-    if (!Text.isEmpty(message)) {
-      player.sendMessage(message);
-    }
-
-    return false;
+    Map<String, Object> ctx2 = new HashMap<>(interaction.getContext());
+    ctx2.put("original", condition.failMessage(interaction));
+    return formatString(errorOverride, viewer, ctx2);
   }
 
   public void clear() {
