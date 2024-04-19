@@ -4,7 +4,7 @@ staffchat:
   prefix.discord:   "&8[Discord]"
   
 settings:
-  staffchatToggle:
+  staffChatToggle:
     name:           "SC Toggle"
     description:    "Toggles all chat messages going to Staff-Chat."
     on:             "All chat messages will now go to Staff-Chat."
