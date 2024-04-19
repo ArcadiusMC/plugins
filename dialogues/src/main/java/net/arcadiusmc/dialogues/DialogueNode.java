@@ -14,7 +14,6 @@ import net.arcadiusmc.text.TextJoiner;
 import net.arcadiusmc.text.placeholder.Placeholders;
 import net.arcadiusmc.usables.Condition;
 import net.arcadiusmc.usables.Interaction;
-import net.arcadiusmc.usables.Usables;
 import net.arcadiusmc.usables.expr.ExprList;
 import net.arcadiusmc.user.User;
 import net.kyori.adventure.audience.Audience;
@@ -109,15 +108,8 @@ public class DialogueNode {
     int failedIndex = exprList.getFailureIndex(interaction);
 
     if (failedIndex != NO_FAILURE) {
-      Condition failed = exprList.getConditions().get(failedIndex);
-      String errorOverride = exprList.getConditions().getError(failedIndex);
       endType = ButtonType.UNAVAILABLE;
-
-      if (Strings.isNullOrEmpty(errorOverride)) {
-        hoverText = failed.failMessage(interaction);
-      } else {
-        hoverText = Usables.formatBaseString(errorOverride, viewer);
-      }
+      hoverText = exprList.formatError(failedIndex, viewer, interaction);
     } else {
       endType = type == null ? ButtonType.REGULAR : type;
 
@@ -150,11 +142,15 @@ public class DialogueNode {
 
       if (!Text.isEmpty(error)) {
         DialogueRenderer renderer = new DialogueRenderer(interaction, this);
-        Component rendered = render(renderer);
+        Component rendered = render(renderer, List.of(error));
         player.sendMessage(rendered);
       }
 
       return;
+    }
+
+    for (Condition condition : exprList.getConditions()) {
+      condition.afterTests(interaction);
     }
 
     exprList.runActions(interaction);
@@ -184,12 +180,12 @@ public class DialogueNode {
     User user = playerOpt.get();
 
     DialogueRenderer renderer = new DialogueRenderer(interaction, this);
-    Component text = render(renderer);
+    Component text = render(renderer, content);
 
     user.sendMessage(text);
   }
 
-  public Component render(DialogueRenderer renderer) {
+  private Component render(DialogueRenderer renderer, List<Component> content) {
     TextJoiner joiner = TextJoiner.newJoiner();
 
     DialogueOptions options = renderer.getOptions();
