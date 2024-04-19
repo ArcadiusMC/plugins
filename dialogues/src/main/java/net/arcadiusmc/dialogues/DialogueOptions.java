@@ -1,5 +1,7 @@
 package net.arcadiusmc.dialogues;
 
+import static net.arcadiusmc.utils.io.ExtraCodecs.strictOptional;
+
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
@@ -22,22 +24,22 @@ public class DialogueOptions {
   static final Codec<DialogueOptions> CODEC = RecordCodecBuilder.create(instance -> {
     return instance
         .group(
-            ExtraCodecs.COMPONENT.optionalFieldOf("available-format", DEFAULT_AVAILABLE)
+            strictOptional(ExtraCodecs.COMPONENT, "available-format", DEFAULT_AVAILABLE)
                 .forGetter(DialogueOptions::getAvailableFormat),
 
-            ExtraCodecs.COMPONENT.optionalFieldOf("unavailable-format", DEFAULT_UNAVAILABLE)
+            strictOptional(ExtraCodecs.COMPONENT, "unavailable-format", DEFAULT_UNAVAILABLE)
                 .forGetter(DialogueOptions::getUnavailableFormat),
 
-            ExtraCodecs.COMPONENT.optionalFieldOf("highlight-format", DEFAULT_HIGHLIGHT)
+            strictOptional(ExtraCodecs.COMPONENT, "highlight-format", DEFAULT_HIGHLIGHT)
                 .forGetter(DialogueOptions::getHighlightFormat),
 
-            ExtraCodecs.COMPONENT.optionalFieldOf("prefix")
+            strictOptional(ExtraCodecs.COMPONENT, "prefix")
                 .forGetter(o -> Optional.ofNullable(o.getPrefix())),
 
-            ExtraCodecs.COMPONENT.optionalFieldOf("suffix")
+            strictOptional(ExtraCodecs.COMPONENT, "suffix")
                 .forGetter(o -> Optional.ofNullable(o.getSuffix())),
 
-            ExtraCodecs.KEY_CODEC.optionalFieldOf("entry-node", "")
+            strictOptional(ExtraCodecs.KEY_CODEC, "entry-node", "")
                 .forGetter(DialogueOptions::getEntryNode)
         )
         .apply(instance, (available, unavailable, highlight, prefix, suffix, entryPoint) -> {

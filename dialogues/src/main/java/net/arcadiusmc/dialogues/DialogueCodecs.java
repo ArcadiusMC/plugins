@@ -1,5 +1,6 @@
 package net.arcadiusmc.dialogues;
 
+import static net.arcadiusmc.utils.io.ExtraCodecs.strictOptional;
 import static net.kyori.adventure.text.Component.empty;
 
 import com.mojang.datafixers.util.Either;
@@ -84,30 +85,25 @@ public class DialogueCodecs {
   static final Codec<DialogueNode> NODE = RecordCodecBuilder.create(instance -> {
     return instance
         .group(
-            ExtraCodecs.COMPONENT
-                .optionalFieldOf("prompt", empty())
+            strictOptional(ExtraCodecs.COMPONENT, "prompt", empty())
                 .forGetter(DialogueNode::getPrompt),
 
-            ExtraCodecs.COMPONENT
-                .optionalFieldOf("prompt-hover", empty())
+            strictOptional(ExtraCodecs.COMPONENT, "prompt-hover", empty())
                 .forGetter(DialogueNode::getPromptHover),
 
-            ExtraCodecs.listOrValue(ExtraCodecs.COMPONENT)
-                .optionalFieldOf("text", List.of())
+            strictOptional(ExtraCodecs.listOrValue(ExtraCodecs.COMPONENT), "text", List.of())
                 .forGetter(DialogueNode::getContent),
 
-            LINK_CODEC.listOf().optionalFieldOf("links", List.of())
+            strictOptional(LINK_CODEC.listOf(), "links", List.of())
                 .forGetter(DialogueNode::getLinks),
 
-            ExprListCodec.ACTIONS_STRING_LIST
-                .optionalFieldOf("on-view")
+            strictOptional(ExprListCodec.ACTIONS_STRING_LIST, "on-view")
                 .forGetter(o -> Optional.of(o.getExprList().getActions())),
 
-            ExprListCodec.CONDITION_STRING_LIST
-                .optionalFieldOf("conditions")
+            strictOptional(ExprListCodec.CONDITION_STRING_LIST, "conditions")
                 .forGetter(o -> Optional.of(o.getExprList().getConditions())),
 
-            DialogueOptions.CODEC.optionalFieldOf("settings")
+            strictOptional(DialogueOptions.CODEC, "settings")
                 .forGetter(node -> Optional.ofNullable(node.getOptions()))
         )
         .apply(instance, (prompt, hover, content, links, actions, conditions, options) -> {
