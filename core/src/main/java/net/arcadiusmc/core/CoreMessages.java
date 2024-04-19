@@ -69,9 +69,9 @@ public interface CoreMessages {
 
   MessageRef HOPPER_WARNING = MESSAGE_LIST.reference("tooManyHoppers");
 
-  MessageRef DURABILITY_WARN_SUBTITLE = MESSAGE_LIST.reference("durabilityWarning.subtile");
+  MessageRef DURABILITY_WARN_SUBTITLE = MESSAGE_LIST.reference("durabilityWarning.subtitle");
 
-  MessageRef DURABILITY_WARN_TITLE = MESSAGE_LIST.reference("durabilityWarning.tile");
+  MessageRef DURABILITY_WARN_TITLE = MESSAGE_LIST.reference("durabilityWarning.title");
 
   /**
    * Inventory title used by {@link CommandSelfOrUser} for it's
