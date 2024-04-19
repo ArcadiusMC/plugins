@@ -15,8 +15,8 @@ import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.dialogues.Link.DialogueLink;
 import net.arcadiusmc.dialogues.Link.NodeLink;
 import net.arcadiusmc.usables.Action;
-import net.arcadiusmc.usables.Condition;
 import net.arcadiusmc.usables.expr.ExprListCodec;
+import net.arcadiusmc.usables.list.ConditionsList;
 import net.arcadiusmc.utils.io.ExistingObjectCodec;
 import net.arcadiusmc.utils.io.ExtraCodecs;
 
@@ -126,8 +126,10 @@ public class DialogueCodecs {
           });
 
           conditions.ifPresent(conditions1 -> {
-            for (Condition condition : conditions1) {
-              node.getExprList().getConditions().addLast(condition);
+            ConditionsList existing = node.getExprList().getConditions();
+            for (int i = 0; i < conditions1.size(); i++) {
+              existing.add(conditions1.get(i), i);
+              existing.setError(i, conditions1.getError(i));
             }
           });
 
