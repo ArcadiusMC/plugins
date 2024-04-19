@@ -209,7 +209,7 @@ public class Market {
 
   public int getPrice() {
     int base = getBasePrice();
-    return priceModifiers.apply(base);
+    return Math.max(priceModifiers.apply(base), 0);
   }
 
   public int getPriceFor(Audience viewer) {
@@ -239,7 +239,7 @@ public class Market {
 
   public int getRent() {
     int base = getBaseRent();
-    return rentModifiers.apply(base);
+    return Math.max(rentModifiers.apply(base), 0);
   }
 
   public void setPrice(int price) {
@@ -290,7 +290,8 @@ public class Market {
   }
 
   public float getTaxRate() {
-    return taxModifiers.apply(getBaseTaxRate());
+    float rate = taxModifiers.apply(getBaseTaxRate());
+    return rate < 0 ? 0f : (rate > 1 ? 1f : rate);
   }
 
   public void connect(Market other) {
