@@ -20,6 +20,7 @@ import net.arcadiusmc.user.User;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
+import org.bukkit.entity.Player;
 import org.slf4j.Logger;
 
 @Getter
@@ -52,7 +53,7 @@ public class DialogueNode {
   long randomId;
 
   public DialogueNode() {
-
+    exprList.setSilent(true);
   }
 
   private ClickEvent getClickEvent(long interactionId) {
@@ -137,19 +138,26 @@ public class DialogueNode {
   }
 
   public void use(Interaction interaction) {
-    if (!exprList.runConditions(interaction)) {
+    int failureIndex = exprList.getFailureIndex(interaction);
+    if (failureIndex != NO_FAILURE) {
+      Player player = interaction.getPlayer().orElse(null);
+
+      if (player == null) {
+        return;
+      }
+
+      Component error = exprList.formatError(failureIndex, player, interaction);
+
+      if (!Text.isEmpty(error)) {
+        DialogueRenderer renderer = new DialogueRenderer(interaction, this);
+        Component rendered = render(renderer);
+        player.sendMessage(rendered);
+      }
+
       return;
     }
 
-    boolean originally = exprList.isSilent();
-
-    try {
-      exprList.setSilent(true);
-      exprList.runActions(interaction);
-    } finally {
-      exprList.setSilent(originally);
-    }
-
+    exprList.runActions(interaction);
     view(interaction);
 
     if (invalidateInteraction) {
