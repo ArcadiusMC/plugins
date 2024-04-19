@@ -162,7 +162,7 @@ public class Faction {
 
     String lpGroup = get(Properties.LP_GROUP);
     if (!Strings.isNullOrEmpty(lpGroup)) {
-      Commands.executeConsole("lp user %s parent add %s", user.getName(), lpGroup);
+      user.setPermissionGroup(lpGroup, true);
     }
 
     if (Factions.isDiscordEnabled()) {
@@ -202,7 +202,7 @@ public class Faction {
 
     String lpGroup = get(Properties.LP_GROUP);
     if (!Strings.isNullOrEmpty(lpGroup)) {
-      Commands.executeConsole("lp user %s parent remove %s", user.getName(), lpGroup);
+      user.unsetPermissionGroup(lpGroup);
     }
 
     if (Factions.isDiscordEnabled()) {
