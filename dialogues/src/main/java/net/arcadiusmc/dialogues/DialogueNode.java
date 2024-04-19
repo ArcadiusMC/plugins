@@ -134,8 +134,17 @@ public class DialogueNode {
   }
 
   public void use(Interaction interaction) {
-    if (!exprList.interact(interaction)) {
+    if (!exprList.runConditions(interaction)) {
       return;
+    }
+
+    boolean originally = exprList.isSilent();
+
+    try {
+      exprList.setSilent(true);
+      exprList.runActions(interaction);
+    } finally {
+      exprList.setSilent(originally);
     }
 
     view(interaction);
