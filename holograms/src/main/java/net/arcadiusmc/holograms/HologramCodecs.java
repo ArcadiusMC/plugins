@@ -87,7 +87,6 @@ public final class HologramCodecs {
 
   static <T extends Hologram> void addFields(ExistingObjectCodec.Builder<T> builder) {
     builder.optional("spawned", Codec.BOOL)
-        .excludeIf(aBoolean -> !aBoolean)
         .getter(Hologram::isSpawned)
         .setter(Hologram::setSpawned);
 
