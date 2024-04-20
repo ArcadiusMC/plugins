@@ -9,8 +9,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.UserClickCallback;
 import net.arcadiusmc.text.loader.MessageList;
 import net.arcadiusmc.text.loader.MessageRender;
@@ -40,6 +42,8 @@ public class Setting {
   private BookSetting<User> setting;
 
   private String permission = null;
+
+  private BaseCommand command;
 
   public static Setting create(SettingAccess access) {
     return new Setting(access);
@@ -82,11 +86,20 @@ public class Setting {
     return Messages.render(messageKey + ".toggle");
   }
 
+  private Component description() {
+    if (!Messages.MESSAGE_LIST.hasMessage(messageKey + ".description")) {
+      return null;
+    }
+
+    return Messages.renderText(messageKey + ".description");
+  }
+
   public Component displayName(Audience viewer) {
     Component text = Messages.renderText(messageKey + ".name", viewer);
+    Component desc = description();
 
-    if (Messages.MESSAGE_LIST.hasMessage(messageKey + ".description")) {
-      text = text.hoverEvent(Messages.renderText(messageKey + ".description", viewer));
+    if (desc != null) {
+      text = text.hoverEvent(desc);
     }
 
     return text;
@@ -166,6 +179,25 @@ public class Setting {
       book.open(user, user);
     };
   }
+
+  public Setting createCommand(String name, String... aliases) {
+    SettingCommand command = new SettingCommand(name, this);
+    command.setPermission(permission);
+
+    Component desc = description();
+    if (desc != null) {
+      String descString = Text.plain(desc);
+      command.setDescription(descString);
+    }
+
+    command.setAliases(aliases);
+
+    this.command = command;
+    command.register();
+
+    return this;
+  }
+
 
   public BookSetting<User> toBookSettng() {
     Objects.requireNonNull(messageKey, "messageKey not set");
