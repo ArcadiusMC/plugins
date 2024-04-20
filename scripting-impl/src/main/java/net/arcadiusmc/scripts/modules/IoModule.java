@@ -41,7 +41,7 @@ public class IoModule extends IdScriptableObject {
   static final String NAME_fileExists = "fileExists";
   static final String NAME_deleteFile = "deleteFile";
 
-  static final int MAX_ID = ID_writeJson;
+  static final int MAX_ID = ID_deleteFile;
 
   public static final JsModule MODULE = scope -> {
     IoModule module = new IoModule();
