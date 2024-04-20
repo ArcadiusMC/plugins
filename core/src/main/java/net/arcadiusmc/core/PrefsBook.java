@@ -24,29 +24,36 @@ public class PrefsBook {
   static void init(SettingsBook<User> settings) {
     Setting flying = Setting.create(Properties.FLYING)
         .setMessageKey("settings.fly")
-        .setPermission(CorePermissions.FLY);
+        .setPermission(CorePermissions.FLY)
+        .createCommand("flying", "fly");
 
     Setting god = Setting.create(Properties.GODMODE)
         .setMessageKey("settings.god")
-        .setPermission(CorePermissions.GOD);
+        .setPermission(CorePermissions.GOD)
+        .createCommand("godmode", "god");
 
     Setting tpa = Setting.create(Properties.TPA)
         .setMessageKey("settings.tpa")
-        .setPermission(TpPermissions.TPA);
+        .setPermission(TpPermissions.TPA)
+        .createCommand("tpatoggle", "toggle-tpa");
 
     Setting profilePrivate = Setting.create(Properties.PROFILE_PRIVATE)
         .setMessageKey("settings.profilePrivate")
-        .setPermission(Permissions.PROFILE);
+        .setPermission(Permissions.PROFILE)
+        .createCommand("profileprivate", "profilepublic", "toggle-profile", "profile-toggle");
 
     Setting ignoreac = Setting.createInverted(IGNORE_AUTO_BROADCASTS)
-        .setMessageKey("settings.showAnnouncements");
+        .setMessageKey("settings.showAnnouncements")
+        .createCommand("toggle-announcements");
 
     Setting paying = Setting.create(PAY)
         .setMessageKey("settings.paying")
-        .setPermission(CorePermissions.PAY);
+        .setPermission(CorePermissions.PAY)
+        .createCommand("toggle-pay", "paytoggle");
 
     Setting durabilityAlerts = Setting.create(DURABILITY_WARNINGS)
-        .setMessageKey("settings.durabilityWarn");
+        .setMessageKey("settings.durabilityWarn")
+        .createCommand("durabilitywarntoggle", "toggle-durabilitywarn");
 
     List<BookSetting<User>> list = settings.getSettings();
     list.add(flying.toBookSettng());

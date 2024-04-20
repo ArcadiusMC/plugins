@@ -39,7 +39,8 @@ public final class StaffChat {
 
     Setting setting = Setting.create(access)
         .setMessageKey("settings.staffChatToggle")
-        .setPermission(PERMISSION);
+        .setPermission(PERMISSION)
+        .createCommand("staffchat-toggle", "sct", "staffchattoggle", "sctoggle");
 
     settingsBook.getSettings().add(setting.toBookSettng());
   }

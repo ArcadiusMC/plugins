@@ -15,7 +15,8 @@ public class TitleSettings {
 
   static void add(SettingsBook<User> settingsBook) {
     var setting = Setting.create(SEE_RANKS)
-        .setMessageKey("settings.rankchat");
+        .setMessageKey("settings.rankchat")
+        .createCommand("rankchat", "toggle-rankchat");
 
     settingsBook.getSettings().add(setting.toBookSettng());
   }
