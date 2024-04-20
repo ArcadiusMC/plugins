@@ -6,7 +6,7 @@ mail:
   sent.multiple:          "&7Sent mail to &e${count}&7 players."
   sending.all:            "&eSending mail to all users... &7(This may take a minute)"
 
-  display:                "&e${header}\n&8&l»&f ${message}"
+  display:                "&e${header}\n&8&l &f${message}"
 
   marked.read:            "&eMarked as read."
   marked.unread:          "&7Marked as unread."
