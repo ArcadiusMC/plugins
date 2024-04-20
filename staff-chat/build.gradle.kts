@@ -21,5 +21,6 @@ pluginYml {
 
   loadBefore {
     regular("OpenInv")
+    regular("GriefPrevention")
   }
 }
