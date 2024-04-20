@@ -24,6 +24,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickCallback;
 import net.kyori.adventure.text.event.ClickCallback.Options;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.permissions.Permission;
 
 @Getter
@@ -43,6 +44,7 @@ public class Setting {
 
   private String permission = null;
 
+  @Setter(AccessLevel.PRIVATE)
   private BaseCommand command;
 
   public static Setting create(SettingAccess access) {
@@ -77,7 +79,7 @@ public class Setting {
 
   private MessageRender getToggleMessage(boolean state) {
     MessageList list = Messages.MESSAGE_LIST;
-    String stateSuffix = state ? "on" : "off";
+    String stateSuffix = state ? "true" : "false";
 
     if (list.hasMessage(messageKey + "." + stateSuffix)) {
       return Messages.render(messageKey, stateSuffix);
@@ -135,7 +137,8 @@ public class Setting {
         .addValue("inow", newState ? "o longer" : "ow")
         .addValue("state", newState ? "Enabled" : "Disabled")
         .addValue("istate", newState ? "Disabled" : "Enabled")
-        .create(user);
+        .create(user)
+        .colorIfAbsent(newState ? NamedTextColor.YELLOW : NamedTextColor.GRAY);
 
     user.sendMessage(message);
   }
@@ -168,7 +171,8 @@ public class Setting {
         .addValue("player", target)
         .addValue("name", displayName(source))
         .addValue("value", newState)
-        .create(source);
+        .create(source)
+        .colorIfAbsent(newState ? NamedTextColor.YELLOW : NamedTextColor.GRAY);
 
     source.sendSuccess(message);
   }
@@ -181,6 +185,13 @@ public class Setting {
   }
 
   public Setting createCommand(String name, String... aliases) {
+    Objects.requireNonNull(name, "Null name");
+
+    Objects.requireNonNull(
+        messageKey,
+        "Message key and permissions must be set BEFORE createCommand call"
+    );
+
     SettingCommand command = new SettingCommand(name, this);
     command.setPermission(permission);
 
