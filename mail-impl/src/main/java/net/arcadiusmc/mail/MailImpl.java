@@ -48,6 +48,7 @@ class MailImpl implements Mail {
   private static final String KEY_ID = "message_id";
   private static final String KEY_HIDE_SENDER = "hide_sender";
   private static final String KEY_ATTACHMENT_EXPIRY = "attachment_expire_date";
+  private static final String KEY_DELETED = "deleted";
 
   @Include
   private final UUID sender;
@@ -145,6 +146,7 @@ class MailImpl implements Mail {
 
     built.mailId            = json.getLong(KEY_ID, NULL_ID);
     built.hideSender        = json.getBool(KEY_HIDE_SENDER, false);
+    built.deleted           = json.getBool(KEY_DELETED, false);
     built.claimDate         = JsonUtils.readInstant(json.get(KEY_CLAIM_DATE));
     built.sentDate          = JsonUtils.readInstant(json.get(KEY_SENT_DATE));
     built.readDate          = JsonUtils.readInstant(json.get(KEY_READ_DATE));
@@ -194,6 +196,10 @@ class MailImpl implements Mail {
 
     if (sender != null) {
       json.addUUID(KEY_SENDER, sender);
+    }
+
+    if (deleted) {
+      json.add(KEY_DELETED, true);
     }
 
     if (hasAttachment()) {
