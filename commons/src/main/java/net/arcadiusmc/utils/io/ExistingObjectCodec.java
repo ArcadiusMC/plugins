@@ -111,6 +111,9 @@ public class ExistingObjectCodec<T> {
 
       if (field.optional && field.excludeIf.test(fieldValue)) {
         continue;
+      } else if (fieldValue == null) {
+        builder.add(field.name, Results.error("Missing value for field '%s'", field.name));
+        continue;
       }
 
       DataResult<S> encodeResult = field.codec.encodeStart(ops, fieldValue)
