@@ -2,6 +2,7 @@ package net.arcadiusmc.text.loader;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -120,6 +121,16 @@ class ListImpl implements MessageList {
   }
 
   @Override
+  public MessageList getChild(@NotNull String childKey) {
+    Objects.requireNonNull(childKey, "Null key");
+    if (children == null) {
+      return null;
+    }
+
+    return children.get(childKey);
+  }
+
+  @Override
   public MessageList addChild(@NotNull String childKey, @NotNull MessageList childList) {
     Objects.requireNonNull(childKey, "Null key");
     Objects.requireNonNull(childList, "Null child list");
@@ -141,6 +152,19 @@ class ListImpl implements MessageList {
     }
 
     return children.remove(childKey) != null;
+  }
+
+  @Override
+  public Set<String> keys() {
+    return Collections.unmodifiableSet(entries.keySet());
+  }
+
+  @Override
+  public Set<String> childKeys() {
+    if (children == null) {
+      return Set.of();
+    }
+    return Collections.unmodifiableSet(children.keySet());
   }
 
   private static class MessageEntry implements MessageRef {

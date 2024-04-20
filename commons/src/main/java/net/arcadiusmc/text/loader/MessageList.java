@@ -1,6 +1,7 @@
 package net.arcadiusmc.text.loader;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.util.Set;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
@@ -40,7 +41,13 @@ public interface MessageList {
 
   void clear();
 
+  MessageList getChild(@NotNull String childKey);
+
   MessageList addChild(@NotNull String childKey, @NotNull MessageList childList);
 
   boolean removeChild(@NotNull String childKey);
+
+  Set<String> keys();
+
+  Set<String> childKeys();
 }
