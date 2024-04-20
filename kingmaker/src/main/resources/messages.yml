@@ -14,6 +14,7 @@ kingmaker:
   get:              "&7The current monarch is &e${player}&7."
 
   none:             "No one"
+  coinLore:         "&8Minted during the reign of ${player}."
 
   stands:
     added:          "&7Added monarch stand."
