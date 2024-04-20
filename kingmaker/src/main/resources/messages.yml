@@ -13,6 +13,8 @@ kingmaker:
   unset:            "&7Removed monarch."
   get:              "&7The current monarch is &e${player}&7."
 
+  none:             "No one"
+
   stands:
     added:          "&7Added monarch stand."
     cleared:        "&7Cleared monarch stand list."

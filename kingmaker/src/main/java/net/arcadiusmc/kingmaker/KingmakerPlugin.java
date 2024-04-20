@@ -4,6 +4,8 @@ import com.mojang.serialization.JsonOps;
 import java.time.Duration;
 import lombok.Getter;
 import net.arcadiusmc.command.Commands;
+import net.arcadiusmc.text.placeholder.PlaceholderService;
+import net.arcadiusmc.text.placeholder.Placeholders;
 import net.arcadiusmc.utils.PeriodicalSaver;
 import net.arcadiusmc.utils.io.PluginJar;
 import net.arcadiusmc.utils.io.SerializationHelper;
@@ -28,11 +30,17 @@ public class KingmakerPlugin extends JavaPlugin {
 
     saver = PeriodicalSaver.create(this::save, Duration.ofMinutes(30));
     saver.start();
+
+    PlaceholderService service = Placeholders.getService();
+    service.getDefaults().add("emperor", new MonarchPlaceholder(kingmaker));
   }
 
   @Override
   public void onDisable() {
     save();
+
+    PlaceholderService service = Placeholders.getService();
+    service.getDefaults().remove("emperor");
 
     if (saver != null) {
       saver.stop();
