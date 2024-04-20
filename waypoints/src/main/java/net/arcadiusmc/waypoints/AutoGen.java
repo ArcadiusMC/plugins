@@ -26,7 +26,7 @@ public class AutoGen {
   private static final Logger LOGGER = Loggers.getLogger();
 
   public static final NamespacedKey CHUNK_MARKER
-      = new NamespacedKey("arcadiusmc", "has_auto_waypoint");
+      = new NamespacedKey("arcadiusmc", "has_generated_waypoint");
 
   public static boolean serverInitialized = false;
 
