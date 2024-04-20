@@ -1,0 +1,27 @@
+type: "minecraft:stone"
+count: 4
+
+unbreakable: true
+custom_model_data: 10010003
+
+name: "Item name"
+lore:
+  - "Hello, world!"
+  - "Line 2"
+  - "Line 3"
+
+enchantments:
+  sharpness: 5
+  arcadiusmc:soulbound: 1
+
+flags: ["hide_enchantments", "hide_attribute_modifiers"]
+
+attribute_modifiers:
+  - name: arcadius.base_armor
+    attribute: base_armor
+    value: 1
+    operation: add
+  - name: arcadius.base_kb_prot
+    attribute: knockback_decay
+    value: 1
+    operation: add_scalar

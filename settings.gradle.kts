@@ -17,6 +17,7 @@ include("vault-hook")
 include("class-loader-tools")
 include("early-shutdown")
 include("discord")
+include("display-entity-ui")
 
 // Regular plugins
 include("extended-items")

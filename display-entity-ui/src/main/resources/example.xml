@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<page>
+  <head>
+    <style src="file.yml"/>
+    <script src="script-file.js"/>
+  </head>
+
+  <body>
+    <scrollmenu>
+      <li>
+        <item
+          material="minecraft:stone"
+          custom-model-data="2423"
+          hoverable="true"
+          flags="hide_enchants hide_attribute_modifiers"
+          unbreakable="true"
+        >
+          <nbtentry key="tag.wearable" value="1b"/>
+          <nbtentry key="tag.wearable" value="1b"/>
+          <nbtentry key="tag.wearable" value="1b"/>
+          <nbtentry key="tag.wearable" value="1b"/>
+
+          <enchantments>
+            <enchant key="minecraft:sharpness" level="5"/>
+            <enchant key="minecraft:efficiency" level="5"/>
+            <enchant key="minecraft:looting" level="3"/>
+          </enchantments>
+
+          <displayname>Hello, world!</displayname>
+          <lore>
+            <line>Line 1</line>
+            <line>Line 2</line>
+            <line>Line 3</line>
+          </lore>
+        </item>
+
+        Hello, world!<nl/>(This is after the thing)
+      </li>
+
+      <li>
+        <item src="item-example.yml"></item>
+      </li>
+    </scrollmenu>
+  </body>
+</page>
