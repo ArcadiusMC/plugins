@@ -22,6 +22,7 @@ waypoints:
     alreadySet:             "You already have a home waypoint, remove the old one before making a new one! ${how}\nYour current home-waypoint is at ${existing}."
     alreadySet.how:         "&b[How?]"
     alreadySet.how.hover:   "Right-Click the 'edit waypoint'\nsign on the waypoint you want to delete\nand select the delete option"
+    alreadySet.here:        "This is already your home waypoint."
     creationDisabled:       "Waypoint creation is disabled here!"
     notDiscovered.unnamed:  "You haven't discovered that waypoint yet!"
     notDiscovered.named:    "You haven't discovered &f${waypoint}&r yet!"
