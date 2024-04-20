@@ -3,6 +3,7 @@ package net.arcadiusmc.webmap;
 import net.arcadiusmc.BukkitServices;
 import net.arcadiusmc.ArcadiusServer;
 import net.arcadiusmc.events.Events;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.loader.MessageList;
 import net.arcadiusmc.text.loader.MessageLoader;
 import net.arcadiusmc.utils.PluginUtil;
@@ -47,10 +48,13 @@ public class WebmapPlugin extends JavaPlugin {
     Events.register(new GameModeListener());
 
     MessageLoader.loadPluginMessages(this, messageList);
+    Messages.MESSAGE_LIST.addChild(getName(), messageList);
   }
 
   @Override
   public void onDisable() {
+    Messages.MESSAGE_LIST.removeChild(getName());
+
     if (implementation instanceof BlueWebmap webmap) {
       webmap.save();
     }
