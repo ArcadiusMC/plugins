@@ -16,6 +16,8 @@ import org.bukkit.inventory.meta.Damageable;
 
 public class DurabilityListener implements Listener {
 
+  static final int WARN_COOLDOWN = 20 * 40;
+
   static final Sound BREAK_SOUND = Sound.sound(
       org.bukkit.Sound.ENTITY_ITEM_BREAK,
       Sound.Source.MASTER,
@@ -47,10 +49,10 @@ public class DurabilityListener implements Listener {
     double threshold = config.durabilityWarningThreshold();
 
     // If durability is above threshold or player is on cooldown, do not show alert
-    if (remaining >= (maxDurability * threshold)
-        || remaining <= 0
-        || Cooldown.containsOrAdd(user, PrefsBook.DURABILITY_WARNINGS.getKey(), 20 * 10)
-    ) {
+    if (remaining >= (maxDurability * threshold) || remaining <= 0) {
+      return;
+    }
+    if (Cooldown.containsOrAdd(user, PrefsBook.DURABILITY_WARNINGS.getKey(), WARN_COOLDOWN)) {
       return;
     }
 
