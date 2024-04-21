@@ -19,6 +19,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.math.GenericMath;
 
 @Getter
 @RequiredArgsConstructor
@@ -78,6 +79,8 @@ public class SellableItemNode implements MenuNode {
     UserShopData earnings = user.getComponent(UserShopData.class);
     Material material = compacted ? data.getCompactMaterial() : data.getMaterial();
 
+    assert material != null;FI
+
     int amount = user.get(SellProperties.SELL_AMOUNT).getItemAmount();
     int mod = compacted ? data.getCompactMultiplier() : 1;
     int originalPrice = mod * data.getPrice();
@@ -114,7 +117,7 @@ public class SellableItemNode implements MenuNode {
     );
 
     DefaultItemBuilder builder = ItemStacks.builder(material)
-        .setAmount(amount);
+        .setAmount(GenericMath.clamp(amount, 1, material.getMaxStackSize()));
 
     if (user.hasPermission(SellPermissions.AUTO_SELL) && autoSellToggleAllowed) {
       if (earnings.getAutoSelling().contains(material)) {
