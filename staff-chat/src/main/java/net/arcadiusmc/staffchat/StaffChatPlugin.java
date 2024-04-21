@@ -4,6 +4,7 @@ import github.scarsz.discordsrv.DiscordSRV;
 import lombok.Getter;
 import net.arcadiusmc.ArcadiusServer;
 import net.arcadiusmc.command.settings.SettingsBook;
+import net.arcadiusmc.events.Events;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.loader.MessageList;
 import net.arcadiusmc.text.loader.MessageLoader;
@@ -28,6 +29,7 @@ public class StaffChatPlugin extends JavaPlugin {
     Messages.MESSAGE_LIST.addChild(getName(), messageList);
 
     new CommandStaffChat();
+    Events.register(new ChatListener());
 
     if (PluginUtil.isEnabled("Arcadius-DiscordHook")) {
       DiscordSRV.api.subscribe(new StaffChatDiscordListener(this));
