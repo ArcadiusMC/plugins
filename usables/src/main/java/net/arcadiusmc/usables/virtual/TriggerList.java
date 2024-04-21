@@ -4,11 +4,10 @@ import com.mojang.serialization.Dynamic;
 import java.util.function.BiConsumer;
 import net.arcadiusmc.registry.Registry;
 import net.arcadiusmc.usables.ObjectType;
+import net.arcadiusmc.usables.UsablesPlugin;
 import net.arcadiusmc.usables.list.ComponentsArray;
 
 public class TriggerList extends ComponentsArray<Trigger> {
-
-  static final Trigger[] EMPTY_ARRAY = new Trigger[0];
 
   final VirtualUsable usable;
   boolean suppressUpdates = false;
@@ -21,7 +20,7 @@ public class TriggerList extends ComponentsArray<Trigger> {
   @Override
   @SuppressWarnings({"unchecked", "rawtypes"})
   public Registry<ObjectType<Trigger>> getRegistry() {
-    return (Registry) usable.getManager().getTriggerTypes();
+    return (Registry) UsablesPlugin.get().getVirtuals().getTriggerTypes();
   }
 
   void runSystem(Trigger trigger, BiConsumer<TriggerSystem<Trigger>, Trigger> consumer) {
