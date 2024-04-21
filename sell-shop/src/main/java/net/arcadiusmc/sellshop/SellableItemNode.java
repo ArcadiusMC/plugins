@@ -79,7 +79,7 @@ public class SellableItemNode implements MenuNode {
     UserShopData earnings = user.getComponent(UserShopData.class);
     Material material = compacted ? data.getCompactMaterial() : data.getMaterial();
 
-    assert material != null;FI
+    assert material != null;
 
     int amount = user.get(SellProperties.SELL_AMOUNT).getItemAmount();
     int mod = compacted ? data.getCompactMultiplier() : 1;
