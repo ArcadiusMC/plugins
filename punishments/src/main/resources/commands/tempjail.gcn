@@ -3,6 +3,7 @@ description = "Temporarily jails a player"
 permission = PERMISSION
 
 argument("player", user).argument("cell", @cell_arg).argument("length", time) {
+  map_result("player") = @result_to_user
   executes = imprison()
   description = "Imprisons a player for a specified length of time"
 
