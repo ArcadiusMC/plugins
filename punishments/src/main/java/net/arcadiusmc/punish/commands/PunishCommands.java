@@ -76,6 +76,7 @@ public class PunishCommands {
   public static void registerAll(PunishPlugin plugin) {
     new CommandSeparate();
     new CommandPunish();
+    new CommandJails(plugin.getJails());
 
     // Temporary punishment commands
     TempPunishCommand tempSoftmute = new TempPunishCommand("tempsoftmute", PunishType.SOFTMUTE);
@@ -132,6 +133,10 @@ public class PunishCommands {
     pardonIpBan.setDescription("Pardon's a player's IP ban");
     pardonIpBan.register();
 
+    PardonCommand pardonJail = new PardonCommand("pardon-jail", PunishType.JAIL);
+    pardonJail.setAliases("unjail", "pardonjail");
+    pardonJail.setDescription("Pardon's a player jail sentence");
+    pardonJail.register();
 
     AnnotatedCommandContext context = Commands.createAnnotationContext();
 
