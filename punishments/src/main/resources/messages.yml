@@ -29,6 +29,8 @@ jails:
   _style: $err
   commands:           "Cannot use commands while jailed"
   invalidSpawn:       "Jail spawn point (The place you're standing at) isn't inside the cell (WorldEdit selection)"
+  alreadyExists:      "Jail named '${name}' already exists."
+  created:            "&7Created jail named '&f${name}&7'"
 
 eavesDropper:
   _style: $normal
