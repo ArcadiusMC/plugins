@@ -56,6 +56,7 @@ import org.bukkit.craftbukkit.v1_20_R3.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.v1_20_R3.util.CraftNamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.joml.Vector3d;
 import org.slf4j.Logger;
 import org.spongepowered.math.vector.Vector3i;
 
@@ -338,5 +339,19 @@ public final class VanillaAccess {
     ServerLevel level = getLevel(world);
     Holder<Biome> holder = level.getBiome(new BlockPos(x, y, z));
     return holder.is(CraftNamespacedKey.toMinecraft(key));
+  }
+
+  public static void getVelocity(Vector3d velocity, org.bukkit.entity.Entity bukkit) {
+    Entity nms = getEntity(bukkit);
+    velocity.x = nms.getDeltaMovement().x;
+    velocity.y = nms.getDeltaMovement().y;
+    velocity.z = nms.getDeltaMovement().z;
+  }
+
+  public static void getPosition(Vector3d position, org.bukkit.entity.Entity bukkit) {
+    Entity nms = getEntity(bukkit);
+    position.x = nms.getX();
+    position.y = nms.getY();
+    position.z = nms.getZ();
   }
 }
