@@ -8,8 +8,11 @@ import net.arcadiusmc.text.Messages;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 class JailListener implements Listener {
@@ -28,8 +31,17 @@ class JailListener implements Listener {
         .orElse(null);
   }
 
+  @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+  public void onPlayerJoin(PlayerJoinEvent event) {
+    tpIfOutside(event);
+  }
+
   @EventHandler(ignoreCancelled = true)
   public void onPlayerMove(PlayerMoveEvent event) {
+    tpIfOutside(event);
+  }
+
+  void tpIfOutside(PlayerEvent event) {
     JailCell cell = getCell(event.getPlayer());
 
     if (cell == null) {
