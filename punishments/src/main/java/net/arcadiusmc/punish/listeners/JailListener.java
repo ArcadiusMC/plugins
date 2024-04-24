@@ -23,7 +23,7 @@ class JailListener implements Listener {
   JailCell getCell(Player player) {
     return plugin.getPunishManager().getOptionalEntry(player.getUniqueId())
         .map(entry -> entry.getCurrent(PunishType.JAIL))
-        .filter(punishment -> !Strings.isNullOrEmpty(punishment.getReason()))
+        .filter(punishment -> !Strings.isNullOrEmpty(punishment.getExtra()))
         .flatMap(punishment -> plugin.getJails().getCells().get(punishment.getExtra()))
         .orElse(null);
   }
