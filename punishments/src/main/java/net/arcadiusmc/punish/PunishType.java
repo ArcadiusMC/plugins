@@ -9,6 +9,7 @@ import java.util.Optional;
 import lombok.Getter;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.Permissions;
+import net.arcadiusmc.Worlds;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.placeholder.Placeholders;
 import net.arcadiusmc.user.User;
@@ -17,12 +18,15 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.BanEntry;
 import org.bukkit.BanList.Type;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.ban.IpBanList;
 import org.bukkit.ban.ProfileBanList;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerKickEvent.Cause;
 import org.bukkit.permissions.Permission;
 import org.slf4j.Logger;
+import org.spongepowered.math.vector.Vector3d;
 
 @Getter
 public enum PunishType {
@@ -33,6 +37,35 @@ public enum PunishType {
     @Override
     public String getPunishAnnounceFormat(boolean hasReason) {
       return "punishments.jailed" + (hasReason ? ".reason" : "");
+    }
+
+    @Override
+    public void onPunishmentEnd(User user, Punishment punishment) {
+      if (!user.isOnline()) {
+        return;
+      }
+
+      user.getPlayer().teleport(Worlds.overworld().getSpawnLocation());
+    }
+
+    @Override
+    public void onPunishmentBegin(User user, Punishment punishment) {
+      if (!user.isOnline() || Strings.isNullOrEmpty(punishment.getExtra())) {
+        return;
+      }
+
+      Optional<JailCell> opt = Punishments.getJails().getCells().get(punishment.getExtra());
+
+      if (opt.isEmpty()) {
+        return;
+      }
+
+      JailCell cell = opt.get();
+      World world = cell.world();
+      Vector3d pos = cell.center();
+
+      Location location = new Location(world, pos.x(), pos.y(), pos.z());
+      user.getPlayer().teleport(location);
     }
   },
 
