@@ -49,9 +49,10 @@ public class HologramPlugin extends JavaPlugin {
   @Override
   public void onDisable() {
     service.save();
+    service.clear();
+    service.getTriggers().close();
 
     Messages.MESSAGE_LIST.removeChild(getName());
-    service.getTriggers().close();
     HologramPlaceholders.unregister();
   }
 
