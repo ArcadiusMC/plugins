@@ -1,0 +1,7 @@
+parrots:
+  - variant: red
+    price: 50000
+    texture-id: 40a3d47f54e71a58bf8f57c5253fb2d213f4f55bb7934a19104bfb94edc76eaa
+  - variant: green
+    price: 50000
+    texture-id: 6a1dc33115232f800825cac9e3d9ed03fc18ae553c25b8059513000c59e354fe

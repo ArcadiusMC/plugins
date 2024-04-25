@@ -1,0 +1,9 @@
+menu-title: "Enchantment Merchant"
+
+enchantments:
+  - enchantment: "minecraft:sharpness"
+    levels:
+      - level: 6
+        price: 500000
+      - level: 7
+        price: 750000
