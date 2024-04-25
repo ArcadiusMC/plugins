@@ -5,18 +5,23 @@ import java.util.List;
 import java.util.Random;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.arcadiusmc.Loggers;
 import net.arcadiusmc.scripts.ExecResult;
 import net.arcadiusmc.scripts.ExecResults;
 import net.arcadiusmc.scripts.Script;
+import net.arcadiusmc.scripts.ScriptLoadException;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.utils.MonthDayPeriod;
 import net.kyori.adventure.text.Component;
 import org.bukkit.util.CachedServerIcon;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 
 @Getter
 @RequiredArgsConstructor
 class DisplayEntry implements Comparable<DisplayEntry> {
+
+  private static final Logger LOGGER = Loggers.getLogger();
 
   private final MonthDayPeriod period;
   private final List<CachedServerIcon> icons;
@@ -42,6 +47,15 @@ class DisplayEntry implements Comparable<DisplayEntry> {
   public boolean shouldUse(LocalDate date, Random random) {
     if (condition == null) {
       return true;
+    }
+
+    if (!condition.isCompiled()) {
+      try {
+        condition.compile();
+      } catch (ScriptLoadException exc) {
+        LOGGER.error("Error loading script {}", condition, exc);
+        return false;
+      }
     }
 
     condition.put("random", random);
