@@ -1,0 +1,5 @@
+{
+  "dependencies": [
+    "com.badlogicgames.ashley:ashley:1.7.4"
+  ]
+}
