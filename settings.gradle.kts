@@ -21,6 +21,7 @@ include("display-entity-ui")
 
 // Regular plugins
 include("extended-items")
+include("extended-entities")
 include("user-titles")
 include("server-list")
 include("dialogues")
@@ -36,6 +37,7 @@ include("usables")
 include("dungeons")
 include("structures")
 include("kingmaker")
+include("merchants")
 
 include("mail")
 include("mail-impl")
