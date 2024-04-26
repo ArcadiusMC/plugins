@@ -4,10 +4,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.time.DayOfWeek;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.menu.MenuBuilder;
@@ -41,15 +43,21 @@ public class EnchantsMerchant extends Merchant {
   static final String TAG_CURRENT = "current_enchant";
   static final String TAG_CURRENT_LEVEL = "current_level";
   static final String TAG_CURRENT_PRICE = "current_price";
+  static final String TAG_ALREADY_PURCHASED = "already_purchased";
 
   static final Slot BOOK_SLOT = Slot.of(4, 1);
 
   static final Codec<Enchantment> CURRENT_CODEC
       = ExtraCodecs.registryCodec(Registry.ENCHANTMENT);
 
+  static final Codec<Set<UUID>> PURCHASED_CODEC
+      = ExtraCodecs.INT_ARRAY_UUID.listOf()
+      .xmap(HashSet::new, ArrayList::new);
+
   Config config = Config.EMPTY;
 
   final Set<NamespacedKey> alreadyChosen = new HashSet<>();
+  final Set<UUID> alreadyPurchased = new HashSet<>();
 
   private Enchantment current = null;
   private int currentLevel = NONE;
@@ -76,6 +84,7 @@ public class EnchantsMerchant extends Merchant {
 
   @Override
   public void onDayChange(ZonedDateTime time) {
+    alreadyPurchased.clear();
     selectRandomEnchantment();
 
     if (time.getDayOfWeek() == DayOfWeek.MONDAY) {
@@ -124,6 +133,12 @@ public class EnchantsMerchant extends Merchant {
                       .create(user)
               );
 
+          if (alreadyPurchased.contains(user.getUniqueId())) {
+            builder
+                .addLore("")
+                .addLore(Messages.renderText("merchants.enchants.alreadyBought"));
+          }
+
           return builder.build();
         })
 
@@ -136,6 +151,11 @@ public class EnchantsMerchant extends Merchant {
             throw Exceptions.cannotAfford(user, currentPrice);
           }
 
+          if (alreadyPurchased.contains(user.getUniqueId())) {
+            throw Messages.render("merchants.enchants.alreadyBought")
+                .exception(user);
+          }
+
           user.removeBalance(currentPrice);
 
           ItemStack item = ItemStacks.builder(Material.ENCHANTED_BOOK)
@@ -144,6 +164,7 @@ public class EnchantsMerchant extends Merchant {
 
           ItemStacks.giveOrDrop(user.getInventory(), item);
           click.shouldClose(true);
+          alreadyPurchased.add(user.getUniqueId());
 
           user.sendMessage(
               Messages.render("merchants.enchants.bought")
@@ -251,6 +272,13 @@ public class EnchantsMerchant extends Merchant {
       tag.put(TAG_CHOSEN, list);
     }
 
+    if (!alreadyPurchased.isEmpty()) {
+      PURCHASED_CODEC.encodeStart(TagOps.OPS, alreadyPurchased)
+          .mapError(s -> "Failed to save already purchased id list: " + s)
+          .resultOrPartial(LOGGER::error)
+          .ifPresent(binaryTag -> tag.put(TAG_ALREADY_PURCHASED, binaryTag));
+    }
+
     tag.putInt(TAG_CURRENT_LEVEL, currentLevel);
     tag.putInt(TAG_CURRENT_PRICE, currentPrice);
 
@@ -271,6 +299,15 @@ public class EnchantsMerchant extends Merchant {
           .mapError(s -> "Failed to load " + TAG_CURRENT + ": " + s)
           .resultOrPartial(LOGGER::error)
           .ifPresent(enchantment -> this.current = enchantment);
+    }
+
+    if (tag.contains(TAG_ALREADY_PURCHASED, TagTypes.listType())) {
+      BinaryTag binaryTag = tag.get(TAG_ALREADY_PURCHASED);
+
+      PURCHASED_CODEC.parse(TagOps.OPS, binaryTag)
+          .mapError(s -> "Failed to load already purchased id list: " + s)
+          .resultOrPartial(LOGGER::error)
+          .ifPresent(alreadyPurchased::addAll);
     }
 
     currentLevel = tag.getInt(TAG_CURRENT_LEVEL);
