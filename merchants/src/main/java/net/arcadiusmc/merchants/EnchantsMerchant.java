@@ -2,15 +2,20 @@ package net.arcadiusmc.merchants;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.time.DayOfWeek;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.menu.MenuBuilder;
 import net.arcadiusmc.menu.MenuNode;
 import net.arcadiusmc.menu.Menus;
 import net.arcadiusmc.menu.Slot;
+import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.utils.inventory.DefaultItemBuilder;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.TagOps;
@@ -23,6 +28,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemStack;
 import org.slf4j.Logger;
 
 public class EnchantsMerchant extends Merchant {
@@ -34,7 +40,7 @@ public class EnchantsMerchant extends Merchant {
   static final String TAG_CHOSEN = "already_chosen";
   static final String TAG_CURRENT = "current_enchant";
   static final String TAG_CURRENT_LEVEL = "current_level";
-  static final String TAG_CURRENT_price = "current_price";
+  static final String TAG_CURRENT_PRICE = "current_price";
 
   static final Slot BOOK_SLOT = Slot.of(4, 1);
 
@@ -68,6 +74,24 @@ public class EnchantsMerchant extends Merchant {
     createMenu();
   }
 
+  @Override
+  public void onDayChange(ZonedDateTime time) {
+    selectRandomEnchantment();
+
+    if (time.getDayOfWeek() == DayOfWeek.MONDAY) {
+      alreadyChosen.clear();
+    }
+  }
+
+  @Override
+  protected void onEnable() {
+    if (current != null && currentLevel > 0) {
+      return;
+    }
+
+    selectRandomEnchantment();
+  }
+
   private void createMenu() {
     MenuBuilder builder = Menus.builder(Menus.sizeFromRows(3))
         .setTitle(config.menuTitle);
@@ -84,22 +108,49 @@ public class EnchantsMerchant extends Merchant {
   private MenuNode enchantmentNode() {
     return MenuNode.builder()
         .setItem((user, context) -> {
-          if (current == null) {
+          if (current == null || currentLevel < 1) {
             return ItemStacks.builder(Material.BARRIER)
                 .setName("&eOops!")
                 .addLore("&7Looks like there's no enchantment :(")
                 .build();
           }
 
+          DefaultItemBuilder builder = ItemStacks.builder(Material.ENCHANTED_BOOK)
+              .addEnchant(current, currentLevel)
+              .addLore("")
+              .addLore(
+                  Messages.render("merchants.priceLine")
+                      .addValue("price", Messages.currency(currentPrice))
+                      .create(user)
+              );
 
+          return builder.build();
         })
 
-        .setRunnable((user, context) -> {
-          if (current == null) {
+        .setRunnable((user, context, click) -> {
+          if (current == null || currentLevel < 1) {
             return;
           }
 
+          if (!user.hasBalance(currentPrice)) {
+            throw Exceptions.cannotAfford(user, currentPrice);
+          }
 
+          user.removeBalance(currentPrice);
+
+          ItemStack item = ItemStacks.builder(Material.ENCHANTED_BOOK)
+              .addEnchant(current, currentLevel)
+              .build();
+
+          ItemStacks.giveOrDrop(user.getInventory(), item);
+          click.shouldClose(true);
+
+          user.sendMessage(
+              Messages.render("merchants.enchants.bought")
+                  .addValue("enchantment", current.displayName(currentLevel))
+                  .addValue("price", Messages.currency(currentPrice))
+                  .create(user)
+          );
         })
         .build();
   }
@@ -116,6 +167,23 @@ public class EnchantsMerchant extends Merchant {
       return;
     }
 
+    if (sellable.size() == 1) {
+      SellableEnchantment enchantment = sellable.get(0);
+      SellLevel level = enchantment.pickLevel(random);
+
+      if (level == null) {
+        LOGGER.error("Only 1 enchantment found in merchant config, and it has no levels :(");
+        pickEnchantment(null, NONE, NONE);
+
+        return;
+      }
+
+      pickEnchantment(enchantment.enchantment, level.level, level.price);
+      LOGGER.warn("Only 1 enchantment found in merchant config, selecting :(");
+
+      return;
+    }
+
     Enchantment selected = null;
     SellLevel sellLevel = null;
 
@@ -123,7 +191,7 @@ public class EnchantsMerchant extends Merchant {
       attempts++;
 
       if (attempts >= maxAttempts) {
-        LOGGER.warn("Failed to find valid enchantment in {} loops, using last selected",
+        LOGGER.error("Failed to find valid enchantment in {} loops, using last selected",
             attempts
         );
 
@@ -183,6 +251,9 @@ public class EnchantsMerchant extends Merchant {
       tag.put(TAG_CHOSEN, list);
     }
 
+    tag.putInt(TAG_CURRENT_LEVEL, currentLevel);
+    tag.putInt(TAG_CURRENT_PRICE, currentPrice);
+
     if (current != null) {
       CURRENT_CODEC.encodeStart(TagOps.OPS, current)
           .mapError(s -> "Failed to save " + TAG_CURRENT + ": " + s)
@@ -201,6 +272,9 @@ public class EnchantsMerchant extends Merchant {
           .resultOrPartial(LOGGER::error)
           .ifPresent(enchantment -> this.current = enchantment);
     }
+
+    currentLevel = tag.getInt(TAG_CURRENT_LEVEL);
+    currentPrice = tag.getInt(TAG_CURRENT_PRICE);
 
     ListTag list = tag.getList(TAG_CHOSEN, TagTypes.stringType());
     for (BinaryTag binaryTag : list) {

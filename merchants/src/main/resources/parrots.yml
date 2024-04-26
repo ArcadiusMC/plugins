@@ -1,7 +1,29 @@
+menu-title: "Parrot Merchant"
+
+header:
+  name: "&f                &a&l&nParrot Shop"
+  lore:
+    - "&eA Parrot pet that sits on your shoulder."
+  texture-id: badc048a7ce78f7dad72a07da27d85c0916881e5522eeed1e3daf217a38c1a
+
 parrots:
   - variant: red
     price: 50000
     texture-id: 40a3d47f54e71a58bf8f57c5253fb2d213f4f55bb7934a19104bfb94edc76eaa
+    name: "Red Parrot"
   - variant: green
     price: 50000
     texture-id: 6a1dc33115232f800825cac9e3d9ed03fc18ae553c25b8059513000c59e354fe
+    name: "Green Parrot"
+  - variant: gray
+    price: 50000
+    texture-id: 71be723aa17393d99daddc119c98b2c79c54b35debe05c7138edeb8d0256dc46
+    name: "Gray Parrot"
+  - variant: blue
+    price: 50000
+    texture-id: b94bd3fcf4d46354ede8fef73126dbcab52b301a1c8c23b6cdfc12d612b61bea
+    name: "Blue Parrot"
+  - variant: cyan
+    price: 50000
+    texture-id: 7268ce37be8507ed67e3d40b617e2d72f66f9d20b106efb08e6ba041f9b9ef10
+    name: "Cyan Parrot"

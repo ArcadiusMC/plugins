@@ -3,6 +3,7 @@ package net.arcadiusmc.merchants;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import java.nio.file.Path;
+import java.time.ZonedDateTime;
 import java.util.function.Consumer;
 import lombok.Getter;
 import net.arcadiusmc.Loggers;
@@ -32,16 +33,11 @@ public abstract class Merchant {
   }
 
   public final void load() {
-    reloadConfig();
-    loadData();
-  }
-
-  public final void loadData() {
     clearData();
     SerializationHelper.readTagFile(dataFile, this::loadDataFrom);
   }
 
-  public final void saveData() {
+  public final void save() {
     SerializationHelper.writeTagFile(dataFile, this::saveDataTo);
   }
 
@@ -65,4 +61,12 @@ public abstract class Merchant {
   protected abstract void loadDataFrom(CompoundTag tag);
 
   protected abstract void saveDataTo(CompoundTag tag);
+
+  public void onDayChange(ZonedDateTime time) {
+
+  }
+
+  protected void onEnable() {
+
+  }
 }
