@@ -1,9 +1,12 @@
 package net.arcadiusmc.utils.inventory;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
 import it.unimi.dsi.fastutil.Hash.Strategy;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenCustomHashMap;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -18,10 +21,12 @@ import net.forthecrown.nbt.paper.ItemNbtProvider;
 import net.forthecrown.nbt.paper.PaperNbt;
 import net.forthecrown.nbt.string.Snbt;
 import net.forthecrown.nbt.string.TagParseException;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minecraft.util.datafix.DataFixers;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
@@ -29,6 +34,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.profile.PlayerTextures;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -509,6 +515,26 @@ public final class ItemStacks {
     ItemStack clone = i.clone();
     clone.setAmount(amount);
     return clone;
+  }
+
+  /**
+   * Creates a player profile from a texture ID
+   *
+   * @param textureId Texture ID
+   * @return Created profile
+   */
+  public static PlayerProfile profileFromTextureId(String textureId) {
+    PlayerProfile profile = Bukkit.createProfile(Identity.nil().uuid());
+    PlayerTextures textures = profile.getTextures();
+
+    try {
+      textures.setSkin(new URL("http://textures.minecraft.net/texture/" + textureId));
+      profile.setTextures(textures);
+    } catch (MalformedURLException e) {
+      throw new RuntimeException(e);
+    }
+
+    return profile;
   }
 
   /* ------------------------ INVENTORY ITERATION ------------------------- */
