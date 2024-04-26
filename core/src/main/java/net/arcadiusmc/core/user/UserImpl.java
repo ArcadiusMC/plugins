@@ -562,7 +562,7 @@ public final class UserImpl implements User {
           .value(state)
           .build();
 
-      user.data().remove(node);
+      user.data().add(node);
     });
   }
 
