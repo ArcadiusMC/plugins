@@ -75,7 +75,11 @@ public class ParrotMerchant extends Merchant {
     OWNED_CODEC.parse(TagOps.OPS, tag)
         .mapError(s -> "Failed to load parrot data: " + s)
         .resultOrPartial(LOGGER::error)
-        .ifPresent(owned::putAll);
+        .ifPresent(map -> {
+          map.forEach((uuid, variants) -> {
+            owned.put(uuid, new ArrayList<>(variants));
+          });
+        });
   }
 
   @Override
@@ -153,10 +157,10 @@ public class ParrotMerchant extends Merchant {
               throw Exceptions.cannotAfford(user, price);
             }
 
-            user.removeBalance(price);
-
             List<Variant> list = this.owned.computeIfAbsent(user.getUniqueId(), uuid -> new ArrayList<>());
             list.add(parrot.variant);
+
+            user.removeBalance(price);
 
             NamedTextColor color = switch (parrot.variant) {
               case GREEN -> NamedTextColor.GREEN;
