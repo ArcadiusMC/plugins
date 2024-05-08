@@ -41,11 +41,11 @@ public class SignShopsPlugin extends JavaPlugin {
 
   @Override
   public void onDisable() {
-    Messages.MESSAGE_LIST.removeChild(getName());
-
     if (manager != null) {
       manager.save();
     }
+
+    Messages.MESSAGE_LIST.removeChild(getName());
   }
 
   @Override
