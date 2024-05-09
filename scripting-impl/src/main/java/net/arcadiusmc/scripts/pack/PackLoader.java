@@ -6,7 +6,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.JsonOps;
-import com.mojang.serialization.codecs.ListCodec;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -39,7 +38,7 @@ public class PackLoader {
     return Results.success(new Export(name, alias));
   }, Export::toString);
 
-  public static final Decoder<List<Export>> EXPORT_LIST_DECODER = new ListCodec<>(EXPORT_CODEC);
+  public static final Decoder<List<Export>> EXPORT_LIST_DECODER = EXPORT_CODEC.listOf();
 
   static DataResult<PackMeta> load(JsonElement element, LoadContext context) {
     if (element == null || element.isJsonNull()) {
@@ -64,7 +63,7 @@ public class PackLoader {
     }
 
     PackMeta meta = new PackMeta();
-    meta.setMainScript(main.getOrThrow(false, null));
+    meta.setMainScript(main.getOrThrow());
     meta.setDirectory(context.directory());
     meta.setCompileScripts(json.getBool("compile-scripts", false));
 
