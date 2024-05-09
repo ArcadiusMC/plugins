@@ -142,7 +142,7 @@ public class WreathType implements ItemType {
     );
 
     PostDamageEffect resistAfterDmg = new PostDamageEffect(
-        PotionEffectType.DAMAGE_RESISTANCE,
+        PotionEffectType.RESISTANCE,
         RESIST_DURATION_TICKS,
         RESIST_LEVEL,
         TimeUnit.SECONDS.toMillis(30)
@@ -220,9 +220,9 @@ public class WreathType implements ItemType {
     builder.level(1)
         .upgrade(new ModelDataMod(MODEL_DATA_LEVEL_1))
 
-        .upgrade(new AddEnchantMod(Enchantment.PROTECTION_ENVIRONMENTAL, 4))
-        .upgrade(new AddEnchantMod(Enchantment.WATER_WORKER, 1))
-        .upgrade(new AddEnchantMod(Enchantment.OXYGEN, 3))
+        .upgrade(new AddEnchantMod(Enchantment.PROTECTION, 4))
+        .upgrade(new AddEnchantMod(Enchantment.AQUA_AFFINITY, 1))
+        .upgrade(new AddEnchantMod(Enchantment.RESPIRATION, 3))
 
         .upgrade(new AddAttributeMod(
             Attribute.GENERIC_ARMOR_TOUGHNESS,
@@ -268,7 +268,7 @@ public class WreathType implements ItemType {
     builder.level(3)
         .upgrade(new ModelDataMod(MODEL_DATA_LEVEL_3))
 
-        .upgrade(new AddEnchantMod(Enchantment.PROTECTION_PROJECTILE, 4))
+        .upgrade(new AddEnchantMod(Enchantment.PROJECTILE_PROTECTION, 4))
 
         .upgrade(new AddAttributeMod(
             Attribute.GENERIC_ARMOR_TOUGHNESS,
@@ -285,7 +285,7 @@ public class WreathType implements ItemType {
 
     builder.level(4)
         .upgrade(new ModelDataMod(MODEL_DATA_LEVEL_4))
-        .upgrade(new AddEnchantMod(Enchantment.PROTECTION_EXPLOSIONS, 4))
+        .upgrade(new AddEnchantMod(Enchantment.BLAST_PROTECTION, 4))
 
         .upgrade(new AddAttributeMod(
             Attribute.GENERIC_ARMOR_TOUGHNESS,
@@ -302,7 +302,7 @@ public class WreathType implements ItemType {
 
     builder.level(5)
         .upgrade(new ModelDataMod(MODEL_DATA_LEVEL_5))
-        .upgrade(new AddEnchantMod(Enchantment.PROTECTION_FIRE, 4));
+        .upgrade(new AddEnchantMod(Enchantment.FIRE_PROTECTION, 4));
 
     // Call build to create cached result
     builder.build();
