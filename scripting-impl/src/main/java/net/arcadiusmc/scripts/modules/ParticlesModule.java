@@ -456,8 +456,7 @@ public class ParticlesModule extends IdScriptableObject {
       }
 
       if (hasProperty(scriptable, "offset")) {
-        Object offsetObject = getProperty(scriptable, "offset");
-        spawn.setOffset(offsetObject);
+        spawn.setOffset(getProperty(scriptable, "offset"));
       }
 
       if (hasProperty(scriptable, "size")) {
@@ -468,13 +467,11 @@ public class ParticlesModule extends IdScriptableObject {
       spawn.colorTransition = getColor(scriptable, "colorTransition", cx);
 
       if (hasProperty(scriptable, "item")) {
-        Object itemObj = getProperty(scriptable, "item");
-        spawn.setItem(itemObj);
+        spawn.setItem(getProperty(scriptable, "item"));
       }
 
       if (hasProperty(scriptable, "blockData")) {
-        Object dataObj = getProperty(scriptable, "blockData");
-        spawn.setBlockData(dataObj);
+        spawn.setBlockData(getProperty(scriptable, "blockData"));
       }
 
       if (hasProperty(scriptable, "shriek")) {
