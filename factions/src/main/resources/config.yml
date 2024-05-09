@@ -35,6 +35,40 @@ min-reputation: -100
 #
 starting-reputation: 10
 
+
+#
+# Note on Sell shop multipliers:
+#
+# Sell shop multipliers are interpolated based on a player's
+# reputation from min reputation to max reputation.
+#
+# Meaning, a player with 0 reputation (min-rep=-100 and
+# max-rep=100) is considered to be halfway between the min
+# and max multipliers (For example min-multiplier=1,
+# max-multiplier=2, the player's multiplier at 0 reputation
+# would be 1.5)
+#
+# If a player is not currently a member of a merchant's
+# faction or has never been a member of a merchant's
+# faction, then the starting-reputation is used.
+#
+# Also for a multiplier to work, a sell shop page must be
+# tagged with the "faction:<faction name>" tag. For more info
+# see the example.yml page file in sell shops.
+#
+
+#
+# Minimum multiplier for sellshop prices belonging to factions
+# Default: 1
+#
+min-sellshop-multiplier: 1
+
+#
+# Minimum multiplier for sellshop prices belonging to factions
+# Default: 2
+#
+max-sellshop-multiplier: 2
+
 #
 # Template used to create a URL for players to click on to
 # go to their faction's discord channel

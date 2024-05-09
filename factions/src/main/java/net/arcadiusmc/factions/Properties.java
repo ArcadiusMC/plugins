@@ -64,6 +64,7 @@ public final class Properties {
     REGISTRY.register("description", DESCRIPTION);
     REGISTRY.register("waypoint_name", WAYPOINT_NAME);
     REGISTRY.register("market_group", MARKET_GROUP);
+
     REGISTRY.register("discord/text_channel_id", CHANNEL_ID);
     REGISTRY.register("discord/role_id", ROLE_ID);
 

@@ -25,6 +25,9 @@ public class FactionsConfig {
   private int minReputation = -100;
   private int maxReputation = 100;
 
+  private float minSellShopMultiplier = 1;
+  private float maxSellShopMultiplier = 2;
+
   private String channelUrlTemplate = "https://discord.com/channels/%GUILD%/%CHANNEL%";
 
   void minMaxReputation() {
@@ -64,6 +67,14 @@ public class FactionsConfig {
       builder.optional("starting-reputation", Codec.INT)
           .getter(config -> config.startingReputation)
           .setter((config, integer) -> config.startingReputation = integer);
+
+      builder.optional("min-sellshop-multiplier", Codec.FLOAT)
+          .getter(config -> config.minSellShopMultiplier)
+          .setter((config, integer) -> config.minSellShopMultiplier = integer);
+
+      builder.optional("max-sellshop-multiplier", Codec.FLOAT)
+          .getter(config -> config.maxSellShopMultiplier)
+          .setter((config, integer) -> config.maxSellShopMultiplier = integer);
     });
   }
 }
