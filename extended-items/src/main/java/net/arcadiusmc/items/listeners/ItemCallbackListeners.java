@@ -1,6 +1,7 @@
 package net.arcadiusmc.items.listeners;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.arcadiusmc.items.CallbackComponent;
@@ -24,6 +25,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 public class ItemCallbackListeners implements Listener {
+
+  static final Set<EquipmentSlot> SLOTS = Set.of(
+      EquipmentSlot.HEAD,
+      EquipmentSlot.CHEST,
+      EquipmentSlot.LEGS,
+      EquipmentSlot.FEET,
+      EquipmentSlot.HAND,
+      EquipmentSlot.OFF_HAND
+  );
 
   @EventHandler(ignoreCancelled = true)
   public void onEntityPickupItem(EntityPickupItemEvent event) {
@@ -84,7 +94,7 @@ public class ItemCallbackListeners implements Listener {
   private void performActionOnAllSlots(Player player, BiConsumer<CallbackComponent, EquipmentSlot> consumer) {
     PlayerInventory inventory = player.getInventory();
 
-    for (EquipmentSlot slot : EquipmentSlot.values()) {
+    for (EquipmentSlot slot : SLOTS) {
       ItemStack item = inventory.getItem(slot);
       performItemAction(item, component -> consumer.accept(component, slot));
     }
