@@ -81,7 +81,7 @@ public class SmokeBomb implements Listener {
 
         var loc = entity.getLocation();
 
-        new ParticleBuilder(Particle.SMOKE_NORMAL)
+        new ParticleBuilder(Particle.SMOKE)
             .location(loc)
             .spawn();
 
@@ -122,7 +122,7 @@ public class SmokeBomb implements Listener {
   public static void spawnSmoke(Location loc) {
     loc.getWorld().playSound(loc, Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1, 1);
 
-    new ParticleBuilder(Particle.EXPLOSION_LARGE)
+    new ParticleBuilder(Particle.EXPLOSION)
         .location(loc.clone().add(0, 1, 0))
         .offset(1, 1, 1)
         .count(10)
