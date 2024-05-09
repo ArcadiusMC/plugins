@@ -11,6 +11,7 @@ dependencies {
   compileOnly(project(":commons"))
   compileOnly(project(":usables"))
   compileOnly(project(":player-markets"))
+  compileOnly(project(":sell-shop"))
 
   compileOnly(project(":discord"))
   compileOnly("com.discordsrv:discordsrv:1.27.1-SNAPSHOT")
@@ -23,6 +24,7 @@ pluginYml {
   depends {
     optional("project:player-markets")
     optional("project:discord")
+    optional("project:sell-shop")
     optional("DiscordSRV")
   }
 }
