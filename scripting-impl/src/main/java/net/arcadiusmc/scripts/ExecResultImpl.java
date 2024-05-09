@@ -34,29 +34,29 @@ class ExecResultImpl<T> implements ExecResult<T> {
     this.throwable = throwable;
   }
 
-  static ExecResult<Object> success(Object value, Script script) {
+  static <T> ExecResult<T> success(T value, Script script) {
     return new ExecResultImpl<>(value, null, null, script, null);
   }
 
-  static ExecResult<Object> success(Object value, String methodName, Script script) {
+  static <T> ExecResult<T> success(T value, String methodName, Script script) {
     return new ExecResultImpl<>(value, null, methodName, script, null);
   }
 
-  static ExecResult<Object> wrap(Throwable t, Script script) {
+  static <T> ExecResult<T> wrap(Throwable t, Script script) {
     var message = RhinoScript.getMessage(t);
     return new ExecResultImpl<>(null, message, null, script, t);
   }
 
-  static ExecResult<Object> wrap(Throwable t, String methodName, Script script) {
+  static <T> ExecResult<T> wrap(Throwable t, String methodName, Script script) {
     var message = RhinoScript.getMessage(t);
     return new ExecResultImpl<>(null, message, methodName, script, t);
   }
 
-  static ExecResult<Object> error(String message, Script script) {
+  static <T> ExecResult<T> error(String message, Script script) {
     return new ExecResultImpl<>(null, message, null, script, null);
   }
 
-  static ExecResult<Object> error(String message, String methodName, Script script) {
+  static <T> ExecResult<T> error(String message, String methodName, Script script) {
     return new ExecResultImpl<>(null, message, methodName, script, null);
   }
 
