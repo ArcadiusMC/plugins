@@ -21,8 +21,11 @@ import net.arcadiusmc.menu.MenuNode;
 import net.arcadiusmc.menu.Menus;
 import net.arcadiusmc.menu.Slot;
 import net.arcadiusmc.menu.page.MenuPage;
+import net.arcadiusmc.merchants.commands.CommandParrots;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.user.User;
+import net.arcadiusmc.utils.context.ContextOption;
+import net.arcadiusmc.utils.context.ContextSet;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.arcadiusmc.utils.inventory.SkullItemBuilder;
 import net.arcadiusmc.utils.io.ExtraCodecs;
@@ -46,7 +49,15 @@ public class ParrotMerchant extends Merchant {
   private static final Logger LOGGER = Loggers.getLogger();
 
   static final Codec<Map<UUID, List<Variant>>> OWNED_CODEC
-      = Codec.unboundedMap(ExtraCodecs.STRING_UUID, ExtraCodecs.enumCodec(Variant.class).listOf());
+      = Codec.unboundedMap(
+          ExtraCodecs.STRING_UUID,
+
+          ExtraCodecs.enumCodec(Variant.class).listOf()
+              .xmap(ArrayList::new, ArrayList::new)
+  );
+
+  public static final ContextSet SET = ContextSet.create();
+  public static final ContextOption<Boolean> PURCHASE_ALLOWED = SET.newOption(true);
 
   private Config config = Config.EMPTY;
 
@@ -57,6 +68,11 @@ public class ParrotMerchant extends Merchant {
 
   public ParrotMerchant(MerchantsPlugin plugin) {
     super(plugin, "parrots");
+  }
+
+  @Override
+  protected void onEnable() {
+    new CommandParrots(this);
   }
 
   @Override
@@ -153,6 +169,13 @@ public class ParrotMerchant extends Merchant {
           boolean owned = hasVariant(user, parrot.variant);
 
           if (!owned) {
+            boolean allowed = context.get(PURCHASE_ALLOWED);
+
+            if (!allowed) {
+              throw Messages.render("merchants.parrots.purchaseNotAllowed")
+                  .exception(user);
+            }
+
             if (!user.hasBalance(price)) {
               throw Exceptions.cannotAfford(user, price);
             }

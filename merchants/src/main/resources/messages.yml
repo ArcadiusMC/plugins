@@ -1,17 +1,18 @@
 merchants:
-  clickToPurchase:        "&a&nClick to purchase."
-  cannotAfford:           "&cCannot afford."
-  dayChangeTriggered:     "&7Triggered day change."
+  clickToPurchase:            "&a&nClick to purchase."
+  cannotAfford:               "&cCannot afford."
+  dayChangeTriggered:         "&7Triggered day change."
 
-  saved:                  "&7Saved Merchants plugin."
-  reloaded.plugin:        "&7Reloaded merchants plugin."
-  reloaded.config:        "&7Reloaded merchants configs."
+  saved:                      "&7Saved Merchants plugin."
+  reloaded.plugin:            "&7Reloaded merchants plugin."
+  reloaded.config:            "&7Reloaded merchants configs."
 
-  priceLine:              "&7Price: &6${price}."
+  priceLine:                  "&7Price: &6${price}."
 
-  enchants.bought:        "&7Bought &e${enchantment}&7 for &6${price}&r."
-  enchants.alreadyBought: "&cEnchantment already bought."
+  enchants.bought:            "&7Bought &e${enchantment}&7 for &6${price}&r."
+  enchants.alreadyBought:     "&cEnchantment already bought."
 
-  parrots.bought:         "&7Bought &e${parrot}&7 for &6${price}&r."
-  parrots.ownedLore:      "&7Click to activate."
-  parrots.active:         "&aActive."
+  parrots.bought:             "&7Bought &e${parrot}&7 for &6${price}&r."
+  parrots.ownedLore:          "&7Click to activate."
+  parrots.active:             "&aActive."
+  parrots.purchaseNotAllowed: "&cParrots can only be bought at Calavera. &7(/visit calavera)"
