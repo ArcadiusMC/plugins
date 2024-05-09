@@ -22,7 +22,7 @@ literal("get") {
   description = "Shows who the current monarch is."
 }
 
-literal("set").argument("player", f_user) {
+literal("set").argument("player", user) {
   map_result("player") = @result_to_user
   executes = setMonarch
   description = "Sets the monarch."
