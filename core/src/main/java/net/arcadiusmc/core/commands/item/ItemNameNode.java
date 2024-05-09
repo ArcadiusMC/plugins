@@ -18,24 +18,27 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class ItemNameNode extends ItemModifierNode {
 
-  public ItemNameNode() {
-    super("itemname", "nameitem", "renameitem", "itemrename");
+  private final NameAccess access;
+
+  public ItemNameNode(NameAccess access) {
+    super(access.commandName, access.aliases);
+    this.access = access;
   }
 
   @Override
   String getArgumentName() {
-    return "name";
+    return access.argumentName;
   }
 
   @Override
   public void populateUsages(UsageFactory factory) {
     namingNote(
         factory.usage("<text>")
-            .addInfo("Sets the name of the item you're holding")
+            .addInfo("Sets the %s of the item you're holding", access.argumentName)
     );
 
     factory.usage("-clear")
-        .addInfo("Clears the name of the item you're holding");
+        .addInfo("Clears the %s of the item you're holding", access.argumentName);
   }
 
   static void namingNote(Usage usage) {
@@ -56,7 +59,7 @@ public class ItemNameNode extends ItemModifierNode {
 
                 // Suggest existing item name
                 getItemSuggestions(source, itemStack -> {
-                  var name = Text.itemDisplayName(itemStack);
+                  Component name = access.get(itemStack);
 
                   String legacy = Text.LEGACY.serialize(
                       GlobalTranslator.render(name, Locale.ENGLISH)
@@ -75,11 +78,12 @@ public class ItemNameNode extends ItemModifierNode {
               Component name = Arguments.getMessage(c, "name").asComponent();
 
               if (Text.isDashClear(name)) {
-                meta.displayName(null);
+                access.set(meta, null);
                 source.sendSuccess(ItemMessages.NAME_CLEARED.renderText(source));
               } else {
                 Component wrapped = Placeholders.render(optionallyWrap(name, c, "name"));
-                meta.displayName(wrapped);
+                access.set(meta, wrapped);
+
                 source.sendSuccess(
                     ItemMessages.NAME_SET.get()
                         .addValue("name", wrapped)
@@ -91,5 +95,45 @@ public class ItemNameNode extends ItemModifierNode {
               return 0;
             })
         );
+  }
+
+  public enum NameAccess {
+    DISPLAY_NAME("name", "itemname", "nameitem", "renameitem", "itemrename") {
+      @Override
+      Component get(ItemStack item) {
+        return Text.itemDisplayName(item);
+      }
+
+      @Override
+      void set(ItemMeta meta, Component value) {
+        meta.displayName(value);
+      }
+    },
+
+    BASE_NAME ("base-name", "itembasename", "baseitemname") {
+      @Override
+      Component get(ItemStack item) {
+        return item.getItemMeta().itemName();
+      }
+
+      @Override
+      void set(ItemMeta meta, Component value) {
+        meta.itemName(value);
+      }
+    };
+
+    private final String argumentName;
+    private final String commandName;
+    private final String[] aliases;
+
+    NameAccess(String argumentName, String commandName, String... aliases) {
+      this.argumentName = argumentName;
+      this.commandName = commandName;
+      this.aliases = aliases;
+    }
+
+    abstract Component get(ItemStack item);
+
+    abstract void set(ItemMeta meta, Component value);
   }
 }

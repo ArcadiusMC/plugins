@@ -3,6 +3,7 @@ package net.arcadiusmc.core.commands.item;
 import net.arcadiusmc.Permissions;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.core.commands.item.ItemNameNode.NameAccess;
 import net.forthecrown.grenadier.GrenadierCommand;
 import org.bukkit.permissions.Permission;
 
@@ -13,7 +14,8 @@ public class ItemModCommands {
   private static final ItemModifierNode[] NODES = {
       new EnchantmentNode(),
       new ItemLoreNode(),
-      new ItemNameNode(),
+      new ItemNameNode(NameAccess.DISPLAY_NAME),
+      new ItemNameNode(NameAccess.BASE_NAME),
       new ItemDataNode(),
       new ItemAttributeNode(),
       new ItemCooldownNode()
