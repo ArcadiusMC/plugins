@@ -1,0 +1,26 @@
+<!DOCTYPE enittyui>
+<enittyui>
+
+<head>
+  <style src="stylefile.yml"/>
+  <script src="scriptfile.js"/>
+
+  <script>
+    console.log("Hello, world!")
+  </script>
+
+  <style>
+    .class-name:
+      size: 4px 4px 4px
+      border-size: 4 4 4 4
+      border-color: 0xFFFFFFFF
+
+    .other-class:
+      size: 2px
+      background-color: blue
+  </style>
+</head>
+
+
+
+</enittyui>
