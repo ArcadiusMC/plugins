@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 plugins {
   java
   id("arcadius")
-  id("io.freefair.lombok") version "8.0.1"
+  id("io.freefair.lombok") version "8.6"
 }
 
 version = makeDateVersion()
@@ -62,7 +62,7 @@ subprojects {
   }
 
   java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
   }
 
   tasks {
@@ -72,7 +72,7 @@ subprojects {
 
     compileJava {
       options.encoding = Charsets.UTF_8.name()
-      options.release.set(17)
+      options.release.set(21)
       options.compilerArgs.add("-Xmaxerrs")
       options.compilerArgs.add("3000")
     }

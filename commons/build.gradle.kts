@@ -1,20 +1,17 @@
-import net.arcadiusmc.gradle.MC_VERSION
+import io.papermc.paperweight.userdev.ReobfArtifactConfiguration
+import net.arcadiusmc.gradle.NMS_DEPENDENCY
 
 plugins {
   java
-  id("io.papermc.paperweight.userdev") version "1.5.5"
+  id("io.papermc.paperweight.userdev") version "1.6.0"
 }
 
 dependencies {
-  paperweight.paperDevBundle("${MC_VERSION}-R0.1-SNAPSHOT")
+  paperweight.paperDevBundle(NMS_DEPENDENCY)
 }
+
+paperweight.reobfArtifactConfiguration = ReobfArtifactConfiguration.MOJANG_PRODUCTION
 
 arcadius {
   implementedBy = "core"
-}
-
-tasks {
-  assemble {
-    dependsOn(reobfJar)
-  }
 }

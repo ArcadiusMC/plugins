@@ -29,6 +29,8 @@ class PaperConfig {
   val loadAfter: LoadOrderList = LoadOrderList()
   val depends: DependsList = DependsList(loadAfter)
 
+  var apiVersion = API_VERSION
+
   constructor(name: String) {
     this.name = name
     this.prefix = null

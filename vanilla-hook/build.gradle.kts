@@ -1,9 +1,12 @@
+
+import io.papermc.paperweight.userdev.ReobfArtifactConfiguration
 import net.arcadiusmc.gradle.DependencyLoad
 import net.arcadiusmc.gradle.MC_VERSION
+import net.arcadiusmc.gradle.NMS_DEPENDENCY
 
 plugins {
   java
-  id("io.papermc.paperweight.userdev") version "1.5.5"
+  id("io.papermc.paperweight.userdev") version "1.6.0"
 }
 
 version = MC_VERSION
@@ -14,8 +17,10 @@ repositories {
 
 dependencies {
   compileOnly(project(":commons"))
-  paperweight.paperDevBundle("${MC_VERSION}-R0.1-SNAPSHOT")
+  paperweight.paperDevBundle(NMS_DEPENDENCY)
 }
+
+paperweight.reobfArtifactConfiguration = ReobfArtifactConfiguration.MOJANG_PRODUCTION
 
 arcadius {
   autoAddDependencies = false
