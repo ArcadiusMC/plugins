@@ -55,7 +55,7 @@ public class CommandAction implements Action {
       formattedCommand = command;
     } else {
       var player = playerOpt.get();
-      formattedCommand = formatPlaceholders(command, player);
+      formattedCommand = formatPlaceholders(command, player).replace("@p", player.getName());
 
       if (asPlayer) {
         player.performCommand(formattedCommand);
