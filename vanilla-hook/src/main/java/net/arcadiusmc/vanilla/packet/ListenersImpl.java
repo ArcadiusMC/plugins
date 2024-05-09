@@ -74,7 +74,7 @@ public class ListenersImpl implements PacketListeners {
     DataValue<?> value;
 
     if (text == null) {
-      nmsEntity.getEntityData().resendPossiblyDesyncedEntity(VanillaAccess.getPlayer(viewer));
+      nmsEntity.resendPossiblyDesyncedEntityData(VanillaAccess.getPlayer(viewer));
       return;
     }
 
@@ -90,7 +90,7 @@ public class ListenersImpl implements PacketListeners {
         vanillaValue = PaperAdventure.asVanilla(text);
       }
 
-      value = new DataValue<>(accessor.getId(), accessor.getSerializer(), vanillaValue);
+      value = new DataValue<>(accessor.id(), accessor.serializer(), vanillaValue);
     } else {
       EntityDataAccessor<Optional<net.minecraft.network.chat.Component>> accessor
           = Accessors.find(Accessors.ACCESSOR_CUSTOM_NAME, net.minecraft.world.entity.Entity.class);
@@ -98,7 +98,7 @@ public class ListenersImpl implements PacketListeners {
       Optional<net.minecraft.network.chat.Component> vanillaValue
           = Optional.ofNullable(PaperAdventure.asVanilla(text));
 
-      value = new DataValue<>(accessor.getId(), accessor.getSerializer(), vanillaValue);
+      value = new DataValue<>(accessor.id(), accessor.serializer(), vanillaValue);
     }
 
     ClientboundSetEntityDataPacket packet

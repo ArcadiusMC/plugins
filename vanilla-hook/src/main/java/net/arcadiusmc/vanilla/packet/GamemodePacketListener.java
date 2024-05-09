@@ -1,15 +1,10 @@
 package net.arcadiusmc.vanilla.packet;
 
-import static net.arcadiusmc.vanilla.utils.Reflect.getField;
-
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
 import java.util.UUID;
 import net.arcadiusmc.packet.PacketCall;
 import net.arcadiusmc.packet.PacketHandler;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket.Action;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket.Entry;
@@ -20,7 +15,6 @@ import net.minecraft.world.level.GameType;
  * spectator
  */
 class GamemodePacketListener {
-  public static final String WRITER_FIELD = "h";
 
   @PacketHandler(ignoreCancelled = true)
   public void onGameModePacket(ClientboundPlayerInfoUpdatePacket packet, PacketCall call) {
@@ -66,27 +60,8 @@ class GamemodePacketListener {
       return;
     }
 
-    ByteBuf ioBuf = ByteBufAllocator.DEFAULT.ioBuffer();
-    var buf = new FriendlyByteBuf(ioBuf);
-
-    buf.writeEnumSet(
-        packet.actions(),
-        ClientboundPlayerInfoUpdatePacket.Action.class
-    );
-
-    buf.writeCollection(entries, (buf1, entry) -> {
-      buf1.writeUUID(entry.profileId());
-
-      for (var a : packet.actions()) {
-        ClientboundPlayerInfoUpdatePacket.Action.Writer writer = getField(a, WRITER_FIELD);
-        writer.write(buf1, entry);
-      }
-    });
-
-    buf.readerIndex(0);
-
     ClientboundPlayerInfoUpdatePacket replacementPacket
-        = new ClientboundPlayerInfoUpdatePacket(buf);
+        = new ClientboundPlayerInfoUpdatePacket(actions, entries);
 
     call.setReplacementPacket(replacementPacket);
   }

@@ -39,7 +39,7 @@ public class Accessors {
         f.setAccessible(true);
         EntityDataAccessor<?> accessor = (EntityDataAccessor<?>) f.get(null);
 
-        if (accessor.getId() != accessorId) {
+        if (accessor.id() != accessorId) {
           continue;
         }
 

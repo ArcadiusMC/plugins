@@ -11,14 +11,15 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
+import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.HangingSignBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import org.bukkit.World;
 import org.bukkit.block.Sign;
-import org.bukkit.craftbukkit.v1_20_R3.block.CraftHangingSign;
-import org.bukkit.craftbukkit.v1_20_R3.block.CraftSign;
+import org.bukkit.craftbukkit.block.CraftHangingSign;
+import org.bukkit.craftbukkit.block.CraftSign;
 
 class SignPacketListener {
 
@@ -101,7 +102,7 @@ class SignPacketListener {
         continue;
       }
 
-      info.tag = entity.saveWithoutMetadata();
+      info.tag = entity.saveWithoutMetadata(DedicatedServer.getServer().registryAccess());
       entity.sanitizeSentNbt(info.tag);
 
       setInfo(o, info);
@@ -116,10 +117,12 @@ class SignPacketListener {
     Class c = info.getClass();
     Field[] declared = c.getDeclaredFields();
 
-    BlockEntityInfo_packedXz = declared[0];
-    BlockEntityInfo_y = declared[1];
-    BlockEntityInfo_type = declared[2];
-    BlockEntityInfo_tag = declared[3];
+    int offset = 2;
+
+    BlockEntityInfo_packedXz = declared[offset + 0];
+    BlockEntityInfo_y = declared[offset + 1];
+    BlockEntityInfo_type = declared[offset + 2];
+    BlockEntityInfo_tag = declared[offset + 3];
 
     BlockEntityInfo_packedXz.setAccessible(true);
     BlockEntityInfo_y.setAccessible(true);
@@ -205,12 +208,12 @@ class SignPacketListener {
 
     if (type == BlockEntityType.HANGING_SIGN) {
       var hanging = new HangingSignBlockEntity(pos, null);
-      hanging.load(tag);
+      hanging.loadWithComponents(tag, DedicatedServer.getServer().registryAccess());
       sign = new ExposingHangingSign(null, hanging);
       entity = hanging;
     } else {
       entity = new SignBlockEntity(pos, null);
-      entity.load(tag);
+      entity.loadWithComponents(tag, DedicatedServer.getServer().registryAccess());
       sign = new ExposingCraftSign<>(null, entity);
     }
 

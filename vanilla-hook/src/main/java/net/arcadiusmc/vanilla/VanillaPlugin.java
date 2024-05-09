@@ -4,12 +4,14 @@ import net.arcadiusmc.vanilla.listeners.InjectionListeners;
 import net.arcadiusmc.packet.PacketListeners;
 import net.arcadiusmc.vanilla.packet.ListenersImpl;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicePriority;
+import org.bukkit.plugin.ServicesManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class VanillaPlugin extends JavaPlugin {
 
-  static final int CURRENT_DATA_VERSION = 3700;
+  static final int CURRENT_DATA_VERSION = 3839;
 
   @Override
   public void onEnable() {
@@ -23,14 +25,13 @@ public class VanillaPlugin extends JavaPlugin {
       ));
     }
 
-
-    var listeners = ListenersImpl.getListeners();
+    ListenersImpl listeners = ListenersImpl.getListeners();
     listeners.initalize();
 
-    var services = Bukkit.getServicesManager();
+    ServicesManager services = Bukkit.getServicesManager();
     services.register(PacketListeners.class, listeners, this, ServicePriority.Normal);
 
-    var pl = Bukkit.getPluginManager();
+    PluginManager pl = Bukkit.getPluginManager();
     pl.registerEvents(new InjectionListeners(listeners), this);
 
     DefaultRenderers.registerAll(listeners);
