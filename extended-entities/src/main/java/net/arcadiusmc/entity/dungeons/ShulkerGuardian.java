@@ -243,7 +243,7 @@ public class ShulkerGuardian extends IteratingSystem {
   }
 
   void drawBeam(ShulkerGuardianData data, Vector3dc start, Vector3dc target, World world) {
-    ParticleBuilder spawn = new ParticleBuilder(Particle.REDSTONE)
+    ParticleBuilder spawn = new ParticleBuilder(Particle.DUST)
         .count(1)
         .color(data.state.color, data.state.size);
 

@@ -221,7 +221,7 @@ public class GuardianBeam extends IteratingSystem {
         .extra(0)
         .spawn();
 
-    Particle.SMOKE_LARGE.builder()
+    Particle.LARGE_SMOKE.builder()
         .location(world, pos.x, pos.y, pos.z)
         .allPlayers()
         .count(5)
