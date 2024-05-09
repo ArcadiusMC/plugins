@@ -4,7 +4,7 @@ import static net.arcadiusmc.waypoints.menu.WaypointMenus.WAYPOINT;
 
 import com.google.common.base.Strings;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.serialization.DataResult.PartialResult;
+import com.mojang.serialization.DataResult.Error;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.menu.MenuBuilder;
 import net.arcadiusmc.menu.MenuNode;
@@ -156,7 +156,7 @@ public class EditMenu extends MenuPage {
           nameResult
               .mapError(s -> "Cannot set name to '" + name + "': " + s)
               .error()
-              .map(PartialResult::message)
+              .map(Error::message)
               .orElse(":)")
       );
     }

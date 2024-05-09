@@ -115,7 +115,7 @@ public class HulkSmash implements Listener {
     unregister(true);
     user.playSound(Sound.ENTITY_GENERIC_EXPLODE, 0.7F, 1);
 
-    Particle.EXPLOSION_LARGE.builder()
+    Particle.EXPLOSION.builder()
         .location(user.getLocation())
         .allPlayers()
         .count(5)

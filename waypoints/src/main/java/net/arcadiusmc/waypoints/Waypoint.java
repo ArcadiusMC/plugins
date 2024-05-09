@@ -1248,7 +1248,7 @@ public class Waypoint {
 
               WaypointProperty<Object> prop = property;
               Codec<Object> codec = prop.getCodec();
-              BinaryTag pTag = codec.encodeStart(TagOps.OPS, next).getOrThrow(false, s -> {});
+              BinaryTag pTag = codec.encodeStart(TagOps.OPS, next).getOrThrow();
 
               propTag.put(property.getName(), pTag);
             }, () -> {
