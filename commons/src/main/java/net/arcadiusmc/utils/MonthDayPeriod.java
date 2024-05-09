@@ -7,7 +7,6 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.codecs.ListCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.time.LocalDate;
 import java.time.Month;
@@ -337,7 +336,7 @@ public class MonthDayPeriod {
           .apply(instance, MonthDayPeriod::between);
     });
 
-    Codec<MonthDayPeriod> arrayCodec = new ListCodec<>(MONTH_DAY_CODEC)
+    Codec<MonthDayPeriod> arrayCodec = MONTH_DAY_CODEC.listOf()
         .comapFlatMap(list -> {
           if (list.isEmpty()) {
             return Results.success(ALL);

@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Stream;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.utils.math.Rotation;
 import net.arcadiusmc.utils.math.Vectors;
@@ -29,7 +30,6 @@ import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
@@ -44,16 +44,16 @@ import org.bukkit.block.TileState;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_20_R3.CraftServer;
-import org.bukkit.craftbukkit.v1_20_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_20_R3.block.CraftBlock;
-import org.bukkit.craftbukkit.v1_20_R3.block.CraftBlockEntityState;
-import org.bukkit.craftbukkit.v1_20_R3.block.CraftBlockStates;
-import org.bukkit.craftbukkit.v1_20_R3.block.CraftCommandBlock;
-import org.bukkit.craftbukkit.v1_20_R3.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.v1_20_R3.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_20_R3.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_20_R3.util.CraftNamespacedKey;
+import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.block.CraftBlock;
+import org.bukkit.craftbukkit.block.CraftBlockEntityState;
+import org.bukkit.craftbukkit.block.CraftBlockStates;
+import org.bukkit.craftbukkit.block.CraftCommandBlock;
+import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.entity.CraftEntity;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.joml.Vector3d;
@@ -163,6 +163,7 @@ public final class VanillaAccess {
       CompoundTag tag
   ) {
     return CraftBlockStates.getBlockState(
+        DedicatedServer.getServer().registryAccess(),
         Vectors.toMinecraft(pos),
         VanillaAccess.getState(data),
         tag == null ? null : TagTranslators.COMPOUND.toMinecraft(tag)
@@ -279,6 +280,10 @@ public final class VanillaAccess {
     );
   }
 
+  public static Stream<NamespacedKey> getStorageKeys() {
+    return getServer().getCommandStorage().keys().map(CraftNamespacedKey::fromMinecraft);
+  }
+
   public static CommandSender getSender(TileState sender) {
     CommandBlockEntity entity = ((CraftCommandBlock) sender).getTileEntity();
     return entity.getCommandBlock().createCommandSourceStack().getBukkitSender();
@@ -294,22 +299,10 @@ public final class VanillaAccess {
 
   public static Map<PatternType, String> getPatternFilenames() {
     Map<PatternType, String> typeFilenames = new Object2ObjectOpenHashMap<>();
-    Registry<BannerPattern> registry = BuiltInRegistries.BANNER_PATTERN;
 
-    registry.entrySet().forEach(entry -> {
-      var fileName = entry.getKey().location().getPath();
-      PatternType type = PatternType.getByIdentifier(entry.getValue().getHashname());
-
-      if (type == null) {
-        LOGGER.warn(
-            "Vanilla pattern type {} doesn't have matching bukkit value",
-            fileName
-        );
-        return;
-      }
-
-      typeFilenames.put(type, fileName);
-    });
+    org.bukkit.Registry.BANNER_PATTERN
+        .stream()
+        .forEach(type -> typeFilenames.put(type, type.key().value()));
 
     return typeFilenames;
   }

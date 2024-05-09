@@ -38,7 +38,7 @@ public interface Source {
    * @return JSON representation
    */
   default JsonElement saveAsJson() {
-    return save(JsonOps.INSTANCE).getOrThrow(false, s -> {});
+    return save(JsonOps.INSTANCE).getOrThrow();
   }
 
   /**
@@ -46,6 +46,6 @@ public interface Source {
    * @return NBT representation
    */
   default BinaryTag saveAsTag() {
-    return save(TagOps.OPS).getOrThrow(false, s -> {});
+    return save(TagOps.OPS).getOrThrow();
   }
 }

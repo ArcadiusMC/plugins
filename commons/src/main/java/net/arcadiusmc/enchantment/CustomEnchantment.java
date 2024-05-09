@@ -1,6 +1,5 @@
 package net.arcadiusmc.enchantment;
 
-import io.papermc.paper.enchantments.EnchantmentRarity;
 import java.util.Set;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -8,7 +7,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityCategory;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -26,10 +25,11 @@ public abstract class CustomEnchantment extends Enchantment {
   private final EnchantmentTarget target;
   private final Set<EquipmentSlot> slots;
 
-  public CustomEnchantment(@NotNull NamespacedKey key,
-                    String name,
-                    EnchantmentTarget type,
-                    EquipmentSlot... slots
+  public CustomEnchantment(
+      @NotNull NamespacedKey key,
+      String name,
+      EnchantmentTarget type,
+      EquipmentSlot... slots
   ) {
     this.key = key;
 
@@ -43,6 +43,10 @@ public abstract class CustomEnchantment extends Enchantment {
 
   public CustomEnchantment(@NotNull NamespacedKey key, String name, Enchantment base) {
     this(key, name, base.getItemTarget(), base.getActiveSlots().toArray(new EquipmentSlot[0]));
+  }
+
+  public int getWeight() {
+    return 10;
   }
 
   @NotNull
@@ -107,13 +111,8 @@ public abstract class CustomEnchantment extends Enchantment {
   }
 
   @Override
-  public float getDamageIncrease(int i, @NotNull EntityCategory category) {
-    return 0f;
-  }
-
-  @Override
-  public @NotNull EnchantmentRarity getRarity() {
-    return EnchantmentRarity.VERY_RARE;
+  public float getDamageIncrease(int level, @NotNull EntityType entityType) {
+    return 0;
   }
 
   @Override

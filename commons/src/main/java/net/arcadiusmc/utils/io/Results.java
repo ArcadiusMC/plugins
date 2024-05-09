@@ -2,7 +2,7 @@ package net.arcadiusmc.utils.io;
 
 import com.google.errorprone.annotations.FormatString;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DataResult.PartialResult;
+import com.mojang.serialization.DataResult.Error;
 import lombok.experimental.UtilityClass;
 
 public @UtilityClass class Results {
@@ -28,12 +28,10 @@ public @UtilityClass class Results {
   }
 
   public static <T> T value(DataResult<T> result) {
-    return result.getOrThrow(false, string -> {});
+    return result.getOrThrow();
   }
 
   public static String getError(DataResult<?> result) {
-    return result.error()
-        .map(PartialResult::message)
-        .orElse(null);
+    return result.error().map(Error::message).orElse(null);
   }
 }

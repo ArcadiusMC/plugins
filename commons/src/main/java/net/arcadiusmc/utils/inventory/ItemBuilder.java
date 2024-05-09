@@ -23,6 +23,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
@@ -41,7 +42,7 @@ public abstract class ItemBuilder<T extends ItemBuilder<T>> implements Cloneable
   protected final ItemStack stack;
   protected ItemMeta baseMeta;
 
-  private boolean ignoreEnchantRestrictions;
+  private boolean ignoreEnchantRestrictions = true;
 
   ItemBuilder(Material material, int amount) {
     this.stack = new ItemStack(material);
@@ -177,11 +178,11 @@ public abstract class ItemBuilder<T extends ItemBuilder<T>> implements Cloneable
 
   public T addEnchants(Map<Enchantment, Integer> enchantMap) {
     for (var e : enchantMap.entrySet()) {
-      baseMeta.addEnchant(
-          e.getKey(),
-          e.getValue(),
-          ignoreEnchantRestrictions
-      );
+      if (baseMeta instanceof EnchantmentStorageMeta storageMeta) {
+        storageMeta.addStoredEnchant(e.getKey(), e.getValue(), ignoreEnchantRestrictions);
+      } else {
+        baseMeta.addEnchant(e.getKey(), e.getValue(), ignoreEnchantRestrictions);
+      }
     }
 
     return getThis();

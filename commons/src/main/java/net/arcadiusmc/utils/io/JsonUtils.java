@@ -247,7 +247,7 @@ public final class JsonUtils {
 
       if (obj.has("message")) {
         return PlayerMessage.load(new Dynamic<>(JsonOps.INSTANCE, element))
-            .getOrThrow(false, s -> {});
+            .getOrThrow();
       }
     }
 
@@ -263,10 +263,10 @@ public final class JsonUtils {
   public static Duration readDuration(JsonElement element) {
     return ExtraCodecs.DURATION.decode(new Dynamic<>(JsonOps.INSTANCE, element))
         .map(Pair::getFirst)
-        .getOrThrow(false, string -> {});
+        .getOrThrow();
   }
 
-  static final Gson gson = new GsonBuilder()
+  public static final Gson gson = new GsonBuilder()
       .setPrettyPrinting()
       .create();
 

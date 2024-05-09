@@ -2,7 +2,7 @@ package net.arcadiusmc.utils;
 
 import com.mojang.datafixers.util.Unit;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DataResult.PartialResult;
+import com.mojang.serialization.DataResult.Error;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
@@ -58,13 +58,13 @@ public class Result<V> {
   }
 
   public static <V> Result<V> fromDataResult(DataResult<V> result) {
-    var either = result.get();
+    DataResult<V> either = result;
 
-    if (either.left().isPresent()) {
-      return success(either.left().get());
+    if (either.result().isPresent()) {
+      return success(either.result().get());
     }
 
-    PartialResult<V> partial = either.right().get();
+    Error<V> partial = either.error().get();
     String error = partial.message();
 
     return error(error);

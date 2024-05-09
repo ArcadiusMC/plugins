@@ -8,13 +8,10 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
 
 public class PotionItemBuilder extends ItemBuilder<PotionItemBuilder> {
-
-  public static final PotionData EMPTY = new PotionData(PotionType.UNCRAFTABLE, false, false);
 
   PotionItemBuilder(Material material, int amount) {
     super(material, amount);
@@ -33,13 +30,8 @@ public class PotionItemBuilder extends ItemBuilder<PotionItemBuilder> {
     return (PotionMeta) baseMeta;
   }
 
-  public PotionItemBuilder setBaseEffect(PotionData baseEffect) {
-    if (baseEffect != null) {
-      meta().setBasePotionData(baseEffect);
-    } else {
-      meta().setBasePotionData(EMPTY);
-    }
-
+  public PotionItemBuilder setBaseEffect(PotionType baseEffect) {
+    meta().setBasePotionType(baseEffect);
     return this;
   }
 

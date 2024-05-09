@@ -207,11 +207,10 @@ public final class PathUtil {
     if (Files.isDirectory(path) && recursive) {
       try (var stream = Files.newDirectoryStream(path)) {
         for (var p : stream) {
-          var result = safeDelete(p, tolerateErrors, true);
-          var either = result.get();
+          DataResult<Integer> result = safeDelete(p, tolerateErrors, true);
 
           if (result.error().isEmpty()) {
-            deleted += either.left().orElse(0);
+            deleted += result.result().orElse(0);
           } else if (!tolerateErrors) {
             final int finalDeleted = deleted;
             return result.map(integer -> integer + finalDeleted);

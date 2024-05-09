@@ -113,7 +113,7 @@ public abstract class DataUpdater {
   private <T> Pair<T, T> renamePair(Pair<T, T> entry, DynamicOps<T> ops, boolean recursive) {
     DataResult<String> firstString = ops.getStringValue(entry.getFirst());
 
-    if (firstString.get().left().isEmpty()) {
+    if (firstString.result().isEmpty()) {
       return Pair.of(entry.getFirst(), entry.getFirst());
     }
 
@@ -129,7 +129,7 @@ public abstract class DataUpdater {
       }
     }
 
-    String key = firstString.get().left().get();
+    String key = firstString.result().get();
 
     return Pair.of(
         ops.createString(renames.getOrDefault(key, key)),

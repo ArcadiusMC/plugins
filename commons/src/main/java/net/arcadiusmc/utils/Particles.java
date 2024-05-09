@@ -69,7 +69,7 @@ public @UtilityClass class Particles {
   }
 
   public static void drawBounds(Vector3d min, Vector3d max, World w, Color color) {
-    var builder = Particle.REDSTONE.builder()
+    var builder = Particle.DUST.builder()
         .data(new Particle.DustOptions(color, 1.5F));
 
     drawBounds(min, max, w, builder);
