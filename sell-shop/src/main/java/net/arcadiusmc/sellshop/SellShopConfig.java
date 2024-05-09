@@ -10,8 +10,6 @@ import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 @Accessors(fluent = true)
 public class SellShopConfig {
 
-  private String webstoreLink;
-
   private int defaultMaxEarnings = 500000;
 
   private Duration earningLossInterval = Duration.ofDays(1);

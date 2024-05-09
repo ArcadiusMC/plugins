@@ -1,8 +1,12 @@
 package net.arcadiusmc.sellshop;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.util.List;
+import java.util.function.UnaryOperator;
 import lombok.Getter;
 import net.arcadiusmc.text.loader.MessageRef;
+import net.arcadiusmc.user.User;
+import org.bukkit.Material;
 
 /**
  * The result of a {@link ItemSell#sell()} call.
@@ -43,6 +47,13 @@ public class SellResult {
     this.failure = failure;
   }
 
+  public SellResult(int sold, int earned, int target, MessageRef failure) {
+    this.sold = sold;
+    this.earned = earned;
+    this.target = target;
+    this.failure = failure;
+  }
+
   /**
    * Creates a failed sell result, which failed due to a lack of items
    *
@@ -71,5 +82,21 @@ public class SellResult {
    */
   public static SellResult success(ItemSell sell) {
     return new SellResult(sell, null);
+  }
+
+  public SellResult callModifyEvent(User user, List<String> tags, Material material) {
+    if (failure != null) {
+      return this;
+    }
+
+    return SellShop.applyCalculationEvent(this, user, tags, material);
+  }
+
+  public SellResult modify(UnaryOperator<SellResult> operator) {
+    if (failure != null) {
+      return this;
+    }
+
+    return operator.apply(this);
   }
 }

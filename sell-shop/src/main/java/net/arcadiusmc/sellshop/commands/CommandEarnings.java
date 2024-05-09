@@ -114,10 +114,4 @@ public class CommandEarnings {
       source.sendSuccess(message(source, "set", user, material, amount, amount));
     }
   }
-
-  Component removedMessage(Material material, User user) {
-    return format("Removed {0} earnings from {1, user}",
-        material.name().toLowerCase(), user
-    );
-  }
 }

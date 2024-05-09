@@ -1,8 +1,10 @@
 package net.arcadiusmc.sellshop;
 
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.sellshop.data.ItemSellData;
@@ -59,6 +61,22 @@ public final class ItemSeller {
   // Used by the challenge with getEarned() to award points
   private int earned = 0;
 
+  @Setter
+  private List<String> tags = List.of();
+
+  private int getCurrentPrice() {
+    int price = ItemSell.calculateValue(
+            sell.getItemData().getMaterial(),
+            player,
+            sell.getItemData(),
+            1,
+            tags
+        )
+        .getEarned();
+
+    return price * sell.getScalar();
+  }
+
   /**
    * Runs the sell logic of this seller.
    * <p>
@@ -72,13 +90,18 @@ public final class ItemSeller {
    * @param send True, to send the item 'You sold X for Y' message, false otherwise
    */
   public SellResult run(boolean send) {
-    int beforePrice
-        = sell.getItemData().calculatePrice(sell.getTotalEarned())
-        * sell.getScalar();
+    int beforePrice = getCurrentPrice();
 
-    SellResult result = sell.sell();
+    SellResult result = sell.sell().callModifyEvent(player, tags, material);
 
-    ItemSellEvent event = new ItemSellEvent(player, result.getSold(), result.getEarned(), material);
+    ItemSellEvent event = new ItemSellEvent(
+        player,
+        result.getSold(),
+        result.getEarned(),
+        material,
+        tags
+    );
+
     event.callEvent();
 
     // If the amount is 0, that means
@@ -94,17 +117,18 @@ public final class ItemSeller {
       return result;
     }
 
+    player.addBalance(result.getEarned());
+
+    UserShopData shopData = player.getComponent(UserShopData.class);
+    shopData.add(sell.getItemData().getMaterial(), result.getEarned());
+
     earned = result.getEarned();
-    int afterPrice = sell.getItemData().calculatePrice(sell.getTotalEarned()) * sell.getScalar();
+    int afterPrice = getCurrentPrice();
 
     // Actually remove the items lol
     removeItems(result);
 
-    player.addBalance(result.getEarned());
-    player.getComponent(UserShopData.class)
-        .add(sell.getItemData().getMaterial(), result.getEarned());
-
-    var config = SellShopPlugin.getPlugin().getShopConfig();
+    SellShopConfig config = SellShopPlugin.getPlugin().getShopConfig();
 
     if (!isAutoSell() || !config.logAutoSellOnlyWhenEnds()) {
       log(player, material, result.getSold(), result.getEarned());

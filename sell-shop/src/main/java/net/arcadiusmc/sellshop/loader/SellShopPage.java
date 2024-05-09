@@ -1,5 +1,6 @@
 package net.arcadiusmc.sellshop.loader;
 
+import java.util.List;
 import java.util.Stack;
 import net.arcadiusmc.menu.CommonItems;
 import net.arcadiusmc.menu.MenuBuilder;
@@ -53,6 +54,7 @@ public class SellShopPage extends MenuPage {
   ItemStack border;
   MenuNode[] nodes;
   Style nameStyle;
+  List<String> tags;
 
   public SellShopPage() {
 

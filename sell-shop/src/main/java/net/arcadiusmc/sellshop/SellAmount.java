@@ -2,7 +2,6 @@ package net.arcadiusmc.sellshop;
 
 import lombok.Getter;
 import net.arcadiusmc.text.Messages;
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 
 @Getter
@@ -24,11 +23,11 @@ public enum SellAmount {
   }
 
   public Component getSellPerText() {
-    return Messages.renderText("sellshop.sellAmount.sellPer." + this.name().toLowerCase(), (Audience)null);
+    return Messages.renderText("sellshop.sellAmount.sellPer." + this.name().toLowerCase());
   }
 
   public Component amountText() {
-    return Messages.renderText("sellshop.sellAmount.names." + this.name().toLowerCase(), (Audience)null);
+    return Messages.renderText("sellshop.sellAmount.names." + this.name().toLowerCase());
   }
 
 }

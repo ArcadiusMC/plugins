@@ -464,7 +464,7 @@ public class PageLoader {
 
     @Override
     public MenuNode build(PageLoader loader, SellShopPage current) {
-      return SellShopNodes.sellNode(data, autoSellToggleAllowed);
+      return SellShopNodes.sellNode(data, autoSellToggleAllowed, current.tags);
     }
   }
 
@@ -485,6 +485,8 @@ public class PageLoader {
 
     Style nameStyle = Style.style(NamedTextColor.YELLOW);
 
+    List<String> tags;
+
     SellShopPage build(PageLoader loader) {
       SellShopPage page = new SellShopPage();
       page.size = size;
@@ -492,6 +494,7 @@ public class PageLoader {
       page.border = border;
       page.headerItem = headerItem;
       page.nameStyle = nameStyle;
+      page.tags = tags;
 
       if (desc == null) {
         page.desc = new Component[0];

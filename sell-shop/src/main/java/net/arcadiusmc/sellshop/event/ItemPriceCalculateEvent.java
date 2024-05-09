@@ -2,38 +2,30 @@ package net.arcadiusmc.sellshop.event;
 
 import java.util.List;
 import lombok.Getter;
+import lombok.Setter;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.event.UserEvent;
 import org.bukkit.Material;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-@Getter
-public class ItemSellEvent extends UserEvent {
+@Getter @Setter
+public class ItemPriceCalculateEvent extends UserEvent {
 
   @Getter
-  private static final HandlerList handlerList = new HandlerList();
+  static final HandlerList handlerList = new HandlerList();
 
-  private final int sold;
-  private final int earned;
-
-  private final Material material;
-  
   private final List<String> tags;
+  private final Material material;
 
-  public ItemSellEvent(
-      User user,
-      int sold,
-      int earned,
-      Material material,
-      List<String> tags
-  ) {
+  private int earned;
+  private int sold;
+
+  public ItemPriceCalculateEvent(User user, List<String> tags, Material material) {
     super(user);
 
-    this.sold = sold;
-    this.earned = earned;
-    this.material = material;
     this.tags = tags;
+    this.material = material;
   }
 
   @Override

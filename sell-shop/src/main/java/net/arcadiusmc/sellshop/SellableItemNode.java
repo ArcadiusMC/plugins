@@ -1,6 +1,8 @@
 package net.arcadiusmc.sellshop;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.util.EnumSet;
+import java.util.List;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.arcadiusmc.menu.ClickContext;
@@ -27,13 +29,14 @@ public class SellableItemNode implements MenuNode {
 
   private final ItemSellData data;
   private final boolean autoSellToggleAllowed;
+  private final List<String> tags;
 
   @Override
   public void onClick(User user, Context ctx, ClickContext context)
       throws CommandSyntaxException
   {
     boolean compacted = user.get(SellProperties.COMPACTED) && data.canBeCompacted();
-    var material = compacted ? data.getCompactMaterial() : data.getMaterial();
+    Material material = compacted ? data.getCompactMaterial() : data.getMaterial();
 
     // If toggling auto sell
     if (context.getClickType().isShiftClick()) {
@@ -42,7 +45,9 @@ public class SellableItemNode implements MenuNode {
     }
 
     ItemSeller handler = ItemSeller.inventorySell(user, material, data);
-    var result = handler.run(true);
+    handler.setTags(tags);
+
+    SellResult result = handler.run(true);
 
     if (result.getFailure() == null) {
       context.shouldReloadMenu(true);
@@ -60,8 +65,7 @@ public class SellableItemNode implements MenuNode {
       throw Messages.render("sellshop.autoSell.noPermission").exception(user);
     }
 
-    var autoSelling = user.getComponent(UserShopData.class)
-        .getAutoSelling();
+    EnumSet<Material> autoSelling = user.getComponent(UserShopData.class).getAutoSelling();
 
     if (autoSelling.contains(material)) {
       autoSelling.remove(material);
@@ -85,7 +89,8 @@ public class SellableItemNode implements MenuNode {
     int mod = compacted ? data.getCompactMultiplier() : 1;
     int originalPrice = mod * data.getPrice();
 
-    int price = ItemSell.calculateValue(material, data, earnings, 1).getEarned();
+    int price = ItemSell.calculateValue(material, user, data, 1, tags)
+        .getEarned();
 
     BufferedTextWriter writer = TextWriters.buffered();
 
@@ -101,7 +106,7 @@ public class SellableItemNode implements MenuNode {
       );
     }
 
-    addStackSellInfo(writer, material, earnings);
+    addStackSellInfo(writer, user, material);
     addPriceChangeInfo(writer, material, earnings);
 
     writer.newLine();
@@ -135,14 +140,9 @@ public class SellableItemNode implements MenuNode {
     return builder.build();
   }
 
-  private void addStackSellInfo(
-      BufferedTextWriter writer,
-      Material material,
-      UserShopData earnings
-  ) {
-    SellResult stackResult = ItemSell.calculateValue(
-        material, this.data, earnings, material.getMaxStackSize()
-    );
+  private void addStackSellInfo(BufferedTextWriter writer, User user, Material material) {
+    int size = material.getMaxStackSize();
+    SellResult stackResult = ItemSell.calculateValue(material, user, data, size, tags);
 
     writer.line(
         Messages.render("sellshop.item.valuePerStack")

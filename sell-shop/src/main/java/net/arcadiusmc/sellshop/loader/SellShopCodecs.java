@@ -72,9 +72,13 @@ final class SellShopCodecs {
 
             StyleStringCodec.CODEC
                 .optionalFieldOf("header-name-style", Style.style(NamedTextColor.YELLOW))
-                .forGetter(o -> o.nameStyle)
+                .forGetter(o -> o.nameStyle),
+
+            Codec.STRING.listOf()
+                .optionalFieldOf("tags", List.of())
+                .forGetter(o -> o.tags)
         )
-        .apply(instance, (size, title, desc, header, border, abstractPage, ext, nameStyle) -> {
+        .apply(instance, (size, title, desc, header, border, abstractPage, ext, nameStyle, tags) -> {
           LoadingPage page = new LoadingPage();
           page.size = size;
           page.border = border;
@@ -82,6 +86,7 @@ final class SellShopCodecs {
           page.extendsName = ext;
           page.headerItem = header;
           page.nameStyle = nameStyle;
+          page.tags = tags;
 
           title.ifPresent((component) -> {
             page.title = component;

@@ -1,6 +1,7 @@
 package net.arcadiusmc.sellshop;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.List;
 import java.util.Map;
 import net.arcadiusmc.menu.MenuNode;
 import net.arcadiusmc.menu.Slot;
@@ -140,8 +141,8 @@ public final class SellShopNodes {
    * @return The created node
    */
 
-  public static MenuNode sellNode(ItemSellData data, boolean autoSellAllowed) {
-    SellableItemNode node = new SellableItemNode(data, autoSellAllowed);
+  public static MenuNode sellNode(ItemSellData data, boolean autoSellAllowed, List<String> tags) {
+    SellableItemNode node = new SellableItemNode(data, autoSellAllowed, tags);
     return MenuNode.builder().setItem(node).setRunnable(node).setPlaySound(false).build();
   }
 }

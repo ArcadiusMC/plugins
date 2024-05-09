@@ -73,6 +73,22 @@ description: [ "This is an example menu :)" ]
 border: true
 
 #
+# A list of arbitrary tags applied to the page. Certain tags
+# may be used by other plugins to provide functionality of
+# some kind.
+#
+# For example, the arcadius-factions plugin uses the
+# "faction:<insert faction name here>" tag to modify item
+# prices based off of your reputation with a specific faction.
+#
+# Default: [] (Empty list)
+#
+tags:
+  - "any"
+  - "arbitrary"
+  - "tags"
+
+#
 # List of items in this menu
 #
 # All items must have a 'slot' value that determines where in the
@@ -142,6 +158,8 @@ items:
   #     Specifies the item that's shown
   # - on-click (Optional):
   #     Specifies a list of commands executed when the item is clicked
+  #     See https://arcadiusmc.net/adminwiki/commandplaceholders/ for
+  #     supported placeholders
   #
   # item values:
   # - material (Required):

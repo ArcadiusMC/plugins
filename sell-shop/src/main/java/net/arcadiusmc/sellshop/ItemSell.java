@@ -1,7 +1,9 @@
 package net.arcadiusmc.sellshop;
 
+import java.util.List;
 import lombok.Getter;
 import net.arcadiusmc.sellshop.data.ItemSellData;
+import net.arcadiusmc.user.User;
 import org.bukkit.Material;
 
 /**
@@ -110,17 +112,20 @@ public class ItemSell {
    *
    * @param mat    The material to find the value of
    * @param price  The item data of the material
-   * @param data   The user earnings data
    * @param amount The amount of items to find the value of
+   * @param tags   User defined tags.
+   * @param user   User doing the selling.
    * @return The found sell result
    */
   public static SellResult calculateValue(
       Material mat,
+      User user,
       ItemSellData price,
-      UserShopData data,
-      int amount
+      int amount,
+      List<String> tags
   ) {
-    return new ItemSell(mat, price, data, amount, amount).sell();
+    UserShopData data = user.getComponent(UserShopData.class);
+    return new ItemSell(mat, price, data, amount, amount).sell().callModifyEvent(user, tags, mat);
   }
 
   /**
