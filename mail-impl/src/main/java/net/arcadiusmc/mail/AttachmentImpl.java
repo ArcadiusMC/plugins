@@ -125,7 +125,7 @@ class AttachmentImpl implements Attachment {
     if (!items.isEmpty()) {
       var list
           = ExtraCodecs.ITEM_LIST_CODEC.encodeStart(JsonOps.INSTANCE, items)
-          .getOrThrow(false, s -> {});
+          .getOrThrow();
 
       json.add(KEY_ITEMS, list);
     }

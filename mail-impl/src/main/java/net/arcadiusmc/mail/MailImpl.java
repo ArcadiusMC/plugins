@@ -231,7 +231,7 @@ class MailImpl implements Mail {
 
   private JsonElement saveMessage() {
     if (message instanceof PlayerMessage player) {
-      return player.save(JsonOps.INSTANCE).getOrThrow(false, string -> {});
+      return player.save(JsonOps.INSTANCE).getOrThrow();
     }
 
     WrappedComponent wrapped = (WrappedComponent) message;
