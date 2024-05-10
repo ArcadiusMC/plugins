@@ -1,23 +1,27 @@
 package net.arcadiusmc.items;
 
+import lombok.Getter;
 import net.arcadiusmc.ItemGraveService;
-import net.arcadiusmc.items.listeners.ItemCallbackListeners;
-import net.arcadiusmc.events.Events;
+import net.arcadiusmc.items.listeners.ItemListeners;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.loader.MessageList;
 import net.arcadiusmc.text.loader.MessageLoader;
+import net.arcadiusmc.utils.io.ConfigCodec;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ItemPlugin extends JavaPlugin {
 
   private final MessageList messageList = MessageList.create();
 
+  @Getter
+  private ItemsConfig itemsConfig;
+
   @Override
   public void onEnable() {
     Messages.MESSAGE_LIST.addChild(getName(), messageList);
 
     ItemTypes.registerAll();
-    Events.register(new ItemCallbackListeners());
+    ItemListeners.registerAll(this);
 
     ItemGraveService service = ItemGraveService.grave();
     service.addFilter("items_plugin", PluginGraveFilter.FILTER);
@@ -36,5 +40,8 @@ public class ItemPlugin extends JavaPlugin {
   @Override
   public void reloadConfig() {
     MessageLoader.loadPluginMessages(this, messageList);
+
+    this.itemsConfig = ConfigCodec.loadPluginConfig(this, ItemsConfig.CODEC)
+        .orElse(ItemsConfig.DEFAULT);
   }
 }

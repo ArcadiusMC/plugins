@@ -31,8 +31,6 @@ public class CoreConfig {
 
   private boolean placeholdersDisabled = false;
 
-  private boolean allowHighLevelEnchantments = true;
-
   private AltJoinPrevention preventAltJoining = AltJoinPrevention.IF_OTHER_ONLINE;
 
   private boolean mobHealthBarsEnabled = true;

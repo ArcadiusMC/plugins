@@ -26,16 +26,6 @@ nearCommandDistance = 200
 # this means every instance of '${placeholder}' will be left unrendered
 placeholdersDisabled = false
 
-# Toggles enchantment levels that are above the vanilla maximum
-# from being reset to the max in anvils
-# If false, max levels are not reset, if true, they are
-#
-# Note:
-# This option will only allow levels above the max, if one of the 2
-# items in the equation already has a level above the maximum, otherwise
-# vanilla behaiviour is retained
-allowHighLevelEnchantments = true
-
 # Alt account joining rule, prevents alt accounts joining when they shouldn't be
 #
 # Possible Values:

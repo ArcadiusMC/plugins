@@ -1,6 +1,8 @@
-package net.arcadiusmc.core.listeners;
+package net.arcadiusmc.items.listeners;
 
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.items.ItemPlugin;
+import net.arcadiusmc.items.ItemsConfig;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
@@ -22,6 +24,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.slf4j.Logger;
 
 public class WearableTagListener implements Listener {
@@ -34,7 +37,13 @@ public class WearableTagListener implements Listener {
       .source(Source.PLAYER)
       .build();
 
-  static boolean isWearable(ItemStack item) {
+  private final ItemPlugin plugin;
+
+  public WearableTagListener(ItemPlugin plugin) {
+    this.plugin = plugin;
+  }
+
+  boolean isWearable(ItemStack item) {
     if (ItemStacks.isEmpty(item)) {
       return false;
     }
@@ -44,7 +53,26 @@ public class WearableTagListener implements Listener {
       return false;
     }
 
-    return ItemStacks.hasTagElement(item.getItemMeta(), TAG);
+    ItemsConfig config = plugin.getItemsConfig();
+    if (!config.allowWearable()) {
+      return false;
+    }
+
+    ItemMeta meta = item.getItemMeta();
+
+    if (config.wearableIds().length > 0 && meta.hasCustomModelData()) {
+      int modelData = meta.getCustomModelData();
+
+      for (int i : config.wearableIds()) {
+        if (i != modelData) {
+          continue;
+        }
+
+        return true;
+      }
+    }
+
+    return ItemStacks.hasTagElement(meta, TAG);
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)

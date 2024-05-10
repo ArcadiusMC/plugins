@@ -10,7 +10,6 @@ public final class CoreListeners {
   public static void registerAll(CorePlugin plugin) {
     register(new AdminBroadcastListener());
     register(new AltLoginListener(plugin));
-    register(new AnvilListener(plugin));
     register(new ChatHandleListener());
     register(new DepositListener(plugin));
     register(new DurabilityListener(plugin));
@@ -24,9 +23,7 @@ public final class CoreListeners {
     register(new ServerListener());
     register(new ServerPingListener());
     register(new SignOwnershipListener());
-    register(new SmokeBomb());
     register(new TextDecorationListener());
     register(new TrapDoorListener());
-    register(new WearableTagListener());
   }
 }

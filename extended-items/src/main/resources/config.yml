@@ -1,0 +1,29 @@
+
+#
+# Determines if Anvils are allowed to combine enchantments above the maximum level
+# of the enchantment WITHOUT reverting the level back to the maximum.
+#
+# That means enchantments with normal levels can never be combined to go above the
+# max, but an enchantment already above the max, will disregard the limit.
+#
+# Default: true
+#
+allow-overpowered-enchantments: true
+
+#
+# Enables/disables the 'wearable:1b' tag for items.
+#
+# If enabled, the wearable tag allows players to equip items just like regular
+# hats.
+#
+# Default: true
+#
+allow-wearable-tag: true
+
+#
+# A list of custom model data numbers that are also treated like regular helmet
+# items.
+#
+# Default: [] (Empty list)
+#
+wearable-texture-ids: []

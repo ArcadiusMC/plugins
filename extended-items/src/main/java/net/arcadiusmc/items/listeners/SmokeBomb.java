@@ -1,4 +1,4 @@
-package net.arcadiusmc.core.listeners;
+package net.arcadiusmc.items.listeners;
 
 import com.destroystokyo.paper.ParticleBuilder;
 import java.util.HashSet;

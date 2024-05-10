@@ -1,11 +1,14 @@
-package net.arcadiusmc.core.listeners;
+package net.arcadiusmc.items.listeners;
 
 import com.destroystokyo.paper.event.inventory.PrepareResultEvent;
 import net.arcadiusmc.utils.inventory.ItemStacks;
+import net.forthecrown.nbt.CompoundTag;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.CartographyInventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public class NoCopiesListener implements Listener {
 
@@ -25,8 +28,8 @@ public class NoCopiesListener implements Listener {
       return;
     }
 
-    var result = event.getResult();
-    var resultMeta = result.getItemMeta();
+    ItemStack result = event.getResult();
+    ItemMeta resultMeta = result.getItemMeta();
 
     // Item doesn't have 'no copies' tag, stop
     if (!ItemStacks.hasTagElement(resultMeta, TAG_NO_COPIES)) {
@@ -41,7 +44,7 @@ public class NoCopiesListener implements Listener {
       return;
     }
 
-    var tags = ItemStacks.getUnhandledTags(resultMeta);
+    CompoundTag tags = ItemStacks.getUnhandledTags(resultMeta);
     tags.putBoolean(TAG_NO_COPIES, true);
 
     ItemStacks.setUnhandledTags(resultMeta, tags);
