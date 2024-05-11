@@ -1,5 +1,6 @@
 package net.arcadiusmc.usables.actions;
 
+import com.google.common.base.Strings;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
@@ -18,6 +19,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import lombok.Getter;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.Worlds;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.usables.Action;
 import net.arcadiusmc.usables.Interaction;
@@ -26,8 +28,8 @@ import net.arcadiusmc.usables.UsableComponent;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.UserTeleport.Type;
 import net.arcadiusmc.user.Users;
-import net.arcadiusmc.utils.Locations;
 import net.arcadiusmc.utils.io.ExtraCodecs;
+import net.arcadiusmc.utils.io.Results;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.forthecrown.grenadier.types.options.ArgumentOption;
@@ -35,6 +37,7 @@ import net.forthecrown.grenadier.types.options.Options;
 import net.forthecrown.grenadier.types.options.OptionsArgument;
 import net.forthecrown.grenadier.types.options.ParsedOptions;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -49,10 +52,57 @@ public class TeleportAction implements Action {
 
   static final TeleportActionType TYPE = new TeleportActionType();
 
-  private final Location location;
+  private final String worldName;
+  private final double x;
+  private final double y;
+  private final double z;
+  private final Float yaw;
+  private final Float pitch;
 
-  public TeleportAction(Location location) {
-    this.location = location;
+  public TeleportAction(
+      String worldName,
+      double x,
+      double y,
+      double z,
+      Float yaw,
+      Float pitch
+  ) {
+    this.worldName = worldName;
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.yaw = yaw;
+    this.pitch = pitch;
+  }
+
+  DataResult<Location> getLocation(Player player) {
+    World world;
+
+    if (Strings.isNullOrEmpty(worldName)) {
+      world = player.getWorld();
+    } else {
+      world = Bukkit.getWorld(worldName);
+
+      if (world == null) {
+        return Results.error("Unknown world '%s'", worldName);
+      }
+    }
+
+    Location location = new Location(world, x, y, z);
+
+    if (yaw == null) {
+      location.setYaw(player.getYaw());
+    } else {
+      location.setYaw(yaw);
+    }
+
+    if (pitch == null) {
+      location.setPitch(player.getPitch());
+    } else {
+      location.setPitch(pitch);
+    }
+
+    return DataResult.success(location);
   }
 
   @Override
@@ -64,7 +114,15 @@ public class TeleportAction implements Action {
     }
 
     Player player = playerOpt.get();
-    Location destination = Locations.clone(location);
+    Optional<Location> result = getLocation(player)
+        .mapError(s -> "Failed to get location: " + s)
+        .resultOrPartial(Loggers.getLogger()::error);
+
+    if (result.isEmpty()) {
+      return;
+    }
+
+    Location destination = result.get();
 
     if (!destination.isWorldLoaded()) {
       destination.setWorld(player.getWorld());
@@ -85,6 +143,11 @@ public class TeleportAction implements Action {
 
   @Override
   public @Nullable Component displayInfo() {
+    World world = Optional.ofNullable(worldName).map(Bukkit::getWorld)
+        .orElseGet(Worlds::overworld);
+
+    Location location = new Location(world, x, y, z);
+
     return Text.clickableLocation(location, true);
   }
 }
@@ -125,8 +188,33 @@ class TeleportActionType implements ObjectType<TeleportAction> {
       .addRequired(Z)
       .build();
 
-  static final Codec<TeleportAction> CODEC = ExtraCodecs.LOCATION_CODEC
-      .xmap(TeleportAction::new, TeleportAction::getLocation);
+  static final Codec<TeleportAction> CODEC = RecordCodecBuilder.create(instance -> {
+    return instance
+        .group(
+            Codec.STRING.optionalFieldOf("world")
+                .forGetter(o -> Optional.ofNullable(o.getWorldName())),
+
+            Codec.DOUBLE.fieldOf("x").forGetter(TeleportAction::getX),
+            Codec.DOUBLE.fieldOf("y").forGetter(TeleportAction::getY),
+            Codec.DOUBLE.fieldOf("z").forGetter(TeleportAction::getZ),
+
+            Codec.FLOAT.optionalFieldOf("yaw")
+                .forGetter(o -> Optional.ofNullable(o.getYaw())),
+
+            Codec.FLOAT.optionalFieldOf("pitch")
+                .forGetter(o -> Optional.ofNullable(o.getPitch()))
+        )
+        .apply(instance, (world, x, y, z, yaw, pitch) -> {
+          return new TeleportAction(
+              world.orElse(null),
+              x,
+              y,
+              z,
+              yaw.orElse(null),
+              pitch.orElse(null)
+          );
+        });
+  });
 
   static final Codec<Location> OLD_CODEC = RecordCodecBuilder.create(instance -> {
     return instance
@@ -185,7 +273,7 @@ class TeleportActionType implements ObjectType<TeleportAction> {
       pitch = loc.getPitch();
     }
 
-    return new TeleportAction(new Location(world, x, y, z, yaw, pitch));
+    return new TeleportAction(world.getName(), x, y, z, yaw, pitch);
   }
 
   @Override
