@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.utils.io.ExtraCodecs;
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 
 @AllArgsConstructor
@@ -40,15 +41,19 @@ public class DialogueOptions {
                 .forGetter(o -> Optional.ofNullable(o.getSuffix())),
 
             strictOptional(ExtraCodecs.KEY_CODEC, "entry-node", "")
-                .forGetter(DialogueOptions::getEntryNode)
+                .forGetter(DialogueOptions::getEntryNode),
+
+            strictOptional(ExtraCodecs.SOUND_CODEC, "talk-sound")
+                .forGetter(opt -> Optional.ofNullable(opt.getTalkSound()))
         )
-        .apply(instance, (available, unavailable, highlight, prefix, suffix, entryPoint) -> {
+        .apply(instance, (available, unavailable, highlight, prefix, suffix, entryPoint, sound) -> {
           return new DialogueOptions(
               available,
               unavailable,
               highlight,
               prefix.orElse(null),
               suffix.orElse(null),
+              sound.orElse(null),
               entryPoint
           );
         });
@@ -59,6 +64,7 @@ public class DialogueOptions {
   private Component highlightFormat;
   private Component prefix;
   private Component suffix;
+  private Sound talkSound;
   private String entryNode;
 
   public static DialogueOptions defaultOptions() {
@@ -66,6 +72,7 @@ public class DialogueOptions {
         DEFAULT_AVAILABLE,
         DEFAULT_UNAVAILABLE,
         DEFAULT_HIGHLIGHT,
+        null,
         null,
         null,
         ""
@@ -87,6 +94,9 @@ public class DialogueOptions {
     }
     if (this.suffix == null) {
       this.suffix = options.suffix;
+    }
+    if (this.talkSound == null) {
+      this.talkSound = options.talkSound;
     }
   }
 }

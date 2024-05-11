@@ -143,7 +143,7 @@ public class DialogueNode {
       if (!Text.isEmpty(error)) {
         DialogueRenderer renderer = new DialogueRenderer(interaction, this);
         Component rendered = render(renderer, List.of(error));
-        player.sendMessage(rendered);
+        sendMessage(player, rendered);
       }
 
       return;
@@ -182,7 +182,15 @@ public class DialogueNode {
     DialogueRenderer renderer = new DialogueRenderer(interaction, this);
     Component text = render(renderer, content);
 
-    user.sendMessage(text);
+    sendMessage(user, text);
+  }
+
+  void sendMessage(Audience audience, Component message) {
+    audience.sendMessage(message);
+
+    if (options.getTalkSound() != null) {
+      audience.playSound(options.getTalkSound());
+    }
   }
 
   private Component render(DialogueRenderer renderer, List<Component> content) {
