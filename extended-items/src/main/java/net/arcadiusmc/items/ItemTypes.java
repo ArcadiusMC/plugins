@@ -6,6 +6,7 @@ import static net.arcadiusmc.items.ExtendedItem.TAG_TYPE_KEY;
 
 import java.util.Optional;
 import java.util.UUID;
+import net.arcadiusmc.items.guns.GunTypes;
 import net.arcadiusmc.items.wreath.WreathType;
 import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.registry.Registries;
@@ -19,10 +20,21 @@ import org.jetbrains.annotations.Nullable;
 public final class ItemTypes {
   private ItemTypes() {}
 
-  public static final Registry<ItemType> REGISTRY = Registries.newRegistry();
+  public static final Registry<ItemType> REGISTRY = Registries.newFreezable();
 
   static void registerAll() {
-    REGISTRY.register("emperors_wreath", new WreathType());
+    register("emperors_wreath", new WreathType());
+
+    register("gun/pistol", GunTypes.PISTOL);
+    register("gun/shotgun", GunTypes.SHOTGUN);
+    register("gun/assault_rifle", GunTypes.ASSAULT_RIFLE);
+    register("gun/rocket_launcher", GunTypes.ROCKET_LAUNCHER);
+
+    REGISTRY.freeze();
+  }
+
+  private static void register(String key, ItemType type) {
+    REGISTRY.register(key, type);
   }
 
   public static ExtendedItem createItem(Holder<ItemType> type, @Nullable UUID ownerId) {

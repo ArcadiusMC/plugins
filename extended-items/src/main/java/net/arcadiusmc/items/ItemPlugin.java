@@ -2,6 +2,9 @@ package net.arcadiusmc.items;
 
 import lombok.Getter;
 import net.arcadiusmc.ItemGraveService;
+import net.arcadiusmc.items.commands.ItemCommands;
+import net.arcadiusmc.items.guns.GunTicker;
+import net.arcadiusmc.items.guns.PlayerMoveSpeeds;
 import net.arcadiusmc.items.listeners.ItemListeners;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.loader.MessageList;
@@ -20,8 +23,12 @@ public class ItemPlugin extends JavaPlugin {
   public void onEnable() {
     Messages.MESSAGE_LIST.addChild(getName(), messageList);
 
+    GunTicker.TICKER.start();
+    PlayerMoveSpeeds.SPEEDS.start();
+
     ItemTypes.registerAll();
     ItemListeners.registerAll(this);
+    ItemCommands.registerAll();
 
     ItemGraveService service = ItemGraveService.grave();
     service.addFilter("items_plugin", PluginGraveFilter.FILTER);
@@ -35,6 +42,9 @@ public class ItemPlugin extends JavaPlugin {
     service.removeFilter("items_plugin");
 
     Messages.MESSAGE_LIST.removeChild(getName());
+
+    GunTicker.TICKER.stop();
+    PlayerMoveSpeeds.SPEEDS.stop();
   }
 
   @Override

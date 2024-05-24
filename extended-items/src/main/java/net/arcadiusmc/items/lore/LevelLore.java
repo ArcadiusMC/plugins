@@ -16,7 +16,7 @@ public record LevelLore(int level, LoreElement element)
 
   @Override
   public void writeLore(ExtendedItem item, TextWriter writer) {
-    if (!Level.levelMatches(item, level)) {
+    if (!Level.levelAtLeast(item, level)) {
       return;
     }
 

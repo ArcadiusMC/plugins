@@ -40,7 +40,7 @@ class PostDamageEffect extends ItemComponent implements CallbackComponent {
       return;
     }
 
-    if (!Level.levelMatches(item, startingLevel)) {
+    if (!Level.levelAtLeast(item, startingLevel)) {
       return;
     }
 

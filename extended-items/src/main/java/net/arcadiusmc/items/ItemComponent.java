@@ -20,6 +20,10 @@ public abstract class ItemComponent {
     }
   }
 
+  public final ExtendedItem getItem() {
+    return item;
+  }
+
   protected void onInit() {
 
   }

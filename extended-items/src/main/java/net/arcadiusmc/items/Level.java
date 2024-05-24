@@ -22,7 +22,7 @@ public class Level extends ItemComponent implements LoreElement {
     this.level = STARTING_LEVEL;
   }
 
-  public static boolean levelMatches(ExtendedItem item, int atLeast) {
+  public static boolean levelAtLeast(ExtendedItem item, int atLeast) {
     return getLevel(item) >= atLeast;
   }
 

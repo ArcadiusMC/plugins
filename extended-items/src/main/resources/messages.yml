@@ -4,6 +4,9 @@ itemsPlugin:
 
   border:               "&8${border:50}"
 
+  cmd:
+    give:               "&eCreated &6${item}&e."
+
   wreath:
     name:               "&6=[&l<gradient=red,dark_purple:Emperor's Wreath>&6]="
     onHead:             "&7${item.modifiers.head}"
