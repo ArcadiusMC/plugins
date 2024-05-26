@@ -1,21 +1,46 @@
 itemsPlugin:
-  level.uncapped:       "&7Rank ${level.roman}"
-  level.capped:         "&7Rank ${level.roman}&8/${max.roman}"
+  level.uncapped:         "&7Rank ${level.roman}"
+  level.capped:           "&7Rank ${level.roman}&8/${max.roman}"
+  levelup:                "&e${item} levelled up to rank ${rank.roman}."
 
-  border:               "&8${border:50}"
+  border:                 "&8${border:50}"
+
+  upgrades:
+    listPrefix:           "&7 • "
+    nextRank:             "&7Next rank upgrades:"
+
+  goals:
+    header:               "&bNext rank:"
+    line:                 "&b• ${entry} ${progress}/${goal}"
+
+  error:
+    _style: "red"
+
+    notHolding.self:      "Not holding a server item."
+    notHolding.other:     "${player} is not holding a server item."
+    notUpgradable.self:   "This item cannot be upgraded."
+    notUpgradable.other:  "${player}'s held item cannot be upgraded."
 
   cmd:
-    give:               "&eCreated &6${item}&e."
+    give:                 "&eCreated &6${item}&e."
+
+  spade:
+    pickupGoal:           "Find ${multiplier} Denarii Coins"
+    foundMoney:           "&eFound &6${amount}&e while digging."
+    name:                 "&7=[&l<gradient=green,dark_green:Pirate's Spade>&7]="
 
   wreath:
-    name:               "&6=[&l<gradient=red,dark_purple:Emperor's Wreath>&6]="
-    onHead:             "&7${item.modifiers.head}"
-    preview.prefix:     "&7 • "
-    damageResist:       "${duration.singleShortUnit} ${effect.minecraft.resistance} after taking damage"
-    damageRegen:        "${duration.singleShortUnit} ${effect.minecraft.regeneration} after taking damage"
-    flavour:            "&7The Emperor's wreath, rewarded to\nthose who have proven they are worthy\nof the divine throne."
-    bestowedTo.single:  "&7Bestowed to ${title} ${name}"
-    bestowedTo.multi:   "&7Bestowed to\n${title} ${name}"
-    nextRank:           "&bNext rank:\n • Win 1 Succession Event"
-    nextRankUpgrades:   "&7Next rank upgrades:"
-    defaultTitle:       "Emperor"
+    name:                 "&6=[&l<gradient=red,dark_purple:Emperor's Wreath>&6]="
+    onHead:               "&7${item.modifiers.head}"
+    preview.prefix:       "&7 • "
+    damageResist:         "${duration.singleShortUnit} ${effect.minecraft.resistance} after taking damage"
+    damageRegen:          "${duration.singleShortUnit} ${effect.minecraft.regeneration} after taking damage"
+    flavour:              "&7The Emperor's wreath, rewarded to\nthose who have proven they are worthy\nof the divine throne."
+    bestowedTo.single:    "&7Bestowed to ${title} ${name}"
+    bestowedTo.multi:     "&7Bestowed to\n${title} ${name}"
+    nextRank:             "&bNext rank:\n • Win 1 Succession Event"
+    defaultTitle:         "Emperor"
+
+  tools:
+    craftedFor.single:    "&7Crafted for ${name}"
+    craftedFor.multi:     "&7Crafted for\n${name}"
