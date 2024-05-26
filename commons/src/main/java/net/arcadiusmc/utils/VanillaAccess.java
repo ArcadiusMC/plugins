@@ -9,7 +9,6 @@ import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
-import net.arcadiusmc.Loggers;
 import net.arcadiusmc.utils.math.Rotation;
 import net.arcadiusmc.utils.math.Vectors;
 import net.forthecrown.nbt.CompoundTag;
@@ -57,7 +56,6 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.joml.Vector3d;
-import org.slf4j.Logger;
 import org.spongepowered.math.vector.Vector3i;
 
 /**
@@ -65,8 +63,6 @@ import org.spongepowered.math.vector.Vector3i;
  */
 public final class VanillaAccess {
   private VanillaAccess() {}
-
-  public static final Logger LOGGER = Loggers.getLogger();
 
   /**
    * Gets a vanilla entity object
