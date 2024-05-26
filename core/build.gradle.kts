@@ -46,6 +46,7 @@ tasks {
           "mathLib"               to MATH_LIB,
           "configurate"           to CONFIGURATE,
           "nbtlib"                to NBT_LIB,
+          "papernbt"              to PAPER_NBT,
       )
     }
   }
