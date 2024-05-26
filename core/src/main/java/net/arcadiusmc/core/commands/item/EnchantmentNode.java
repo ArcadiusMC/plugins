@@ -6,8 +6,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import net.arcadiusmc.command.help.UsageFactory;
-import net.arcadiusmc.enchantment.CustomEnchantment;
-import net.arcadiusmc.enchantment.CustomEnchantments;
 import net.arcadiusmc.text.Messages;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Completions;
@@ -139,13 +137,7 @@ public class EnchantmentNode extends ItemModifierNode {
     ItemMeta meta = item.getItemMeta();
 
     if (meta instanceof EnchantmentStorageMeta storageMeta) {
-      if (enchantment instanceof CustomEnchantment custom) {
-        CustomEnchantments.addEnchant(meta, custom, level);
-      } else {
-        storageMeta.addStoredEnchant(enchantment, level, true);
-      }
-    } else if (enchantment instanceof CustomEnchantment custom) {
-      CustomEnchantments.addEnchant(meta, custom, level);
+      storageMeta.addStoredEnchant(enchantment, level, true);
     } else {
       meta.addEnchant(enchantment, level, true);
     }

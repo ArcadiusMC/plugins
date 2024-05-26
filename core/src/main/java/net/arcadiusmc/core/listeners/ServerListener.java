@@ -1,10 +1,9 @@
 package net.arcadiusmc.core.listeners;
 
-import net.arcadiusmc.core.CorePlugin;
 import net.arcadiusmc.command.help.ArcadiusHelpList;
+import net.arcadiusmc.core.CorePlugin;
 import net.arcadiusmc.core.user.Components;
 import net.arcadiusmc.core.user.UserServiceImpl;
-import net.arcadiusmc.enchantment.CustomEnchantments;
 import net.arcadiusmc.events.DayChangeEvent;
 import net.arcadiusmc.events.EarlyShutdownEvent;
 import org.bukkit.event.EventHandler;
@@ -20,8 +19,6 @@ class ServerListener implements Listener {
   public void onServerLoad(ServerLoadEvent event) {
     CorePlugin plugin = JavaPlugin.getPlugin(CorePlugin.class);
     plugin.getUserService().onServerLoaded();
-
-    CustomEnchantments.closeRegistrations();
 
     ArcadiusHelpList helpList = ArcadiusHelpList.helpList();
     helpList.update();
