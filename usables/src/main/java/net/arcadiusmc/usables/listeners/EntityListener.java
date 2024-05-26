@@ -25,7 +25,7 @@ public class EntityListener implements Listener {
     usable.load();
 
     Interaction interaction = usable.createInteraction(player);
-    interaction.getContext().put("hand", event.getHand());
+    interaction.getContext().put("hand", event.getHand().name().toLowerCase());
 
     UsablesListeners.execute(usable, interaction, event);
   }
