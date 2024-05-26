@@ -25,7 +25,7 @@ public class OwnerLore extends ItemComponent implements LoreElement {
 
   private static final Logger LOGGER = Loggers.getLogger();
 
-  static final int MAX_NAME_LENGTH = TextInfo.getPxWidth("<longassnamebruh>");
+  public static final int MAX_NAME_LENGTH = TextInfo.getPxWidth("<longassnamebruh>");
 
   private Component title;
 
