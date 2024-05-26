@@ -28,12 +28,9 @@ public enum VanillaCancelState {
       return FALSE;
     }
 
-    String str = tag.asString().value();
-    return fromString(str);
-  }
+    String str = tag.asString().value().toLowerCase();
 
-  public static VanillaCancelState fromString(String str) {
-    return switch (str.toLowerCase()) {
+    return switch (str) {
       case "true" -> TRUE;
       case "if_tests_succeed", "on_success" -> IF_TESTS_SUCCEED;
       case "if_tests_fail", "on_fail" -> IF_TESTS_FAIL;

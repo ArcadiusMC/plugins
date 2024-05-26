@@ -93,10 +93,6 @@ public class BlueWebmap implements WebMap {
     if (world == null) {
       return Result.error("Null world");
     }
-    if (!isEnabled()) {
-      return Result.error("BlueMap API not enabled.");
-    }
-
     Optional<BlueMapMap> opt = getMap(world);
 
     if (opt.isEmpty()) {

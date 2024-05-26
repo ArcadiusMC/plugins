@@ -55,8 +55,7 @@ public final class UsablesListeners {
 
     boolean testsPassed = usable.interact(interaction);
 
-    boolean cancelVanilla = interaction.getValue(CANCEL_VANILLA, String.class)
-        .map(VanillaCancelState::fromString)
+    boolean cancelVanilla = interaction.getValue(CANCEL_VANILLA, VanillaCancelState.class)
         .or(() -> Optional.of(usable.getCancelVanilla()))
         .map(vanillaCancelState -> vanillaCancelState.cancelEvent(testsPassed))
         .orElse(false);
@@ -74,28 +73,15 @@ public final class UsablesListeners {
     Interaction interaction = usable.createInteraction(player);
     Map<String, Object> ctx = interaction.getContext();
 
-    ctx.put("hand", event.getHand().name().toLowerCase());
-    ctx.put("useItem", event.useItemInHand().name().toLowerCase());
-    ctx.put("useBlock", event.useInteractedBlock().name().toLowerCase());
+    ctx.put("hand", event.getHand());
+    ctx.put("useItem", event.useItemInHand());
+    ctx.put("useBlock", event.useInteractedBlock());
 
     execute(usable, interaction, event);
 
     if (!event.isCancelled()) {
-      interaction.getValue("useItem", String.class)
-          .map(UsablesListeners::result)
-          .ifPresent(event::setUseItemInHand);
-
-      interaction.getValue("useBlock", String.class)
-          .map(UsablesListeners::result)
-          .ifPresent(event::setUseInteractedBlock);
+      interaction.getValue("useItem", Result.class).ifPresent(event::setUseItemInHand);
+      interaction.getValue("useBlock", Result.class).ifPresent(event::setUseInteractedBlock);
     }
-  }
-
-  static Result result(String str) {
-    return switch (str.toLowerCase()) {
-      case "deny" -> Result.DENY;
-      case "allow" -> Result.ALLOW;
-      default -> Result.DEFAULT;
-    };
   }
 }

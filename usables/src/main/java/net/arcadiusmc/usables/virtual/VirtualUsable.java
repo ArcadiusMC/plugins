@@ -73,7 +73,7 @@ public class VirtualUsable extends Usable implements VanillaCancellable {
   @Override
   public void fillContext(Map<String, Object> context) {
     super.fillContext(context);
-    context.put(CANCEL_VANILLA, cancelVanilla.toString());
+    context.put(CANCEL_VANILLA, cancelVanilla);
   }
 
   @Override

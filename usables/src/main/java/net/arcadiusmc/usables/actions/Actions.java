@@ -17,8 +17,7 @@ public class Actions {
     r.register("js", ScriptInstance.RAW_TYPE);
     r.register("console_cmd", CommandAction.AS_SELF);
     r.register("player_cmd", CommandAction.AS_PLAYER);
-    r.register("show_text", TextAction.TEXT_TYPE);
-    r.register("show_actionbar", TextAction.ACTIONBAR_TYPE);
+    r.register("show_text", TextAction.TYPE);
     r.register("give_items", ItemActionType.GIVE);
     r.register("take_items", ItemActionType.TAKE);
     r.register("teleport", TeleportAction.TYPE);

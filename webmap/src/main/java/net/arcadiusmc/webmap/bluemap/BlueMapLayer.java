@@ -6,7 +6,6 @@ import de.bluecolored.bluemap.api.BlueMapMap;
 import de.bluecolored.bluemap.api.markers.ExtrudeMarker;
 import de.bluecolored.bluemap.api.markers.MarkerSet;
 import de.bluecolored.bluemap.api.markers.POIMarker;
-import de.bluecolored.bluemap.api.markers.POIMarker.Builder;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -102,17 +101,18 @@ public class BlueMapLayer implements MapLayer {
       return Result.error("Marker with ID '%s' is already defined", id);
     }
 
-    Builder builder = POIMarker.builder()
+    var builder = POIMarker.builder()
         .label(name)
         .position(x, y, z);
 
-    POIMarker marker = builder.build();
+    if (icon instanceof BlueMapIcon blu) {
+      builder.icon(blu.path, 0, 0);
+    }
+
+    var marker = builder.build();
     set.put(id, marker);
 
-    BlueMapPointMarker api = new BlueMapPointMarker(this, id, marker);
-    api.setIcon(icon);
-
-    return Result.success(api);
+    return Result.success(new BlueMapPointMarker(this, id, marker));
   }
 
   @Override

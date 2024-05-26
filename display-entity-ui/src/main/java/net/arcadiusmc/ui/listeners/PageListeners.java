@@ -3,6 +3,7 @@ package net.arcadiusmc.ui.listeners;
 import lombok.RequiredArgsConstructor;
 import net.arcadiusmc.ui.InteractionType;
 import net.arcadiusmc.ui.PageInteraction;
+import net.arcadiusmc.ui.PlayerSession;
 import net.arcadiusmc.ui.UiPlugin;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -40,22 +41,20 @@ public class PageListeners implements Listener {
 
     plugin.getSessions()
         .getSession(player.getUniqueId())
-        .ifPresent(session -> {
-          if (session.getTarget() == null) {
-            return;
-          }
+        .flatMap(PlayerSession::getTargeted)
 
+        .ifPresent(targetPage -> {
           if (event instanceof Cancellable cancellable) {
             cancellable.setCancelled(true);
           }
 
           PageInteraction interaction = new PageInteraction(
-              session.getTargetPos(),
-              session.getScreenPos(),
+              targetPage.hitPosition(),
+              targetPage.screenPos(),
               type
           );
 
-          session.getTarget().onInteract(interaction);
+          targetPage.view().onInteract(interaction);
         });
   }
 }

@@ -26,7 +26,7 @@ public abstract class InWorldUsable extends Usable implements VanillaCancellable
   @Override
   public void fillContext(Map<String, Object> context) {
     super.fillContext(context);
-    context.put(CANCEL_VANILLA, cancelVanilla.name().toLowerCase());
+    context.put(CANCEL_VANILLA, cancelVanilla);
   }
 
   public void save() {

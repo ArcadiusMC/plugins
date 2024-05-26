@@ -49,10 +49,6 @@ public class WebmapPlugin extends JavaPlugin {
 
     MessageLoader.loadPluginMessages(this, messageList);
     Messages.MESSAGE_LIST.addChild(getName(), messageList);
-
-    if (implementation instanceof BlueWebmap blu) {
-      blu.load();
-    }
   }
 
   @Override
