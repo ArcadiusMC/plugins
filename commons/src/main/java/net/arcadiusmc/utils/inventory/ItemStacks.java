@@ -103,7 +103,7 @@ public final class ItemStacks {
    * @param tag  The tags to set
    */
   public static void setUnhandledTags(ItemMeta meta, CompoundTag tag) {
-    ItemNbtProvider.provider().setUnhandledTags(meta, tag);
+    ItemNbtProvider.provider().setCustomData(meta, tag);
   }
 
   /**
@@ -113,7 +113,7 @@ public final class ItemStacks {
    * @return The item's unhandledTags
    */
   public static @NotNull CompoundTag getUnhandledTags(ItemMeta meta) {
-    return ItemNbtProvider.provider().getUnhandledTags(meta);
+    return ItemNbtProvider.provider().getCustomData(meta);
   }
 
   /**
