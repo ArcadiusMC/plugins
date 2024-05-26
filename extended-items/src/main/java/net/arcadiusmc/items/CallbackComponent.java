@@ -4,6 +4,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -13,6 +14,10 @@ import org.bukkit.inventory.EquipmentSlot;
 public interface CallbackComponent {
 
   default void onAttack(Player player, EntityDamageByEntityEvent event, EquipmentSlot slot) {
+
+  }
+
+  default void onKill(Player player, EntityDeathEvent event, EquipmentSlot slot) {
 
   }
 
@@ -37,6 +42,10 @@ public interface CallbackComponent {
   }
 
   default void onPickup(EntityPickupItemEvent event) {
+
+  }
+
+  default void onHolderDeath(Player player, EntityDeathEvent event, EquipmentSlot slot) {
 
   }
 }

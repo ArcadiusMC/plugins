@@ -15,6 +15,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
@@ -89,6 +90,17 @@ public class ItemCallbackListeners implements Listener {
     }
 
     performActionOnAllSlots(player, (c, slot) -> c.onHolderDamaged(player, event, slot));
+  }
+
+  @EventHandler(ignoreCancelled = true)
+  public void onEntityDeath(EntityDeathEvent event) {
+    if (event.getEntity() instanceof Player player) {
+      performActionOnAllSlots(player, (c, slot) -> c.onHolderDeath(player, event, slot));
+    }
+
+    if (event.getDamageSource().getCausingEntity() instanceof Player player) {
+      performActionOnAllSlots(player, (c, slot) -> c.onKill(player, event, slot));
+    }
   }
 
   private void performActionOnAllSlots(Player player, BiConsumer<CallbackComponent, EquipmentSlot> consumer) {
