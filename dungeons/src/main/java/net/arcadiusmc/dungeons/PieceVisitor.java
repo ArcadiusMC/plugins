@@ -1,0 +1,33 @@
+package net.arcadiusmc.dungeons;
+
+import net.arcadiusmc.dungeons.gate.GatePiece;
+import net.arcadiusmc.dungeons.room.RoomPiece;
+
+public interface PieceVisitor {
+
+  Result onGate(GatePiece gate);
+
+  Result onRoom(RoomPiece room);
+
+  default void onChildrenStart(DungeonPiece piece) {
+
+  }
+
+  default void onChildrenEnd(DungeonPiece piece) {
+
+  }
+
+  default void onPieceStart(DungeonPiece piece) {
+
+  }
+
+  default void onPieceEnd(DungeonPiece piece) {
+
+  }
+
+  enum Result {
+    STOP,
+    CONTINUE,
+    SKIP_CHILDREN
+  }
+}
