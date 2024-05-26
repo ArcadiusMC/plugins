@@ -9,7 +9,7 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public record RemoveAttributeMod(String name) implements ItemUpgrade {
+public record RemoveAttributeMod(String name) implements UpgradeFunction {
 
   static void remove(String name, ItemMeta meta) {
     Multimap<Attribute, AttributeModifier> modifiers = meta.getAttributeModifiers();

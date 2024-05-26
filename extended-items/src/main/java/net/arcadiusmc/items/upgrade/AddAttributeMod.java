@@ -4,6 +4,7 @@ import net.arcadiusmc.items.ExtendedItem;
 import net.arcadiusmc.items.Utils;
 import net.arcadiusmc.text.TextWriter;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.attribute.AttributeModifier.Operation;
@@ -15,7 +16,7 @@ public record AddAttributeMod(
     String name,
     Operation operation,
     double value
-) implements ItemUpgrade {
+) implements UpgradeFunction {
 
   @Override
   public void apply(ExtendedItem item, ItemMeta meta, ItemStack stack) {
@@ -26,13 +27,29 @@ public record AddAttributeMod(
   }
 
   @Override
-  public void writePreview(TextWriter writer) {
+  public void writePreview(ExtendedItem item, TextWriter writer) {
     Component text = Utils.formatAttributeModifier(value, operation, attribute);
 
     if (text == null) {
       return;
     }
 
-    writer.line(text.color(null));
+    writer.line(text.color(NamedTextColor.GRAY));
+  }
+
+  @Override
+  public void writeStatus(ExtendedItem item, TextWriter writer) {
+    Component text = Utils.formatAttributeModifier(value, operation, attribute);
+
+    if (text == null) {
+      return;
+    }
+
+    writer.line(text);
+  }
+
+  @Override
+  public boolean statusPersists() {
+    return true;
   }
 }

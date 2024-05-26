@@ -4,7 +4,7 @@ import net.arcadiusmc.items.ExtendedItem;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public record ModelDataMod(Integer modelData) implements ItemUpgrade {
+public record ModelDataMod(Integer modelData) implements UpgradeFunction {
 
   @Override
   public void apply(ExtendedItem item, ItemMeta meta, ItemStack stack) {

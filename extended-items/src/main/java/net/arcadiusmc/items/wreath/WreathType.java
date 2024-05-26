@@ -1,34 +1,25 @@
 package net.arcadiusmc.items.wreath;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import net.arcadiusmc.items.ExtendedItem;
 import net.arcadiusmc.items.ItemType;
 import net.arcadiusmc.items.Level;
 import net.arcadiusmc.items.Owner;
-import net.arcadiusmc.items.Utils;
 import net.arcadiusmc.items.lore.EnchantsLoreElement;
 import net.arcadiusmc.items.lore.FlavourTextElement;
 import net.arcadiusmc.items.lore.LevelLore;
 import net.arcadiusmc.items.lore.LoreElement;
-import net.arcadiusmc.items.lore.PerLevelLore;
 import net.arcadiusmc.items.upgrade.AddAttributeMod;
 import net.arcadiusmc.items.upgrade.AddEnchantMod;
-import net.arcadiusmc.items.upgrade.ItemUpgrade;
+import net.arcadiusmc.items.upgrade.ItemUpgrades;
 import net.arcadiusmc.items.upgrade.ModelDataMod;
-import net.arcadiusmc.items.upgrade.Upgrades;
-import net.arcadiusmc.items.upgrade.Upgrades.LevelUpgrade;
-import net.arcadiusmc.items.upgrade.Upgrades.UpgradeBuilder;
-import net.arcadiusmc.text.BufferedTextWriter;
+import net.arcadiusmc.items.upgrade.UpgradeFunction;
 import net.arcadiusmc.text.Messages;
-import net.arcadiusmc.text.TextWriter;
-import net.arcadiusmc.text.TextWriters;
 import net.arcadiusmc.utils.inventory.DefaultItemBuilder;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.forthecrown.nbt.CompoundTag;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.util.Ticks;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
@@ -62,7 +53,7 @@ public class WreathType implements ItemType {
   static final String ATTR_ID_KB_RES          = "wreath.knockback_resistance";
   static final String ATTR_ID_HEALTH          = "wreath.health_boost";
 
-  static final UpgradeBuilder BUILDER = createUpgrades();
+  static final ItemUpgrades UPGRADES = createUpgrades();
 
   static final LevelLore[] FLAVOUR_TEXTS = {
       new LevelLore(
@@ -79,38 +70,6 @@ public class WreathType implements ItemType {
 
   static final LoreElement EMPTY_LINE_IF_NOT_MAX_LEVEL
       = LoreElement.ifNotMaxLevel(LoreElement.EMPTY_LINE);
-
-  static final List<LevelLore> UPGRADE_TEXTS = List.of(
-      new LevelLore(1, (item, writer) -> {
-        writePreviewForLevel(2, writer);
-      }),
-      new LevelLore(2, (item, writer) -> {
-        writePreviewForLevel(3, writer);
-        writer.line(postDamageEffectText(REGEN_MSG, REGEN_DURATION_TICKS));
-        // TODO: model data update lore
-      }),
-      new LevelLore(3, (item, writer) -> {
-        writePreviewForLevel(4, writer);
-        writer.line(postDamageEffectText(RESIST_MSG, RESIST_DURATION_TICKS));
-      }),
-      new LevelLore(4, (item, writer) -> {
-        writePreviewForLevel(5, writer);
-        // TODO: model data update lore
-      })
-  );
-
-  static final List<LevelLore> STATUS_TEXTS;
-
-  static {
-    LevelLore[] lores = new LevelLore[MAX_LEVEL];
-
-    for (int i = 0; i < lores.length; i++) {
-      int l = i + 1;
-      lores[i] = createStatusEffectLevel(l);
-    }
-
-    STATUS_TEXTS = List.of(lores);
-  }
 
   @Override
   public ItemStack createBaseItem() {
@@ -150,7 +109,7 @@ public class WreathType implements ItemType {
 
     item.addComponent(level);
     item.addComponent(new Owner());
-    item.addComponent(BUILDER.build());
+    item.addComponent(UPGRADES.createComponent());
     item.addComponent(regenAfterDmg);
     item.addComponent(resistAfterDmg);
     item.addComponent(ownerLore);
@@ -161,15 +120,11 @@ public class WreathType implements ItemType {
     item.addLore(createFlavourText());
     item.addLore(NEXT_RANK_TEXT);
     item.addLore(EMPTY_LINE_IF_NOT_MAX_LEVEL);
-    item.addLore(createPreviewTexts());
+    item.addLore(UPGRADES.createPreviewElement());
+    item.addLore(LoreElement.ifNotMaxLevel(LoreElement.BORDER));
     item.addLore(ownerLore);
     item.addLore(LoreElement.EMPTY_LINE);
-    item.addLore(new PerLevelLore(STATUS_TEXTS, null));
-  }
-
-  private LoreElement createPreviewTexts() {
-    PerLevelLore perLevel = new PerLevelLore(UPGRADE_TEXTS, null);
-    return new StatusEffectsElement(perLevel);
+    item.addLore(UPGRADES.createStatusElement());
   }
 
   private FlavourTextElement createFlavourText() {
@@ -182,166 +137,139 @@ public class WreathType implements ItemType {
         .asComponent();
   }
 
-  private static LevelLore createStatusEffectLevel(int level) {
-    return new LevelLore(level, (item, writer) -> {
-      writer.line(Messages.renderText("itemsPlugin.wreath.onHead"));
+  private static ItemUpgrades createUpgrades() {
+    return ItemUpgrades.builder()
 
-      Utils.writeAttributeModifiers(writer, item.getMeta());
+        .statusPrefix((item, writer) -> {
+          writer.line(Messages.renderText("itemsPlugin.wreath.onHead"));
+        })
 
-      if (level >= REGEN_LEVEL) {
-        Component text = postDamageEffectText(REGEN_MSG, REGEN_DURATION_TICKS);
-        writer.line("+", NamedTextColor.BLUE);
-        writer.write(text.color(NamedTextColor.BLUE));
-      }
+        .level(1, level -> {
+          level
+              .upgrade(new ModelDataMod(MODEL_DATA_LEVEL_1))
 
-      if (level >= RESIST_LEVEL) {
-        Component text = postDamageEffectText(RESIST_MSG, RESIST_DURATION_TICKS);
-        writer.line("+", NamedTextColor.BLUE);
-        writer.write(text.color(NamedTextColor.BLUE));
-      }
-    });
-  }
+              .upgrade(new AddEnchantMod(Enchantment.PROTECTION, 4))
+              .upgrade(new AddEnchantMod(Enchantment.AQUA_AFFINITY, 1))
+              .upgrade(new AddEnchantMod(Enchantment.RESPIRATION, 3))
 
-  private static void writePreviewForLevel(int level, TextWriter writer) {
-    for (LevelUpgrade upgrade : BUILDER.getUpgrades()) {
-      if (upgrade.level() != level) {
-        continue;
-      }
+              .upgrade(new AddAttributeMod(
+                  Attribute.GENERIC_ARMOR_TOUGHNESS,
+                  ATTR_ID_ARMOR_TOUGHNESS,
+                  Operation.ADD_NUMBER,
+                  3
+              ), l -> l.statusPersists(false))
+              .upgrade(new AddAttributeMod(
+                  Attribute.GENERIC_ARMOR,
+                  ATTR_ID_ARMOR,
+                  Operation.ADD_NUMBER,
+                  3
+              ))
+              .upgrade(new AddAttributeMod(
+                  Attribute.GENERIC_KNOCKBACK_RESISTANCE,
+                  ATTR_ID_KB_RES,
+                  Operation.ADD_NUMBER,
+                  0.1
+              ), l -> l.statusPersists(false));
+        })
 
-      for (ItemUpgrade itemUpgrade : upgrade.upgrades()) {
-        itemUpgrade.writePreview(writer);
-      }
-    }
-  }
+        .level(2, level -> {
+          level
+              .upgrade(new ModelDataMod(MODEL_DATA_LEVEL_2))
 
-  private static UpgradeBuilder createUpgrades() {
-    UpgradeBuilder builder = Upgrades.builder();
+              .upgrade(new AddAttributeMod(
+                  Attribute.GENERIC_ARMOR_TOUGHNESS,
+                  ATTR_ID_ARMOR_TOUGHNESS,
+                  Operation.ADD_NUMBER,
+                  3.5
+              ), l -> l.statusPersists(false))
+              .upgrade(new AddAttributeMod(
+                  Attribute.GENERIC_KNOCKBACK_RESISTANCE,
+                  ATTR_ID_KB_RES,
+                  Operation.ADD_NUMBER,
+                  0.15
+              ), l -> l.statusPersists(false))
+              .upgrade(new AddAttributeMod(
+                  Attribute.GENERIC_MAX_HEALTH,
+                  ATTR_ID_HEALTH,
+                  Operation.ADD_NUMBER,
+                  10
+              ));
+        })
 
-    builder.level(1)
-        .upgrade(new ModelDataMod(MODEL_DATA_LEVEL_1))
+        .level(3, level -> {
+          level
+              .upgrade(new ModelDataMod(MODEL_DATA_LEVEL_3))
 
-        .upgrade(new AddEnchantMod(Enchantment.PROTECTION, 4))
-        .upgrade(new AddEnchantMod(Enchantment.AQUA_AFFINITY, 1))
-        .upgrade(new AddEnchantMod(Enchantment.RESPIRATION, 3))
+              .upgrade(new AddEnchantMod(Enchantment.PROJECTILE_PROTECTION, 4))
 
-        .upgrade(new AddAttributeMod(
-            Attribute.GENERIC_ARMOR_TOUGHNESS,
-            ATTR_ID_ARMOR_TOUGHNESS,
-            Operation.ADD_NUMBER,
-            3
-        ))
-        .upgrade(new AddAttributeMod(
-            Attribute.GENERIC_ARMOR,
-            ATTR_ID_ARMOR,
-            Operation.ADD_NUMBER,
-            3
-        ))
-        .upgrade(new AddAttributeMod(
-            Attribute.GENERIC_KNOCKBACK_RESISTANCE,
-            ATTR_ID_KB_RES,
-            Operation.ADD_NUMBER,
-            0.1
-        ));
+              .upgrade(new AddAttributeMod(
+                  Attribute.GENERIC_ARMOR_TOUGHNESS,
+                  ATTR_ID_ARMOR_TOUGHNESS,
+                  Operation.ADD_NUMBER,
+                  4
+              ), l -> l.statusPersists(false))
+              .upgrade(new AddAttributeMod(
+                  Attribute.GENERIC_KNOCKBACK_RESISTANCE,
+                  ATTR_ID_KB_RES,
+                  Operation.ADD_NUMBER,
+                  0.2
+              ), l -> l.statusPersists(false))
 
-    builder.level(2)
-        .upgrade(new ModelDataMod(MODEL_DATA_LEVEL_2))
+              .upgrade(UpgradeFunction.EMPTY, upgrade -> {
+                upgrade.statusPersists(true)
+                    .previewText((item, writer) -> {
+                      writer.line(postDamageEffectText(REGEN_MSG, REGEN_DURATION_TICKS));
+                    })
+                    .statusText((item, writer) -> {
+                      Component text = postDamageEffectText(REGEN_MSG, REGEN_DURATION_TICKS);
+                      writer.line("+", NamedTextColor.BLUE);
+                      writer.write(text.color(NamedTextColor.BLUE));
+                    });
+              });
+        })
 
-        .upgrade(new AddAttributeMod(
-            Attribute.GENERIC_ARMOR_TOUGHNESS,
-            ATTR_ID_ARMOR_TOUGHNESS,
-            Operation.ADD_NUMBER,
-            3.5
-        ))
-        .upgrade(new AddAttributeMod(
-            Attribute.GENERIC_KNOCKBACK_RESISTANCE,
-            ATTR_ID_KB_RES,
-            Operation.ADD_NUMBER,
-            0.15
-        ))
-        .upgrade(new AddAttributeMod(
-            Attribute.GENERIC_MAX_HEALTH,
-            ATTR_ID_HEALTH,
-            Operation.ADD_NUMBER,
-            10
-        ));
+        .level(4, level -> {
+          level
+              .upgrade(new ModelDataMod(MODEL_DATA_LEVEL_4))
+              .upgrade(new AddEnchantMod(Enchantment.BLAST_PROTECTION, 4))
 
-    builder.level(3)
-        .upgrade(new ModelDataMod(MODEL_DATA_LEVEL_3))
+              .upgrade(new AddAttributeMod(
+                  Attribute.GENERIC_ARMOR_TOUGHNESS,
+                  ATTR_ID_ARMOR_TOUGHNESS,
+                  Operation.ADD_NUMBER,
+                  4.5
+              ))
+              .upgrade(new AddAttributeMod(
+                  Attribute.GENERIC_KNOCKBACK_RESISTANCE,
+                  ATTR_ID_KB_RES,
+                  Operation.ADD_NUMBER,
+                  0.25
+              ))
 
-        .upgrade(new AddEnchantMod(Enchantment.PROJECTILE_PROTECTION, 4))
+              .upgrade(UpgradeFunction.EMPTY, upgrade -> {
+                upgrade.statusPersists(true)
+                    .previewText((item, writer) -> {
+                      writer.line(postDamageEffectText(RESIST_MSG, RESIST_DURATION_TICKS));
+                    })
+                    .statusText((item, writer) -> {
+                      Component text = postDamageEffectText(RESIST_MSG, RESIST_DURATION_TICKS);
+                      writer.line("+", NamedTextColor.BLUE);
+                      writer.write(text.color(NamedTextColor.BLUE));
+                    });
+              });
+        })
 
-        .upgrade(new AddAttributeMod(
-            Attribute.GENERIC_ARMOR_TOUGHNESS,
-            ATTR_ID_ARMOR_TOUGHNESS,
-            Operation.ADD_NUMBER,
-            4
-        ))
-        .upgrade(new AddAttributeMod(
-            Attribute.GENERIC_KNOCKBACK_RESISTANCE,
-            ATTR_ID_KB_RES,
-            Operation.ADD_NUMBER,
-            0.2
-        ));
+        .level(5, level -> {
+          level
+              .upgrade(new ModelDataMod(MODEL_DATA_LEVEL_5))
+              .upgrade(new AddEnchantMod(Enchantment.FIRE_PROTECTION, 4));
+        })
 
-    builder.level(4)
-        .upgrade(new ModelDataMod(MODEL_DATA_LEVEL_4))
-        .upgrade(new AddEnchantMod(Enchantment.BLAST_PROTECTION, 4))
-
-        .upgrade(new AddAttributeMod(
-            Attribute.GENERIC_ARMOR_TOUGHNESS,
-            ATTR_ID_ARMOR_TOUGHNESS,
-            Operation.ADD_NUMBER,
-            4.5
-        ))
-        .upgrade(new AddAttributeMod(
-            Attribute.GENERIC_KNOCKBACK_RESISTANCE,
-            ATTR_ID_KB_RES,
-            Operation.ADD_NUMBER,
-            0.25
-        ));
-
-    builder.level(5)
-        .upgrade(new ModelDataMod(MODEL_DATA_LEVEL_5))
-        .upgrade(new AddEnchantMod(Enchantment.FIRE_PROTECTION, 4));
-
-    // Call build to create cached result
-    builder.build();
-
-    return builder;
+        .build();
   }
 
   @Override
   public boolean isPersistentBeyondDeath() {
     return true;
-  }
-
-  private record StatusEffectsElement(PerLevelLore perLevel) implements LoreElement {
-
-    @Override
-    public void writeLore(ExtendedItem item, TextWriter writer) {
-
-      BufferedTextWriter dest = TextWriters.buffered();
-      dest.copyStyle(writer);
-
-      TextWriter modified = dest
-          .withPrefix(Messages.renderText("itemsPlugin.wreath.preview.prefix"))
-          .withStyle(Style.style(NamedTextColor.GRAY));
-
-      perLevel.writeLore(item, modified);
-
-      List<Component> buf = dest.getBuffer();
-
-      if (buf.isEmpty()) {
-        return;
-      }
-
-      writer.line(Messages.renderText("itemsPlugin.wreath.nextRankUpgrades"));
-
-      for (Component component : buf) {
-        writer.line(component);
-      }
-
-      LoreElement.BORDER.writeLore(item, writer);
-    }
   }
 }
