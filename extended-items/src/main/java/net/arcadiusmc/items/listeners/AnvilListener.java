@@ -41,13 +41,13 @@ public class AnvilListener implements Listener {
     ItemMeta secondMeta = second.getItemMeta();
 
     // Neither has enchants, we don't care
-    if (!firstMeta.hasEnchants() && !secondMeta.hasEnchants()) {
+    if (!hasEnchants(firstMeta) && !hasEnchants(secondMeta)) {
       return;
     }
 
     ItemStack result = event.getResult();
     ItemMeta resultMeta = result.getItemMeta();
-    Map<Enchantment, Integer> resultEnchants = resultMeta.getEnchants();
+    Map<Enchantment, Integer> resultEnchants = getEnchantments(resultMeta);
 
     for (var e : resultEnchants.entrySet()) {
       Enchantment enchant = e.getKey();
@@ -74,6 +74,21 @@ public class AnvilListener implements Listener {
 
     result.setItemMeta(resultMeta);
     event.setResult(result);
+  }
+
+  Map<Enchantment, Integer> getEnchantments(ItemMeta meta) {
+    if (meta instanceof EnchantmentStorageMeta storageMeta) {
+      return storageMeta.getStoredEnchants();
+    }
+
+    return meta.getEnchants();
+  }
+
+  boolean hasEnchants(ItemMeta meta) {
+    if (meta instanceof EnchantmentStorageMeta storageMeta) {
+      return storageMeta.hasStoredEnchants();
+    }
+    return meta.hasEnchants();
   }
 
   int getLevel(ItemMeta meta, Enchantment enchantment) {
