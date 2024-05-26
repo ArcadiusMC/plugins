@@ -27,6 +27,7 @@ public class GuardianBeamTemplate implements EntityTemplate {
     beamData.maxTravelDistanceSq = DEFAULT_MAX_DIST_SQ;
     beamData.sinceHeadDraw = HEAD_DRAW_INTERVAL_SECONDS;
     beamData.sinceTrailDraw = TRAIL_DRAW_INTERVAL_SECONDS;
+    beamData.collideWithBlocks = true;
 
     entity.add(beamData);
 

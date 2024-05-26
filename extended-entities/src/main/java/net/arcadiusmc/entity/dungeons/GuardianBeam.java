@@ -11,22 +11,27 @@ import com.destroystokyo.paper.ParticleBuilder;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import net.arcadiusmc.Loggers;
 import net.arcadiusmc.entity.system.Transform;
 import net.arcadiusmc.utils.VanillaAccess;
 import org.bukkit.Color;
 import org.bukkit.Particle;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import org.joml.Vector3d;
+import org.slf4j.Logger;
 
 public class GuardianBeam extends IteratingSystem {
 
+  private static final Logger LOGGER = Loggers.getLogger();
+
   static final double PARRY_DAMAGE_MULTIPLIER = 1.75;
   static final double PARRY_SPEED_MULTIPLIER = 1.75;
-  static final double HIT_RANGE = 0.25;
+  static final double HIT_RANGE = 0.5;
   static final double HEAD_DRAW_INTERVAL_SECONDS = 0.25;
   static final double TRAIL_DRAW_INTERVAL_SECONDS = 0.5;
   static final double MIN_DISTANCE = 1.5;
@@ -97,6 +102,13 @@ public class GuardianBeam extends IteratingSystem {
       }
     }
 
+    LOGGER.debug("data.collideWithBlocks={}", data.collideWithBlocks);
+
+    if (data.collideWithBlocks && overlapsCollidableBlocks(world)) {
+      detonate(transform, data, entity);
+      return;
+    }
+
     double distSq = transform.getPosition().distanceSquared(data.origin);
 
     if (data.maxTravelDistanceSq == 0) {
@@ -106,6 +118,36 @@ public class GuardianBeam extends IteratingSystem {
     if (distSq >= data.maxTravelDistanceSq) {
       detonate(transform, data, entity);
     }
+  }
+
+  boolean overlapsCollidableBlocks(World world) {
+    int minX = (int) box.getMinX();
+    int minY = (int) box.getMinY();
+    int minZ = (int) box.getMinZ();
+
+    int maxX = (int) box.getMaxX();
+    int maxY = (int) box.getMaxY();
+    int maxZ = (int) box.getMaxZ();
+
+    for (int x = minX; x <= maxX; x++) {
+      for (int y = minY; y <= maxY; y++) {
+        for (int z = minZ; z <= maxZ; z++) {
+          Block block = world.getBlockAt(x, y, z);
+
+          if (!block.isCollidable()) {
+            continue;
+          }
+
+          BoundingBox shape = block.getBoundingBox();
+
+          if (shape.overlaps(box)) {
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
   }
 
   void detonate(Transform transform, GuardianBeamData data, Entity entity) {
@@ -240,4 +282,6 @@ class GuardianBeamData implements Component {
 
   double sinceTrailDraw = 0;
   double sinceHeadDraw = 0;
+
+  boolean collideWithBlocks = false;
 }

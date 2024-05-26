@@ -114,6 +114,7 @@ public class ShulkerGuardian extends IteratingSystem {
         beamData.damage = BASE_DAMAGE;
         beamData.sinceHeadDraw = HEAD_DRAW_INTERVAL_SECONDS;
         beamData.sinceTrailDraw = TRAIL_DRAW_INTERVAL_SECONDS;
+        beamData.collideWithBlocks = false;
 
         beam.add(beamData);
 
