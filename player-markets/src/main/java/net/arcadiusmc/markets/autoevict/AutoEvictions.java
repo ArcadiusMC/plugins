@@ -67,7 +67,7 @@ public class AutoEvictions {
   private static final Logger LOGGER = Loggers.getLogger();
 
   private static final Codec<List<MarketScanResult>> SCAN_FILE_CODEC
-      = MarketScanResult.CODEC.listOf().fieldOf("scans").codec();
+      = MarketScanResult.CODEC.listOf().optionalFieldOf("scans", List.of()).codec();
 
   private final Registry<CriterionType<?>> types = Registries.newFreezable();
   private final List<EvictionCriterion<?>> criteria = new ArrayList<>();

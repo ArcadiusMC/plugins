@@ -1,11 +1,12 @@
 package net.arcadiusmc.ui.math;
 
+import com.sk89q.worldedit.math.Vector3;
 import org.joml.Intersectionf;
 import org.joml.Matrix3f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-public class ScreenBounds {
+public class Screen {
 
   private static final float EPSILON = 0.0000001f;
 
@@ -54,6 +55,21 @@ public class ScreenBounds {
     return new Vector3f(upperRight);
   }
 
+  public Vector2f getRotation() {
+    Vector3 weNormal = Vector3.at(normal.x, normal.y, normal.z);
+
+    float yaw = (float) weNormal.toYaw();
+    float pitch = (float) weNormal.toPitch();
+
+    return new Vector2f(yaw, pitch);
+  }
+
+  public Vector2f getDimensions() {
+    Vector3f height = new Vector3f(upperLeft).sub(lowerLeft);
+    Vector3f width = new Vector3f(upperRight).sub(upperLeft);
+
+    return new Vector2f(width.length(), height.length());
+  }
 
   public void apply(Matrix3f matrix) {
     lowerLeft.sub(center).mul(matrix).add(center);
@@ -82,11 +98,8 @@ public class ScreenBounds {
   }
 
   void screenHitPoint(Vector3f hitPoint, Vector2f out) {
-    Vector3f height = new Vector3f();
-    upperLeft.sub(lowerLeft, height);
-
-    Vector3f width = new Vector3f();
-    lowerRight.sub(lowerLeft, width);
+    Vector3f height = new Vector3f(upperLeft).sub(lowerLeft);
+    Vector3f width = new Vector3f(lowerRight).sub(lowerLeft);
 
     Vector3f relativePoint = new Vector3f(hitPoint).sub(lowerLeft);
 

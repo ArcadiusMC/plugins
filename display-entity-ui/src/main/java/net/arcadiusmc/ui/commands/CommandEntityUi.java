@@ -6,7 +6,7 @@ import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.ui.PageView;
 import net.arcadiusmc.ui.PlayerSession;
 import net.arcadiusmc.ui.UiPlugin;
-import net.arcadiusmc.ui.math.ScreenBounds;
+import net.arcadiusmc.ui.math.Screen;
 import net.arcadiusmc.utils.Particles;
 import net.arcadiusmc.utils.Tasks;
 import net.forthecrown.grenadier.GrenadierCommand;
@@ -91,10 +91,10 @@ public class CommandEntityUi extends BaseCommand {
               Location l = player.getLocation();
               Vector3f pos = new Vector3f((float) l.x(), (float) l.y() + 1, (float) l.z());
 
-              ScreenBounds bounds = new ScreenBounds();
+              Screen bounds = new Screen();
               bounds.set(pos, 3.0f, 2.0f);
 
-              PageView view = new PageView();
+              PageView view = new PageView(l.getWorld());
               view.setPlayer(player);
               view.setWorld(player.getWorld());
               view.setBounds(bounds);
@@ -127,7 +127,7 @@ public class CommandEntityUi extends BaseCommand {
       }
 
       Player player = view.getPlayer();
-      ScreenBounds bounds = view.getBounds();
+      Screen bounds = view.getBounds();
       World w = player.getWorld();
 
       Vector3d lowerLeft  = toSponge(bounds.getLowerLeft());

@@ -2,6 +2,9 @@
 <enittyui>
 
 <head>
+  <window-size width="5" height="3"/>
+  <meta key="sys.follow-player" value="true"/>
+
   <style src="stylefile.yml"/>
   <script src="scriptfile.js"/>
 

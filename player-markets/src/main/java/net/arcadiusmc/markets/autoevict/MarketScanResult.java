@@ -16,7 +16,8 @@ public class MarketScanResult {
   public static final Codec<MarketScanResult> CODEC = RecordCodecBuilder.create(instance -> {
     return instance
         .group(
-            SignShopBlock.CODEC.listOf().fieldOf("blocks")
+            SignShopBlock.CODEC.listOf()
+                .optionalFieldOf("blocks", List.of())
                 .forGetter(o -> o.blocks),
 
             Codec.LONG.fieldOf("last_owner_login")

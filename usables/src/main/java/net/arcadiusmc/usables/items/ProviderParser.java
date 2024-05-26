@@ -14,6 +14,7 @@ import net.arcadiusmc.usables.items.ItemProvider.ItemListProvider;
 import net.arcadiusmc.usables.items.ItemProvider.PositionRefItemProvider;
 import net.arcadiusmc.utils.inventory.ItemList;
 import net.arcadiusmc.utils.inventory.ItemLists;
+import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Completions;
 import net.forthecrown.grenadier.Readers;
@@ -39,6 +40,10 @@ class ProviderParser<S> implements Suggester<S> {
   static final String LIST_LABEL = FUNC_PREFIX + "item-list";
   static final String HELD_LABEL = FUNC_PREFIX + "held-item";
   static final String INV_LABEL = FUNC_PREFIX + "inventory";
+  static final String HOTBAR_LABEL = FUNC_PREFIX + "hotbar";
+
+  static final int HOTBAR_START = 0;
+  static final int HOTBAR_END = 8;
 
   static final ArrayArgument<ItemStack> ITEMS_ARGUMENT
       = ArgumentTypes.array(Arguments.ITEMSTACK);
@@ -126,6 +131,30 @@ class ProviderParser<S> implements Suggester<S> {
         return new ItemListProvider(list);
       }
 
+      case HOTBAR_LABEL -> {
+        ensureSourcePresent();
+
+        Player player = source.asPlayer();
+        Inventory inventory = player.getInventory();
+        ItemList list = ItemLists.newList();
+
+        for (int i = HOTBAR_START; i < HOTBAR_END; i++) {
+          ItemStack item = inventory.getItem(i);
+
+          if (ItemStacks.isEmpty(item)) {
+            continue;
+          }
+
+          list.add(item.clone());
+        }
+
+        if (list.isEmpty()) {
+          throw Exceptions.create("No items found in your hotbar");
+        }
+
+        return new ItemListProvider(list);
+      }
+
       case INV_LABEL -> {
         ensureSourcePresent();
 
@@ -179,7 +208,10 @@ class ProviderParser<S> implements Suggester<S> {
 
   Suggester<S> defaultSuggestions() {
     return (context, builder) -> {
-      return Completions.suggest(builder, REF_LABEL, LIST_LABEL, HELD_LABEL, INV_LABEL);
+      return Completions.suggest(
+          builder,
+          REF_LABEL, LIST_LABEL, HELD_LABEL, INV_LABEL, HOTBAR_LABEL
+      );
     };
   }
 

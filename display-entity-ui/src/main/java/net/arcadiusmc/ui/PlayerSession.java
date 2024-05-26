@@ -4,12 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.arcadiusmc.ui.math.RayScan;
-import net.arcadiusmc.ui.math.ScreenBounds;
+import net.arcadiusmc.ui.math.Screen;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -30,8 +29,13 @@ public class PlayerSession {
   @Getter @Setter
   private PageView selected;
 
+  @Getter
   private PageView target;
+
+  @Getter
   private final Vector2f screenPos = new Vector2f();
+
+  @Getter
   private final Vector3f targetPos = new Vector3f();
 
   public List<PageView> getViews() {
@@ -82,7 +86,7 @@ public class PlayerSession {
         continue;
       }
 
-      ScreenBounds bounds = view.getBounds();
+      Screen bounds = view.getBounds();
 
       if (bounds == null) {
         continue;
@@ -101,14 +105,6 @@ public class PlayerSession {
     target = null;
     targetPos.set(0, 0, 0);
     screenPos.set(0, 0);
-  }
-
-  public Optional<TargetPage> getTargeted() {
-    if (target == null) {
-      return Optional.empty();
-    }
-
-    return Optional.of(new TargetPage(target, screenPos, targetPos));
   }
 
   private void switchSelection() {

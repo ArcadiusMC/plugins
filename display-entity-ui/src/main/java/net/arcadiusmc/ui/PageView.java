@@ -5,7 +5,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.Loggers;
-import net.arcadiusmc.ui.math.ScreenBounds;
+import net.arcadiusmc.ui.math.Screen;
 import net.arcadiusmc.ui.render.DocumentRender;
 import org.bukkit.Color;
 import org.bukkit.Particle;
@@ -26,7 +26,7 @@ public class PageView {
 
   private Document document;
   private DocumentRender render;
-  private ScreenBounds bounds;
+  private Screen bounds;
   private World world;
   private Player player;
   private PlayerSession session;
@@ -35,7 +35,8 @@ public class PageView {
 
   private Vector2f cursorPos = new Vector2f(-1);
 
-  public PageView() {
+  public PageView(World world) {
+    this.world = world;
     this.render = new DocumentRender(this);
   }
 
@@ -57,7 +58,7 @@ public class PageView {
 
   public void cursorMoveTo(Vector2f screenPoint, Vector3f worldPoint) {
     Vector2f old = new Vector2f(cursorPos);
-    Vector2f dif = new Vector2f(cursorPos).sub(screenPoint);
+    Vector2f dif = new Vector2f(screenPoint).sub(cursorPos);
 
 
 
