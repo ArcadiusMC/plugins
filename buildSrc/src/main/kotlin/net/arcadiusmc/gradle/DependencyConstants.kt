@@ -4,7 +4,7 @@ const val GRENADIER         = "net.forthecrown:grenadier:2.4.0"
 const val GRENADIER_ANNOT   = "net.forthecrown:grenadier-annotations:1.3.3"
 
 const val NBT_LIB           = "net.forthecrown:nbt:1.5.1"
-const val PAPER_NBT         = "net.forthecrown:paper-nbt:1.7.1"
+const val PAPER_NBT         = "net.forthecrown:paper-nbt:1.7.3"
 
 const val MATH_LIB          = "org.spongepowered:math:2.1.0-SNAPSHOT"
 const val TOML              = "org.tomlj:tomlj:1.1.0"
