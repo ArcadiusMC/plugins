@@ -91,6 +91,8 @@ public class HandleSystem extends IteratingSystem {
     transform.flags = NONE_CHANGED;
     boolean teleportEntity = false;
 
+    transform.lastPosition.set(transform.position);
+
     if (currentlyProcessing == null) {
       currentlyProcessing = bukkit.getLocation();
     } else {

@@ -19,6 +19,7 @@ public class Transform implements Component {
 
   World world;
 
+  final Vector3d lastPosition = new Vector3d();
   final Vector3d position = new Vector3d();
   final Vector3d velocity = new Vector3d();
 
