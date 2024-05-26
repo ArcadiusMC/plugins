@@ -2,6 +2,7 @@ package net.arcadiusmc.items.commands;
 
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.util.Optional;
 import java.util.UUID;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.Arguments;
@@ -9,6 +10,7 @@ import net.arcadiusmc.command.arguments.RegistryArguments;
 import net.arcadiusmc.items.ExtendedItem;
 import net.arcadiusmc.items.ItemType;
 import net.arcadiusmc.items.ItemTypes;
+import net.arcadiusmc.items.Level;
 import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.Text;
@@ -17,6 +19,7 @@ import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class CommandCustomItem extends BaseCommand {
 
@@ -36,6 +39,20 @@ public class CommandCustomItem extends BaseCommand {
   @Override
   public void createCommand(GrenadierCommand command) {
     command
+        .then(literal("upgrade")
+            .executes(c -> {
+              upgrade(c, false);
+              return 0;
+            })
+
+            .then(argument("player", Arguments.ONLINE_USER)
+                .executes(c -> {
+                  upgrade(c, true);
+                  return 0;
+                })
+            )
+        )
+
         .then(literal("give")
             .then(argument("item type", itemTypeArgument)
                 .executes(c -> {
@@ -51,6 +68,46 @@ public class CommandCustomItem extends BaseCommand {
                 )
             )
         );
+  }
+
+  private void upgrade(CommandContext<CommandSource> c, boolean targetSet)
+      throws CommandSyntaxException
+  {
+    CommandSource source = c.getSource();
+    Player player;
+    boolean self;
+
+    if (targetSet) {
+      player = Arguments.getUser(c, "player").getPlayer();
+      self = player.getName().equals(source.textName());
+    } else {
+      player = source.asPlayer();
+      self = true;
+    }
+
+    ItemStack held = player.getInventory().getItemInMainHand();
+    String selfSuffix = self ? "self" : "other";
+    Optional<ExtendedItem> opt = ItemTypes.getItem(held);
+
+    if (opt.isEmpty()) {
+      throw Messages.render("itemsPlugin.error.notHolding", selfSuffix)
+          .addValue("player", player)
+          .exception(source);
+    }
+
+    ExtendedItem item = opt.get();
+    Optional<Level> levelOpt = item.getComponent(Level.class);
+
+    if (levelOpt.isEmpty()) {
+      throw Messages.render("itemsPlugin.error.notUpgradable", selfSuffix)
+          .addValue("player", player)
+          .exception(source);
+    }
+
+    Level level = levelOpt.get();
+    level.levelUp(player);
+
+    item.update();
   }
 
   private void give(CommandContext<CommandSource> c, boolean ownerSet)
