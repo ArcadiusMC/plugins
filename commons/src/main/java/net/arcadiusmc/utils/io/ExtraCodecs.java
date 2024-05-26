@@ -31,7 +31,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.UtilityClass;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.registry.Registries;
@@ -43,6 +42,9 @@ import net.forthecrown.nbt.BinaryTag;
 import net.forthecrown.nbt.CompoundTag;
 import net.forthecrown.nbt.string.TagParseException;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
+import net.kyori.adventure.sound.Sound.Builder;
+import net.kyori.adventure.sound.Sound.Source;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.minecraft.core.UUIDUtil;
@@ -270,6 +272,51 @@ public @UtilityClass class ExtraCodecs {
       ),
 
       Codec.LONG.xmap(Instant::ofEpochMilli, Instant::toEpochMilli)
+  );
+
+  public static final Codec<Sound> SOUND_CODEC = combine(
+      RecordCodecBuilder.create(instance -> {
+        return instance
+            .group(
+                KYORI_KEY.fieldOf("name")
+                    .forGetter(Sound::name),
+
+                Codec.FLOAT.optionalFieldOf("pitch", 1.0f)
+                    .forGetter(Sound::pitch),
+
+                Codec.FLOAT.optionalFieldOf("volume", 1.0f)
+                    .forGetter(Sound::volume),
+
+                enumCodec(Source.class)
+                    .optionalFieldOf("channel", Source.MASTER)
+                    .forGetter(Sound::source),
+
+                Codec.LONG.optionalFieldOf("seed")
+                    .forGetter(sound -> {
+                      var seed = sound.seed();
+                      if (seed.isPresent()) {
+                        return Optional.of(seed.getAsLong());
+                      }
+                      return Optional.empty();
+                    })
+            )
+            .apply(instance, (key, pitch, volume, source, seed) -> {
+              Builder builder = Sound.sound()
+                  .type(key)
+                  .pitch(pitch)
+                  .volume(volume)
+                  .source(source);
+
+              seed.ifPresent(builder::seed);
+
+              return builder.build();
+            });
+      }),
+
+      KYORI_KEY.xmap(
+          namespacedKey -> Sound.sound().type(namespacedKey).build(),
+          Sound::name
+      )
   );
 
   /* ----------------------------------------------------------- */
@@ -523,52 +570,13 @@ public @UtilityClass class ExtraCodecs {
     return UUIDUtil.uuidToIntArray(uuid);
   }
 
+  @Deprecated
   public static <V> MapCodec<V> strictOptional(Codec<V> codec, String field, V defaultValue) {
-    return strictOptional(codec, field)
-        .xmap(
-            v -> v.orElse(defaultValue),
-            v -> {
-              if (v == null || Objects.equals(v, defaultValue)) {
-                return Optional.empty();
-              }
-              return Optional.of(v);
-            }
-        );
+    return codec.optionalFieldOf(field, defaultValue);
   }
 
+  @Deprecated
   public static <V> MapCodec<Optional<V>> strictOptional(Codec<V> codec, String field) {
-    return new StrictOptionalCodec<>(codec, field);
-  }
-
-  @RequiredArgsConstructor
-  private class StrictOptionalCodec<V> extends MapCodec<Optional<V>> {
-
-    final Codec<V> base;
-    final String key;
-
-    @Override
-    public <T> Stream<T> keys(DynamicOps<T> ops) {
-      return Stream.of(ops.createString(key));
-    }
-
-    @Override
-    public <T> DataResult<Optional<V>> decode(DynamicOps<T> ops, MapLike<T> input) {
-      T found = input.get(key);
-
-      if (found == null) {
-        return Results.success(Optional.empty());
-      }
-
-      return base.parse(ops, found).map(Optional::of);
-    }
-
-    @Override
-    public <T> RecordBuilder<T> encode(Optional<V> input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
-      if (input.isEmpty()) {
-        return prefix;
-      }
-
-      return prefix.add(key, input.get(), base);
-    }
+    return codec.optionalFieldOf(field);
   }
 }
