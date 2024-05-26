@@ -5,6 +5,7 @@ import com.mojang.brigadier.context.CommandContext;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.RegistryArguments;
 import net.arcadiusmc.entity.Entities;
+import net.arcadiusmc.entity.EntityPlugin;
 import net.arcadiusmc.entity.EntityTemplate;
 import net.arcadiusmc.entity.EntityTemplates;
 import net.arcadiusmc.registry.Holder;
@@ -12,20 +13,23 @@ import net.arcadiusmc.text.Text;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
 import net.forthecrown.grenadier.types.ArgumentTypes;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 
 public class CommandCustomEntity extends BaseCommand {
 
+  private final EntityPlugin plugin;
   private final RegistryArguments<EntityTemplate> templateArgument;
 
-  public CommandCustomEntity() {
+  public CommandCustomEntity(EntityPlugin plugin) {
     super("customentity");
 
     setAliases("centity", "custom-entity");
     setDescription("Custom entity command");
 
-    templateArgument = new RegistryArguments<>(EntityTemplates.TEMPLATES, "Entity Template");
+    this.templateArgument = new RegistryArguments<>(EntityTemplates.TEMPLATES, "Entity Template");
+    this.plugin = plugin;
 
     register();
   }
@@ -33,6 +37,29 @@ public class CommandCustomEntity extends BaseCommand {
   @Override
   public void createCommand(GrenadierCommand command) {
     command
+        .then(literal("save")
+            .executes(c -> {
+              plugin.getStorage().saveEntities(plugin.getEngine());
+
+              c.getSource().sendSuccess(
+                  Component.text("Saved custom entity plugin", NamedTextColor.GRAY)
+              );
+              return 0;
+            })
+        )
+
+        .then(literal("reload")
+            .executes(c -> {
+              plugin.getEngine().removeAllEntities();
+              plugin.getStorage().loadEntities(plugin.getEngine());
+
+              c.getSource().sendSuccess(
+                  Component.text("Saved custom entity plugin", NamedTextColor.GRAY)
+              );
+              return 0;
+            })
+        )
+
         .then(literal("summon")
             .then(argument("template", templateArgument)
                 .executes(c -> summon(c, false))
