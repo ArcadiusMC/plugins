@@ -1,0 +1,14 @@
+
+#
+# Voice activation volume for sculks to be triggered.
+# In range 0..127
+#
+# Default: 110
+#
+sculk-activation-volume-db: 110
+
+#
+# Game event used to activate sculk blocks when a player
+# speaks using voicechat.
+#
+sculk-activation-gameevent: "minecraft:entity_action"

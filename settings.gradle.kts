@@ -38,6 +38,7 @@ include("dungeons")
 include("structures")
 include("kingmaker")
 include("merchants")
+include("voicechat-hook")
 
 include("mail")
 include("mail-impl")
