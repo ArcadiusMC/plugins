@@ -102,8 +102,6 @@ public class GuardianBeam extends IteratingSystem {
       }
     }
 
-    LOGGER.debug("data.collideWithBlocks={}", data.collideWithBlocks);
-
     if (data.collideWithBlocks && overlapsCollidableBlocks(world)) {
       detonate(transform, data, entity);
       return;
