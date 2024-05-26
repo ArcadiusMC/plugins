@@ -4,14 +4,18 @@ import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.items.lore.LoreElement;
 import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.TextWriter;
 import net.forthecrown.nbt.CompoundTag;
 import net.kyori.adventure.text.Component;
+import org.bukkit.EntityEffect;
+import org.bukkit.entity.Player;
 
 @Getter @Setter
 public class Level extends ItemComponent implements LoreElement {
 
   public static final int STARTING_LEVEL = 1;
+  public static final int NO_MAX = -1;
   static final String LEVEL_TAG = "level";
 
   private final int max;
@@ -46,7 +50,7 @@ public class Level extends ItemComponent implements LoreElement {
 
   @Override
   public void writeLore(ExtendedItem item, TextWriter writer) {
-    String key = "itemsPlugin.level." + (max == -1 ? "uncapped" : "capped");
+    String key = "itemsPlugin.level." + (max == NO_MAX ? "uncapped" : "capped");
 
     Component message = Messages.render(key)
         .addValue("level", level)
@@ -54,5 +58,22 @@ public class Level extends ItemComponent implements LoreElement {
         .asComponent();
 
     writer.line(message);
+  }
+
+  public void levelUp(Player player) {
+    if (max != NO_MAX && level >= max) {
+      return;
+    }
+
+    level++;
+
+    player.sendMessage(
+        Messages.render("itemsPlugin.levelup")
+            .addValue("item", Text.itemDisplayName(item.getHandle()))
+            .addValue("rank", level)
+            .create(player)
+    );
+
+    player.playEffect(EntityEffect.TOTEM_RESURRECT);
   }
 }
