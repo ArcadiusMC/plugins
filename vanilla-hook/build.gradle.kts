@@ -6,7 +6,7 @@ import net.arcadiusmc.gradle.NMS_DEPENDENCY
 
 plugins {
   java
-  id("io.papermc.paperweight.userdev") version "1.6.0"
+  id("io.papermc.paperweight.userdev") version "1.7.1"
 }
 
 version = MC_VERSION
