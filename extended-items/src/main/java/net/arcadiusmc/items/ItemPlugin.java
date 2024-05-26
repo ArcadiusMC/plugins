@@ -26,14 +26,14 @@ public class ItemPlugin extends JavaPlugin {
     GunTicker.TICKER.start();
     PlayerMoveSpeeds.SPEEDS.start();
 
+    reloadConfig();
+
     ItemTypes.registerAll();
     ItemListeners.registerAll(this);
     ItemCommands.registerAll();
 
     ItemGraveService service = ItemGraveService.grave();
     service.addFilter("items_plugin", PluginGraveFilter.FILTER);
-
-    reloadConfig();
   }
 
   @Override
