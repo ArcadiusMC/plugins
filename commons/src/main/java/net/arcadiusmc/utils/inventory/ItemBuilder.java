@@ -147,10 +147,18 @@ public abstract class ItemBuilder<T extends ItemBuilder<T>> implements Cloneable
   }
 
   public T setName(Component name) {
+    if (name == null) {
+      return setNameRaw(null);
+    }
+
     return setNameRaw(Text.wrapForItems(name));
   }
 
   public T setName(String name) {
+    if (name == null) {
+      return setNameRaw(null);
+    }
+
     return setName(Text.stringToItemText(name));
   }
 
