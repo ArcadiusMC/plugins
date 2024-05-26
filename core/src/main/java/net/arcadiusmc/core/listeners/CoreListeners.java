@@ -17,7 +17,6 @@ public final class CoreListeners {
     register(new HopperListener(plugin));
     register(new IgnoreListListener());
     register(new MobHealthBar(plugin));
-    register(new NoCopiesListener());
     register(new PlayerLoggingListener(plugin));
     register(new PlayerTeleportListener());
     register(new ServerListener());
