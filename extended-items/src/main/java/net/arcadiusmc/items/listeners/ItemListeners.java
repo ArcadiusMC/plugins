@@ -14,5 +14,6 @@ public final class ItemListeners {
     register(new SmokeBomb());
     register(new NoCopiesListener());
     register(new GunListeners());
+    register(new PiratesLuckListener());
   }
 }
