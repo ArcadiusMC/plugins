@@ -271,7 +271,6 @@ public final class Commands {
     String position = String.format("%s %s %s", l.getX(), l.getY(), l.getZ());
 
     return command
-        .replace("%player", player.getName())
         .replace("%player.block", block)
         .replace("%player.pos", position)
         .replace("%player.worldkey", l.getWorld().getKey() + "")
@@ -284,6 +283,7 @@ public final class Commands {
         .replace("%player.bz", l.getBlockZ() + "")
         .replace("%player.yaw", l.getYaw() + "")
         .replace("%player.pitch", l.getPitch() + "")
-        .replace("%player.uuid", player.getUniqueId() + "");
+        .replace("%player.uuid", player.getUniqueId() + "")
+        .replace("%player", player.getName());
   }
 }
