@@ -50,6 +50,7 @@ literal("stands") {
   }
 
   literal("add").argument("entity", entity) {
+    map_result = result.findEntity()
     executes = addStand()
     description = [
       "Adds a monarch armor stand.",
