@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Stack;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.parse.ChatParser;
 import net.arcadiusmc.utils.io.FormatConversions;
 import net.arcadiusmc.utils.io.PathUtil;
@@ -42,6 +43,26 @@ public class MessageLoader {
 
   private static final char YAML_PATH_SEPARATOR = ';';
   public static final String MESSAGE_FILE_NAME = "messages.yml";
+
+  /**
+   * Loads plugin messages.
+   * <p>
+   * Similar to {@link #loadPluginMessages(JavaPlugin, MessageList)} except the list parameter
+   * is gotten from the {@link Messages#MESSAGE_LIST} child lists, or created, if not found.
+   *
+   * @param plugin Plugin loading messages
+   * @see #loadPluginMessages(JavaPlugin, MessageList)
+   */
+  public static void loadPluginMessages(JavaPlugin plugin) {
+    MessageList list = Messages.MESSAGE_LIST.getChild(plugin.getName());
+
+    if (list == null) {
+      list = MessageList.create();
+      Messages.MESSAGE_LIST.addChild(plugin.getName(), list);
+    }
+
+    loadPluginMessages(plugin, list);
+  }
 
   /**
    * Load plugin message file
@@ -276,8 +297,6 @@ public class MessageLoader {
             .applyFallbackStyle(ctx.style());
 
         list.add(formatKey, component);
-
-        LOGGER.debug("Added message {}: {}", String.format("%-45s", formatKey), strValue);
         ctx.onMessageLoaded();
 
         continue;
