@@ -59,7 +59,7 @@ public final class Coins {
 
     ItemStack item = builder.build();
     item.editMeta(meta -> {
-      ItemStacks.setTagElement(meta, NBT_TAG, BinaryTags.byteTag(1));
+      ItemStacks.setTagElement(meta, NBT_TAG, BinaryTags.intTag(amount));
     });
 
     return item;
