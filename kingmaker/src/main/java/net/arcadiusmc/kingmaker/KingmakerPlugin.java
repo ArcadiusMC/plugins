@@ -4,6 +4,9 @@ import com.mojang.serialization.JsonOps;
 import java.time.Duration;
 import lombok.Getter;
 import net.arcadiusmc.command.Commands;
+import net.arcadiusmc.events.Events;
+import net.arcadiusmc.kingmaker.listener.CoinMintListener;
+import net.arcadiusmc.text.loader.MessageLoader;
 import net.arcadiusmc.text.placeholder.PlaceholderService;
 import net.arcadiusmc.text.placeholder.Placeholders;
 import net.arcadiusmc.utils.PeriodicalSaver;
@@ -28,11 +31,13 @@ public class KingmakerPlugin extends JavaPlugin {
     AnnotatedCommandContext context = Commands.createAnnotationContext();
     context.registerCommand(new KingmakerCommand(this));
 
+    Events.register(new CoinMintListener(kingmaker));
+
     saver = PeriodicalSaver.create(this::save, Duration.ofMinutes(30));
     saver.start();
 
     PlaceholderService service = Placeholders.getService();
-    service.getDefaults().add("emperor", new MonarchPlaceholder(kingmaker));
+    service.getDefaults().add("monarch", new MonarchPlaceholder(kingmaker));
   }
 
   @Override
@@ -63,6 +68,7 @@ public class KingmakerPlugin extends JavaPlugin {
 
   @Override
   public void reloadConfig() {
+    MessageLoader.loadPluginMessages(this);
     PluginJar.saveResources("config.yml");
 
     SerializationHelper.readAsJson(
