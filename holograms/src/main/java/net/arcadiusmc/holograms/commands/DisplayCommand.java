@@ -155,7 +155,7 @@ public abstract class DisplayCommand {
 
     source.sendSuccess(
         Messages.render(messagePrefix, "killed")
-            .addValue("board", board)
+            .addValue("board", board.displayName())
             .create(source)
     );
   }
