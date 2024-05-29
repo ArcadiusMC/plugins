@@ -1,6 +1,6 @@
 package net.arcadiusmc.gradle
 
-const val GRENADIER         = "net.forthecrown:grenadier:2.4.0"
+const val GRENADIER         = "net.forthecrown:grenadier:2.4.1"
 const val GRENADIER_ANNOT   = "net.forthecrown:grenadier-annotations:1.3.3"
 
 const val NBT_LIB           = "net.forthecrown:nbt:1.5.1"
