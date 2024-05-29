@@ -16,5 +16,6 @@ public class ServerListener implements Listener {
   @EventHandler(ignoreCancelled = true)
   public void onServerLoad(ServerLoadEvent event) {
     plugin.reload();
+    plugin.getTicker().startTicking();
   }
 }

@@ -66,12 +66,13 @@ public abstract class Hologram implements HolographicDisplay {
     this.name = name;
   }
 
+  @Override
   public void setLocation(Location location) {
-    boolean spawned = isSpawned();
+    setLocation(location, true);
+  }
 
-    if (spawned) {
-      kill();
-    }
+  public void setLocation(Location location, boolean moveEntity) {
+    boolean spawned = isSpawned();
 
     if (this.location != null) {
       this.location.getChunk().removePluginChunkTicket(PluginUtil.getPlugin());
@@ -83,15 +84,15 @@ public abstract class Hologram implements HolographicDisplay {
 
     this.location = Locations.clone(location);
 
+    if (moveEntity) {
+      getEntity().ifPresent(entity -> entity.teleport(location));
+    }
+
     if (this.location != null) {
       this.location.getChunk().addPluginChunkTicket(PluginUtil.getPlugin());
 
-      if (spawned) {
-        spawn();
-
-        if (service != null) {
-          service.getTriggers().onUpdate(this);
-        }
+      if (spawned && service != null) {
+        service.getTriggers().onUpdate(this);
       }
     }
   }

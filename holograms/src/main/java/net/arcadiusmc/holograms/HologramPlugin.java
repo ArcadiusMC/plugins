@@ -21,7 +21,7 @@ public class HologramPlugin extends JavaPlugin {
 
   private BoardsConfig boardsConfig;
   private ServiceImpl service;
-
+  private HologramTicker ticker;
   private PeriodicalSaver saver;
 
   static HologramPlugin plugin() {
@@ -39,6 +39,8 @@ public class HologramPlugin extends JavaPlugin {
     service.getTriggers().activate();
     service.createDefaultSources();
 
+    ticker = new HologramTicker(service);
+
     Events.register(new ServerListener(this));
     Events.register(new PlayerListener(this));
 
@@ -54,6 +56,10 @@ public class HologramPlugin extends JavaPlugin {
 
     Messages.MESSAGE_LIST.removeChild(getName());
     HologramPlaceholders.unregister();
+
+    if (ticker != null) {
+      ticker.stopTicking();
+    }
   }
 
   @Override
