@@ -37,7 +37,7 @@ public class ShulkerGuardian extends IteratingSystem {
 
   static final float DYING_TIME_SECONDS = 2.5f;
   static final float DRAW_INTERVAL_SECONDS = 0.25f;
-  static final float AIMING_TIME_SECONDS = 0.25f;
+  static final float AIMING_TIME_SECONDS = 0.75f;
   static final float AIM_INTERVAL_SECONDS = 1f;
   static final float AIM_VARIANCE_SECONDS = 0.5f;
   static final float BASE_DAMAGE = 3.5f;
