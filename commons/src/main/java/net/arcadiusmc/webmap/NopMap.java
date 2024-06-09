@@ -26,12 +26,12 @@ class NopMap implements WebMap {
   }
 
   @Override
-  public Optional<MapIcon> getIcon(String id) {
+  public Optional<MapIcon> getIcon(World world, String id) {
     return Optional.empty();
   }
 
   @Override
-  public Result<MapIcon> createIcon(String id, String name, InputStream iconData) {
+  public Result<MapIcon> createIcon(World world, String id, String name, InputStream iconData) {
     return noOpRes();
   }
 

@@ -2,13 +2,15 @@ package net.arcadiusmc.webmap.bluemap;
 
 import com.google.common.base.Strings;
 import com.google.gson.JsonElement;
+import de.bluecolored.bluemap.api.AssetStorage;
 import de.bluecolored.bluemap.api.BlueMapAPI;
 import de.bluecolored.bluemap.api.BlueMapMap;
 import de.bluecolored.bluemap.api.gson.MarkerGson;
 import de.bluecolored.bluemap.api.markers.MarkerSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,7 +34,7 @@ public class BlueWebmap implements WebMap {
 
   private final IconIndex iconIndex;
 
-  private final Map<String, String> pluginSets = new Object2ObjectOpenHashMap<>();
+  private final Map<String, MarkerSetInfo> pluginSets = new Object2ObjectOpenHashMap<>();
   private final Path markerJson;
 
   public BlueWebmap(Path pluginDir) {
@@ -111,24 +113,43 @@ public class BlueWebmap implements WebMap {
     }
 
     MarkerSet set = new MarkerSet(name);
-    pluginSets.put(id, world.getName());
+    pluginSets.put(id, new MarkerSetInfo(set, world.getName()));
+    mapMap.getMarkerSets().put(id, set);
 
     return Result.success(new BlueMapLayer(id, set, world, mapMap, this));
   }
 
-  @Override
-  public Optional<MapIcon> getIcon(String id) {
-    if (Strings.isNullOrEmpty(id)) {
-      return Optional.empty();
-    }
-
-    return Optional.ofNullable(iconIndex.getIconPath(id))
-        .filter(Files::exists)
-        .map(path -> new BlueMapIcon(id, path.toString(), iconIndex));
+  private static String idToPath(String id) {
+    return id + (id.endsWith(".png") ? "" : ".png");
   }
 
   @Override
-  public Result<MapIcon> createIcon(String id, String name, InputStream iconData) {
+  public Optional<MapIcon> getIcon(World world, String id) {
+    if (Strings.isNullOrEmpty(id)) {
+      return Optional.empty();
+    }
+    if (world == null) {
+      return Optional.empty();
+    }
+
+    String path = idToPath(id);
+
+    return getMap(world)
+        .filter(mapMap -> {
+          AssetStorage storage = mapMap.getAssetStorage();
+
+          try {
+            return storage.assetExists(path);
+          } catch (IOException exc) {
+            LOGGER.error("Error checking if asset {} exists", path, exc);
+            return false;
+          }
+        })
+        .map(mapMap -> new BlueMapIcon(id, path, mapMap));
+  }
+
+  @Override
+  public Result<MapIcon> createIcon(World world, String id, String name, InputStream iconData) {
     if (Strings.isNullOrEmpty(id)) {
       return Result.error("Null/empty ID");
     }
@@ -138,9 +159,36 @@ public class BlueWebmap implements WebMap {
     if (iconData == null) {
       return Result.error("Null icon-data");
     }
+    if (world == null) {
+      return Result.error("Null world");
+    }
 
-    return iconIndex.createIconFile(id, iconData)
-        .map(path -> new BlueMapIcon(id, path.toString(), iconIndex));
+    Optional<BlueMapMap> mapOpt = getMap(world);
+
+    if (mapOpt.isEmpty()) {
+      return Result.error("World '%s' does not have an API equivalent", world.getName());
+    }
+
+    BlueMapMap mapMap = mapOpt.get();
+    AssetStorage storage = mapMap.getAssetStorage();
+
+    String path = idToPath(id);
+
+    try {
+      if (storage.assetExists(path)) {
+        return Result.error("Icon with ID '%s' already exists", id);
+      }
+    } catch (IOException exc) {
+      LOGGER.error("Error validating if asset '{}' exists or not. Presuming it doesn't", path, exc);
+    }
+
+    try (OutputStream stream = storage.writeAsset(path)) {
+      iconData.transferTo(stream);
+    } catch (IOException exc) {
+      return Result.error("IO error during icon '%s' write: %s", path, exc.getMessage());
+    }
+
+    return Result.success(new BlueMapIcon(id, path, mapMap));
   }
 
   @Override
@@ -162,21 +210,19 @@ public class BlueWebmap implements WebMap {
 
   public void save() {
     SerializationHelper.writeJsonFile(markerJson, json -> {
-      for (Entry<String, String> entry : pluginSets.entrySet()) {
-        getMap(entry.getValue()).ifPresent(mapMap -> {
-          MarkerSet set = mapMap.getMarkerSets().get(entry.getKey());
+      for (Entry<String, MarkerSetInfo> entry : pluginSets.entrySet()) {
+        MarkerSet set = entry.getValue().set();
 
-          if (set == null) {
-            return;
-          }
+        if (set == null) {
+          return;
+        }
 
-          JsonElement serialized = MarkerGson.INSTANCE.toJsonTree(set);
-          JsonWrapper markerJson = JsonWrapper.create();
-          markerJson.add("world", entry.getValue());
-          markerJson.add("marker_data", serialized);
+        JsonElement serialized = MarkerGson.INSTANCE.toJsonTree(set);
+        JsonWrapper markerJson = JsonWrapper.create();
+        markerJson.add("world", entry.getValue().world());
+        markerJson.add("marker_data", serialized);
 
-          json.add(entry.getKey(), markerJson);
-        });
+        json.add(entry.getKey(), markerJson);
       }
     });
   }
@@ -184,17 +230,28 @@ public class BlueWebmap implements WebMap {
   public void load() {
     SerializationHelper.readAsJson(markerJson, jsonWrapper -> {
       for (Entry<String, JsonElement> entry : jsonWrapper.entrySet()) {
+        String id = entry.getKey();
         JsonWrapper json = JsonWrapper.wrap(entry.getValue().getAsJsonObject());
         String worldName = json.getString("world");
         JsonElement data = json.get("marker_data");
 
         MarkerSet set = MarkerGson.INSTANCE.fromJson(data, MarkerSet.class);
 
-        getMap(worldName).ifPresent(mapMap -> {
-          mapMap.getMarkerSets().put(entry.getKey(), set);
-          pluginSets.put(entry.getKey(), worldName);
+        MarkerSetInfo info = new MarkerSetInfo(set, worldName);
+        pluginSets.put(id, info);
+
+        getMap(worldName).ifPresent(blueMapMap -> {
+          blueMapMap.getMarkerSets().put(id, set);
         });
       }
     });
+  }
+
+  void onDelete(String id) {
+    pluginSets.remove(id);
+  }
+
+  record MarkerSetInfo(MarkerSet set, String world) {
+
   }
 }

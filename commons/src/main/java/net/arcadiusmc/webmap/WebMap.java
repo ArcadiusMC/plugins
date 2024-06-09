@@ -66,7 +66,7 @@ public interface WebMap {
    * @param id icon ID
    * @return Empty result if the ID was {@code null}, or if the icon wasn't found
    */
-  Optional<MapIcon> getIcon(String id);
+  Optional<MapIcon> getIcon(World world, String id);
 
   /**
    * Creates a map icon.
@@ -87,7 +87,7 @@ public interface WebMap {
    *  @return A result containing an error if the icon already exists or if iconData/id/name were
    *          {@code null}. Otherwise, a successful result containing the icon is returned.
    */
-  Result<MapIcon> createIcon(String id, String name, InputStream iconData);
+  Result<MapIcon> createIcon(World world, String id, String name, InputStream iconData);
 
   /**
    * Tests if a player is visible on the WebMap

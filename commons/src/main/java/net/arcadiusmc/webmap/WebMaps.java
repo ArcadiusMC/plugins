@@ -37,6 +37,7 @@ public final class WebMaps {
   }
 
   public static Optional<MapIcon> findOrDefineIcon(
+      World world,
       String id,
       String name,
       Supplier<InputStream> dataSupplier
@@ -45,10 +46,10 @@ public final class WebMaps {
       return Optional.empty();
     }
 
-    return WebMap.map().getIcon(id)
+    return WebMap.map().getIcon(world, id)
         .or(() -> {
           var result = WebMap.map()
-              .createIcon(id, name, dataSupplier.get())
+              .createIcon(world, id, name, dataSupplier.get())
               .mapError(string -> "Failed to create map icon: " + string);
 
           result.applyError(LOGGER::error);

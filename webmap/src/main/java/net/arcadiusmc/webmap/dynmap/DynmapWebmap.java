@@ -105,7 +105,7 @@ public class DynmapWebmap implements WebMap {
   }
 
   @Override
-  public Optional<MapIcon> getIcon(String id) {
+  public Optional<MapIcon> getIcon(World world, String id) {
     if (Strings.isNullOrEmpty(id)) {
       return Optional.empty();
     }
@@ -117,7 +117,7 @@ public class DynmapWebmap implements WebMap {
   }
 
   @Override
-  public Result<MapIcon> createIcon(String id, String name, InputStream iconData) {
+  public Result<MapIcon> createIcon(World world, String id, String name, InputStream iconData) {
     if (Strings.isNullOrEmpty(id)) {
       return Result.error("Null/empty ID");
     }

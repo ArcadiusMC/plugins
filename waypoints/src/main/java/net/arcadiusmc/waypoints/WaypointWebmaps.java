@@ -69,7 +69,7 @@ public final class WaypointWebmaps {
       return;
     }
 
-    Optional<MapIcon> iconOpt = getIcon(iconImage);
+    Optional<MapIcon> iconOpt = getIcon(waypoint.getWorld(), iconImage);
 
     if (iconOpt.isEmpty()) {
       LOGGER.error("Couldn't find icon for waypoint marker! '{}'", iconImage);
@@ -125,7 +125,7 @@ public final class WaypointWebmaps {
     return WebMaps.findOrDefineLayer(world, SET_ID, SET_NAME);
   }
 
-  static Optional<MapIcon> getIcon(String id) {
-    return WebMap.map().getIcon(id);
+  static Optional<MapIcon> getIcon(World world, String id) {
+    return WebMap.map().getIcon(world, id);
   }
 }

@@ -6,12 +6,16 @@ import de.bluecolored.bluemap.api.markers.POIMarker;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Files;
+import java.util.Optional;
+import net.arcadiusmc.Loggers;
 import net.arcadiusmc.utils.Result;
 import net.arcadiusmc.webmap.MapIcon;
 import net.arcadiusmc.webmap.MapPointMarker;
+import org.slf4j.Logger;
 
 public class BlueMapPointMarker extends BlueMapMarker implements MapPointMarker {
+
+  private static final Logger LOGGER = Loggers.getLogger();
 
   private final POIMarker marker;
 
@@ -43,9 +47,21 @@ public class BlueMapPointMarker extends BlueMapMarker implements MapPointMarker 
   @Override
   public MapIcon getIcon() {
     String address = marker.getIconAddress();
-    AssetStorage storage = layer.map.getAssetStorage();
+    return new BlueMapIcon(address, address, layer.map);
+  }
 
-    return new BlueMapIcon(address, storage);
+  static void copyAsset(String path, AssetStorage from, AssetStorage to) throws IOException {
+    Optional<InputStream> opt = from.readAsset(path);
+
+    if (opt.isEmpty()) {
+      return;
+    }
+
+    try (InputStream input = opt.get()) {
+      try (OutputStream out = to.writeAsset(path)) {
+        input.transferTo(out);
+      }
+    }
   }
 
   @Override
@@ -57,28 +73,18 @@ public class BlueMapPointMarker extends BlueMapMarker implements MapPointMarker 
       return Result.error("Icon from a different implementation (How???)");
     }
 
-    if (blu.storage != null) {
-      marker.setIcon(blu.path, marker.getAnchor());
-      return Result.unit();
-    }
-
-    AssetStorage assets = layer.map.getAssetStorage();
-    String path = blu.id + ".png";
-
-    try {
-      if (!assets.assetExists(path)) {
-        try (
-            OutputStream out = assets.writeAsset(path);
-            InputStream in = Files.newInputStream(blu.index.getIconPath(blu.id))
-        ) {
-          in.transferTo(out);
-        }
+    if (!blu.map.getId().equals(layer.map.getId())) {
+      try {
+        copyAsset(blu.path, blu.storage, layer.map.getAssetStorage());
+      } catch (IOException exc) {
+        LOGGER.error("Error copying bluemap icon {} from world {} to {}",
+            blu.path, blu.map.getId(), layer.map.getId(),
+            exc
+        );
       }
-    } catch (IOException exc) {
-      return Result.error("IO error trying to set icon: %s", exc.getMessage());
     }
 
-    marker.setIcon(path, marker.getAnchor());
+    marker.setIcon(blu.path, marker.getAnchor());
     return Result.unit();
   }
 }

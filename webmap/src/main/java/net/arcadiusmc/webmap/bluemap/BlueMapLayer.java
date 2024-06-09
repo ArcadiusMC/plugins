@@ -162,5 +162,6 @@ public class BlueMapLayer implements MapLayer {
   @Override
   public void delete() {
     map.getMarkerSets().remove(id);
+    webmap.onDelete(id);
   }
 }
