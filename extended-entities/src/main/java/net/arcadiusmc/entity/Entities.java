@@ -13,6 +13,8 @@ import org.bukkit.Location;
 
 public class Entities {
 
+  public static float timeScale = 1.0f;
+
   @Getter
   static Engine engine;
 

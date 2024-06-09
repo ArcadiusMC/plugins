@@ -9,6 +9,8 @@ import net.arcadiusmc.entity.persistence.PersistentTypes;
 import net.arcadiusmc.entity.system.HandleSystem;
 import net.arcadiusmc.entity.system.IdSystem;
 import net.arcadiusmc.utils.Tasks;
+import org.bukkit.Bukkit;
+import org.bukkit.Server;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
@@ -54,29 +56,19 @@ public class EntityPlugin extends JavaPlugin {
 
 class TickTask implements Runnable {
 
-  static final float NANOS_PER_SECOND = 1e-9f;
-
-  float lastExec;
-  float execStart;
-  float deltaTime;
-
+  final Server server;
   final Engine engine;
 
   public TickTask(Engine engine) {
     this.engine = engine;
+    this.server = Bukkit.getServer();
   }
 
   @Override
   public void run() {
-    execStart = System.nanoTime();
-
-    if (lastExec == 0) {
-      deltaTime = 1;
-    } else {
-      deltaTime = (execStart - lastExec) / NANOS_PER_SECOND;
-    }
+    float rate = server.getServerTickManager().getTickRate();
+    float deltaTime = (1.0f / rate) * Entities.timeScale;
 
     engine.update(deltaTime);
-    lastExec = execStart;
   }
 }
