@@ -53,7 +53,7 @@ class ArcadiusGradlePlugin: Plugin<Project> {
       val projLibs = buildLibs(proj)
       val rootLibs = buildLibs(root)
 
-      val jarName = "${yml.name}-${proj.version}"
+      val jarName = "${getArchiveName(yml)}-${proj.version}"
 
       if (moveJar(projLibs, rootLibs, "$jarName-all.jar")) {
         return@doLast
@@ -108,9 +108,17 @@ class ArcadiusGradlePlugin: Plugin<Project> {
     target.tasks.findByName("compileJava")?.dependsOn(CREATE_PLUGIN_YML)
   }
 
+  private fun getArchiveName(yml: PaperConfig): String? {
+    if (yml.jarName.isEmpty()) {
+      return yml.name;
+    }
+
+    return yml.jarName;
+  }
+
   private fun setArchiveName(project: Project, yml: PaperConfig) {
     val base = project.extensions.getByType(BasePluginExtension::class.java)
-    base.archivesName.set(yml.name)
+    base.archivesName.set(getArchiveName(yml))
   }
 
   private fun addGeneratedToSourceSet(project: Project) {

@@ -1,7 +1,7 @@
 package net.arcadiusmc.gradle
 
-const val MC_VERSION = "1.20.6"
-const val API_VERSION = "1.20.6"
+const val MC_VERSION = "1.21"
+const val API_VERSION = "1.21"
 const val NMS_DEPENDENCY = "$MC_VERSION-R0.1-SNAPSHOT"
 
 const val SERVER_NAME = "Arcadius"

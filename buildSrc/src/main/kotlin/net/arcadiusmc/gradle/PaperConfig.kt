@@ -15,8 +15,17 @@ class PaperConfig {
       if (prefix == null) {
         prefix = value.replace(PLUGIN_NAME_PREFIX, "")
       }
+
+      if (value.startsWith(SERVER_NAME)) {
+        jarName = value
+      } else {
+        jarName = PLUGIN_NAME_PREFIX + value
+      }
+
       field = value
     }
+
+  var jarName: String = ""
 
   // Class loading/bootstrap info
   var bootstrapper: String? = null
