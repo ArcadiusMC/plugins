@@ -11,7 +11,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class VanillaPlugin extends JavaPlugin {
 
-  static final int CURRENT_DATA_VERSION = 3839;
+  static final int CURRENT_DATA_VERSION = 3953;
 
   @Override
   public void onEnable() {
@@ -26,7 +26,7 @@ public class VanillaPlugin extends JavaPlugin {
     }
 
     ListenersImpl listeners = ListenersImpl.getListeners();
-    listeners.initalize();
+    listeners.initialize();
 
     ServicesManager services = Bukkit.getServicesManager();
     services.register(PacketListeners.class, listeners, this, ServicePriority.Normal);

@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import net.arcadiusmc.vanilla.utils.Accessors;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.packet.EntityRenderer;
 import net.arcadiusmc.packet.PacketCall;
@@ -22,8 +21,8 @@ import net.arcadiusmc.registry.Registries;
 import net.arcadiusmc.registry.Registry;
 import net.arcadiusmc.utils.VanillaAccess;
 import net.arcadiusmc.utils.math.WorldVec3i;
+import net.arcadiusmc.vanilla.utils.Accessors;
 import net.kyori.adventure.text.Component;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -53,7 +52,7 @@ public class ListenersImpl implements PacketListeners {
   public ListenersImpl() {
   }
 
-  public void initalize() {
+  public void initialize() {
     register(new GamemodePacketListener());
 
     register(new SignPacketListener(this));
@@ -82,13 +81,7 @@ public class ListenersImpl implements PacketListeners {
       EntityDataAccessor<net.minecraft.network.chat.Component> accessor
           = Accessors.find(Accessors.ACCESSOR_TEXT_DISPLAY_TEXT, TextDisplay.class);
 
-      net.minecraft.network.chat.Component vanillaValue;
-
-      if (text == null) {
-        vanillaValue = CommonComponents.EMPTY;
-      } else {
-        vanillaValue = PaperAdventure.asVanilla(text);
-      }
+      net.minecraft.network.chat.Component vanillaValue = PaperAdventure.asVanilla(text);
 
       value = new DataValue<>(accessor.id(), accessor.serializer(), vanillaValue);
     } else {
