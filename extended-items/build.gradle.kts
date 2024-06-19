@@ -14,4 +14,5 @@ dependencies {
 pluginYml {
   prefixedName("Items")
   main = "net.arcadiusmc.items.ItemPlugin"
+  bootstrapper = "net.arcadiusmc.items.ItemsBootstrapper"
 }

@@ -8,7 +8,6 @@ import net.arcadiusmc.items.Owner;
 import net.arcadiusmc.items.goal.Goal;
 import net.arcadiusmc.items.goal.GoalKey;
 import net.arcadiusmc.items.goal.ItemGoals;
-import net.arcadiusmc.items.lore.EnchantsLoreElement;
 import net.arcadiusmc.items.lore.LoreElement;
 import net.arcadiusmc.items.upgrade.AddEnchantMod;
 import net.arcadiusmc.items.upgrade.ItemUpgrades;
@@ -24,7 +23,7 @@ public class SpadeItem implements ItemType {
 
   static final int MAX_LEVEL = 10;
 
-  static final String GOAL_TYPE = "pirates_luck/picked_up";
+  public static final String GOAL_TYPE = "pirates_luck/picked_up";
 
   private static final ItemUpgrades UPGRADES = ItemUpgrades.builder()
       .previewPrefix(LoreElement.EMPTY_LINE)
@@ -32,20 +31,12 @@ public class SpadeItem implements ItemType {
 
       .level(1, level -> {
         level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 1));
-
-        if (ArcadiusEnchantments.ENABLED) {
-          level.upgrade(new AddEnchantMod(ArcadiusEnchantments.SOULBOUND, 1));
-        }
+        level.upgrade(new AddEnchantMod(ArcadiusEnchantments.SOULBOUND, 1));
       })
 
       .level(2, level -> {
         level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 2));
-
-        if (ArcadiusEnchantments.ENABLED) {
-          level.upgrade(new AddEnchantMod(ArcadiusEnchantments.PIRATES_LUCK, 1));
-        } else {
-          level.upgrade(new SetLuckMod(1));
-        }
+        level.upgrade(new AddEnchantMod(ArcadiusEnchantments.PIRATES_LUCK, 1));
       })
 
       .level(3, level -> {
@@ -54,12 +45,7 @@ public class SpadeItem implements ItemType {
 
       .level(4, level -> {
         level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 3));
-
-        if (ArcadiusEnchantments.ENABLED) {
-          level.upgrade(new AddEnchantMod(ArcadiusEnchantments.PIRATES_LUCK, 2));
-        } else {
-          level.upgrade(new SetLuckMod(2));
-        }
+        level.upgrade(new AddEnchantMod(ArcadiusEnchantments.PIRATES_LUCK, 2));
       })
 
       .level(5, level -> {
@@ -68,12 +54,7 @@ public class SpadeItem implements ItemType {
 
       .level(6, level -> {
         level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 4));
-
-        if (ArcadiusEnchantments.ENABLED) {
-          level.upgrade(new AddEnchantMod(ArcadiusEnchantments.PIRATES_LUCK, 3));
-        } else {
-          level.upgrade(new SetLuckMod(3));
-        }
+        level.upgrade(new AddEnchantMod(ArcadiusEnchantments.PIRATES_LUCK, 3));
       })
 
       .level(7, level -> {
@@ -82,12 +63,7 @@ public class SpadeItem implements ItemType {
 
       .level(8, level -> {
         level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 5));
-
-        if (ArcadiusEnchantments.ENABLED) {
-          level.upgrade(new AddEnchantMod(ArcadiusEnchantments.PIRATES_LUCK, 4));
-        } else {
-          level.upgrade(new SetLuckMod(4));
-        }
+        level.upgrade(new AddEnchantMod(ArcadiusEnchantments.PIRATES_LUCK, 4));
       })
 
       .level(9, level -> {
@@ -96,12 +72,7 @@ public class SpadeItem implements ItemType {
 
       .level(10, level -> {
         level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 6));
-
-        if (ArcadiusEnchantments.ENABLED) {
-          level.upgrade(new AddEnchantMod(ArcadiusEnchantments.PIRATES_LUCK, 5));
-        } else {
-          level.upgrade(new SetLuckMod(5));
-        }
+        level.upgrade(new AddEnchantMod(ArcadiusEnchantments.PIRATES_LUCK, 5));
       })
 
       .build();
@@ -198,16 +169,13 @@ public class SpadeItem implements ItemType {
   public void addComponents(ExtendedItem item) {
     Level level = new Level(MAX_LEVEL);
     Owner owner = new Owner();
-    PiratesLuck luck = new PiratesLuck();
 
     item.addComponent(level);
     item.addComponent(owner);
-    item.addComponent(luck);
     item.addComponent(UPGRADES.createComponent());
     item.addComponent(GOALS.createComponent());
 
-    item.addLore(EnchantsLoreElement.ENCHANTS);
-    item.addLore(luck);
+    //item.addLore(EnchantsLoreElement.ENCHANTS);
     item.addLore(LoreElement.EMPTY_LINE);
     item.addLore(level);
     item.addLore(GOALS.createGoalText());

@@ -28,6 +28,7 @@ public class ItemPlugin extends JavaPlugin {
 
     reloadConfig();
 
+    ArcadiusEnchantments.findEnchantments();
     ItemTypes.registerAll();
     ItemListeners.registerAll(this);
     ItemCommands.registerAll();

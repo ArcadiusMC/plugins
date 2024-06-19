@@ -6,11 +6,11 @@ import net.arcadiusmc.items.ArcadiusEnchantments;
 import net.arcadiusmc.items.ItemTypes;
 import net.arcadiusmc.items.goal.GoalKey;
 import net.arcadiusmc.items.goal.GoalsComponent;
+import net.arcadiusmc.items.tools.SpadeItem;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
 import net.arcadiusmc.utils.inventory.ItemStacks;
-import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -56,12 +56,12 @@ public class PiratesLuckListener implements Listener {
       return;
     }
 
-    ItemTypes.getItem(held)
-        .flatMap(item -> item.getComponent(GoalsComponent.class))
-        .ifPresent(goals -> {
-          Material material = event.getBlock().getType();
-          goals.triggerGoal(GoalKey.blockBreak(material), 1f, player);
-        });
+    ItemTypes.getItem(held).ifPresent(item -> {
+      item.getComponent(GoalsComponent.class).ifPresent(goals -> {
+        goals.triggerGoal(GoalKey.valueOf(SpadeItem.GOAL_TYPE, reward + "x"), 1, player);
+        item.update();
+      });
+    });
   }
 
   public static int run(BlockBreakEvent event, int level) {
