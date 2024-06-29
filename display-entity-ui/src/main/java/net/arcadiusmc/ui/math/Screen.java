@@ -1,11 +1,14 @@
 package net.arcadiusmc.ui.math;
 
+import com.sk89q.worldedit.math.Vector3;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.joml.Intersectionf;
-import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-public class ScreenBounds {
+public class Screen {
 
   private static final float EPSILON = 0.0000001f;
 
@@ -38,6 +41,11 @@ public class ScreenBounds {
     this.normal.set(1, 0, 0);
   }
 
+  public Location getLowerRightLocation(World world) {
+    Vector2f rot = getRotation();
+    return new Location(world, lowerRight.x, lowerRight.y, lowerRight.z, rot.x, rot.y);
+  }
+
   public Vector3f getLowerLeft() {
     return new Vector3f(lowerLeft);
   }
@@ -54,18 +62,68 @@ public class ScreenBounds {
     return new Vector3f(upperRight);
   }
 
+  public Vector2f getRotation() {
+    Vector3 weNormal = Vector3.at(normal.x, normal.y, normal.z);
 
-  public void apply(Matrix3f matrix) {
-    lowerLeft.sub(center).mul(matrix).add(center);
-    lowerRight.sub(center).mul(matrix).add(center);
-    upperLeft.sub(center).mul(matrix).add(center);
-    upperRight.sub(center).mul(matrix).add(center);
+    float yaw = (float) weNormal.toYaw();
+    float pitch = (float) weNormal.toPitch();
 
-    calculateDerivedValues();
+    return new Vector2f(yaw, pitch);
+  }
+
+  public Vector2f getDimensions() {
+    Vector3f height = new Vector3f(upperLeft).sub(lowerLeft);
+    Vector3f width = new Vector3f(upperRight).sub(upperLeft);
+
+    return new Vector2f(width.length(), height.length());
   }
 
   public Vector3f center() {
     return new Vector3f(center);
+  }
+
+  /**
+   * Applies a transformation to this screen
+   * @param matrix Matrix to apply
+   */
+  public void apply(Matrix4f matrix) {
+    lowerLeft.sub(center).mulPosition(matrix).add(center);
+    lowerRight.sub(center).mulPosition(matrix).add(center);
+    upperLeft.sub(center).mulPosition(matrix).add(center);
+    upperRight.sub(center).mulPosition(matrix).add(center);
+
+    calculateDerivedValues();
+  }
+
+  /**
+   * Translate screen coordinates in range [0...{@link #getDimensions()}] to a world position
+   * @param screenPoint Screen point, with axes in range [0..{@link #getDimensions()}]
+   * @param out Output value holder
+   */
+  public void screenToWorld(Vector2f screenPoint, Vector3f out) {
+    Vector2f dim = getDimensions();
+
+    Vector2f in = new Vector2f(screenPoint);
+    in.div(dim);
+
+    screenspaceToWorld(in, out);
+  }
+
+  /**
+   * Translate screen space coordinates in range [0..1] to a world position.
+   * @param screenPoint Screen point, with axes in range [0..1]
+   * @param out Output value holder
+   */
+  public void screenspaceToWorld(Vector2f screenPoint, Vector3f out) {
+    Vector3f height = new Vector3f(upperLeft).sub(lowerLeft);
+    Vector3f width = new Vector3f(lowerRight).sub(lowerLeft);
+
+    height.mul(screenPoint.y);
+    width.mul(screenPoint.x);
+
+    out.set(lowerLeft);
+    out.add(width);
+    out.add(height);
   }
 
   public boolean castRay(RayScan scan, Vector3f hitOut, Vector2f screenOut) {
@@ -81,12 +139,9 @@ public class ScreenBounds {
         && (screenOut.y >= 0 && screenOut.y <= 1);
   }
 
-  void screenHitPoint(Vector3f hitPoint, Vector2f out) {
-    Vector3f height = new Vector3f();
-    upperLeft.sub(lowerLeft, height);
-
-    Vector3f width = new Vector3f();
-    lowerRight.sub(lowerLeft, width);
+  private void screenHitPoint(Vector3f hitPoint, Vector2f out) {
+    Vector3f height = new Vector3f(upperLeft).sub(lowerLeft);
+    Vector3f width = new Vector3f(lowerRight).sub(lowerLeft);
 
     Vector3f relativePoint = new Vector3f(hitPoint).sub(lowerLeft);
 

@@ -1,27 +1,55 @@
 package net.arcadiusmc.ui.commands;
 
 import com.destroystokyo.paper.ParticleBuilder;
-import com.mojang.brigadier.arguments.FloatArgumentType;
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.util.function.Function;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.ui.PageView;
 import net.arcadiusmc.ui.PlayerSession;
 import net.arcadiusmc.ui.UiPlugin;
-import net.arcadiusmc.ui.math.ScreenBounds;
+import net.arcadiusmc.ui.math.Screen;
 import net.arcadiusmc.utils.Particles;
 import net.arcadiusmc.utils.Tasks;
 import net.forthecrown.grenadier.GrenadierCommand;
+import net.forthecrown.grenadier.types.ArgumentTypes;
+import net.forthecrown.grenadier.types.options.ArgumentOption;
+import net.forthecrown.grenadier.types.options.Options;
+import net.forthecrown.grenadier.types.options.OptionsArgument;
+import net.forthecrown.grenadier.types.options.ParsedOptions;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Transformation;
 import org.joml.Math;
-import org.joml.Matrix3f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.spongepowered.math.vector.Vector3d;
 
 public class CommandEntityUi extends BaseCommand {
+
+  static final ArgumentOption<Vector3f> TRANSLATE
+      = Options.argument(NumberBasedParser.VEC_3F, "translation");
+
+  static final ArgumentOption<Vector3f> SCALE
+      = Options.argument(NumberBasedParser.VEC_3F, "scale");
+
+  static final ArgumentOption<Quaternionf> LEFT_ROTATION
+      = Options.argument(NumberBasedParser.QUATERNION, "left-rotation");
+
+  static final ArgumentOption<Quaternionf> RIGHT_ROTATION
+      = Options.argument(NumberBasedParser.QUATERNION, "right-rotation");
+
+  public static final OptionsArgument TRANSFORM_ARGS = OptionsArgument.builder()
+      .addOptional(TRANSLATE)
+      .addOptional(SCALE)
+      .addOptional(LEFT_ROTATION)
+      .addOptional(RIGHT_ROTATION)
+      .build();
 
   private final UiPlugin plugin;
 
@@ -55,13 +83,17 @@ public class CommandEntityUi extends BaseCommand {
             })
         )
 
-        .then(literal("rotate-all")
-            .then(argument("degrees", FloatArgumentType.floatArg())
+        .then(literal("apply-transformation")
+            .then(argument("transform", TRANSFORM_ARGS)
                 .executes(c -> {
-                  float degrees = c.getArgument("degrees", Float.class);
+                  ParsedOptions options = ArgumentTypes.getOptions(c, "transform");
 
-                  Matrix3f matrix = new Matrix3f();
-                  matrix.rotateY(Math.toRadians(degrees));
+                  Transformation transformation = new Transformation(
+                      options.getValueOptional(TRANSLATE).orElseGet(Vector3f::new),
+                      options.getValueOptional(LEFT_ROTATION).orElseGet(Quaternionf::new),
+                      options.getValueOptional(SCALE).orElseGet(() -> new Vector3f(1)),
+                      options.getValueOptional(RIGHT_ROTATION).orElseGet(Quaternionf::new)
+                  );
 
                   int rotated = 0;
 
@@ -71,13 +103,13 @@ public class CommandEntityUi extends BaseCommand {
                         continue;
                       }
 
-                      view.getBounds().apply(matrix);
+                      view.transform(transformation);
                       rotated++;
                     }
                   }
 
                   c.getSource().sendSuccess(
-                      Component.text("Rotated " + rotated + " page views")
+                      Component.text("Applied transformation to " + rotated + " page views")
                   );
 
                   return 0;
@@ -91,16 +123,21 @@ public class CommandEntityUi extends BaseCommand {
               Location l = player.getLocation();
               Vector3f pos = new Vector3f((float) l.x(), (float) l.y() + 1, (float) l.z());
 
-              ScreenBounds bounds = new ScreenBounds();
-              bounds.set(pos, 3.0f, 2.0f);
+              Screen bounds = new Screen();
+              bounds.set(pos, 6.0f, 4.0f);
 
-              PageView view = new PageView();
+              PageView view = new PageView(l.getWorld());
               view.setPlayer(player);
               view.setWorld(player.getWorld());
               view.setBounds(bounds);
 
               PlayerSession session = plugin.getSessions().acquireSession(player);
               session.addView(view);
+
+              view.spawnBlank();
+
+//              view.createBlank();
+//              view.createTestTooltip();
 
               c.getSource().sendSuccess(Component.text("Added empty test page"));
               return 0;
@@ -127,7 +164,7 @@ public class CommandEntityUi extends BaseCommand {
       }
 
       Player player = view.getPlayer();
-      ScreenBounds bounds = view.getBounds();
+      Screen bounds = view.getBounds();
       World w = player.getWorld();
 
       Vector3d lowerLeft  = toSponge(bounds.getLowerLeft());
@@ -162,6 +199,45 @@ public class CommandEntityUi extends BaseCommand {
 
     private Vector3d toSponge(Vector3f joml) {
       return Vector3d.from(joml.x, joml.y, joml.z);
+    }
+  }
+
+  private static class NumberBasedParser<S> implements ArgumentType<S> {
+
+    static final NumberBasedParser<Vector3f> VEC_3F
+        = new NumberBasedParser<>(3, arr -> new Vector3f(arr[0], arr[1], arr[2]));
+
+    static final NumberBasedParser<Quaternionf> QUATERNION = new NumberBasedParser<>(3, arr -> {
+      Quaternionf quaternionf = new Quaternionf();
+      quaternionf.rotateY(Math.toRadians(arr[0]));
+      quaternionf.rotateX(Math.toRadians(arr[1]));
+      quaternionf.rotateZ(Math.toRadians(arr[2]));
+      return quaternionf;
+    });
+
+    private final int requiredAxesCount;
+    private final Function<float[], S> ctor;
+
+    public NumberBasedParser(int requiredAxesCount, Function<float[], S> ctor) {
+      this.requiredAxesCount = requiredAxesCount;
+      this.ctor = ctor;
+    }
+
+    @Override
+    public S parse(StringReader reader) throws CommandSyntaxException {
+      float[] arr = new float[requiredAxesCount];
+      int i = 0;
+
+      while (i < arr.length) {
+        float f = reader.readFloat();
+        arr[i++] = f;
+
+        if (i < arr.length) {
+          reader.expect(',');
+        }
+      }
+
+      return ctor.apply(arr);
     }
   }
 }
