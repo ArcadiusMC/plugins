@@ -20,6 +20,8 @@ public class Screen {
   private final Vector3f normal = new Vector3f();
   private final Vector3f center = new Vector3f();
 
+  private final Vector2f dimensions = new Vector2f();
+
   public void set(Vector3f center, float width, float height) {
     float halfWidth = width * 0.5f;
 
@@ -39,6 +41,8 @@ public class Screen {
     this.center.add(0, height / 2, 0);
 
     this.normal.set(1, 0, 0);
+
+    calculateDimensions();
   }
 
   public Location getLowerRightLocation(World world) {
@@ -72,10 +76,7 @@ public class Screen {
   }
 
   public Vector2f getDimensions() {
-    Vector3f height = new Vector3f(upperLeft).sub(lowerLeft);
-    Vector3f width = new Vector3f(upperRight).sub(upperLeft);
-
-    return new Vector2f(width.length(), height.length());
+    return new Vector2f(dimensions);
   }
 
   public Vector3f center() {
@@ -101,12 +102,31 @@ public class Screen {
    * @param out Output value holder
    */
   public void screenToWorld(Vector2f screenPoint, Vector3f out) {
-    Vector2f dim = getDimensions();
-
-    Vector2f in = new Vector2f(screenPoint);
-    in.div(dim);
-
+    Vector2f in = new Vector2f();
+    screenToScreenspace(screenPoint, in);
     screenspaceToWorld(in, out);
+  }
+
+  /**
+   * Converts screen coordinates in range [0..{@link #getDimensions()}) to a screen
+   * space coordinate in range [0..1]
+   *
+   * @param in Screen input position
+   * @param out Vector to store the value in
+   */
+  public void screenToScreenspace(Vector2f in, Vector2f out) {
+    out.set(in).div(dimensions);
+  }
+
+  /**
+   * Converts screen space coordinates in range [0..1] to a screen coordinate in range
+   * [0..{@link #getDimensions()})
+   *
+   * @param in Screen space input position
+   * @param out Vector to store the value in
+   */
+  public void screenspaceToScreen(Vector2f in, Vector2f out) {
+    out.set(in).mul(dimensions);
   }
 
   /**
@@ -196,5 +216,13 @@ public class Screen {
     max.max(upperRight);
 
     center.set(min).add(max).mul(0.5f);
+
+    calculateDimensions();
+  }
+
+  private void calculateDimensions() {
+    Vector3f height = new Vector3f(upperLeft).sub(lowerLeft);
+    Vector3f width = new Vector3f(upperRight).sub(upperLeft);
+    dimensions.set(width.length(), height.length());
   }
 }

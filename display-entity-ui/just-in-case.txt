@@ -1,0 +1,78 @@
+
+  public void measure(PageView view) {
+    // Step 1.1: Measure children
+    for (RenderElement child : children) {
+      child.measure(view);
+    }
+
+    measureSelf(view);
+  }
+
+  public void measureSelf(PageView view) {
+    Layer content = getLayer(RenderLayer.CONTENT);
+
+    if (isContentEmpty()) {
+      content.size.set(0);
+      content.enabled = false;
+    } else {
+      this.content.measureContent(content.size);
+      this.content.configureInitial(content, this);
+
+      content.enabled = true;
+      content.size.mul(contentScale);
+      content.scale.x *= contentScale.x;
+      content.scale.y *= contentScale.y;
+      content.translate.x += (content.size.x / 2.0f);
+    }
+
+    // Create initial layer datas
+    fillLayer(RenderLayer.BACKGROUND, paddingSize);
+    fillLayer(RenderLayer.OUTLINE, outlineSize);
+
+    // Iterate through layers, content -> outline, propagating sizes
+    for (int i = 0; i < LAYER_COUNT; i++) {
+      RenderLayer rl = RenderLayer.LAYERS[i];
+      Layer l = getLayer(rl);
+
+      if (rl != RenderLayer.CONTENT) {
+        l.size.x += l.borderSize.x + l.borderSize.w;
+        l.size.y += l.borderSize.y + l.borderSize.z;
+        l.scale.x = EMPTY_TD_BLOCK_SIZE * l.size.x;
+        l.scale.y = EMPTY_TD_BLOCK_SIZE * l.size.y;
+      }
+
+      l.translate.y -= l.size.y;
+
+      Layer next = next(rl);
+      if (next == null) {
+        continue;
+      }
+
+      next.size.add(l.size);
+    }
+
+    // Align child items
+
+  }
+
+  private void fillLayer(RenderLayer layer, Vector4f size) {
+    Layer l = getLayer(layer);
+
+    if (isNotZero(size)) {
+      l.borderSize.set(size);
+      l.enabled = true;
+    } else {
+      l.borderSize.set(0);
+      l.enabled = false;
+    }
+  }
+
+  private Layer next(RenderLayer layer) {
+    int nextOrd = layer.ordinal() + 1;
+    if (nextOrd >= LAYER_COUNT) {
+      return null;
+    }
+
+    RenderLayer next = RenderLayer.LAYERS[nextOrd];
+    return getLayer(next);
+  }

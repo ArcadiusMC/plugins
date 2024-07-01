@@ -19,7 +19,8 @@ import org.joml.Vector3f;
 @RequiredArgsConstructor
 public class PlayerSession {
 
-  public static final float MAX_INTERACTION_DISTANCE = 10;
+  public static final float MAX_USE_DIST = 10;
+  public static final float MAX_USE_DIST_SQ = MAX_USE_DIST * MAX_USE_DIST;
 
   @Getter
   private final Player player;
@@ -78,7 +79,7 @@ public class PlayerSession {
     RayScan scan = new RayScan(
         new Vector3f((float) location.x(), (float) location.y(), (float) location.z()),
         new Vector3f((float) dir.getX(), (float) dir.getY(), (float) dir.getZ()),
-        MAX_INTERACTION_DISTANCE
+        MAX_USE_DIST
     );
 
     for (PageView view : views) {
@@ -97,8 +98,13 @@ public class PlayerSession {
       if (!wasHit) {
         continue;
       }
+      if (targetPos.distanceSquared(scan.getOrigin()) >= MAX_USE_DIST_SQ) {
+        continue;
+      }
 
       target = view;
+      bounds.screenspaceToScreen(screenPos, screenPos);
+
       return;
     }
 

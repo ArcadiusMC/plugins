@@ -2,7 +2,6 @@ package net.arcadiusmc.ui.render;
 
 import static net.arcadiusmc.ui.render.RenderElement.CHAR_PX_SIZE;
 import static net.arcadiusmc.ui.render.RenderElement.NIL_COLOR;
-import static net.arcadiusmc.ui.render.RenderElement.SEE_THROUGH;
 
 import java.util.List;
 import java.util.Objects;
@@ -33,7 +32,6 @@ public class TextContent implements ElementContent {
 
     display.text(text);
     display.setBackgroundColor(NIL_COLOR);
-    display.setSeeThrough(SEE_THROUGH);
 
     return display;
   }

@@ -5,4 +5,7 @@ public enum RenderLayer {
   BACKGROUND,
   OUTLINE,
   ;
+
+  static final RenderLayer[] LAYERS = values();
+  static final int LAYER_COUNT = LAYERS.length;
 }

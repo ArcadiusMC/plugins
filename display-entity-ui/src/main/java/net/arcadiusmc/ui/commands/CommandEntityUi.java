@@ -124,7 +124,7 @@ public class CommandEntityUi extends BaseCommand {
               Vector3f pos = new Vector3f((float) l.x(), (float) l.y() + 1, (float) l.z());
 
               Screen bounds = new Screen();
-              bounds.set(pos, 6.0f, 4.0f);
+              bounds.set(pos, 3.0f, 2.0f);
 
               PageView view = new PageView(l.getWorld());
               view.setPlayer(player);

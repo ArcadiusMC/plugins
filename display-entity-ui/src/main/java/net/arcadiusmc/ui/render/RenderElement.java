@@ -1,14 +1,13 @@
 package net.arcadiusmc.ui.render;
 
-import java.util.ArrayList;
-import java.util.List;
+import static net.arcadiusmc.ui.render.RenderLayer.LAYER_COUNT;
+
 import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.ui.PageView;
-import net.arcadiusmc.ui.math.Screen;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -36,7 +35,12 @@ public class RenderElement {
   public static final float EMPTY_TD_BLOCK_SIZE = 40.0f;
   public static final float CHAR_PX_SIZE = 1.0f / EMPTY_TD_BLOCK_SIZE;
   public static final float LINE_HEIGHT = CHAR_PX_SIZE * (8 + 2); // 8 for character, 2 for descender space
-  public static final float LAYER_DEPTH = 0.001f;
+
+  // Macro layer = A single element
+  // Micro layer = A single layer of an element
+  public static final float MICRO_LAYER_DEPTH = 0.001f;
+  public static final float MACRO_LAYER_DEPTH = MICRO_LAYER_DEPTH * LAYER_COUNT;
+
   public static final float ITEM_PX_TO_CH_PX = 2.5f;
   public static final float ITEM_Z_WIDTH = 0.001f;
   public static final float ITEM_SPRITE_SIZE = ITEM_PX_TO_CH_PX * CHAR_PX_SIZE * 16;
@@ -44,12 +48,7 @@ public class RenderElement {
 
   public static final Color NIL_COLOR = Color.fromARGB(0, 0, 0, 0);
 
-  public static final int LAYER_COUNT = RenderLayer.values().length;
-
   static final Brightness BRIGHTNESS = new Brightness(15, 15);
-
-  private final World world;
-  private final Screen screen;
 
   private final Vector2f position = new Vector2f(0);
 
@@ -59,26 +58,30 @@ public class RenderElement {
   private Color backgroundColor = Color.BLACK;
   private Color outlineColor = Color.WHITE;
 
-  // x: left, y: top, z: bottom, w: right
+  /*
+   * x: left, y: top, z: bottom, w: right
+   *
+   *   y
+   * x + w
+   *   z
+   */
   private final Vector4f paddingSize = new Vector4f(0);
   private final Vector4f outlineSize = new Vector4f(0);
+  private final Vector4f marginSize = new Vector4f(0);
+
+  private final Vector2f contentExtension = new Vector2f();
+
+  /** Depth value multiplier */
+  @Setter
+  private float depth = 0;
 
   private final Layer[] layers = new Layer[LAYER_COUNT];
 
   @Setter
   private ElementContent content;
 
-  private final List<RenderElement> children = new ArrayList<>();
-  private RenderElement parent;
-
-  public RenderElement(World world, Screen screen) {
-    this.world = world;
-    this.screen = screen;
-  }
-
-  public void addChild(RenderElement child) {
-    child.parent = this;
-    children.add(child);
+  private static boolean isNotSpawned(Layer layer) {
+    return layer == null || !layer.isSpawned();
   }
 
   public final Layer getLayer(RenderLayer layer) {
@@ -100,33 +103,76 @@ public class RenderElement {
     return v.x > 0 || v.y > 0 || v.z > 0 || v.w > 0;
   }
 
-  public void spawn(PageView view) {
-    for (RenderElement child : children) {
-      child.spawn(view);
-    }
+  public void moveTo(PageView view, Vector2f screenPos) {
+    this.position.set(screenPos);
+    Location loc = getSpawnLocation(view);
 
-    spawnSelf(view);
+    forEachSpawedLayer(LayerDirection.FORWARD, (layer, iteratedCount) -> {
+      layer.entity.teleport(loc);
+    });
   }
 
-  public void spawnSelf(PageView view) {
+  public void getContentPosition(Vector2f out) {
+    float topDif = paddingSize.y + outlineSize.y;
+    float leftDif = paddingSize.x + outlineSize.x;
+
+    out.set(position);
+    out.sub(topDif, leftDif);
+  }
+
+  public void getAlignmentPosition(Vector2f out) {
+    getContentPosition(out);
+    Layer content = layers[RenderLayer.CONTENT.ordinal()];
+
+    if (isNotSpawned(content)) {
+      return;
+    }
+
+    out.sub(0, content.size.y);
+  }
+
+  public void getElementSize(Vector2f out) {
+    for (int i = LAYER_COUNT - 1; i >= 0; i--) {
+      Layer l = layers[i];
+
+      if (isNotSpawned(l)) {
+        continue;
+      }
+
+      out.set(l.size);
+      return;
+    }
+
+    out.set(0);
+  }
+
+  private Location getSpawnLocation(PageView view) {
     Vector3f pos = new Vector3f();
-    Vector2f rot = screen.getRotation();
+    Vector2f rot = view.getBounds().getRotation();
 
-    screen.screenToWorld(position, pos);
+    view.getBounds().screenToWorld(position, pos);
+    return new Location(view.getWorld(), pos.x, pos.y, pos.z, rot.x, rot.y);
+  }
 
-    Location location = new Location(world, pos.x, pos.y, pos.z, rot.x, rot.y);
+  private void killLayerEntity(Layer layer, PageView view) {
+    if (layer.entity == null) {
+      return;
+    }
+
+    view.removeEntity(layer.entity);
+    layer.killEntity();
+  }
+
+  public void spawn(PageView view) {
+    Location location = getSpawnLocation(view);
     Layer content = getLayer(RenderLayer.CONTENT);
+    content.zeroValues();
+
+    World world = view.getWorld();
 
     // Step 1 - Spawn content
     if (isContentEmpty()) {
-      content.size.set(0);
-
-      Display entity = content.entity;
-      if (entity != null) {
-        view.removeEntity(entity);
-      }
-
-      content.killEntity();
+      killLayerEntity(content, view);
     } else {
       Display display = this.content.createEntity(world, location);
       configureDisplay(display);
@@ -134,6 +180,8 @@ public class RenderElement {
       if (display instanceof TextDisplay td) {
         td.setShadowed(textShadowed);
       }
+
+      killLayerEntity(content, view);
 
       content.setEntity(display);
       view.addEntity(display);
@@ -147,22 +195,16 @@ public class RenderElement {
 
       // Early Step 6 - Offset content layer by half it's length
       content.translate.x += (content.size.x / 2.0f);
-      content.updateTransform();
     }
 
     // Step 2 - Spawn background
-
-    // calls to setBackgroundColor and setOutlineColor
-    // to force the entities to update
     if (isNotZero(paddingSize)) {
-      createLayerEntity(RenderLayer.BACKGROUND, location, view);
-      setBackgroundColor(backgroundColor);
+      createLayerEntity(RenderLayer.BACKGROUND, location, view, backgroundColor);
     }
 
     // Step 3 - Spawn outline
     if (isNotZero(outlineSize)) {
-      createLayerEntity(RenderLayer.OUTLINE, location, view);
-      setOutlineColor(outlineColor);
+      createLayerEntity(RenderLayer.OUTLINE, location, view, outlineColor);
     }
 
     // Step 4 - Set layer sizes
@@ -175,7 +217,7 @@ public class RenderElement {
     applyScreenNormalOffsets();
 
     // Step 8 - Apply screen rotation and offset by height
-    applyScreenRotation(rot);
+    applyScreenRotation(location.getYaw(), location.getPitch());
 
     // Step 9 - Apply transformations to entities
     forEachSpawedLayer(LayerDirection.FORWARD, (layer, iteratedCount) -> {
@@ -191,12 +233,16 @@ public class RenderElement {
     }
   }
 
-  private void applyScreenRotation(Vector2f rot) {
+  private void applyScreenRotation(float yaw, float pitch) {
     Quaternionf lrot = new Quaternionf();
-    lrot.rotateY((float) Math.toRadians(rot.x));
-    lrot.rotateX((float) Math.toRadians(rot.y));
+    lrot.rotateY((float) Math.toRadians(yaw));
+    lrot.rotateX((float) Math.toRadians(pitch));
 
     forEachSpawedLayer(LayerDirection.FORWARD, (layer, iteratedCount) -> {
+      // Add calculated values
+      layer.translate.z -= layer.depth;
+
+      // Perform rotation
       layer.translate.rotate(lrot);
     });
   }
@@ -210,8 +256,8 @@ public class RenderElement {
       };
 
       if (layer.layer != RenderLayer.CONTENT) {
-        layer.size.x += increase.x + increase.w;
-        layer.size.y += increase.y + increase.z;
+        layer.size.x += increase.x + increase.w + contentExtension.x;
+        layer.size.y += increase.y + increase.z + contentExtension.y;
         layer.scale.x = EMPTY_TD_BLOCK_SIZE * layer.size.x;
         layer.scale.y = EMPTY_TD_BLOCK_SIZE * layer.size.y;
       }
@@ -229,39 +275,13 @@ public class RenderElement {
     });
   }
 
-  private int getDepth() {
-    int d = 0;
-    RenderElement parent = this.parent;
-
-    while (parent != null) {
-      d += parent.getSpawnedLayerCount();
-      parent = parent.parent;
-    }
-
-    return d;
-  }
-
-  private int getSpawnedLayerCount() {
-    int result = 0;
-
-    if (isNotZero(outlineSize)) {
-      result++;
-    }
-    if (isNotZero(paddingSize)) {
-      result++;
-    }
-    if (!isContentEmpty()) {
-      result++;
-    }
-
-    return result;
-  }
-
   private void applyScreenNormalOffsets() {
-    int depth = getDepth();
-
     forEachSpawedLayer(LayerDirection.BACKWARD, (layer, iteratedCount) -> {
-      layer.translate.z -= ((iteratedCount + depth) * LAYER_DEPTH);
+      float micro = iteratedCount * MICRO_LAYER_DEPTH;
+      float macro = this.depth * MACRO_LAYER_DEPTH;
+
+      layer.depth = micro;
+      layer.depth += macro;
     });
   }
 
@@ -280,10 +300,18 @@ public class RenderElement {
     });
   }
 
-  private void createLayerEntity(RenderLayer rLayer, Location location, PageView view) {
+  private void createLayerEntity(
+      RenderLayer rLayer,
+      Location location,
+      PageView view,
+      Color color
+  ) {
     Layer layer = getLayer(rLayer);
+    layer.zeroValues();
+    killLayerEntity(layer, view);
 
-    TextDisplay display = world.spawn(location, TextDisplay.class);
+    TextDisplay display = location.getWorld().spawn(location, TextDisplay.class);
+    display.setBackgroundColor(color);
     configureDisplay(display);
 
     layer.setEntity(display);
@@ -302,7 +330,7 @@ public class RenderElement {
 
       Layer l = layers[ord];
 
-      if (l == null || !l.isSpawned()) {
+      if (isNotSpawned(l)) {
         continue;
       }
 
@@ -317,7 +345,7 @@ public class RenderElement {
     for (int i = start; i < LAYER_COUNT && i >= 0; i += dir.modifier) {
       Layer layer = layers[i];
 
-      if (layer == null || !layer.isSpawned()) {
+      if (isNotSpawned(layer)) {
         continue;
       }
 
@@ -339,7 +367,7 @@ public class RenderElement {
   private void applyLayer(RenderLayer layer, Consumer<Display> consumer) {
     Layer l = layers[layer.ordinal()];
 
-    if (l == null || !l.isSpawned()) {
+    if (isNotSpawned(l)) {
       return;
     }
 
@@ -394,16 +422,27 @@ public class RenderElement {
     final Vector2f size = new Vector2f(0);
     final Vector4f borderSize = new Vector4f(0);
 
+    float depth;
+
     @Setter
     Display entity;
 
     final Vector3f scale = new Vector3f(1);
     final Vector3f translate = new Vector3f();
     final Quaternionf leftRotation = new Quaternionf();
-    float zScale = 1;
 
     public Layer(RenderLayer layer) {
       this.layer = layer;
+    }
+
+    void zeroValues() {
+      size.set(0);
+      borderSize.set(0);
+      depth = 0;
+
+      scale.set(1);
+      translate.set(0);
+      leftRotation.set(0, 0, 0, 1);
     }
 
     public boolean isSpawned() {
@@ -434,7 +473,7 @@ public class RenderElement {
 
       sc.x = scale.x;
       sc.y = scale.y;
-      sc.z = zScale;
+      sc.z = scale.z;
 
       trans.getLeftRotation().set(leftRotation);
 
