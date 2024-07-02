@@ -31,8 +31,9 @@ public class Screen {
     bottomLeft.sub(0, 0, halfWidth);
     topRight.add(0, height, halfWidth);
 
-    this.lowerLeft.set(bottomLeft);
-    this.upperRight.set(topRight);
+
+    this.upperRight.set(bottomLeft.x, topRight.y, bottomLeft.z);
+    this.lowerLeft.set(topRight.x, bottomLeft.y, topRight.z);
 
     this.upperLeft.set(lowerLeft.x, upperRight.y, lowerLeft.z);
     this.lowerRight.set(upperRight.x, lowerLeft.y, upperRight.z);
