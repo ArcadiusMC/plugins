@@ -2,12 +2,17 @@ package net.arcadiusmc.ui.render;
 
 import static net.arcadiusmc.ui.render.RenderLayer.LAYER_COUNT;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.ui.HideUtil;
 import net.arcadiusmc.ui.PageView;
+import net.arcadiusmc.ui.math.Rectangle;
+import net.arcadiusmc.ui.struct.AlignDirection;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -57,6 +62,9 @@ public class RenderElement {
 
   private Color backgroundColor = Color.BLACK;
   private Color outlineColor = Color.WHITE;
+
+  @Setter
+  private boolean hidden = false;
 
   /*
    * x: left, y: top, z: bottom, w: right
@@ -112,23 +120,34 @@ public class RenderElement {
     });
   }
 
-  public void getContentPosition(Vector2f out) {
+  public void getContentStart(Vector2f out) {
     float topDif = paddingSize.y + outlineSize.y;
     float leftDif = paddingSize.x + outlineSize.x;
 
     out.set(position);
-    out.sub(topDif, leftDif);
+    out.add(leftDif, -topDif);
   }
 
-  public void getAlignmentPosition(Vector2f out) {
-    getContentPosition(out);
+  public void getContentEnd(Vector2f out) {
+    getContentStart(out);
+    Layer content = getLayer(RenderLayer.CONTENT);
+    out.x += content.size.x;
+    out.y -= content.size.y;
+  }
+
+  public void getAlignmentPosition(Vector2f out, AlignDirection direction) {
+    getContentStart(out);
     Layer content = layers[RenderLayer.CONTENT.ordinal()];
 
     if (isNotSpawned(content)) {
       return;
     }
 
-    out.sub(0, content.size.y);
+    if (direction == AlignDirection.X) {
+      out.add(content.size.x, 0);
+    } else {
+      out.sub(0, content.size.y);
+    }
   }
 
   public void getElementSize(Vector2f out) {
@@ -144,6 +163,20 @@ public class RenderElement {
     }
 
     out.set(0);
+  }
+
+  public void getBounds(Rectangle rectangle) {
+    getElementSize(rectangle.getSize());
+    rectangle.getPosition().set(position);
+  }
+
+  public void getMarginBounds(Rectangle rectangle) {
+    getBounds(rectangle);
+
+    rectangle.getPosition().x -= marginSize.x;
+    rectangle.getPosition().y += marginSize.y;
+    rectangle.getSize().x += marginSize.x + marginSize.w;
+    rectangle.getSize().y += marginSize.y + marginSize.z;
   }
 
   private Location getSpawnLocation(PageView view) {
@@ -199,12 +232,12 @@ public class RenderElement {
 
     // Step 2 - Spawn background
     if (isNotZero(paddingSize)) {
-      createLayerEntity(RenderLayer.BACKGROUND, location, view, backgroundColor);
+      createLayerEntity(RenderLayer.BACKGROUND, location, view, backgroundColor, paddingSize);
     }
 
     // Step 3 - Spawn outline
     if (isNotZero(outlineSize)) {
-      createLayerEntity(RenderLayer.OUTLINE, location, view, outlineColor);
+      createLayerEntity(RenderLayer.OUTLINE, location, view, outlineColor, outlineSize);
     }
 
     // Step 4 - Set layer sizes
@@ -231,6 +264,10 @@ public class RenderElement {
     if (display instanceof TextDisplay td) {
       td.setSeeThrough(SEE_THROUGH);
     }
+
+    if (hidden) {
+      HideUtil.hide(display);
+    }
   }
 
   private void applyScreenRotation(float yaw, float pitch) {
@@ -241,6 +278,8 @@ public class RenderElement {
     forEachSpawedLayer(LayerDirection.FORWARD, (layer, iteratedCount) -> {
       // Add calculated values
       layer.translate.z -= layer.depth;
+      layer.translate.x += layer.borderOffset.x;
+      layer.translate.y -= layer.borderOffset.y;
 
       // Perform rotation
       layer.translate.rotate(lrot);
@@ -248,31 +287,39 @@ public class RenderElement {
   }
 
   private void calculateLayerSizes() {
-    forEachSpawedLayer(LayerDirection.FORWARD, (layer, count) -> {
-      Vector4f increase = switch (layer.layer) {
-        case BACKGROUND -> paddingSize;
-        case OUTLINE -> outlineSize;
-        default -> new Vector4f();
-      };
+    LayerIterator it = layerIterator(LayerDirection.FORWARD);
+    boolean extensionApplied = false;
+
+    while (it.hasNext()) {
+      int count = it.getCount();
+      Layer layer = it.next();
 
       if (layer.layer != RenderLayer.CONTENT) {
-        layer.size.x += increase.x + increase.w + contentExtension.x;
-        layer.size.y += increase.y + increase.z + contentExtension.y;
+        Vector4f increase = layer.borderSize;
+
+        layer.size.x += increase.x + increase.w;
+        layer.size.y += increase.y + increase.z;
+
+        if (!extensionApplied) {
+          layer.size.x += contentExtension.x;
+          layer.size.y += contentExtension.y;
+
+          extensionApplied = true;
+        }
+
         layer.scale.x = EMPTY_TD_BLOCK_SIZE * layer.size.x;
         layer.scale.y = EMPTY_TD_BLOCK_SIZE * layer.size.y;
       }
 
       layer.translate.y -= layer.size.y;
-      layer.borderSize.set(increase);
-
       Layer next = nextSpawned(layer);
 
       if (next == null) {
-        return;
+        continue;
       }
 
       next.size.add(layer.size);
-    });
+    }
   }
 
   private void applyScreenNormalOffsets() {
@@ -295,8 +342,8 @@ public class RenderElement {
         return;
       }
 
-      layer.translate.x += offsetStack.x += next.borderSize.x;
-      layer.translate.y -= offsetStack.y += next.borderSize.z;
+      layer.borderOffset.x += offsetStack.x += next.borderSize.x;
+      layer.borderOffset.y += offsetStack.y += next.borderSize.z;
     });
   }
 
@@ -304,10 +351,12 @@ public class RenderElement {
       RenderLayer rLayer,
       Location location,
       PageView view,
-      Color color
+      Color color,
+      Vector4f borderSize
   ) {
     Layer layer = getLayer(rLayer);
     layer.zeroValues();
+    layer.borderSize.set(borderSize);
     killLayerEntity(layer, view);
 
     TextDisplay display = location.getWorld().spawn(location, TextDisplay.class);
@@ -398,6 +447,61 @@ public class RenderElement {
     });
   }
 
+  LayerIterator layerIterator(LayerDirection direction) {
+    return new LayerIterator(direction.modifier, direction.start);
+  }
+
+  class LayerIterator implements Iterator<Layer> {
+
+    private int dir;
+    private int index;
+
+    @Getter
+    private int count;
+
+    public LayerIterator(int dir, int index) {
+      this.dir = dir;
+      this.index = index;
+    }
+
+    private boolean inBounds(int idx) {
+      return idx >= 0 && idx < LAYER_COUNT;
+    }
+
+    @Override
+    public boolean hasNext() {
+      if (!inBounds(index)) {
+        return false;
+      }
+
+      while (inBounds(index)) {
+        Layer layer = layers[index];
+
+        if (isNotSpawned(layer)) {
+          index += dir;
+          continue;
+        }
+
+        return true;
+      }
+
+      return false;
+    }
+
+    @Override
+    public Layer next() {
+      if (!hasNext()) {
+        throw new NoSuchElementException();
+      }
+
+      Layer l = layers[index];
+      index += dir;
+      count++;
+
+      return l;
+    }
+  }
+
   enum LayerDirection {
     /** Starts from {@link RenderLayer#CONTENT}, moves towards {@link RenderLayer#OUTLINE} */
     FORWARD (0, 1),
@@ -421,6 +525,7 @@ public class RenderElement {
 
     final Vector2f size = new Vector2f(0);
     final Vector4f borderSize = new Vector4f(0);
+    final Vector2f borderOffset = new Vector2f(0);
 
     float depth;
 
@@ -438,6 +543,7 @@ public class RenderElement {
     void zeroValues() {
       size.set(0);
       borderSize.set(0);
+      borderOffset.set(0);
       depth = 0;
 
       scale.set(1);
