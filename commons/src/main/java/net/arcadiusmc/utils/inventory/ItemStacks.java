@@ -1,6 +1,10 @@
 package net.arcadiusmc.utils.inventory;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.Hash.Strategy;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
@@ -25,10 +29,13 @@ import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.minecraft.resources.RegistryOps;
+import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.util.datafix.DataFixers;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -71,6 +78,28 @@ public final class ItemStacks {
   private ItemStacks() {}
 
   /* ----------------------------- CONSTANTS ------------------------------ */
+
+  public static final Codec<ItemStack> NMS_CODEC = new Codec<ItemStack>() {
+    @Override
+    public <T> DataResult<Pair<ItemStack, T>> decode(DynamicOps<T> ops, T input) {
+      RegistryOps<T> regOps = DedicatedServer.getServer()
+          .registryAccess()
+          .createSerializationContext(ops);
+
+      return net.minecraft.world.item.ItemStack.CODEC.decode(regOps, input)
+          .map(p -> Pair.of(CraftItemStack.asBukkitCopy(p.getFirst()), p.getSecond()));
+    }
+
+    @Override
+    public <T> DataResult<T> encode(ItemStack input, DynamicOps<T> ops, T prefix) {
+      RegistryOps<T> regOps = DedicatedServer.getServer()
+          .registryAccess()
+          .createSerializationContext(ops);
+
+      return net.minecraft.world.item.ItemStack.CODEC
+          .encode(CraftItemStack.asNMSCopy(input), regOps, prefix);
+    }
+  };
 
   /**
    * The NBT tag of the item's data version, used for updating item data using Mojang's
