@@ -1,6 +1,6 @@
 package net.arcadiusmc.gradle
 
-const val GRENADIER         = "net.forthecrown:grenadier:2.4.1"
+const val GRENADIER         = "net.forthecrown:grenadier:2.5.1"
 const val GRENADIER_ANNOT   = "net.forthecrown:grenadier-annotations:1.3.3"
 
 const val NBT_LIB           = "net.forthecrown:nbt:1.5.2"
@@ -36,6 +36,16 @@ val DEPENDENCIES = arrayOf(
     FAWE,
     BRIGADIER,
     DATA_FIXER_UPPER
+)
+
+val TEST_DEPENDENCIES = arrayOf(
+    NBT_LIB,
+    PAPER_NBT,
+    MATH_LIB,
+    TOML,
+    CONFIGURATE,
+    PAPER_NBT,
+    "com.google.guava:guava:33.2.1-jre"
 )
 
 val REPOSITORIES = arrayOf(
