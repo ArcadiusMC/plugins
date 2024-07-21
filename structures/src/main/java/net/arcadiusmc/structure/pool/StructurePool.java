@@ -4,12 +4,14 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import lombok.Getter;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.registry.Registry;
+import net.arcadiusmc.structure.BlockPalette;
 import net.arcadiusmc.structure.BlockStructure;
 import net.arcadiusmc.utils.WeightedList;
 import org.slf4j.Logger;
@@ -46,21 +48,27 @@ public class StructurePool {
     WeightedList<StructureAndPalette> result = new WeightedList<>();
 
     for (PoolEntry entry : entries) {
-      structures.get(entry.structureName()).ifPresentOrElse(struct -> {
-        if (!struct.getPalettes().containsKey(entry.paletteName())) {
-          LOGGER.error("Couldn't find palette '{}' in structure '{}'",
-              entry.paletteName(), entry.structureName()
+      structures.getHolder(entry.structureName())
+          .ifPresentOrElse(
+              holder -> {
+                Map<String, BlockPalette> palettes = holder.getValue().getPalettes();
+
+                if (!palettes.containsKey(entry.paletteName())) {
+                  LOGGER.error("Couldn't find palette '{}' in structure '{}'",
+                      entry.paletteName(), entry.structureName()
+                  );
+
+                  return;
+                }
+
+                result.add(entry.weight(), new StructureAndPalette(holder, entry.paletteName()));
+              },
+              () -> {
+                LOGGER.error("Couldn't find structure named '{}' for structure pool",
+                    entry.structureName()
+                );
+              }
           );
-
-          return;
-        }
-
-        result.add(entry.weight(), new StructureAndPalette(struct, entry.paletteName()));
-      }, () -> {
-        LOGGER.error("Couldn't find structure named '{}' for structure pool",
-            entry.structureName()
-        );
-      });
     }
 
     return result;
@@ -79,9 +87,9 @@ public class StructurePool {
       weightVal -= entry.weight();
 
       if (weightVal <= 0) {
-        return structures.get(entry.structureName())
-            .map(structure -> new StructureAndPalette(structure, entry.paletteName()))
-            .filter(s -> s.structure().getPalettes().containsKey(s.paletteName()));
+        return structures.getHolder(entry.structureName())
+            .filter(h -> h.getValue().getPalettes().containsKey(entry.paletteName()))
+            .map(structure -> new StructureAndPalette(structure, entry.paletteName()));
       }
 
       index++;
