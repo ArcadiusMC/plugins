@@ -21,13 +21,16 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.lang.reflect.Array;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -578,5 +581,9 @@ public @UtilityClass class ExtraCodecs {
   @Deprecated
   public static <V> MapCodec<Optional<V>> strictOptional(Codec<V> codec, String field) {
     return codec.optionalFieldOf(field);
+  }
+
+  public static <T> Codec<Set<T>> set(Codec<T> codec) {
+    return codec.listOf().xmap(HashSet::new, ArrayList::new);
   }
 }
