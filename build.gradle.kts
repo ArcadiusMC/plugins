@@ -1,7 +1,4 @@
-import net.arcadiusmc.gradle.ArcadiusExtension
-import net.arcadiusmc.gradle.DEPENDENCIES
-import net.arcadiusmc.gradle.REPOSITORIES
-import net.arcadiusmc.gradle.TASK_GROUP
+import net.arcadiusmc.gradle.*
 import java.time.LocalDateTime
 
 plugins {
@@ -59,6 +56,16 @@ subprojects {
     for (dependency in DEPENDENCIES) {
       compileOnly(dependency)
     }
+
+    for (dep in TEST_DEPENDENCIES) {
+      testImplementation(dep)
+    }
+
+    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.3")
+
+    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.10.3")
   }
 
   java {
@@ -66,6 +73,10 @@ subprojects {
   }
 
   tasks {
+    test {
+      useJUnitPlatform()
+    }
+
     javadoc {
       options.encoding = Charsets.UTF_8.name()
     }
