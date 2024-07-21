@@ -35,12 +35,14 @@ public class ItemPlugin extends JavaPlugin {
 
     ItemGraveService service = ItemGraveService.grave();
     service.addFilter("items_plugin", PluginGraveFilter.FILTER);
+    service.addFilter("soulbound", SoulboundGraveFilter.FILTER);
   }
 
   @Override
   public void onDisable() {
     ItemGraveService service = ItemGraveService.grave();
     service.removeFilter("items_plugin");
+    service.removeFilter("soulbound");
 
     Messages.MESSAGE_LIST.removeChild(getName());
 
