@@ -1,6 +1,6 @@
 package net.arcadiusmc.ui.struct;
 
-public enum AlignDirection {
+public enum Align {
   Y,
   X
 }

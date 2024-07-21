@@ -3,15 +3,34 @@ package net.arcadiusmc.ui.commands;
 import com.destroystokyo.paper.ParticleBuilder;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.serialization.DataResult;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
+import net.arcadiusmc.Loggers;
 import net.arcadiusmc.command.BaseCommand;
-import net.arcadiusmc.ui.PageView;
+import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.ui.PlayerSession;
 import net.arcadiusmc.ui.UiPlugin;
 import net.arcadiusmc.ui.math.Screen;
+import net.arcadiusmc.ui.resource.PageRef;
+import net.arcadiusmc.ui.struct.Document;
+import net.arcadiusmc.ui.struct.Node;
+import net.arcadiusmc.ui.struct.XmlVisitor;
+import net.arcadiusmc.ui.style.StylePropertyMap;
+import net.arcadiusmc.ui.style.Styles;
+import net.arcadiusmc.ui.style.Stylesheet;
 import net.arcadiusmc.utils.Particles;
 import net.arcadiusmc.utils.Tasks;
+import net.arcadiusmc.utils.io.PathUtil;
+import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.forthecrown.grenadier.types.options.ArgumentOption;
@@ -19,7 +38,6 @@ import net.forthecrown.grenadier.types.options.Options;
 import net.forthecrown.grenadier.types.options.OptionsArgument;
 import net.forthecrown.grenadier.types.options.ParsedOptions;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -28,9 +46,12 @@ import org.bukkit.util.Transformation;
 import org.joml.Math;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.slf4j.Logger;
 import org.spongepowered.math.vector.Vector3d;
 
 public class CommandEntityUi extends BaseCommand {
+
+  private static final Logger LOGGER = Loggers.getLogger();
 
   static final ArgumentOption<Vector3f> TRANSLATE
       = Options.argument(NumberBasedParser.VEC_3F, "translation");
@@ -55,6 +76,8 @@ public class CommandEntityUi extends BaseCommand {
 
   private BukkitTask renderTask;
 
+  private Map<UUID, Document> lastSpawned = new HashMap<>();
+
   public CommandEntityUi(UiPlugin plugin) {
     super("entity-ui");
 
@@ -69,6 +92,36 @@ public class CommandEntityUi extends BaseCommand {
   @Override
   public void createCommand(GrenadierCommand command) {
     command
+        .then(literal("open")
+            .then(argument("path", new ModulePathParser(plugin.getLoader()))
+                .executes(this::load)
+            )
+        )
+
+        .then(literal("dump-xml")
+            .executes(c -> {
+              Player player = c.getSource().asPlayer();
+              Document doc = lastSpawned.get(player.getUniqueId());
+
+              if (doc == null) {
+                throw Exceptions.create("None spawned");
+              }
+
+              dumpToDebugFile(doc.getBody());
+
+              c.getSource().sendSuccess(Component.text("Dumped"));
+              return 0;
+            })
+        )
+
+        .then(literal("toggle-debug-outlines")
+            .executes(c -> {
+              Document.DEBUG_OUTLINES = !Document.DEBUG_OUTLINES;
+              c.getSource().sendSuccess(Component.text("Toggled"));
+              return 0;
+            })
+        )
+
         .then(literal("toggle-bounds-draw")
             .executes(c -> {
               if (renderTask == null) {
@@ -98,8 +151,8 @@ public class CommandEntityUi extends BaseCommand {
                   int rotated = 0;
 
                   for (PlayerSession session : plugin.getSessions().getSessions()) {
-                    for (PageView view : session.getViews()) {
-                      if (view.getBounds() == null) {
+                    for (Document view : session.getViews()) {
+                      if (view.getScreen() == null) {
                         continue;
                       }
 
@@ -117,32 +170,86 @@ public class CommandEntityUi extends BaseCommand {
             )
         )
 
-        .then(literal("spawn-empty-test")
-            .executes(c -> {
-              Player player = c.getSource().asPlayer();
-              Location l = player.getLocation();
-              Vector3f pos = new Vector3f((float) l.x(), (float) l.y() + 1, (float) l.z());
+        .then(literal("test-style-parser")
+            .then(literal("sheet")
+                .then(argument("input", StringArgumentType.greedyString())
+                    .executes(c -> runStyleParser(c, true))
+                )
+            )
 
-              Screen bounds = new Screen();
-              bounds.set(pos, 3.0f, 2.0f);
-
-              PageView view = new PageView(l.getWorld());
-              view.setPlayer(player);
-              view.setWorld(player.getWorld());
-              view.setBounds(bounds);
-
-              PlayerSession session = plugin.getSessions().acquireSession(player);
-              session.addView(view);
-
-              view.spawnBlank();
-
-//              view.createBlank();
-//              view.createTestTooltip();
-
-              c.getSource().sendSuccess(Component.text("Added empty test page"));
-              return 0;
-            })
+            .then(literal("inline")
+                .then(argument("input", StringArgumentType.greedyString())
+                    .executes(c -> runStyleParser(c, false))
+                )
+            )
         );
+  }
+
+  private int load(CommandContext<CommandSource> ctx) throws CommandSyntaxException {
+    CommandSource source = ctx.getSource();
+    Player player = source.asPlayer();
+
+    PageRef ref = ctx.getArgument("path", PageRef.class);
+
+    DataResult<Document> res = plugin.getLoader().openDocument(ref, player);
+
+    if (res.isError()) {
+      res.ifError(err -> LOGGER.error(err.message()));
+      return 0;
+    }
+
+    Document doc = res.getOrThrow();
+    PlayerSession session =  plugin.getSessions().acquireSession(player);
+
+    session.addView(doc);
+    doc.spawn();
+
+    dumpToDebugFile(doc.getBody());
+
+    return 0;
+  }
+
+  private void dumpToDebugFile(Node node) {
+    Path path = PathUtil.pluginPath("xml-dump.xml");
+
+    XmlVisitor visitor = new XmlVisitor();
+    visitor.visit(node);
+
+    try {
+      Files.writeString(path, visitor.toString());
+    } catch (IOException exc) {
+      LOGGER.error("Failed to write dump file to {}", path, exc);
+    }
+  }
+
+  private int runStyleParser(CommandContext<CommandSource> c, boolean sheet)
+      throws CommandSyntaxException
+  {
+    CommandSource source = c.getSource();
+    String input = c.getArgument("input", String.class);
+
+    DataResult<String> result;
+
+    if (sheet) {
+      result = Styles.parseStylesheet(input).map(Stylesheet::toString);
+    } else {
+      result = Styles.parseInlineStyle(input).map(StylePropertyMap::toString);
+    }
+
+    if (result.isError()) {
+      result.ifError(stringError -> {
+        LOGGER.error("Error parsing style: {}", stringError.message());
+      });
+
+      throw Exceptions.create("Failed to parse style, check console for proper error log");
+    }
+
+    result.ifSuccess(s -> {
+      source.sendSuccess(Component.text("Parsed style: " + s));
+      LOGGER.info("Parsed style: {}", s);
+    });
+
+    return 0;
   }
 
   private class RenderTask implements Runnable {
@@ -152,19 +259,19 @@ public class CommandEntityUi extends BaseCommand {
     @Override
     public void run() {
       for (PlayerSession session : plugin.getSessions().getSessions()) {
-        for (PageView view : session.getViews()) {
+        for (Document view : session.getViews()) {
           renderView(view);
         }
       }
     }
 
-    private void renderView(PageView view) {
-      if (view.getPlayer() == null || view.getWorld() == null || view.getBounds() == null) {
+    private void renderView(Document view) {
+      if (view.getPlayer() == null || view.getWorld() == null || view.getScreen() == null) {
         return;
       }
 
       Player player = view.getPlayer();
-      Screen bounds = view.getBounds();
+      Screen bounds = view.getScreen();
       World w = player.getWorld();
 
       Vector3d lowerLeft  = toSponge(bounds.getLowerLeft());

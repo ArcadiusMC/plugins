@@ -9,13 +9,14 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import net.arcadiusmc.Loggers;
-import net.arcadiusmc.ui.HideUtil;
-import net.arcadiusmc.ui.PageView;
+import net.arcadiusmc.ui.struct.Document;
 import net.arcadiusmc.ui.math.Rectangle;
-import net.arcadiusmc.ui.struct.AlignDirection;
+import net.arcadiusmc.ui.struct.Align;
+import net.arcadiusmc.ui.math.Rect;
+import net.arcadiusmc.ui.style.StylePropertyMap;
+import net.arcadiusmc.ui.util.HideUtil;
 import org.bukkit.Color;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Display.Brightness;
 import org.bukkit.entity.TextDisplay;
@@ -23,7 +24,6 @@ import org.bukkit.util.Transformation;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 import org.slf4j.Logger;
 
 @Getter
@@ -39,10 +39,12 @@ public class RenderElement {
    */
   public static final float EMPTY_TD_BLOCK_SIZE = 40.0f;
   public static final float CHAR_PX_SIZE = 1.0f / EMPTY_TD_BLOCK_SIZE;
-  public static final float LINE_HEIGHT = CHAR_PX_SIZE * (8 + 2); // 8 for character, 2 for descender space
+
+  /** Global element scale */
+  public static final float GLOBAL_SCALAR = .5f;
 
   // Macro layer = A single element
-  // Micro layer = A single layer of an element
+  // Micro layer = A single layer of an element (eg: content, background, outline)
   public static final float MICRO_LAYER_DEPTH = 0.001f;
   public static final float MACRO_LAYER_DEPTH = MICRO_LAYER_DEPTH * LAYER_COUNT;
 
@@ -55,41 +57,52 @@ public class RenderElement {
 
   static final Brightness BRIGHTNESS = new Brightness(15, 15);
 
-  private final Vector2f position = new Vector2f(0);
+  private final Document owning;
 
+  private final Layer[] layers = new Layer[LAYER_COUNT];
+  private final StylePropertyMap styleProperties = new StylePropertyMap();
+
+  private final Vector2f position = new Vector2f(0);
   private final Vector2f contentScale = new Vector2f(1);
+  private final Vector2f contentExtension = new Vector2f();
+  private final Vector2f minSize = new Vector2f(0);
+  private final Vector2f maxSize = new Vector2f(Float.MAX_VALUE);
+
   private boolean textShadowed;
 
   private Color backgroundColor = Color.BLACK;
   private Color outlineColor = Color.WHITE;
+  private Color borderColor = Color.WHITE;
+
+  private final Rect paddingSize = new Rect();
+  private final Rect outlineSize = new Rect();
+  private final Rect borderSize = new Rect();
+
+  @Setter
+  private float depth = 0;
+
+  @Setter
+  private float zOffset;
+
+  private ElementContent content;
+
+  @Setter
+  private boolean contentDirty = false;
+  private boolean spawned = false;
 
   @Setter
   private boolean hidden = false;
 
-  /*
-   * x: left, y: top, z: bottom, w: right
-   *
-   *   y
-   * x + w
-   *   z
-   */
-  private final Vector4f paddingSize = new Vector4f(0);
-  private final Vector4f outlineSize = new Vector4f(0);
-  private final Vector4f marginSize = new Vector4f(0);
+  public RenderElement(Document owning) {
+    this.owning = owning;
+  }
 
-  private final Vector2f contentExtension = new Vector2f();
-
-  /** Depth value multiplier */
-  @Setter
-  private float depth = 0;
-
-  private final Layer[] layers = new Layer[LAYER_COUNT];
-
-  @Setter
-  private ElementContent content;
-
-  private static boolean isNotSpawned(Layer layer) {
+  public static boolean isNotSpawned(Layer layer) {
     return layer == null || !layer.isSpawned();
+  }
+
+  public boolean hasSpawnedLayer(RenderLayer layer) {
+    return !isNotSpawned(layers[layer.ordinal()]);
   }
 
   public final Layer getLayer(RenderLayer layer) {
@@ -107,11 +120,11 @@ public class RenderElement {
     return content == null || content.isEmpty();
   }
 
-  private static boolean isNotZero(Vector4f v) {
-    return v.x > 0 || v.y > 0 || v.z > 0 || v.w > 0;
+  private static boolean isNotZero(Rect v) {
+    return v.left > 0 || v.bottom > 0 || v.top > 0 || v.right > 0;
   }
 
-  public void moveTo(PageView view, Vector2f screenPos) {
+  public void moveTo(Document view, Vector2f screenPos) {
     this.position.set(screenPos);
     Location loc = getSpawnLocation(view);
 
@@ -121,123 +134,175 @@ public class RenderElement {
   }
 
   public void getContentStart(Vector2f out) {
-    float topDif = paddingSize.y + outlineSize.y;
-    float leftDif = paddingSize.x + outlineSize.x;
+    float topDif = paddingSize.top + outlineSize.top + borderSize.top;
+    float leftDif = paddingSize.left + outlineSize.left + borderSize.left;
 
     out.set(position);
-    out.add(leftDif, -topDif);
+    out.add(leftDif * GLOBAL_SCALAR, -topDif * GLOBAL_SCALAR);
+  }
+
+  private Vector2f getContentSize() {
+    if (content == null) {
+      return new Vector2f();
+    }
+
+    Vector2f size = new Vector2f();
+    content.measureContent(size, styleProperties);
+
+    size.mul(GLOBAL_SCALAR).mul(contentScale);
+    return size;
   }
 
   public void getContentEnd(Vector2f out) {
     getContentStart(out);
-    Layer content = getLayer(RenderLayer.CONTENT);
-    out.x += content.size.x;
-    out.y -= content.size.y;
-  }
 
-  public void getAlignmentPosition(Vector2f out, AlignDirection direction) {
-    getContentStart(out);
-    Layer content = layers[RenderLayer.CONTENT.ordinal()];
-
-    if (isNotSpawned(content)) {
+    if (content == null) {
       return;
     }
 
-    if (direction == AlignDirection.X) {
-      out.add(content.size.x, 0);
+    out.add(getContentSize());
+  }
+
+  public void getAlignmentPosition(Vector2f out, Align direction) {
+    getContentStart(out);
+
+    if (content == null) {
+      return;
+    }
+
+    Vector2f size = getContentSize();
+
+    if (direction == Align.X) {
+      out.x += size.x;
     } else {
-      out.sub(0, content.size.y);
+      out.y -= size.y;
     }
   }
 
   public void getElementSize(Vector2f out) {
-    for (int i = LAYER_COUNT - 1; i >= 0; i--) {
-      Layer l = layers[i];
+    //
+    // let raw_size = (content_size * content_scale) + content_extension
+    // let capped_size = clamp(raw_size, min_size, max_size)
+    // let result = capped_size + padding_size + outline_size
+    //              =========================================
+    //
 
-      if (isNotSpawned(l)) {
-        continue;
-      }
-
-      out.set(l.size);
-      return;
+    if (content != null) {
+      content.measureContent(out, styleProperties);
+    } else {
+      out.set(0);
     }
 
-    out.set(0);
+    out.mul(GLOBAL_SCALAR);
+    out.mul(contentScale);
+    out.add(contentExtension);
+    out.max(minSize).min(maxSize);
+
+    float xAdd
+        = paddingSize.left + paddingSize.right
+        + outlineSize.left + outlineSize.right
+        + borderSize.left + borderSize.right;
+
+    float yAdd
+        = paddingSize.top + paddingSize.bottom
+        + outlineSize.top + outlineSize.bottom
+        + borderSize.top + borderSize.bottom;
+
+    out.x += xAdd * GLOBAL_SCALAR;
+    out.y += yAdd * GLOBAL_SCALAR;
   }
 
   public void getBounds(Rectangle rectangle) {
-    getElementSize(rectangle.getSize());
-    rectangle.getPosition().set(position);
+    Vector2f pos = rectangle.getPosition();
+    Vector2f size = rectangle.getSize();
+
+    getElementSize(size);
+
+    pos.x = position.x;
+    pos.y = position.y - size.y;
   }
 
-  public void getMarginBounds(Rectangle rectangle) {
-    getBounds(rectangle);
-
-    rectangle.getPosition().x -= marginSize.x;
-    rectangle.getPosition().y += marginSize.y;
-    rectangle.getSize().x += marginSize.x + marginSize.w;
-    rectangle.getSize().y += marginSize.y + marginSize.z;
-  }
-
-  private Location getSpawnLocation(PageView view) {
+  private Location getSpawnLocation(Document view) {
     Vector3f pos = new Vector3f();
-    Vector2f rot = view.getBounds().getRotation();
+    Vector2f rot = view.getScreen().getRotation();
 
-    view.getBounds().screenToWorld(position, pos);
+    view.getScreen().screenToWorld(position, pos);
     return new Location(view.getWorld(), pos.x, pos.y, pos.z, rot.x, rot.y);
   }
 
-  private void killLayerEntity(Layer layer, PageView view) {
-    if (layer.entity == null) {
+  /* --------------------------- Spawning process ---------------------------- */
+
+  public void update() {
+    if (!spawned) {
       return;
     }
 
-    view.removeEntity(layer.entity);
-    layer.killEntity();
+    spawn();
+
+    /*
+     * I remembered I don't care, just call spawn again
+     *
+
+    ElementChanges set = new ElementChanges(changes);
+
+    if (set.has(CONTENT)) {
+      spawn(view);
+      return;
+    }
+
+    if (set.hasAny(CONTENT_EXT | PADDING)) {
+      // Update all layers from padding onwards
+      // change their scale
+      // that's abt it
+    } else if (set.has(OUTLINE_SIZE)) {
+      // Just change the last layer
+    }
+
+    if (set.has(OUTLINE_COLOR)) {
+      // Update entity color
+    }
+
+    if (set.has(BG_COLOR)) {
+      // Update entity coolor
+    }*/
   }
 
-  public void spawn(PageView view) {
-    Location location = getSpawnLocation(view);
+  public void spawn() {
+    Location location = getSpawnLocation(owning);
     Layer content = getLayer(RenderLayer.CONTENT);
     content.zeroValues();
 
-    World world = view.getWorld();
-
     // Step 1 - Spawn content
     if (isContentEmpty()) {
-      killLayerEntity(content, view);
+      killLayerEntity(content);
     } else {
-      Display display = this.content.createEntity(world, location);
-      configureDisplay(display);
+      Display display = getOrCreateContentEntity(content, location);
 
       if (display instanceof TextDisplay td) {
         td.setShadowed(textShadowed);
       }
 
-      killLayerEntity(content, view);
-
-      content.setEntity(display);
-      view.addEntity(display);
-
-      this.content.measureContent(content.size);
-      this.content.configureInitial(content, this);
-
+      content.size.mul(GLOBAL_SCALAR);
       content.size.mul(contentScale);
-      content.scale.x = contentScale.x;
-      content.scale.y = contentScale.y;
+
+      content.scale.x = GLOBAL_SCALAR;
+      content.scale.y = GLOBAL_SCALAR;
+      content.scale.x *= contentScale.x;
+      content.scale.y *= contentScale.y;
 
       // Early Step 6 - Offset content layer by half it's length
-      content.translate.x += (content.size.x / 2.0f);
+      content.translate.x += (content.size.x * 0.5f);
     }
 
     // Step 2 - Spawn background
-    if (isNotZero(paddingSize)) {
-      createLayerEntity(RenderLayer.BACKGROUND, location, view, backgroundColor, paddingSize);
-    }
+    createLayerEntity(RenderLayer.BACKGROUND, location, backgroundColor, paddingSize);
 
+    if (isNotZero(borderSize)) {
+      createLayerEntity(RenderLayer.BORDER, location, borderColor, borderSize);
+    }
     // Step 3 - Spawn outline
     if (isNotZero(outlineSize)) {
-      createLayerEntity(RenderLayer.OUTLINE, location, view, outlineColor, outlineSize);
+      createLayerEntity(RenderLayer.OUTLINE, location, outlineColor, outlineSize);
     }
 
     // Step 4 - Set layer sizes
@@ -256,6 +321,57 @@ public class RenderElement {
     forEachSpawedLayer(LayerDirection.FORWARD, (layer, iteratedCount) -> {
       layer.updateTransform();
     });
+
+    this.spawned = true;
+  }
+
+  private Display getOrCreateContentEntity(Layer content, Location location) {
+    boolean requiresRespawn;
+    ElementContent ec = this.content;
+
+    if (!content.isSpawned()) {
+      requiresRespawn = true;
+    } else if (ec != null && !ec.getEntityClass().isInstance(content.entity)) {
+      requiresRespawn = true;
+    } else {
+      requiresRespawn = false;
+    }
+
+    Display display;
+
+    if (requiresRespawn) {
+      killLayerEntity(content);
+
+      display = ec.createEntity(location.getWorld(), location);
+      ec.applyContentTo(display, styleProperties);
+
+      content.setEntity(display);
+      owning.addEntity(display);
+    } else {
+      display = content.entity;
+
+      if (contentDirty && ec != null) {
+        ec.applyContentTo(display, styleProperties);
+      }
+    }
+
+    if (ec != null) {
+      ec.measureContent(content.size, styleProperties);
+      ec.configureInitial(content, this);
+    }
+
+    configureDisplay(display);
+
+    return display;
+  }
+
+  private void killLayerEntity(Layer layer) {
+    if (layer.entity == null) {
+      return;
+    }
+
+    owning.removeEntity(layer.entity);
+    layer.killEntity();
   }
 
   private void configureDisplay(Display display) {
@@ -278,11 +394,9 @@ public class RenderElement {
     forEachSpawedLayer(LayerDirection.FORWARD, (layer, iteratedCount) -> {
       // Add calculated values
       layer.translate.z -= layer.depth;
-      layer.translate.x += layer.borderOffset.x;
-      layer.translate.y -= layer.borderOffset.y;
 
       // Perform rotation
-      layer.translate.rotate(lrot);
+      layer.translate.rotate(lrot, layer.rotatedTranslate);
     });
   }
 
@@ -291,18 +405,20 @@ public class RenderElement {
     boolean extensionApplied = false;
 
     while (it.hasNext()) {
-      int count = it.getCount();
       Layer layer = it.next();
 
       if (layer.layer != RenderLayer.CONTENT) {
-        Vector4f increase = layer.borderSize;
+        Rect increase = layer.borderSize;
 
-        layer.size.x += increase.x + increase.w;
-        layer.size.y += increase.y + increase.z;
+        layer.size.x += increase.left + increase.right;
+        layer.size.y += increase.top + increase.bottom;
 
         if (!extensionApplied) {
           layer.size.x += contentExtension.x;
           layer.size.y += contentExtension.y;
+
+          layer.size.max(minSize);
+          layer.size.min(maxSize);
 
           extensionApplied = true;
         }
@@ -329,6 +445,7 @@ public class RenderElement {
 
       layer.depth = micro;
       layer.depth += macro;
+      layer.depth += zOffset;
     });
   }
 
@@ -342,29 +459,72 @@ public class RenderElement {
         return;
       }
 
-      layer.borderOffset.x += offsetStack.x += next.borderSize.x;
-      layer.borderOffset.y += offsetStack.y += next.borderSize.z;
+      layer.translate.x += offsetStack.x += next.borderSize.left;
+      layer.translate.y -= offsetStack.y += next.borderSize.bottom;
     });
   }
+
+  /* --------------------------- Setters ---------------------------- */
+
+  public void setBackgroundColor(Color backgroundColor) {
+    this.backgroundColor = backgroundColor;
+
+    applyLayerAs(RenderLayer.BACKGROUND, TextDisplay.class, d -> {
+      d.setBackgroundColor(backgroundColor);
+    });
+  }
+
+  public void setOutlineColor(Color outlineColor) {
+    this.outlineColor = outlineColor;
+    applyLayerAs(RenderLayer.OUTLINE, TextDisplay.class, d -> d.setBackgroundColor(outlineColor));
+  }
+
+  public void setBorderColor(Color color) {
+    this.borderColor = color;
+    applyLayerAs(RenderLayer.BORDER, TextDisplay.class, d -> d.setBackgroundColor(color));
+  }
+
+  public void setTextShadowed(boolean textShadowed) {
+    this.textShadowed = textShadowed;
+
+    applyLayerAs(RenderLayer.CONTENT, TextDisplay.class, d -> {
+      d.setShadowed(textShadowed);
+    });
+  }
+
+  public void setContent(ElementContent content) {
+    this.content = content;
+    this.contentDirty = true;
+  }
+
+  /* --------------------------- Layer management ---------------------------- */
 
   private void createLayerEntity(
       RenderLayer rLayer,
       Location location,
-      PageView view,
       Color color,
-      Vector4f borderSize
+      Rect borderSize
   ) {
     Layer layer = getLayer(rLayer);
     layer.zeroValues();
     layer.borderSize.set(borderSize);
-    killLayerEntity(layer, view);
+    layer.borderSize.mul(GLOBAL_SCALAR);
 
-    TextDisplay display = location.getWorld().spawn(location, TextDisplay.class);
+    TextDisplay display;
+
+    if (layer.entity != null && !layer.entity.isDead()) {
+      display = (TextDisplay) layer.entity;
+    } else {
+      killLayerEntity(layer);
+
+      display = location.getWorld().spawn(location, TextDisplay.class);
+
+      layer.setEntity(display);
+      owning.addEntity(display);
+    }
+
     display.setBackgroundColor(color);
     configureDisplay(display);
-
-    layer.setEntity(display);
-    view.addEntity(display);
   }
 
   private Layer nextSpawned(Layer layer) {
@@ -423,32 +583,21 @@ public class RenderElement {
     consumer.accept(l.entity);
   }
 
-  public void setBackgroundColor(Color backgroundColor) {
-    this.backgroundColor = backgroundColor;
-
-    applyLayerAs(RenderLayer.BACKGROUND, TextDisplay.class, d -> {
-      d.setBackgroundColor(backgroundColor);
-    });
-  }
-
-  public void setOutlineColor(Color outlineColor) {
-    this.outlineColor = outlineColor;
-
-    applyLayerAs(RenderLayer.OUTLINE, TextDisplay.class, d -> {
-      d.setBackgroundColor(outlineColor);
-    });
-  }
-
-  public void setTextShadowed(boolean textShadowed) {
-    this.textShadowed = textShadowed;
-
-    applyLayerAs(RenderLayer.OUTLINE, TextDisplay.class, d -> {
-      d.setShadowed(textShadowed);
-    });
-  }
-
   LayerIterator layerIterator(LayerDirection direction) {
     return new LayerIterator(direction.modifier, direction.start);
+  }
+
+  public void kill() {
+    for (Layer layer : layers) {
+      if (isNotSpawned(layer)) {
+        continue;
+      }
+
+      owning.removeEntity(layer.entity);
+      layer.killEntity();
+    }
+
+    spawned = false;
   }
 
   class LayerIterator implements Iterator<Layer> {
@@ -524,8 +673,7 @@ public class RenderElement {
     final RenderLayer layer;
 
     final Vector2f size = new Vector2f(0);
-    final Vector4f borderSize = new Vector4f(0);
-    final Vector2f borderOffset = new Vector2f(0);
+    final Rect borderSize = new Rect();
 
     float depth;
 
@@ -533,7 +681,8 @@ public class RenderElement {
     Display entity;
 
     final Vector3f scale = new Vector3f(1);
-    final Vector3f translate = new Vector3f();
+    final Vector3f translate = new Vector3f(0);
+    final Vector3f rotatedTranslate = new Vector3f(0);
     final Quaternionf leftRotation = new Quaternionf();
 
     public Layer(RenderLayer layer) {
@@ -543,11 +692,11 @@ public class RenderElement {
     void zeroValues() {
       size.set(0);
       borderSize.set(0);
-      borderOffset.set(0);
       depth = 0;
 
       scale.set(1);
       translate.set(0);
+      rotatedTranslate.set(0);
       leftRotation.set(0, 0, 0, 1);
     }
 
@@ -573,9 +722,16 @@ public class RenderElement {
       Vector3f sc = trans.getScale();
       Vector3f tr = trans.getTranslation();
 
-      tr.x = translate.z;
-      tr.y = translate.y;
-      tr.z = translate.x;
+      // I assure you, dear maintainer, the axes on this translate
+      // being screwed are completely vital to this system's
+      // continued functioning.
+      //
+      // Honestly, though, I don't know why this is like this, but it
+      // ensures that the Z axes acts like a depth value while X and Y
+      // are screen translation values.
+      tr.x = rotatedTranslate.z;
+      tr.y = rotatedTranslate.y;
+      tr.z = rotatedTranslate.x;
 
       sc.x = scale.x;
       sc.y = scale.y;

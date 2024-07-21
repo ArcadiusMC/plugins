@@ -1,30 +1,29 @@
 package net.arcadiusmc.ui.event;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectLists;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.Executor;
 
-public class EventListeners {
+public class EventListeners implements Listenable {
 
-  private final Map<String, List<EventListener>> listeners = new HashMap<>();
-  private final Executor executor;
+  private final Map<String, ObjectList<EventListener>> listeners = new Object2ObjectOpenHashMap<>();
 
-  public EventListeners(Executor executor) {
-    this.executor = executor;
-  }
-
-  public void clearListeners(String eventType) {
+  @Override
+  public void clearEventListeners(String eventType) {
     Objects.requireNonNull(eventType, "Null event type");
     listeners.remove(eventType);
   }
 
-  public void clearListeners() {
+  @Override
+  public void clearEventListeners() {
     listeners.clear();
   }
 
+  @Override
   public boolean removeEventListener(String eventType, EventListener listener) {
     Objects.requireNonNull(eventType, "Null event type");
     Objects.requireNonNull(listener, "Null event listener");
@@ -38,37 +37,17 @@ public class EventListeners {
     return list.remove(listener);
   }
 
+  @Override
   public void addEventListener(String eventType, EventListener listener) {
     Objects.requireNonNull(eventType, "Null event type");
     Objects.requireNonNull(listener, "Null event listener");
 
-    List<EventListener> list = listeners.computeIfAbsent(eventType, s -> new ArrayList<>());
+    List<EventListener> list = listeners.computeIfAbsent(eventType, s -> new ObjectArrayList<>());
     list.add(listener);
   }
 
-  public void fireEvent(Event event) {
-    List<EventListener> listeners = this.listeners.get(event.getEventType());
-
-    if (listeners == null || listeners.isEmpty()) {
-      return;
-    }
-
-    executor.execute(new EventExecutionTask(event, listeners));
-  }
-
-  record EventExecutionTask(Event event, List<EventListener> listeners) implements Runnable {
-
-    @Override
-    public void run() {
-      for (int i = 0; i < listeners.size(); i++) {
-        EventListener listener = listeners.get(i);
-
-        listener.onEvent(event);
-
-        if (event.propagationStopped()) {
-          return;
-        }
-      }
-    }
+  @Override
+  public List<EventListener> getListeners(String eventType) {
+    return listeners.getOrDefault(eventType, ObjectLists.emptyList());
   }
 }

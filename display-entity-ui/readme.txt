@@ -1,4 +1,4 @@
-Steps to spawn a menu element, divided into sections.
+
 
 === Responsibilities ===
   RenderElement instances will handle the spawning (ie, rendering), 
@@ -17,7 +17,7 @@ Steps to spawn a menu element, divided into sections.
 
 == Section 1: Spawning (Per node) ==
   1.1 - Spawn content, if it's not empty, and store it in it's the render layer.
-       Measure the content.
+        Measure the content.
 
   1.2 - Spawn background, if it's set, and store in it's the render layer.
 
@@ -49,10 +49,28 @@ Steps to spawn a menu element, divided into sections.
   1.9 - Apply transformations onto the entities themselves
 
 == Section 2: Alignment (Per node) ==
-  1.1 - Iterate over child nodes, calling the alignment function on them. If the
+  2.1 - Iterate over child nodes, calling the alignment function on them. If the
         current node has no children, stop. Alignment only matters when an
         element has children.
 
-  1.2 - Find node's content location (the offset of the content layer + the
-        node's position), call this C, and iterate over children again. Move the
-        element to C, add the child's size.y to C and move on to next loop.
+  2.2 - Find the node's alignment position (called A). This position will depend
+        on the alignment direction (X or Y).
+        If direction is X, then: A = node.position + node.content_offset.x
+        If direction is Y, then: A = node.position + node.content_offset.y
+
+  2.3 - Create position to track where to place the current element, called D.
+        Initialized to be equal to A.
+
+  2.4 - Iterate over children again, let's use C = current child. First:
+        If direction is X, then: D = D + C.margin.left
+        If direction is Y, then: D = D + C.margin.top
+        Then, move C to D.
+        Move D depending on alignment direction:
+        If direction is X, then: D = D + C.size.x + C.margin.right
+        If direction is Y, then: D = D + C.size.y + C.margin.bottom
+
+  2.3 - Take the maximum point of all the aligned child nodes and subtract it
+        from the parent element's position, and then subtract the parent's size. 
+        This gives the X and Y growth needed to be applied to the background or
+        outline of the parent element to ensure it contains all child elements.
+        parentGrowth = max(children.endPoints) - parent.pos - parent.size

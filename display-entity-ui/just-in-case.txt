@@ -76,3 +76,261 @@
     RenderLayer next = RenderLayer.LAYERS[nextOrd];
     return getLayer(next);
   }
+
+
+
+
+
+
+
+
+
+
+
+  class Handler extends DefaultHandler {
+
+    private Locator locator;
+
+    private final Document view;
+
+    private final Stack<Node> stack = new Stack<>();
+    private BodyElement body;
+
+    private int indent = 0;
+    private StringBuilder builder = new StringBuilder();
+
+    public Handler(Document view) {
+      this.view = view;
+    }
+
+    private StringBuilder nlIndent() {
+      return builder.append('\n').append("  ".repeat(indent));
+    }
+
+    @Override
+    public void setDocumentLocator(Locator locator) {
+      this.locator = locator;
+
+      nlIndent().append("setDocumentLocator() ")
+          .append(locator.getPublicId())
+          .append("#")
+          .append(locator.getLineNumber())
+          .append(':')
+          .append(locator.getColumnNumber());
+    }
+
+    @Override
+    public void startDocument() throws SAXException {
+      body = new BodyElement(view);
+      stack.push(body);
+      builder.append("startDocument()");
+    }
+
+    @Override
+    public void endDocument() throws SAXException {
+      stack.pop();
+      builder.append("endDocument()");
+    }
+
+    @Override
+    public void startPrefixMapping(String prefix, String uri) throws SAXException {
+      nlIndent().append("startPrefixMapping(), prefix=").append(prefix).append(", uri=").append(uri);
+    }
+
+    @Override
+    public void endPrefixMapping(String prefix) throws SAXException {
+      nlIndent().append("endPrefixMapping(), prefix=").append(prefix);
+    }
+
+    @Override
+    public void startElement(String uri, String localName, String qName, Attributes atts)
+        throws SAXException
+    {
+      nlIndent().append("startElement ").append(qName).append(" {");
+      indent++;
+
+      nlIndent().append("uri=").append(uri);
+      nlIndent().append("local-name=").append(localName);
+      nlIndent().append("q-name=").append(qName);
+      nlIndent().append("attribute-count=").append(atts.getLength());
+
+      nlIndent().append("attributes=[");
+      indent++;
+
+      for (int i = 0; i < atts.getLength(); i++) {
+        nlIndent().append("attribute(").append(i).append(") {");
+
+        indent++;
+        nlIndent().append("uri=").append(atts.getURI(i));
+        nlIndent().append("local-name=").append(atts.getLocalName(i));
+        nlIndent().append("q-name=").append(atts.getQName(i));
+        nlIndent().append("type=").append(atts.getType(i));
+        nlIndent().append("value=").append('"').append(atts.getValue(i)).append('"');
+        indent--;
+
+        nlIndent().append("}");
+      }
+
+      indent--;
+      nlIndent().append("]");
+
+      nlIndent().append("children=[");
+      indent++;
+    }
+
+    @Override
+    public void endElement(String uri, String localName, String qName) throws SAXException {
+      indent--;
+      nlIndent().append("]");
+
+      indent--;
+      nlIndent().append("} // ").append(qName);
+    }
+
+    @Override
+    public void characters(char[] ch, int start, int length) throws SAXException {
+      String str = String.valueOf(ch, start, length)
+          .replace(" ", "-")
+          .replace("\r", "\\r")
+          .replace("\n", "\\n")
+          .replace("\t", "\\t");
+
+      nlIndent()
+          .append("characters")
+          .append('(')
+          .append('"')
+          .append(str)
+          .append('"')
+          .append(')');
+    }
+
+    @Override
+    public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+      String str = String.valueOf(ch, start, length)
+          .replace(" ", "-")
+          .replace("\r", "\\r")
+          .replace("\n", "\\n")
+          .replace("\t", "\\t");
+
+      nlIndent()
+          .append("ws-characters")
+          .append('(')
+          .append('"')
+          .append(str)
+          .append('"')
+          .append(')');
+    }
+
+    @Override
+    public void processingInstruction(String target, String data) throws SAXException {
+      nlIndent()
+          .append("processing-instruction(target=")
+          .append('"')
+          .append(target)
+          .append('"')
+          .append(", data=")
+          .append('"')
+          .append(data)
+          .append('"')
+          .append(')');
+    }
+
+    @Override
+    public void skippedEntity(String name) throws SAXException {
+      nlIndent()
+          .append("skipped-entity(name=")
+          .append('"')
+          .append(name)
+          .append('"')
+          .append(')');
+    }
+  }
+
+
+
+
+
+
+//
+//  public void spawnBlank() {
+//    Vector2f dim = bounds.getDimensions();
+//
+//    this.body = createElement("body");
+//    this.tooltip = createNode();
+//
+//    RenderElement rootRender = body.getRenderElement();
+//    rootRender.getPosition().set(0, dim.y);
+//    rootRender.getPaddingSize().set(0, 0, dim.y, dim.x);
+//    rootRender.setBackgroundColor(Color.GRAY);
+//
+//    Node child = createNode();
+//    RenderElement childRender = child.getRenderElement();
+//    float yMargin = CHAR_PX_SIZE * 5.0f;
+//    childRender.setContent(new TextContent("Hello, world!"));
+//    childRender.getContentScale().mul(1.5f);
+//    child.getMargin().left = yMargin;
+//    child.getMargin().top = yMargin;
+//
+//    Node child2 = createNode();
+//    RenderElement c2r = child2.getRenderElement();
+//    c2r.setContent(new TextContent("It basically works :)"));
+//    c2r.setTextShadowed(true);
+//
+//    Node child3 = createNode();
+//    child3.getMargin().top = yMargin * 2;
+//    child3.getMargin().left = yMargin;
+//    RenderElement c3r = child3.getRenderElement();
+//    c3r.setContent(new TextContent("I am a button :)"));
+//    c3r.setTextShadowed(true);
+//    c3r.getPaddingSize().set(CHAR_PX_SIZE);
+//    c3r.getOutlineSize().set(CHAR_PX_SIZE);
+//
+//    body.addChild(child);
+//    body.addChild(child2);
+//    body.addChild(child3);
+//
+//    RenderElement toolTipRender = tooltip.getRenderElement();
+//    toolTipRender.setOutlineColor(Color.GREEN);
+//    toolTipRender.setBackgroundColor(Color.BLACK);
+//    toolTipRender.setContent(new ItemContent(new ItemStack(Material.TRIDENT, 1)));
+//    toolTipRender.getOutlineSize().set(CHAR_PX_SIZE, CHAR_PX_SIZE, CHAR_PX_SIZE, CHAR_PX_SIZE);
+//    toolTipRender.getPaddingSize().set(CHAR_PX_SIZE * 2);
+//    toolTipRender.getContentScale().set(0.5f);
+//    toolTipRender.setTextShadowed(true);
+//
+//    Node tooltipItem = createNode();
+//    RenderElement tiRender = tooltipItem.getRenderElement();
+//    tiRender.setContent(new TextContent("Hello, I'm a tooltip\n2nd Line"));
+//    tiRender.setOutlineColor(Color.GREEN);
+//    tiRender.setBackgroundColor(Color.BLACK);
+//    tiRender.getContentScale().set(0.5f);
+//    tooltipItem.getMargin().top = LINE_HEIGHT / 2;
+//    tooltipItem.getMargin().left = CHAR_PX_SIZE;
+//    tooltipItem.getMargin().right = CHAR_PX_SIZE;
+//
+//    tooltip.setHidden(true);
+//    tooltip.setDirection(Align.X);
+//    tooltip.addChild(tooltipItem);
+//    tooltip.setDepth(getTooltipDepth());
+//
+//    tooltip.spawn();
+//    tooltip.align();
+//  }
+//
+//  private int getTooltipDepth() {
+//    List<Node> allNodes = new ArrayList<>();
+//    collectNodes(body, allNodes);
+//
+//    Comparator<Node> cmp = Comparator.comparingInt(Node::getDepth).reversed();
+//    allNodes.sort(cmp);
+//
+//    return allNodes.getFirst().getDepth() + 2;
+//  }
+//
+//  private void collectNodes(Node node, List<Node> output) {
+//    output.add(node);
+//
+//    for (Node child : node.getChildren()) {
+//      collectNodes(child, output);
+//    }
+//  }

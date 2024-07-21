@@ -5,53 +5,57 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import lombok.Getter;
-import net.arcadiusmc.ui.HideUtil;
-import net.arcadiusmc.ui.PageView;
+import net.arcadiusmc.Loggers;
 import net.arcadiusmc.ui.event.Event;
+import net.arcadiusmc.ui.event.EventExecutionTask;
+import net.arcadiusmc.ui.event.EventListener;
 import net.arcadiusmc.ui.event.EventListeners;
+import net.arcadiusmc.ui.event.EventTarget;
+import net.arcadiusmc.ui.event.EventTypes;
+import net.arcadiusmc.ui.event.MutationEvent;
+import net.arcadiusmc.ui.event.MutationEvent.Action;
+import net.arcadiusmc.ui.math.Rect;
+import net.arcadiusmc.ui.math.Rectangle;
 import net.arcadiusmc.ui.render.RenderElement;
 import net.arcadiusmc.ui.render.RenderElement.Layer;
+import net.arcadiusmc.ui.util.HideUtil;
 import org.bukkit.entity.Display;
 import org.joml.Vector2f;
-import org.joml.Vector4f;
+import org.slf4j.Logger;
 
 @Getter
-public class Node {
+public abstract class Node implements EventTarget {
 
-  private final EventListeners listeners;
+  private static final Logger LOGGER = Loggers.getLogger();
+
+  private final EventListeners listeners = new EventListeners();
+  private final RenderElement renderElement;
 
   private int depth = 0;
-  private Node parent;
+  private Node parent = null;
+  private final Document owning;
   private final List<Node> children = new ArrayList<>();
 
-  private final RenderElement renderElement = new RenderElement();
+  private boolean hidden = false;
+  private int flags = 0;
+  private Align direction = Align.Y;
+  private final Rect margin = new Rect();
 
-  private int flags;
-  private boolean hidden;
-
-  private AlignDirection direction = AlignDirection.Y;
-
-  public Node(EventListeners listeners) {
-    this.listeners = listeners;
+  public Node(Document owning) {
+    this.owning = owning;
+    this.renderElement = new RenderElement(owning);
   }
 
-  public void fireEvent(Event event) {
-    if (!event.isBubbling()) {
-      listeners.fireEvent(event);
+  public boolean ignoredByMouse() {
+    return false;
+  }
+
+  protected void updateRender() {
+    if (!renderElement.isSpawned()) {
       return;
     }
 
-    Node p = this;
-
-    while (p != null) {
-      p.listeners.fireEvent(event);
-
-      if (event.propagationStopped()) {
-        return;
-      }
-
-      p = p.parent;
-    }
+    renderElement.spawn();
   }
 
   public boolean hasFlags(NodeFlag... flags) {
@@ -59,14 +63,12 @@ public class Node {
     return (this.flags & mask) == mask;
   }
 
-  public void addFlags(NodeFlag... flags) {
-    int mask = NodeFlag.combineMasks(flags);
-    this.flags |= mask;
+  public void addFlag(NodeFlag flag) {
+    this.flags |= flag.mask;
   }
 
-  public void removeFlags(NodeFlag... flags) {
-    int mask = NodeFlag.combineMasks(flags);
-    this.flags = this.flags & ~mask;
+  public void removeFlag(NodeFlag flag) {
+    this.flags &= ~flag.mask;
   }
 
   public void addChild(Node node) {
@@ -74,10 +76,45 @@ public class Node {
       throw new IllegalStateException("Child already has parent");
     }
 
+    MutationEvent e = new MutationEvent(EventTypes.APPEND_CHILD, getOwning(), this);
+    e.setAction(Action.APPEND);
+    e.setNode(node);
+
+    dispatchEvent(e);
+
+    if (e.isCancelled()) {
+      return;
+    }
+
     node.parent = this;
     node.setDepth(depth + 1);
 
     children.add(node);
+  }
+
+  public void removeChild(Node n) {
+    int index = children.indexOf(n);
+    if (index == -1) {
+      return;
+    }
+    removeChildByIndex(index);
+  }
+
+  public void removeChildByIndex(int index) {
+    Objects.checkIndex(index, children.size());
+    Node n = children.get(index);
+
+    MutationEvent event = new MutationEvent(EventTypes.REMOVE_CHILD, getOwning(), this);
+    event.setAction(Action.REMOVE);
+    event.setNode(n);
+
+    dispatchEvent(event);
+
+    if (event.isCancelled()) {
+      return;
+    }
+
+    children.remove(index);
   }
 
   public void setDepth(int depth) {
@@ -89,24 +126,24 @@ public class Node {
     }
   }
 
-  public void spawn(PageView view) {
+  public void spawn() {
     for (Node child : children) {
-      child.spawn(view);
+      child.spawn();
     }
 
-    renderElement.spawn(view);
+    renderElement.spawn();
   }
 
-  public void align(PageView view) {
+  public void align() {
     if (children.isEmpty()) {
       return;
     }
 
     for (Node child : children) {
-      child.align(view);
+      child.align();
     }
 
-    boolean aligningOnX = direction == AlignDirection.X;
+    boolean aligningOnX = direction == Align.X;
 
     Vector2f alignPos = new Vector2f();
     renderElement.getAlignmentPosition(alignPos, direction);
@@ -115,62 +152,75 @@ public class Node {
     Vector2f tempMargin = new Vector2f(0);
     Vector2f elemSize = new Vector2f();
 
-    Vector2f maxPos = new Vector2f(Float.MIN_VALUE, Float.MAX_VALUE);
-    Vector2f childMax = new Vector2f();
-
     for (Node child : children) {
-      RenderElement render = child.getRenderElement();
-      Vector4f margin = render.getMarginSize();
-
-      if (aligningOnX) {
-        pos.x += margin.x;
-
-        tempMargin.set(0, -margin.y);
-        pos.y -= margin.y;
-      } else {
-        pos.y -= margin.y;
-
-        tempMargin.set(margin.x, 0);
-        pos.x += margin.x;
+      if (child.hidden) {
+        continue;
       }
 
-      child.moveTo(view, pos);
+      RenderElement render = child.getRenderElement();
+      Rect margin = child.margin;
+
+      if (aligningOnX) {
+        pos.x += margin.left;
+
+        tempMargin.set(0, -margin.top);
+        pos.y -= margin.top;
+      } else {
+        pos.y -= margin.top;
+
+        tempMargin.set(margin.left, 0);
+        pos.x += margin.left;
+      }
+
+      child.moveTo(pos);
       pos.sub(tempMargin);
 
       render.getElementSize(elemSize);
 
       if (aligningOnX) {
-        pos.x += margin.w + elemSize.x;
+        pos.x += margin.right + elemSize.x;
       } else {
-        pos.y -= margin.z + elemSize.y;
+        pos.y -= margin.bottom + elemSize.y;
       }
-
-      render.getElementSize(childMax);
-      childMax.add(render.getPosition());
-      childMax.x += margin.w;
-      childMax.y -= margin.z;
-
-      maxPos.x = Math.max(childMax.x, maxPos.x);
-      maxPos.y = Math.min(childMax.y, maxPos.y);
     }
 
-    if (hasFlags(NodeFlag.ROOT)) {
+    postAlign();
+  }
+
+  void postAlign() {
+    if (children.isEmpty()) {
       return;
     }
 
-    Vector2f contentMax = new Vector2f();
-    renderElement.getContentEnd(contentMax);
+    Vector2f bottomRight = new Vector2f(Float.MIN_VALUE, Float.MAX_VALUE);
+    Vector2f childMax = new Vector2f();
 
-    Vector2f dif = new Vector2f();
-    dif.x = Math.max(maxPos.x - contentMax.x, 0);
-    dif.y = Math.max(contentMax.y - maxPos.y, 0);
+    Rectangle rectangle = new Rectangle();
 
-    renderElement.getContentExtension().set(dif);
+    for (Node child : children) {
+      RenderElement re = child.getRenderElement();
+      re.getBounds(rectangle);
+
+      childMax.x = rectangle.getPosition().x + rectangle.getSize().x;
+      childMax.y = rectangle.getPosition().y;
+
+      bottomRight.x = Math.max(childMax.x, bottomRight.x);
+      bottomRight.y = Math.min(childMax.y, bottomRight.y);
+    }
+
+    Vector2f contentBottomRight = new Vector2f();
+    renderElement.getContentEnd(contentBottomRight);
+
+    float difX = Math.max(bottomRight.x - contentBottomRight.x, 0);
+    float difY = Math.max(contentBottomRight.y - bottomRight.y, 0);
+
+    renderElement.getContentExtension().set(difX, difY);
+    renderElement.spawn();
   }
 
-  public void moveTo(PageView view, Vector2f pos) {
+  public void moveTo(Vector2f pos) {
     Vector2f currentPos = new Vector2f(renderElement.getPosition());
-    renderElement.moveTo(view, pos);
+    renderElement.moveTo(getOwning(), pos);
 
     if (children.isEmpty()) {
       return;
@@ -185,7 +235,7 @@ public class Node {
       dif.set(currentChildPos).sub(currentPos);
 
       newChildPos.set(pos).add(dif);
-      child.moveTo(view, newChildPos);
+      child.moveTo(newChildPos);
     }
   }
 
@@ -204,6 +254,10 @@ public class Node {
   }
 
   public void setHidden(boolean hidden) {
+    if (this.hidden == hidden) {
+      return;
+    }
+
     this.hidden = hidden;
     this.renderElement.setHidden(hidden);
 
@@ -214,8 +268,50 @@ public class Node {
     }
   }
 
-  public void setDirection(AlignDirection direction) {
+  public void setDirection(Align direction) {
     Objects.requireNonNull(direction, "Null direction");
     this.direction = direction;
+  }
+
+  public abstract void visitorEnter(Visitor visitor);
+  public abstract void visitorExit(Visitor visitor);
+
+  /* --------------------------- Event listeners ---------------------------- */
+
+  public void dispatchEvent(Event event) {
+    dispatchOnlySelf(event);
+    boolean bubbling = event.isBubbling();
+
+    if (bubbling) {
+      Node n = parent;
+
+      while (n != null && !event.propagationStopped()) {
+        n.dispatchOnlySelf(event);
+        n = n.parent;
+      }
+    }
+
+    getOwning().dispatchEvent(event);
+  }
+
+  private void dispatchOnlySelf(Event event) {
+    String type = event.getEventType();
+
+    event.setCurrentTarget(this);
+
+    List<EventListener> listenerList = getListeners(type);
+
+    if (listenerList != null && !listenerList.isEmpty()) {
+      EventExecutionTask task = new EventExecutionTask(event, listenerList);
+      getOwning().getExecutor().execute(task);
+    }
+  }
+
+  protected void kill() {
+    renderElement.kill();
+
+    for (Node child : children) {
+      child.kill();
+    }
   }
 }

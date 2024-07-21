@@ -1,6 +1,8 @@
 package net.arcadiusmc.ui.event;
 
 import lombok.Getter;
+import lombok.Setter;
+import net.arcadiusmc.ui.struct.Document;
 import net.arcadiusmc.ui.struct.Node;
 
 @Getter
@@ -20,35 +22,44 @@ public class Event {
 
   private final String eventType;
   private final Node target;
+  private final Document view;
+
+  @Getter @Setter
+  private EventTarget currentTarget;
 
   int flags;
 
-  public Event(String eventType, Node target) {
+  public Event(String eventType, Document view, Node target) {
     this.eventType = eventType;
     this.target = target;
+    this.view = view;
   }
 
-  public boolean isCancellable() {
-    return (flags & FLAG_CANCELLABLE) == FLAG_CANCELLABLE;
+  public final boolean isCancellable() {
+    return hasFlag(FLAG_CANCELLABLE);
   }
 
-  public boolean isCancelled() {
-    return (flags & FLAG_CANCELLED) == FLAG_CANCELLED;
+  public final boolean isCancelled() {
+    return hasFlag(FLAG_CANCELLED);
   }
 
-  public boolean propagationStopped() {
-    return (flags & FLAG_PROPAGATION_STOPPED) == FLAG_PROPAGATION_STOPPED;
+  public final boolean propagationStopped() {
+    return hasFlag(FLAG_PROPAGATION_STOPPED);
   }
 
-  public boolean isBubbling() {
-    return (flags & FLAG_BUBBLING) == FLAG_BUBBLING;
+  public final boolean isBubbling() {
+    return hasFlag(FLAG_BUBBLING);
   }
 
-  public void stopPropagation() {
+  public final void stopPropagation() {
     flags |= FLAG_PROPAGATION_STOPPED;
   }
 
-  public void preventDefault() {
+  private boolean hasFlag(int mask) {
+    return (this.flags & mask) == mask;
+  }
+
+  public final void preventDefault() {
     if (!isCancellable()) {
       return;
     }

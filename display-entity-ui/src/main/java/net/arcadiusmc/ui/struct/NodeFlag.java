@@ -1,7 +1,11 @@
 package net.arcadiusmc.ui.struct;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public enum NodeFlag {
-  ROOT;
+  HOVERED,
+  CLICKED;
 
   final int mask;
 
@@ -15,5 +19,18 @@ public enum NodeFlag {
       m |= flag.mask;
     }
     return m;
+  }
+
+  public static List<NodeFlag> ofMask(int flags) {
+    List<NodeFlag> list = new ArrayList<>();
+
+    for (NodeFlag value : values()) {
+      if ((value.mask & flags) != value.mask) {
+        continue;
+      }
+      list.add(value);
+    }
+
+    return list;
   }
 }

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.arcadiusmc.ui.math.RayScan;
 import net.arcadiusmc.ui.math.Screen;
+import net.arcadiusmc.ui.struct.Document;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -25,13 +26,13 @@ public class PlayerSession {
   @Getter
   private final Player player;
 
-  private final List<PageView> views = new ArrayList<>();
+  private final List<Document> views = new ArrayList<>();
 
   @Getter @Setter
-  private PageView selected;
+  private Document selected;
 
   @Getter
-  private PageView target;
+  private Document target;
 
   @Getter
   private final Vector2f screenPos = new Vector2f();
@@ -39,11 +40,11 @@ public class PlayerSession {
   @Getter
   private final Vector3f targetPos = new Vector3f();
 
-  public List<PageView> getViews() {
+  public List<Document> getViews() {
     return Collections.unmodifiableList(views);
   }
 
-  public void addView(PageView view) {
+  public void addView(Document view) {
     views.add(view);
 
     view.setSession(this);
@@ -51,7 +52,7 @@ public class PlayerSession {
   }
 
   public void kill() {
-    for (PageView view : views) {
+    for (Document view : views) {
       view.kill();
     }
 
@@ -59,8 +60,15 @@ public class PlayerSession {
   }
 
   public void tick() {
+    triggerTickCallbacks();
     recalculateTarget();
     switchSelection();
+  }
+
+  private void triggerTickCallbacks() {
+    for (Document view : views) {
+      view.onTick();
+    }
   }
 
   private void recalculateTarget() {
@@ -82,12 +90,12 @@ public class PlayerSession {
         MAX_USE_DIST
     );
 
-    for (PageView view : views) {
+    for (Document view : views) {
       if (view.getWorld() == null || !Objects.equals(view.getWorld(), world)) {
         continue;
       }
 
-      Screen bounds = view.getBounds();
+      Screen bounds = view.getScreen();
 
       if (bounds == null) {
         continue;
@@ -114,7 +122,7 @@ public class PlayerSession {
   }
 
   private void switchSelection() {
-    PageView selected = getSelected();
+    Document selected = getSelected();
 
     if (target == null) {
       if (selected == null) {

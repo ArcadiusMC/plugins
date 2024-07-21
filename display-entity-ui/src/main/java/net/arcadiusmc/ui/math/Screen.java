@@ -1,6 +1,7 @@
 package net.arcadiusmc.ui.math;
 
 import com.sk89q.worldedit.math.Vector3;
+import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.joml.Intersectionf;
@@ -9,6 +10,9 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 public class Screen {
+
+  public static final float DEFAULT_WIDTH = 3;
+  public static final float DEFAULT_HEIGHT = 2;
 
   private static final float EPSILON = 0.0000001f;
 
@@ -20,7 +24,14 @@ public class Screen {
   private final Vector3f normal = new Vector3f();
   private final Vector3f center = new Vector3f();
 
-  private final Vector2f dimensions = new Vector2f();
+  @Getter
+  private float width;
+  @Getter
+  private float height;
+
+  public Screen() {
+    set(new Vector3f(), DEFAULT_WIDTH, DEFAULT_HEIGHT);
+  }
 
   public void set(Vector3f center, float width, float height) {
     float halfWidth = width * 0.5f;
@@ -31,7 +42,6 @@ public class Screen {
     bottomLeft.sub(0, 0, halfWidth);
     topRight.add(0, height, halfWidth);
 
-
     this.upperRight.set(bottomLeft.x, topRight.y, bottomLeft.z);
     this.lowerLeft.set(topRight.x, bottomLeft.y, topRight.z);
 
@@ -39,11 +49,12 @@ public class Screen {
     this.lowerRight.set(upperRight.x, lowerLeft.y, upperRight.z);
 
     this.center.set(center);
-    this.center.add(0, height / 2, 0);
+    this.center.add(0, height * 0.5f, 0);
 
     this.normal.set(1, 0, 0);
 
-    calculateDimensions();
+    this.width = width;
+    this.height = height;
   }
 
   public Location getLowerRightLocation(World world) {
@@ -77,7 +88,11 @@ public class Screen {
   }
 
   public Vector2f getDimensions() {
-    return new Vector2f(dimensions);
+    return new Vector2f(width, height);
+  }
+
+  public Vector3f normal() {
+    return new Vector3f(normal);
   }
 
   public Vector3f center() {
@@ -116,7 +131,7 @@ public class Screen {
    * @param out Vector to store the value in
    */
   public void screenToScreenspace(Vector2f in, Vector2f out) {
-    out.set(in).div(dimensions);
+    out.set(in).div(width, height);
   }
 
   /**
@@ -127,7 +142,7 @@ public class Screen {
    * @param out Vector to store the value in
    */
   public void screenspaceToScreen(Vector2f in, Vector2f out) {
-    out.set(in).mul(dimensions);
+    out.set(in).mul(width, height);
   }
 
   /**
@@ -191,10 +206,6 @@ public class Screen {
     return true;
   }
 
-  public Vector3f normal() {
-    return new Vector3f(normal);
-  }
-
   private void calculateDerivedValues() {
     Vector3f v1 = new Vector3f();
     Vector3f v2 = new Vector3f();
@@ -202,7 +213,7 @@ public class Screen {
     upperLeft.sub(lowerLeft, v1);
     lowerRight.sub(lowerLeft, v2);
 
-    v1.cross(v2, normal);
+    v2.cross(v1, normal);
     normal.normalize();
 
     Vector3f min = new Vector3f(lowerLeft);
@@ -224,6 +235,8 @@ public class Screen {
   private void calculateDimensions() {
     Vector3f height = new Vector3f(upperLeft).sub(lowerLeft);
     Vector3f width = new Vector3f(upperRight).sub(upperLeft);
-    dimensions.set(width.length(), height.length());
+    this.width = width.length();
+    this.height = height.length();
   }
+
 }

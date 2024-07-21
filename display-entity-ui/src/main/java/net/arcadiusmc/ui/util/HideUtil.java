@@ -1,4 +1,4 @@
-package net.arcadiusmc.ui;
+package net.arcadiusmc.ui.util;
 
 import net.arcadiusmc.utils.PluginUtil;
 import org.bukkit.Bukkit;

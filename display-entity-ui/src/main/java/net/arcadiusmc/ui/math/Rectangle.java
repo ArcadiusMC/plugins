@@ -25,4 +25,9 @@ public class Rectangle {
   public void getMax(Vector2f out) {
     out.set(position).add(size);
   }
+
+  @Override
+  public String toString() {
+    return "(position=" + position + ", size=" + size + ")";
+  }
 }
