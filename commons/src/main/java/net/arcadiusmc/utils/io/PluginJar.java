@@ -77,10 +77,11 @@ public class PluginJar {
     _saveResources(plugin, sourceDir, dest);
   }
 
-  public static void saveResources(String sourceDir) {
+  public static Path saveResources(String sourceDir) {
     JavaPlugin caller = PluginUtil.getCallingPlugin();
     Path dest = caller.getDataFolder().toPath().resolve(sourceDir);
     _saveResources(caller, sourceDir, dest);
+    return dest;
   }
 
   public static void saveResources(JavaPlugin plugin, String sourceDir, Path dest) {
