@@ -56,6 +56,7 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.joml.Vector3d;
+import org.joml.Vector3f;
 import org.spongepowered.math.vector.Vector3i;
 
 /**
@@ -342,5 +343,12 @@ public final class VanillaAccess {
     position.x = nms.getX();
     position.y = nms.getY();
     position.z = nms.getZ();
+  }
+
+  public static void getPositionf(Vector3f position, org.bukkit.entity.Entity bukkit) {
+    Entity nms = getEntity(bukkit);
+    position.x = (float) nms.getX();
+    position.y = (float) nms.getY();
+    position.z = (float) nms.getZ();
   }
 }
