@@ -136,6 +136,8 @@ public class ParrotMerchant extends Merchant {
 
           boolean owned = hasVariant(user, parrot.variant);
 
+          builder.setName(text(parrot.name, NamedTextColor.YELLOW));
+
           if (owned) {
             Variant active = getVariant(user);
 
@@ -146,7 +148,7 @@ public class ParrotMerchant extends Merchant {
             }
           } else {
             int price = parrot.price;
-            builder.setName(text(parrot.name, NamedTextColor.YELLOW))
+            builder
                 .addLore(
                     Messages.render("merchants.priceLine")
                         .addValue("price", Messages.currency(price))
