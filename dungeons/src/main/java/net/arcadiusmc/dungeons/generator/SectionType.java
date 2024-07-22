@@ -4,10 +4,10 @@ import static net.arcadiusmc.dungeons.generator.PieceGenerator.DEFAULT_WEIGHT;
 
 import it.unimi.dsi.fastutil.ints.IntObjectPair;
 import java.util.stream.Stream;
-import net.arcadiusmc.registry.Holder;
-import net.arcadiusmc.dungeons.DungeonManager;
+import net.arcadiusmc.dungeons.DungeonsPlugin;
 import net.arcadiusmc.dungeons.room.RoomFlag;
 import net.arcadiusmc.dungeons.room.RoomType;
+import net.arcadiusmc.registry.Holder;
 import org.apache.commons.lang3.Range;
 
 public enum SectionType {
@@ -24,7 +24,7 @@ public enum SectionType {
 
     @Override
     public Stream<IntObjectPair<RoomType>> fillPotentials(PieceGenerator gen) {
-      return DungeonManager.getDungeons().getRoomTypes()
+      return DungeonsPlugin.getManager().getRoomTypes()
           .stream()
 
           .filter(holder -> holder.getValue().hasFlag(RoomFlag.CONNECTOR))
@@ -62,7 +62,7 @@ public enum SectionType {
 
     @Override
     public Stream<IntObjectPair<RoomType>> fillPotentials(PieceGenerator gen) {
-      return DungeonManager.getDungeons().getRoomTypes()
+      return DungeonsPlugin.getManager().getRoomTypes()
           .stream()
 
           .filter(holder -> !holder.getValue().hasFlag(RoomFlag.CONNECTOR))

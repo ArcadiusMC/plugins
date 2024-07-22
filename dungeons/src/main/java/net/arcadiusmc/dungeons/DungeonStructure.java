@@ -18,7 +18,6 @@ import net.arcadiusmc.Loggers;
 import net.arcadiusmc.dungeons.placement.LevelPlacement;
 import net.arcadiusmc.dungeons.room.RoomFlag;
 import net.arcadiusmc.dungeons.room.RoomPiece;
-import net.arcadiusmc.utils.Tasks;
 import net.arcadiusmc.utils.collision.ChunkedMap;
 import net.arcadiusmc.utils.io.TagUtil;
 import net.arcadiusmc.utils.math.Bounds3i;
@@ -26,11 +25,11 @@ import net.forthecrown.nbt.BinaryTags;
 import net.forthecrown.nbt.CompoundTag;
 import net.forthecrown.nbt.ListTag;
 import net.forthecrown.nbt.TagTypes;
-import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
-public class DungeonLevel implements Iterable<DungeonPiece> {
+public class DungeonStructure implements Iterable<DungeonPiece> {
   /* ----------------------------- CONSTANTS ------------------------------ */
 
   private static final Logger LOGGER = Loggers.getLogger();
@@ -38,7 +37,7 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
   public static final String
       TAG_PIECES = "pieces",
       TAG_ROOT = "root",
-      TAG_BOSS_ROOM = "bossRoom";
+      TAG_BOSS_ROOM = "boss_room";
 
   /* -------------------------- INSTANCE FIELDS --------------------------- */
 
@@ -51,12 +50,6 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
   @Getter
   private final ChunkedMap<DungeonPiece> chunkMap = new ChunkedMap<>();
 
-  @Getter
-  private final Set<RoomPiece> activePieces = new ObjectOpenHashSet<>();
-
-  @Getter
-  private final Set<RoomPiece> inactivePieces = new ObjectOpenHashSet<>();
-
   /**
    * The root room from which all other rooms have sprung
    */
@@ -66,10 +59,6 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
   @Getter
   @Setter
   private RoomPiece bossRoom;
-
-  private BukkitTask tickTask;
-
-  private final LevelListener listener = new LevelListener(this);
 
   /* ------------------------------ METHODS ------------------------------- */
 
@@ -114,46 +103,10 @@ public class DungeonLevel implements Iterable<DungeonPiece> {
     return chunkMap.getOverlapping(area);
   }
 
-  public void tick() {
-    var world = DungeonWorld.get();
-
-    inactivePieces.forEach(piece -> piece.onIdleTick(world, this));
-    activePieces.forEach(piece -> piece.onTick(world, this));
-  }
-
-  public void startTicking() {
-    stopTicking();
-    tickTask = Tasks.runTimer(this::tick, 1, 1);
-  }
-
-  public void stopTicking() {
-    tickTask = Tasks.cancel(tickTask);
-    inactivePieces.clear();
-    activePieces.clear();
-  }
-
-  void onActivate() {
-    startTicking();
-    listener.register();
-
-    inactivePieces.addAll(
-        pieceLookup.values()
-            .stream()
-            .filter(dungeonPiece -> dungeonPiece instanceof RoomPiece)
-            .map(dungeonPiece -> (RoomPiece) dungeonPiece)
-            .toList()
-    );
-  }
-
-  void onDeactivate() {
-    stopTicking();
-    listener.unregister();
-  }
-
   /* ----------------------------- PLACEMENT ------------------------------ */
 
-  public CompletableFuture<Void> place() {
-    return LevelPlacement.create(DungeonWorld.get(), this).run();
+  public CompletableFuture<Void> place(World world) {
+    return LevelPlacement.create(world, this).run();
   }
 
   /* --------------------------- SERIALIZATION ---------------------------- */

@@ -62,7 +62,7 @@ public abstract class DungeonPiece {
    * The level this piece is apart of
    */
   @Getter
-  DungeonLevel level;
+  DungeonStructure level;
 
   /* ----------------------------- CONSTRUCTORS ------------------------------ */
 

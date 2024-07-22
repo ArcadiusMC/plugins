@@ -27,19 +27,11 @@ class DungeonEntityPlacement implements StructureEntitySpawner {
   }
 
   @Override
-  public void addEntity(Vector3d absPos,
-                        Rotation rotation,
-                        EntityType type,
-                        CompoundTag tag
-  ) {
+  public void addEntity(Vector3d absPos,Rotation rotation, EntityType type, CompoundTag tag) {
     entityInfos.add(new EntityInfo(absPos, rotation, type, tag));
   }
 
-  private record EntityInfo(Vector3d pos,
-                            Rotation rotation,
-                            EntityType type,
-                            CompoundTag tag
-  ) {
+  private record EntityInfo(Vector3d pos, Rotation rotation, EntityType type, CompoundTag tag) {
 
   }
 }

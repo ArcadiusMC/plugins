@@ -9,7 +9,7 @@ import java.util.ListIterator;
 import java.util.Random;
 import java.util.stream.Collectors;
 import net.arcadiusmc.Loggers;
-import net.arcadiusmc.dungeons.DungeonManager;
+import net.arcadiusmc.dungeons.DungeonsPlugin;
 import net.arcadiusmc.dungeons.generator.NodeAlign;
 import net.arcadiusmc.dungeons.room.RoomPiece;
 import net.arcadiusmc.registry.Holder;
@@ -96,7 +96,7 @@ public final class Gates {
       boolean open
   ) {
     final int requiredGates = open ? 2 : 1;
-    Registry<GateType> registry = DungeonManager.getDungeons().getGateTypes();
+    Registry<GateType> registry = DungeonsPlugin.getManager().getGateTypes();
 
     List<GateMatch> results = new ObjectArrayList<>();
 
@@ -141,13 +141,13 @@ public final class Gates {
   }
 
   public static Holder<GateType> getClosed(Random random) {
-    return DungeonManager.getDungeons().getGateTypes()
+    return DungeonsPlugin.getManager().getGateTypes()
         .getRandom(random, holder -> !holder.getValue().isOpenable())
         .orElseThrow();
   }
 
   public static Holder<GateType> getDefaultGate() {
-    return DungeonManager.getDungeons().getGateTypes()
+    return DungeonsPlugin.getManager().getGateTypes()
         .getHolder("default")
         .orElseThrow(() -> new IllegalStateException("No default gate!"));
   }

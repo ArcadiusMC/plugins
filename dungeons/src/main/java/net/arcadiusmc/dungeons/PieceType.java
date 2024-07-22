@@ -10,10 +10,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Getter;
 import net.arcadiusmc.dungeons.gate.GateData;
-import net.forthecrown.nbt.CompoundTag;
 import net.arcadiusmc.structure.BlockStructure;
 import net.arcadiusmc.structure.FunctionInfo;
 import net.arcadiusmc.structure.Structures;
+import net.forthecrown.nbt.CompoundTag;
 import org.spongepowered.math.vector.Vector3i;
 
 @Getter

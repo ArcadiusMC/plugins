@@ -1,0 +1,50 @@
+# -----------------------------------------------------------------------------
+# Format
+# -----------------------------------------------------------------------------
+# 'structure' (Required):
+#   Sets the structure the gate uses.
+#   Structures are made with the '/struct' command.
+#
+# Examples:
+#  - "structure: 'dungeons/gate_1'"
+# -----------------------------------------------------------------------------
+# 'closed-palette' (Optional):
+#   Sets the structure palette (variation) used for when the gate must be
+#   closed.
+#   If not set, it uses "default"
+#
+# Examples:
+#  - "closed-palette: closed_gate"
+# -----------------------------------------------------------------------------
+# 'open-palette' (Optional):
+#   Sets the structure palette (variation) used for when the gate must be
+#   closed.
+#   If not set, assumes gate is always closed and not open-able
+# Examples:
+# - "open-palette: open"
+# -----------------------------------------------------------------------------
+# Example
+# -----------------------------------------------------------------------------
+# gate-ancient:
+#   structure: 'dungeons/ancient_gate'
+#   closed-palette: default
+#   open-palette: open
+#
+# -----------------------------------------------------------------------------
+# Notes
+# -----------------------------------------------------------------------------
+# Gates that cannot be opened are sometimes used as 'decoration' gates. They
+# are placed by the generator at dead ends of the dungeons.
+#
+# -----------------------------------------------------------------------------
+
+default_gate:
+  structure: 'dungeons/gate_1'
+  closed-palette: 'closed'
+  open-palette: 'default'
+
+knight_gate:
+  structure: 'dungeons/knight_gate'
+
+collapsed_gate:
+  structure: 'dungeons/collapsed_gate'

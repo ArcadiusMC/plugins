@@ -11,17 +11,19 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import lombok.Getter;
 import net.arcadiusmc.Loggers;
-import net.arcadiusmc.dungeons.DungeonManager;
 import net.arcadiusmc.dungeons.BiomeSource;
-import net.arcadiusmc.dungeons.DungeonLevel;
+import net.arcadiusmc.dungeons.DungeonStructure;
 import net.arcadiusmc.dungeons.DungeonPiece;
+import net.arcadiusmc.dungeons.DungeonsPlugin;
 import net.arcadiusmc.dungeons.LevelBiome;
 import net.arcadiusmc.structure.BlockRotProcessor.IntegrityProvider;
 import net.arcadiusmc.structure.FunctionInfo;
+import net.arcadiusmc.structure.Structures;
 import net.arcadiusmc.structure.buffer.BlockBuffer;
 import net.arcadiusmc.structure.buffer.BlockBuffers;
 import net.arcadiusmc.utils.Tasks;
 import net.arcadiusmc.utils.math.AbstractBounds3i;
+import net.arcadiusmc.utils.math.Bounds3i;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.util.noise.NoiseGenerator;
@@ -42,7 +44,7 @@ public class LevelPlacement implements IntegrityProvider {
 
   private final World world;
   private final Random random;
-  private final DungeonLevel level;
+  private final DungeonStructure level;
 
   private final BlockBuffer buffer;
   private final DungeonEntityPlacement entityPlacement;
@@ -56,7 +58,7 @@ public class LevelPlacement implements IntegrityProvider {
 
   private final CompletableFuture<Void> future = new CompletableFuture<>();
 
-  public LevelPlacement(World world, Random random, DungeonLevel level) {
+  public LevelPlacement(World world, Random random, DungeonStructure level) {
     this.world = Objects.requireNonNull(world);
     this.random = Objects.requireNonNull(random);
     this.level = Objects.requireNonNull(level);
@@ -64,7 +66,7 @@ public class LevelPlacement implements IntegrityProvider {
     this.biomeSource = new BiomeSource(random, LevelBiome.values());
     this.rotGenerator = new PerlinNoiseGenerator(random);
 
-    var area = level.getChunkMap()
+    Bounds3i area = level.getChunkMap()
         .values()
         .parallelStream()
         .map(DungeonPiece::getBounds)
@@ -74,10 +76,12 @@ public class LevelPlacement implements IntegrityProvider {
     this.buffer = BlockBuffers.allocate(area);
     this.entityPlacement = new DungeonEntityPlacement();
 
-    this.executorService = DungeonManager.getDungeons().getExecutorService();
+    this.executorService = DungeonsPlugin.getManager().getExecutorService();
+    Structures structures = Structures.get();
+    processorMap.put("pool", new PoolProcessor(structures));
   }
 
-  public static LevelPlacement create(World world, DungeonLevel level) {
+  public static LevelPlacement create(World world, DungeonStructure level) {
     Random random = new Random();
     return new LevelPlacement(world, random, level);
   }
@@ -93,10 +97,18 @@ public class LevelPlacement implements IntegrityProvider {
     return future;
   }
 
-  void onPlacementsFinished() {
+  void onFinished() {
+    try {
+      onPlacementsFinished();
+    } catch (Throwable t) {
+      future.completeExceptionally(t);
+    }
+  }
+
+  private void onPlacementsFinished() {
     if (!processorMap.isEmpty()) {
       processorMap.forEach((s, processor) -> {
-        var markers = getMarkers(s);
+        List<FunctionInfo> markers = getMarkers(s);
         processor.processAll(this, markers, random);
       });
     }
@@ -117,7 +129,6 @@ public class LevelPlacement implements IntegrityProvider {
 
   private void runPostPlacement() {
     entityPlacement.place(world);
-
     future.complete(null);
   }
 

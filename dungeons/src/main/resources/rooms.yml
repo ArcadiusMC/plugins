@@ -1,0 +1,67 @@
+#
+# Example entry
+#
+example:
+  # Name of the structure the entry uses
+  structure: 'dungeons/4_way_hallway'
+  #
+  # Optional properties that apply to the entry
+  #
+  # Default: [] (No properties)
+  #
+  properties:
+    # This room is a hallway, staircase or other
+    # such connecting room
+    - connector
+    # This is a room where mobs spawn
+    - mob_room
+    # This is a boss room
+    - boss_room
+    # This room should be used as the start
+    # room for generated dungeons
+    - root
+  #
+  # Optional, maps a dungeon 'biome' to a structure
+  # variation (palette)
+  #
+  # Default: {} (None, 'default' is used for all biomes)
+  #
+  palettes:
+    normal: 'default'
+    caved: 'default'
+    overgrown: 'default'
+
+spawn_1:
+  structure: 'dungeons/roots/root_1'
+  properties: [root]
+
+connectors/3way:
+  structure: 'dungeons/3_way_left_right_hallway'
+  properties: [connector]
+
+connectors/4way:
+  structure: 'dungeons/4_way_hallway'
+  properties: [connector]
+
+connectors/left_turn:
+  structure: 'dungeons/lturn_left'
+  properties: [connector]
+
+connectors/short_hallway:
+  structure: 'dungeons/short_hallway'
+  properties: [connector]
+
+rooms/jail:
+  structure: 'dungeons/rooms/jail'
+
+rooms/library:
+  structure: 'dungeons/rooms/library'
+
+rooms/lion:
+  structure: 'dungeons/rooms/lion'
+
+rooms/skylights:
+  structure: 'dungeons/rooms/skylights'
+
+rooms/wide:
+  structure: 'dungeons/rooms/wide'

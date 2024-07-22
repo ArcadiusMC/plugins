@@ -1,6 +1,7 @@
 package net.arcadiusmc.dungeons;
 
-import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.JsonOps;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -8,20 +9,23 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
 import java.util.Date;
-import java.util.function.Function;
+import java.util.Map;
 import lombok.Getter;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.Worlds;
 import net.arcadiusmc.dungeons.gate.GateType;
 import net.arcadiusmc.dungeons.room.RoomType;
-import net.arcadiusmc.registry.Registries;
 import net.arcadiusmc.registry.Registry;
 import net.arcadiusmc.structure.BlockStructure;
 import net.arcadiusmc.structure.StructureFillConfig;
+import net.arcadiusmc.structure.buffer.BlockBuffer;
+import net.arcadiusmc.structure.buffer.BlockBuffers;
 import net.arcadiusmc.utils.Time;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.JsonUtils;
-import net.arcadiusmc.utils.io.JsonWrapper;
 import net.arcadiusmc.utils.io.PluginJar;
 import net.arcadiusmc.utils.io.SerializationHelper;
+import net.arcadiusmc.utils.math.Bounds3i;
 import net.forthecrown.nbt.BinaryTags;
 import net.forthecrown.nbt.CompoundTag;
 import org.slf4j.Logger;
@@ -48,22 +52,21 @@ public class LevelDataStorage {
 
   private final Path activeLevel;
 
-  private final Path roomJson;
-  private final Path gateJson;
+  private final Path roomsFile;
+  private final Path gatesFile;
 
   LevelDataStorage(Path directory) {
-    this.directory = directory;
+    this.directory        = directory;
     this.archiveDirectory = directory.resolve("archives");
-    this.activeLevel = directory.resolve("level.dat");
+    this.activeLevel      = directory.resolve("level.dat");
 
-    this.roomJson = directory.resolve("rooms.json");
-    this.gateJson = directory.resolve("gates.json");
-
-    saveDefaults();
+    this.roomsFile        = directory.resolve("rooms.yml");
+    this.gatesFile        = directory.resolve("gates.yml");
   }
 
   void saveDefaults() {
-    PluginJar.saveResources("dungeons", directory);
+    PluginJar.saveResources("gates.yml", gatesFile);
+    PluginJar.saveResources("rooms.yml", roomsFile);
   }
 
   public Path getPath(long creationTime, int i) {
@@ -78,24 +81,29 @@ public class LevelDataStorage {
     return archiveDirectory.resolve(strPath);
   }
 
-  public void archiveLevelStructure(DungeonLevel level, long creationTime) {
+  public void archiveLevelStructure(DungeonStructure level, long creationTime) {
     Path path = null;
     int i = 0;
 
     while (path == null || Files.exists(path)) {
-      path = getPath(creationTime, i);
+      path = getPath(creationTime, i++);
     }
+
+    Bounds3i totalArea = level.getChunkMap().getTotalArea();
+    BlockBuffer buf = BlockBuffers.allocate(totalArea);
 
     BlockStructure structure = new BlockStructure();
     StructureFillConfig config = StructureFillConfig.builder()
         .blockPredicate(block -> !block.getType().isAir())
-        .area(level.getChunkMap().getTotalArea().toWorldBounds(DungeonWorld.get()))
+        .buffer(buf)
+        .area(totalArea.toWorldBounds(Worlds.overworld()))
         .build();
 
     structure.fill(config);
 
-    var header = structure.getHeader();
-    header.putString("createdDate", JsonUtils.DATE_FORMAT.format(new Date(creationTime)));
+    CompoundTag header = structure.getHeader();
+    header.putString("created_date", JsonUtils.DATE_FORMAT.format(new Date(creationTime)));
+    header.putLong("created_timestamp", creationTime);
 
     CompoundTag levelData = BinaryTags.compoundTag();
     level.save(levelData);
@@ -105,41 +113,31 @@ public class LevelDataStorage {
   }
 
   public void loadRooms(Registry<RoomType> roomTypeRegistry) {
-    loadPieceTypes(getRoomJson(), roomTypeRegistry, RoomType::loadType);
+    loadPieceTypes(getRoomsFile(), roomTypeRegistry, RoomType.CODEC);
   }
 
   public void loadGates(Registry<GateType> gateTypeRegistry) {
-    loadPieceTypes(getGateJson(), gateTypeRegistry, GateType::loadType);
+    loadPieceTypes(getGatesFile(), gateTypeRegistry, GateType.CODEC);
   }
 
   public <T extends PieceType<?>> void loadPieceTypes(
       Path path,
       Registry<T> registry,
-      Function<JsonWrapper, DataResult<T>> function
+      Codec<T> codec
   ) {
-    SerializationHelper.readJsonFile(path, wrapper -> {
-      for (var e: wrapper.entrySet()) {
-        var key = e.getKey();
+    Codec<Map<String, T>> mapCodec = Codec.unboundedMap(ExtraCodecs.KEY_CODEC, codec);
 
-        if (!Registries.isValidKey(key)) {
-          LOGGER.error("Cannot read piece type! Invalid key '{}'", key);
-          continue;
-        }
+    SerializationHelper.readAsJson(path, json -> {
+      mapCodec.parse(JsonOps.INSTANCE, json)
+          .mapError(s -> "Failed to read piece types: " + s)
+          .resultOrPartial(LOGGER::error)
+          .ifPresent(map -> map.forEach((key, type) -> {
+            if (key.equalsIgnoreCase("example")) {
+              return;
+            }
 
-        if (!e.getValue().isJsonObject()) {
-          LOGGER.error("Cannot read type '{}', not a JSON object", key);
-          continue;
-        }
-
-        var obj = e.getValue().getAsJsonObject();
-
-        function.apply(JsonWrapper.wrap(obj))
-            .mapError(s -> "Cannot read type '" + key + "', " + s)
-            .resultOrPartial(LOGGER::error)
-            .ifPresent(t -> {
-              registry.register(key, t);
-            });
-      }
+            registry.register(key, type);
+          }));
     });
   }
 }

@@ -1,24 +1,46 @@
 package net.arcadiusmc.dungeons.room;
 
-import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import lombok.Getter;
 import net.arcadiusmc.dungeons.LevelBiome;
 import net.arcadiusmc.dungeons.PieceType;
-import net.forthecrown.nbt.CompoundTag;
 import net.arcadiusmc.structure.BlockStructure;
-import net.arcadiusmc.structure.Structures;
-import net.arcadiusmc.utils.io.JsonUtils;
-import net.arcadiusmc.utils.io.JsonWrapper;
-import net.arcadiusmc.utils.io.Results;
+import net.arcadiusmc.utils.io.ExtraCodecs;
+import net.forthecrown.nbt.CompoundTag;
 
 @Getter
 public class RoomType extends PieceType<RoomPiece> {
+
+  private static final Codec<Map<LevelBiome, String>> BIOME_MAP_CODEC
+      = Codec.unboundedMap(ExtraCodecs.enumCodec(LevelBiome.class), ExtraCodecs.KEY_CODEC);
+
+  public static final Codec<RoomType> CODEC = RecordCodecBuilder.create(instance -> {
+    return instance
+        .group(
+            ExtraCodecs.KEY_CODEC.fieldOf("structure")
+                .forGetter(RoomType::getStructureName),
+
+            ExtraCodecs.set(ExtraCodecs.enumCodec(RoomFlag.class))
+                .optionalFieldOf("properties", Set.of())
+                .forGetter(RoomType::getFlags),
+
+            BIOME_MAP_CODEC.optionalFieldOf("palettes")
+                .forGetter(roomType -> Optional.of(roomType.biome2Palette))
+        )
+        .apply(instance, (struct, flags, biomes) -> {
+          EnumSet<RoomFlag> flagSet = EnumSet.noneOf(RoomFlag.class);
+          flagSet.addAll(flags);
+
+          return new RoomType(struct, flagSet, biomes.orElse(Collections.emptyMap()));
+        });
+  });
 
   private final EnumSet<RoomFlag> flags;
   private final Map<LevelBiome, String> biome2Palette;
@@ -35,48 +57,6 @@ public class RoomType extends PieceType<RoomPiece> {
     this.biome2Palette = biome2Palette.isEmpty()
         ? Collections.emptyMap()
         : Collections.unmodifiableMap(biome2Palette);
-  }
-
-  public static DataResult<RoomType> loadType(JsonWrapper json) {
-    String structName = json.getString("struct");
-
-    if (structName == null) {
-      return Results.error("No 'struct' set");
-    }
-
-    var opt = Structures.get().getRegistry().get(structName);
-
-    if (opt.isEmpty()) {
-      return Results.error("No structure named '%s'", structName);
-    }
-    BlockStructure structure = opt.get();
-
-    List<RoomFlag> flags = json.getList(
-        "properties",
-        element -> JsonUtils.readEnum(RoomFlag.class, element)
-    );
-
-    EnumSet<RoomFlag> flagSet = EnumSet.copyOf(flags);
-
-    Map<LevelBiome, String> palettes = new HashMap<>();
-    if (json.has("palettes")) {
-      var paletteObject = json.getObject("palettes");
-
-      for (var entry: paletteObject.entrySet()) {
-        LevelBiome biome = LevelBiome.valueOf(entry.getKey().toUpperCase());
-        String paletteName = entry.getValue().getAsString();
-
-        if (structure.getPalette(paletteName) == null) {
-          return Results.error("No palette named '%s' in structure '%s'",
-              paletteName, structName
-          );
-        }
-
-        palettes.put(biome, paletteName);
-      }
-    }
-
-    return DataResult.success(new RoomType(structName, flagSet, palettes));
   }
 
   public boolean hasFlag(RoomFlag flag) {

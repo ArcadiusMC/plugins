@@ -14,14 +14,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import net.arcadiusmc.Loggers;
-import net.arcadiusmc.dungeons.DungeonManager;
-import net.arcadiusmc.dungeons.DungeonLevel;
+import net.arcadiusmc.dungeons.DungeonStructure;
 import net.arcadiusmc.dungeons.DungeonPiece;
+import net.arcadiusmc.dungeons.DungeonsPlugin;
 import net.arcadiusmc.dungeons.PieceVisitor;
 import net.arcadiusmc.dungeons.Pieces;
 import net.arcadiusmc.dungeons.gate.GatePiece;
@@ -52,7 +53,7 @@ public class TreeGenerator {
   private final TreeGeneratorConfig config;
   private final Range<Integer> depthRange;
 
-  private DungeonLevel level;
+  private DungeonStructure level;
   private boolean finished = false;
 
   private final Deque<PieceGenerator> genQueue = new LinkedList<>();
@@ -61,23 +62,33 @@ public class TreeGenerator {
 
   private int failedSteps = 0;
 
+  final long bossRoomCount;
+
   /* ----------------------------- CONSTRUCTOR ------------------------------ */
 
   public TreeGenerator(TreeGeneratorConfig config) {
     this.config = config;
     depthRange = Range.between(config.getMinDepth(), config.getMaxDepth());
+
+    this.bossRoomCount = DungeonsPlugin.getManager().getRoomTypes()
+        .stream()
+        .map(Holder::getValue)
+        .filter(roomType -> roomType.hasFlag(RoomFlag.BOSS_ROOM))
+        .count();
+
+    if (bossRoomCount < 1) {
+      LOGGER.warn("No boss rooms exist, cannot place boss rooms in generated dungeon!");
+    }
   }
 
   /* ----------------------------- STATIC METHODS ------------------------------ */
 
-  public static CompletableFuture<DungeonLevel> generateAsync(
+  public static CompletableFuture<DungeonStructure> generateAsync(
       TreeGeneratorConfig config
   ) {
-    var exc = DungeonManager.getDungeons().getExecutorService();
+    ExecutorService exc = DungeonsPlugin.getManager().getExecutorService();
 
-    return CompletableFuture.supplyAsync(() -> {
-      return new TreeGenerator(config).generate();
-    }, exc)
+    return CompletableFuture.supplyAsync(() -> new TreeGenerator(config).generate(), exc)
         .whenComplete((level1, throwable) -> {
           if (throwable != null) {
             LOGGER.error("Error generating level", throwable);
@@ -87,17 +98,19 @@ public class TreeGenerator {
 
   /* ----------------------------- METHODS ------------------------------ */
 
-  public DungeonLevel generate() {
+  public DungeonStructure generate() {
     createPotentialLevels();
 
+    generationResults.removeIf(result -> !isValidLevel(result));
     generationResults.sort(Comparator.naturalOrder());
-    LevelGenResult first = generationResults.get(0);
 
-    if (!isValidLevel(first)) {
-      throw new IllegalStateException("NO VALID LEVEL");
+    if (generationResults.isEmpty()) {
+      throw new IllegalStateException("No valid levels :(");
     }
 
-    var level = first.level();
+    LevelGenResult first = generationResults.getFirst();
+
+    DungeonStructure level = first.level();
     generationResults.clear();
 
     return level;
@@ -130,8 +143,11 @@ public class TreeGenerator {
    boolean isValidLevel(LevelGenResult result) {
     if (result.nonConnectorRooms < config.getRequiredRooms()
         || !depthRange.contains(result.endDepthStats.getMax())
-        || result.level.getBossRoom() == null
     ) {
+      return false;
+    }
+
+    if (bossRoomCount > 0 && result.level.getBossRoom() == null) {
       return false;
     }
 
@@ -168,7 +184,7 @@ public class TreeGenerator {
     RoomPiece root = Pieces.getRoot().getValue().create();
     root.apply(Transform.offset(config.getLocation()));
 
-    level = new DungeonLevel();
+    level = new DungeonStructure();
     level.addPiece(root);
 
     List<GatePiece> gates = Gates.createExitGates(
@@ -410,7 +426,7 @@ public class TreeGenerator {
   }
 
   void addBossRoom(LevelGenResult result) {
-    RoomType bossRoom = DungeonManager.getDungeons().getRoomTypes()
+    RoomType bossRoom = DungeonsPlugin.getManager().getRoomTypes()
         .getRandom(
             config.getRandom(),
             roomTypeHolder -> {
@@ -421,7 +437,10 @@ public class TreeGenerator {
         .orElse(null);
 
     if (bossRoom == null) {
-      LOGGER.warn("Found no boss room to append to dungeon!");
+      if (bossRoomCount > 0) {
+        LOGGER.warn("Found no boss room to append to dungeon!");
+      }
+
       return;
     }
 
@@ -453,7 +472,7 @@ public class TreeGenerator {
   @RequiredArgsConstructor
   final class LevelGenResult implements Comparable<LevelGenResult> {
 
-    private final DungeonLevel level;
+    private final DungeonStructure level;
     private final int nonConnectorRooms;
     private final IntSummaryStatistics endDepthStats;
     private final List<GatePiece> endGates;
@@ -461,10 +480,6 @@ public class TreeGenerator {
     private final int closedEndConnectors;
 
     public int score() {
-      if (!isValidLevel(this)) {
-        return -1;
-      }
-
       return nonConnectorRooms;
     }
 

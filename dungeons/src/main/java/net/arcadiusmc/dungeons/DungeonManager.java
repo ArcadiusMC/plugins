@@ -17,9 +17,6 @@ public class DungeonManager {
 
   private static final Logger LOGGER = Loggers.getLogger();
 
-  @Getter
-  private static final DungeonManager dungeons = new DungeonManager();
-
   @SuppressWarnings("rawtypes")
   private final Registry<Registry<PieceType>> typeRegistries = Registries.newRegistry();
   private final Registry<RoomType> roomTypes = createTypeRegistry("rooms");
@@ -30,9 +27,9 @@ public class DungeonManager {
   private final ExecutorService executorService
       = Executors.newCachedThreadPool(createThreadFactory());
 
-  private DungeonManager() {
+  DungeonManager(DungeonsPlugin plugin) {
     this.storage = new LevelDataStorage(
-        PathUtil.ensureDirectoryExists(PathUtil.pluginPath("dungeons"))
+        PathUtil.ensureDirectoryExists(plugin.getDataFolder().toPath())
     );
   }
 
@@ -50,6 +47,7 @@ public class DungeonManager {
     roomTypes.clear();
     gateTypes.clear();
 
+    storage.saveDefaults();
     storage.loadGates(gateTypes);
     storage.loadRooms(roomTypes);
   }

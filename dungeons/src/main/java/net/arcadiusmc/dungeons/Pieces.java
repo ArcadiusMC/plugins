@@ -1,6 +1,7 @@
 package net.arcadiusmc.dungeons;
 
 import com.google.common.base.Preconditions;
+import java.util.Optional;
 import net.arcadiusmc.dungeons.room.RoomFlag;
 import net.arcadiusmc.dungeons.room.RoomType;
 import net.arcadiusmc.registry.Holder;
@@ -23,7 +24,7 @@ public final class Pieces {
     String registryKey = split[0];
     String typeKey = split[1];
 
-    Registry<PieceType> registry = DungeonManager.getDungeons()
+    Registry<PieceType> registry = DungeonsPlugin.getManager()
         .getTypeRegistries()
         .orNull(registryKey);
 
@@ -36,11 +37,10 @@ public final class Pieces {
 
   @SuppressWarnings("rawtypes")
   public static StringTag save(PieceType type) {
-    var registry = DungeonManager.getDungeons()
-        .getTypeRegistries();
+    Registry<Registry<PieceType>> registry = DungeonsPlugin.getManager().getTypeRegistries();
 
     for (var r : registry.entries()) {
-      var holder = r.getValue()
+      Optional<StringTag> holder = r.getValue()
           .getHolderByValue(type)
           .map(holder1 -> BinaryTags.stringTag(r.getKey() + "::" + holder1.getKey()));
 
@@ -55,7 +55,7 @@ public final class Pieces {
   }
 
   public static Holder<RoomType> getRoot() {
-    var reg = DungeonManager.getDungeons().getRoomTypes();
+    Registry<RoomType> reg = DungeonsPlugin.getManager().getRoomTypes();
 
     for (var e : reg.entries()) {
       if (e.getValue().hasFlag(RoomFlag.ROOT)) {
