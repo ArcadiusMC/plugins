@@ -2,6 +2,7 @@ package net.arcadiusmc.structure;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.arcadiusmc.structure.buffer.BlockBuffer;
 import net.forthecrown.nbt.BinaryTag;
 import net.forthecrown.nbt.CompoundTag;
 import net.forthecrown.nbt.paper.PaperNbt;
@@ -66,7 +67,7 @@ public class BlockInfo {
 
   void place(StructurePlaceConfig config, Vector3i position) {
     Vector3i pos = config.getTransform().apply(position);
-    var buf = config.getBuffer();
+    BlockBuffer buf = config.getBuffer();
     buf.setBlock(pos, getData(), getTag());
   }
 

@@ -11,12 +11,14 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.utils.math.AreaSelection;
 import net.forthecrown.nbt.BinaryTags;
 import net.forthecrown.nbt.CompoundTag;
 import net.forthecrown.nbt.ListTag;
 import net.forthecrown.nbt.TagTypes;
 import net.arcadiusmc.utils.io.TagUtil;
 import net.arcadiusmc.utils.math.Vectors;
+import org.bukkit.block.Block;
 import org.bukkit.block.CommandBlock;
 import org.spongepowered.math.vector.Vector3d;
 import org.spongepowered.math.vector.Vector3i;
@@ -50,13 +52,13 @@ public class BlockPalette {
   public void fill(StructureFillConfig config) {
     clear();
 
-    var area = config.getArea();
+    AreaSelection area = config.getArea();
     this.size = area.size();
 
     Vector3d origin = area.min().toDouble();
     int blocks = 0;
 
-    for (var b : area) {
+    for (Block b : area) {
       if (!config.includeBlock(b)) {
         continue;
       }
