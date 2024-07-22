@@ -1,10 +1,10 @@
 package net.arcadiusmc.gradle
 
-const val GRENADIER         = "net.forthecrown:grenadier:2.5.1"
+const val GRENADIER         = "net.forthecrown:grenadier:2.5.2"
 const val GRENADIER_ANNOT   = "net.forthecrown:grenadier-annotations:1.3.3"
 
 const val NBT_LIB           = "net.forthecrown:nbt:1.5.2"
-const val PAPER_NBT         = "net.forthecrown:paper-nbt:1.7.4"
+const val PAPER_NBT         = "net.forthecrown:paper-nbt:1.7.5"
 
 const val MATH_LIB          = "org.spongepowered:math:2.1.0-SNAPSHOT"
 const val TOML              = "org.tomlj:tomlj:1.1.0"
