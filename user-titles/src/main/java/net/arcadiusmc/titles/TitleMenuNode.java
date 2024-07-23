@@ -56,7 +56,7 @@ public class TitleMenuNode implements MenuNode {
         return;
       }
 
-      throw Messages.render("ranksmenu.titleNotOwned")
+      throw Messages.render("ranksmenu.error.titleNotOwned")
           .exception(user);
     }
 
