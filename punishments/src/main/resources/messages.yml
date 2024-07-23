@@ -2,7 +2,7 @@ _styles:
   normal: "gray"
   err: "red"
 
-badLangauge:
+badLanguage:
   _style: $err
   text:               "Mind your tongue, wench >:("
 
