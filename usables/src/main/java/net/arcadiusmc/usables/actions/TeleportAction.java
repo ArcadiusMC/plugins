@@ -39,6 +39,7 @@ import net.forthecrown.grenadier.types.options.ParsedOptions;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -81,7 +82,17 @@ public class TeleportAction implements Action {
     if (Strings.isNullOrEmpty(worldName)) {
       world = player.getWorld();
     } else {
-      world = Bukkit.getWorld(worldName);
+      if (worldName.contains(":")) {
+        NamespacedKey key = NamespacedKey.fromString(worldName);
+
+        if (key != null) {
+          world = Bukkit.getWorld(key);
+        } else {
+          return Results.error("Invalid namespaced key: '%s'", worldName);
+        }
+      } else {
+        world = Bukkit.getWorld(worldName);
+      }
 
       if (world == null) {
         return Results.error("Unknown world '%s'", worldName);
