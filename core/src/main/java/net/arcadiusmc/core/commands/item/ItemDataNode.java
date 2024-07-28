@@ -58,13 +58,12 @@ public class ItemDataNode extends ItemModifierNode {
             .executes(c -> {
               CommandSource source = c.getSource();
               ItemStack held = getHeld(source);
+
               CompoundTag tag = ItemStacks.save(held);
               CompoundTag components = tag.getCompound("components");
 
               StringBuilder builder = new StringBuilder();
               builder.append("/give @s ")
-                  .append(held.getAmount())
-                  .append(" ")
                   .append(held.getType().key());
 
               if (!components.isEmpty()) {
@@ -83,6 +82,11 @@ public class ItemDataNode extends ItemModifierNode {
                 }
 
                 builder.append('}');
+              }
+
+              int amount = held.getAmount();
+              if (amount > 1) {
+                builder.append(' ').append(amount);
               }
 
               String commandString = builder.toString();
