@@ -68,7 +68,7 @@ public class ItemDataNode extends ItemModifierNode {
 
               if (!components.isEmpty()) {
                 Iterator<Entry<String, BinaryTag>> it = components.entrySet().iterator();
-                builder.append('{');
+                builder.append('[');
 
                 while (it.hasNext()) {
                   Entry<String, BinaryTag> e = it.next();
@@ -81,7 +81,7 @@ public class ItemDataNode extends ItemModifierNode {
                   }
                 }
 
-                builder.append('}');
+                builder.append(']');
               }
 
               int amount = held.getAmount();
