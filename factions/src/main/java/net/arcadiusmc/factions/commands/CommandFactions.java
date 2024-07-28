@@ -255,7 +255,7 @@ public class CommandFactions {
   void unsetProperty(
       CommandSource source,
       @Argument(F_ARG) Faction faction,
-      @Argument(F_ARG) FactionProperty<Object> property
+      @Argument("property") FactionProperty<Object> property
   ) throws CommandSyntaxException {
     boolean changed = faction.set(property, null);
 
