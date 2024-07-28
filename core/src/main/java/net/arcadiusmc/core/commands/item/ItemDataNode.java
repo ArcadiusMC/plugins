@@ -1,11 +1,15 @@
 package net.arcadiusmc.core.commands.item;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import java.util.Iterator;
+import java.util.Map.Entry;
 import net.arcadiusmc.command.DataCommands;
 import net.arcadiusmc.command.help.UsageFactory;
-import net.forthecrown.grenadier.CommandSource;
-import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.utils.inventory.ItemStacks;
+import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.nbt.BinaryTag;
+import net.forthecrown.nbt.CompoundTag;
+import net.forthecrown.nbt.string.Snbt;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -27,7 +31,7 @@ public class ItemDataNode extends ItemModifierNode {
 
   @Override
   public void populateUsages(UsageFactory factory) {
-    factory.usage("give_command", "Creates a `/give` command for the item you're holding");
+    factory.usage("give-command", "Creates a `/give` command for the item you're holding");
 
     DataCommands.addUsages(factory, "Item", usage -> {
       var label = usage.getArguments();
@@ -50,19 +54,45 @@ public class ItemDataNode extends ItemModifierNode {
     );
 
     command
-        .then(literal("give_command")
+        .then(literal("give-command")
             .executes(c -> {
               CommandSource source = c.getSource();
               ItemStack held = getHeld(source);
+              CompoundTag tag = ItemStacks.save(held);
+              CompoundTag components = tag.getCompound("components");
 
-              String nbt = ItemStacks.save(held).getCompound("tag").toString();
-              String cmd = "/give @s " + held.getType().getKey() + nbt;
+              StringBuilder builder = new StringBuilder();
+              builder.append("/give @s ")
+                  .append(held.getAmount())
+                  .append(" ")
+                  .append(held.getType().key());
+
+              if (!components.isEmpty()) {
+                Iterator<Entry<String, BinaryTag>> it = components.entrySet().iterator();
+                builder.append('{');
+
+                while (it.hasNext()) {
+                  Entry<String, BinaryTag> e = it.next();
+                  builder.append(e.getKey());
+                  builder.append('=');
+                  builder.append(Snbt.toString(e.getValue(), false, false));
+
+                  if (it.hasNext()) {
+                    builder.append(",");
+                  }
+                }
+
+                builder.append('}');
+              }
+
+              String commandString = builder.toString();
 
               source.sendMessage(
                   Component.text("[Click to copy /give command]", NamedTextColor.AQUA)
-                      .clickEvent(ClickEvent.copyToClipboard(cmd))
-                      .hoverEvent(Messages.CLICK_ME.renderText(source))
+                      .clickEvent(ClickEvent.copyToClipboard(commandString))
+                      .hoverEvent(Component.text(commandString))
               );
+
               return 0;
             })
         );
