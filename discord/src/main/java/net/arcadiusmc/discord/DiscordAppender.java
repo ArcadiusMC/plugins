@@ -41,7 +41,13 @@ class DiscordAppender extends AbstractAppender {
       "net.minecraft.stats.RecipeBookServer",
 
       // Display entityNo key sky in MapLike[{}]; No key block in MapLike[{}]
-      "net.minecraft.world.entity.Display"
+      "net.minecraft.world.entity.Display",
+
+      // 'Block-attached entity at invalid position: BlockPos' spam
+      "net.minecraft.world.entity.decoration.BlockAttachedEntity",
+
+      // 'Item must not be Minecraft:air' spam
+      "net.minecraft.world.item.ItemStack"
   );
 
   private final Config config;
