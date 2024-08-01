@@ -17,5 +17,6 @@ public final class ItemListeners {
     register(new PiratesLuckListener());
     register(new DoubleDropListener(plugin));
     register(new SliceListener());
+    register(new StrongAimListener(plugin));
   }
 }

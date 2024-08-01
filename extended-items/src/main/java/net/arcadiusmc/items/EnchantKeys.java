@@ -10,6 +10,7 @@ public interface EnchantKeys {
   NamespacedKey KEY_SLICE = createKey("slice");
   NamespacedKey KEY_CUTTING_MASTERY = createKey("cutting_mastery");
   NamespacedKey KEY_BATTLE_CALL = createKey("battle_call");
+  NamespacedKey KEY_STRONG_AIM = createKey("strong_aim");
 
 
   private static NamespacedKey createKey(String value) {

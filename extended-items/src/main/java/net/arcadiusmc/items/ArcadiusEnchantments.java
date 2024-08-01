@@ -23,6 +23,7 @@ public final class ArcadiusEnchantments {
   public static Enchantment SLICE;
   public static Enchantment CUTTING_MASTERY;
   public static Enchantment BATTLE_CALL;
+  public static Enchantment STRONG_AIM;
 
 
   static void findEnchantments() {
@@ -32,13 +33,15 @@ public final class ArcadiusEnchantments {
     SLICE = alertIfNull(EnchantKeys.KEY_SLICE);
     CUTTING_MASTERY = alertIfNull(EnchantKeys.KEY_CUTTING_MASTERY);
     BATTLE_CALL = alertIfNull(EnchantKeys.KEY_BATTLE_CALL);
+    STRONG_AIM = alertIfNull(EnchantKeys.KEY_STRONG_AIM);
 
     ENABLED = SOULBOUND != null
         && PIRATES_LUCK != null
         && IMPERIAL_DUPING != null
         && SLICE != null
         && CUTTING_MASTERY != null
-        && BATTLE_CALL != null;
+        && BATTLE_CALL != null
+        && STRONG_AIM != null;
   }
 
   private static Enchantment alertIfNull(NamespacedKey key) {

@@ -109,7 +109,7 @@ public class ItemsBootstrapper implements PluginBootstrap {
               .maximumCost(EnchantmentCost.of(1, 1))
               .minimumCost(EnchantmentCost.of(1, 1))
               .anvilCost(1)
-              .maxLevel(5)
+              .maxLevel(3)
               .weight(10)
               .supportedItems(tags.apply(ItemTypeTagKeys.ENCHANTABLE_SWORD));
         }
@@ -128,6 +128,22 @@ public class ItemsBootstrapper implements PluginBootstrap {
               .maxLevel(5)
               .weight(10)
               .supportedItems(tags.apply(ItemTypeTagKeys.AXES));
+        }
+    );
+
+    // Strong Aim
+    registry.register(
+        TypedKey.create(RegistryKey.ENCHANTMENT, EnchantKeys.KEY_STRONG_AIM),
+
+        builder -> {
+          builder.description(Component.text("Strong Aim"))
+              .activeSlots(EquipmentSlotGroup.MAINHAND)
+              .maximumCost(EnchantmentCost.of(1, 1))
+              .minimumCost(EnchantmentCost.of(1, 1))
+              .anvilCost(1)
+              .maxLevel(1)
+              .weight(10)
+              .supportedItems(tags.apply(ItemTypeTagKeys.ENCHANTABLE_BOW));
         }
     );
   }
