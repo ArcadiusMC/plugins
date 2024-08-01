@@ -9,10 +9,15 @@ import java.util.List;
 public record ItemsConfig(
     boolean allowOpEnchants,
     boolean allowWearable,
-    int[] wearableIds
+    int[] wearableIds,
+    float doubleDropBase,
+    float doubleDropIncrease,
+    float doubleDropMax
 ) {
 
-  static final ItemsConfig DEFAULT = new ItemsConfig(true, true, IntArrays.EMPTY_ARRAY);
+  static final ItemsConfig DEFAULT = new ItemsConfig(
+      true, true, IntArrays.EMPTY_ARRAY, 0.025f, 0.01f, 0.12f
+  );
 
   static final Codec<ItemsConfig> CODEC = RecordCodecBuilder.create(instance -> {
     return instance
@@ -41,7 +46,16 @@ public record ItemsConfig(
                     }
                 )
                 .lenientOptionalFieldOf("wearable-texture-ids", IntArrays.EMPTY_ARRAY)
-                .forGetter(ItemsConfig::wearableIds)
+                .forGetter(ItemsConfig::wearableIds),
+
+            Codec.FLOAT.lenientOptionalFieldOf("double-drop-base-rate", DEFAULT.doubleDropBase)
+                .forGetter(ItemsConfig::doubleDropBase),
+
+            Codec.FLOAT.lenientOptionalFieldOf("double-drop-increase", DEFAULT.doubleDropIncrease)
+                .forGetter(ItemsConfig::doubleDropIncrease),
+
+            Codec.FLOAT.lenientOptionalFieldOf("double-drop-max", DEFAULT.doubleDropMax)
+                .forGetter(ItemsConfig::doubleDropMax)
         )
         .apply(instance, ItemsConfig::new);
   });

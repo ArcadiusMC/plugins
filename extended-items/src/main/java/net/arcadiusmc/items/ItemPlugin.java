@@ -6,27 +6,25 @@ import net.arcadiusmc.items.commands.ItemCommands;
 import net.arcadiusmc.items.guns.GunTicker;
 import net.arcadiusmc.items.guns.PlayerMoveSpeeds;
 import net.arcadiusmc.items.listeners.ItemListeners;
-import net.arcadiusmc.text.Messages;
-import net.arcadiusmc.text.loader.MessageList;
 import net.arcadiusmc.text.loader.MessageLoader;
 import net.arcadiusmc.utils.io.ConfigCodec;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ItemPlugin extends JavaPlugin {
 
-  private final MessageList messageList = MessageList.create();
-
   @Getter
   private ItemsConfig itemsConfig;
 
+  @Getter
+  private NonNatural nonNatural;
+
   @Override
   public void onEnable() {
-    Messages.MESSAGE_LIST.addChild(getName(), messageList);
-
     GunTicker.TICKER.start();
     PlayerMoveSpeeds.SPEEDS.start();
 
     reloadConfig();
+    nonNatural = new NonNatural(getDataPath().resolve("natural-tracker"));
 
     ArcadiusEnchantments.findEnchantments();
     ItemTypes.registerAll();
@@ -44,15 +42,17 @@ public class ItemPlugin extends JavaPlugin {
     service.removeFilter("items_plugin");
     service.removeFilter("soulbound");
 
-    Messages.MESSAGE_LIST.removeChild(getName());
-
     GunTicker.TICKER.stop();
     PlayerMoveSpeeds.SPEEDS.stop();
+
+    if (nonNatural != null) {
+      nonNatural.save();
+    }
   }
 
   @Override
   public void reloadConfig() {
-    MessageLoader.loadPluginMessages(this, messageList);
+    MessageLoader.loadPluginMessages(this);
 
     this.itemsConfig = ConfigCodec.loadPluginConfig(this, ItemsConfig.CODEC)
         .orElse(ItemsConfig.DEFAULT);

@@ -27,3 +27,30 @@ allow-wearable-tag: true
 # Default: [] (Empty list)
 #
 wearable-texture-ids: []
+
+#
+# The base drop rate for the double drop enchantments (Cutting Mastery and
+# Imperial Duping)
+# In range of 0 to 1
+#
+# Default: 0.025 (2.5%)
+#
+double-drop-base-rate: 0.025
+
+#
+# The per-level increase of the double drop enchantments (Cutting Mastery and
+# Imperial Duping)
+# In range of 0 to 1
+#
+# Default: 0.01 (1%)
+#
+double-drop-increase: 0.01
+
+#
+# The maximum chance for double drop enchantments (Cutting Mastery and
+# Imperial Duping) to have.
+# In range of 0 to 1
+#
+# Default: 0.12 (12%)
+#
+double-drop-max: 0.12
