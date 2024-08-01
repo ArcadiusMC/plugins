@@ -22,7 +22,7 @@ public class SliceListener implements Listener {
 
   private static final Logger LOGGER = Loggers.getLogger();
 
-  static final long DELAY = 2;
+  static final long DELAY = 4;
   static final Set<String> alreadyAttacking = new HashSet<>();
 
   @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -99,7 +99,7 @@ public class SliceListener implements Listener {
 
     void attack() {
       VanillaAccess.setInvulnerableTime(entity, 0);
-      VanillaAccess.setAttackTicker(player, strengthTicker);
+      //VanillaAccess.setAttackTicker(player, strengthTicker);
       player.attack(entity);
     }
   }
