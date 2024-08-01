@@ -102,7 +102,7 @@ public class NonNatural {
     }
 
     Path sectionFile(RegionVec2i pos) {
-      return worldDirectory.resolve(pos.x + "-" + pos.z + ".bin");
+      return worldDirectory.resolve(pos.x + "." + pos.z + ".bin");
     }
 
     private long toLong(int x, int y, int z) {
