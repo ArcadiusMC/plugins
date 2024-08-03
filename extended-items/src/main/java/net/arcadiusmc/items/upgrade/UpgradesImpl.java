@@ -173,6 +173,9 @@ class UpgradesImpl implements ItemUpgrades {
             continue;
           }
 
+          if (!upgrade.getFunction().hasStatusText()) {
+            continue;
+          }
           if (!upgrade.statusPersists() && levelUpgrades.level != level) {
             continue;
           }

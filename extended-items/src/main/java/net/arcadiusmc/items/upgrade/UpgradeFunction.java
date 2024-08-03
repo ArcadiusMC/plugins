@@ -19,6 +19,10 @@ public interface UpgradeFunction {
 
   }
 
+  default boolean hasStatusText() {
+    return false;
+  }
+
   /**
    * Determines if the status text of this upgrade function is kept for all proceeding levels
    * or is only used for one level.

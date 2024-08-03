@@ -39,17 +39,17 @@ public record AddAttributeMod(
 
   @Override
   public void writeStatus(ExtendedItem item, TextWriter writer) {
-    Component text = Utils.formatAttributeModifier(value, operation, attribute);
-
-    if (text == null) {
-      return;
-    }
-
-    writer.line(text);
+//    Component text = Utils.formatAttributeModifier(value, operation, attribute);
+//
+//    if (text == null) {
+//      return;
+//    }
+//
+//    writer.line(text);
   }
 
   @Override
   public boolean statusPersists() {
-    return true;
+    return false;
   }
 }

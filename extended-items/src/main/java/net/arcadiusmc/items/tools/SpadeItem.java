@@ -26,8 +26,8 @@ public class SpadeItem implements ItemType {
   public static final String GOAL_TYPE = "pirates_luck/picked_up";
 
   private static final ItemUpgrades UPGRADES = ItemUpgrades.builder()
-      .previewPrefix(LoreElement.EMPTY_LINE)
-      .statusPrefix(LoreElement.EMPTY_LINE)
+      .previewPrefix(LoreElement.DOUBLE_EMPTY_LINE)
+      .statusPrefix(LoreElement.DOUBLE_EMPTY_LINE)
 
       .level(1, level -> {
         level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 1));
@@ -176,7 +176,7 @@ public class SpadeItem implements ItemType {
     item.addComponent(GOALS.createComponent());
 
     //item.addLore(EnchantsLoreElement.ENCHANTS);
-    item.addLore(LoreElement.EMPTY_LINE);
+    item.addLore(LoreElement.SINGLE_EMPTY_LINE);
     item.addLore(level);
     item.addLore(GOALS.createGoalText());
     item.addLore(UPGRADES.createPreviewElement());

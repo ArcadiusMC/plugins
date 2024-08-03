@@ -5,7 +5,6 @@ import net.arcadiusmc.items.ExtendedItem;
 import net.arcadiusmc.items.ItemType;
 import net.arcadiusmc.items.Level;
 import net.arcadiusmc.items.Owner;
-import net.arcadiusmc.items.lore.EnchantsLoreElement;
 import net.arcadiusmc.items.lore.FlavourTextElement;
 import net.arcadiusmc.items.lore.LevelLore;
 import net.arcadiusmc.items.lore.LoreElement;
@@ -69,17 +68,19 @@ public class WreathType implements ItemType {
   });
 
   static final LoreElement EMPTY_LINE_IF_NOT_MAX_LEVEL
-      = LoreElement.ifNotMaxLevel(LoreElement.EMPTY_LINE);
+      = LoreElement.ifNotMaxLevel(LoreElement.DOUBLE_EMPTY_LINE);
 
   @Override
   public ItemStack createBaseItem() {
     DefaultItemBuilder builder = ItemStacks.builder(Material.BAMBOO_BUTTON)
-        .setName(Messages.renderText("itemsPlugin.wreath.name"))
         .addFlags(ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES)
         .setUnbreakable(true);
 
     ItemStack itemStack = builder.build();
     itemStack.editMeta(meta -> {
+      meta.setMaxStackSize(1);
+      meta.itemName(Messages.renderText("itemsPlugin.wreath.name"));
+
       CompoundTag unhandledData = ItemStacks.getUnhandledTags(meta);
       unhandledData.putByte("wearable", 1);
       ItemStacks.setUnhandledTags(meta, unhandledData);
@@ -114,8 +115,8 @@ public class WreathType implements ItemType {
     item.addComponent(resistAfterDmg);
     item.addComponent(ownerLore);
 
-    item.addLore(EnchantsLoreElement.ENCHANTS);
-    item.addLore(LoreElement.EMPTY_LINE);
+    //item.addLore(EnchantsLoreElement.ENCHANTS);
+    item.addLore(LoreElement.SINGLE_EMPTY_LINE);
     item.addLore(level);
     item.addLore(createFlavourText());
     item.addLore(NEXT_RANK_TEXT);
@@ -123,7 +124,7 @@ public class WreathType implements ItemType {
     item.addLore(UPGRADES.createPreviewElement());
     item.addLore(LoreElement.ifNotMaxLevel(LoreElement.BORDER));
     item.addLore(ownerLore);
-    item.addLore(LoreElement.EMPTY_LINE);
+    item.addLore(LoreElement.SINGLE_EMPTY_LINE);
     item.addLore(UPGRADES.createStatusElement());
   }
 
