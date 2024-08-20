@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
+import net.arcadiusmc.core.CoreConfig;
 import net.arcadiusmc.core.CoreFlags;
 import net.arcadiusmc.core.CorePlugin;
 import net.arcadiusmc.text.Text;
@@ -16,15 +17,19 @@ import net.arcadiusmc.utils.WgUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Boss;
+import org.bukkit.entity.Display.Billboard;
+import org.bukkit.entity.Display.Brightness;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -32,15 +37,18 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
+import org.bukkit.util.Transformation;
 import org.spongepowered.math.GenericMath;
 
 public class MobHealthBar implements Listener {
+
+  static final Brightness MAX_BRIGHT = new Brightness(15, 15);
 
   public static final String HEART = "❤";
 
   public static final Map<LivingEntity, Component> NAMES = new HashMap<>();
   public static final Map<LivingEntity, BukkitTask> HITMOBS = new HashMap<>();
-  public static final Set<ArmorStand> HIT_MARKERS = new ObjectOpenHashSet<>();
+  public static final Set<TextDisplay> HIT_MARKERS = new ObjectOpenHashSet<>();
 
   private static final Random RANDOM = new Random();
 
@@ -68,10 +76,6 @@ public class MobHealthBar implements Listener {
   }
 
   public static void showHealthBar(LivingEntity damaged, double finalDamage, boolean autoRemove) {
-    if (damaged.getHealth() - finalDamage <= 0 || finalDamage <= 0) {
-      return;
-    }
-
     String name = damaged.getCustomName();
 
     // Only affect entities that only show names when player hovers mouse over them:
@@ -115,7 +119,7 @@ public class MobHealthBar implements Listener {
     damaged.customName(
         Component.text()
             .append(Component.text(reds, NamedTextColor.RED))
-            .append(Component.text(grays, NamedTextColor.GRAY))
+            .append(Component.text(grays, NamedTextColor.DARK_GRAY))
             .build()
     );
 
@@ -129,26 +133,22 @@ public class MobHealthBar implements Listener {
     double y = RANDOM.nextDouble(entityBounds.getMinY() + 0.5D, entityBounds.getMaxY() + 0.5D);
     double z = RANDOM.nextDouble(entityBounds.getMinZ() - 0.5D, entityBounds.getMaxZ() + 0.5D);
 
-    ArmorStand entity = world.spawn(
+    TextDisplay entity = world.spawn(
         new Location(world, x, y, z),
-        ArmorStand.class,
+        TextDisplay.class,
 
-        stand -> {
-          stand.setCanTick(true);
-          stand.setMarker(true);
-          stand.setInvisible(true);
-          stand.setCustomNameVisible(true);
-          stand.setCanMove(false);
-          stand.setGravity(false);
-          stand.setAI(false);
-          stand.setArms(false);
+        display -> {
+          display.setBackgroundColor(Color.fromARGB(0));
+          display.setBillboard(Billboard.CENTER);
+          display.setShadowed(false);
+          display.setSeeThrough(true);
+          display.text(Component.text(String.format("%.2f", damage), damageColor(damage)));
+          display.setBrightness(MAX_BRIGHT);
+          display.setPersistent(false);
 
-          stand.customName(
-              Component.text(
-                  String.format("%.2f", damage),
-                  damageColor(damage)
-              )
-          );
+          Transformation trans = display.getTransformation();
+          trans.getTranslation().y = -0.125f;
+          display.setTransformation(trans);
         }
     );
 
@@ -186,7 +186,6 @@ public class MobHealthBar implements Listener {
 
   public static void shutdown() {
     NAMES.forEach(Entity::customName);
-    HIT_MARKERS.forEach(Entity::remove);
   }
 
   @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -215,10 +214,10 @@ public class MobHealthBar implements Listener {
       return;
     }
 
-    var finalDamage = event.getFinalDamage();
-    var config = plugin.getCoreConfig();
+    double finalDamage = event.getFinalDamage();
+    CoreConfig config = plugin.getCoreConfig();
 
-    var loc = event.getEntity().getLocation();
+    Location loc = event.getEntity().getLocation();
 
     if (config.mobHealthBarsEnabled() && WgUtils.testFlag(loc, CoreFlags.HEALTH_BARS)) {
       showHealthBar(damaged, finalDamage, true);
