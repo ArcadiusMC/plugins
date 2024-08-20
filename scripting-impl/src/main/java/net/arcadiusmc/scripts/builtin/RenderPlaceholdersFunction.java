@@ -55,7 +55,7 @@ public class RenderPlaceholdersFunction extends NonCtorFunction {
     }
 
     Component rendered = renderer.render(baseText, viewer);
-    return new NativeJavaObject(scope, rendered, Component.class);
+    return Context.javaToJS(rendered, scope, cx);
   }
 
   Scriptable getPlaceholderTable(Object[] args, int index) {
