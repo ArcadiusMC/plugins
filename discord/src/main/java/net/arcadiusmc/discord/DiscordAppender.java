@@ -66,12 +66,14 @@ class DiscordAppender extends AbstractAppender {
       return;
     }
 
-    var loggerName = event.getLoggerName();
+    String loggerName = event.getLoggerName();
 
     // Filter out ignored loggers
-    for (var s: IGNORED_LOGGERS) {
-      if (loggerName.contains(s)) {
-        return;
+    if (loggerName != null) {
+      for (var s: IGNORED_LOGGERS) {
+        if (loggerName.equalsIgnoreCase(s)) {
+          return;
+        }
       }
     }
 
