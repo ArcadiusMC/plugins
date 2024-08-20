@@ -282,13 +282,17 @@ public final class Vectors {
   }
 
   public static long toLong(Vector3i v) {
+    return toLong(v.x(), v.y(), v.z());
+  }
+
+  public static long toLong(int x, int y, int z) {
     // Copied from net.minecraft.core.BlockPos.asLong(int, int, int)
     // ^ Short way of saying I do not understand this at all lol
     // All I know is it packs coordinates, so it uses less space
     // and works for what I need
-    return (((long) v.x() & 0x3FFFFFF) << 38)
-        | (((long) v.y() & 0xFFF))
-        | (((long) v.z() & 0x3FFFFFF) << 12);
+    return (((long) x & 0x3FFFFFF) << 38)
+        | (((long) y & 0xFFF))
+        | (((long) z & 0x3FFFFFF) << 12);
   }
 
   public static Vector3i fromLong(long l) {
