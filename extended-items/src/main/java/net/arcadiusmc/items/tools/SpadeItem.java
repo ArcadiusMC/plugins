@@ -158,11 +158,16 @@ public class SpadeItem implements ItemType {
 
   @Override
   public ItemStack createBaseItem() {
-    return ItemStacks.builder(Material.WOODEN_SHOVEL)
-        .setName(Messages.renderText("itemsPlugin.spade.name"))
+    ItemStack item = ItemStacks.builder(Material.WOODEN_SHOVEL)
         .setUnbreakable(true)
         .addFlags(ItemFlag.HIDE_ENCHANTS)
         .build();
+
+    item.editMeta(meta -> {
+      meta.itemName(Messages.renderText("itemsPlugin.spade.name"));
+    });
+
+    return item;
   }
 
   @Override
