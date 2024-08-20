@@ -7,8 +7,12 @@ import net.arcadiusmc.text.TextWriter;
 
 public interface LoreElement {
 
-  LoreElement EMPTY_LINE = (item, writer) -> {
+  LoreElement DOUBLE_EMPTY_LINE = (item, writer) -> {
     writer.newLine();
+    writer.newLine();
+  };
+
+  LoreElement SINGLE_EMPTY_LINE = (item, writer) -> {
     writer.newLine();
   };
 
