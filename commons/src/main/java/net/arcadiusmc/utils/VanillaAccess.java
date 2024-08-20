@@ -27,6 +27,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -350,5 +351,44 @@ public final class VanillaAccess {
     position.x = (float) nms.getX();
     position.y = (float) nms.getY();
     position.z = (float) nms.getZ();
+  }
+
+  public static void setInvulnerableTime(org.bukkit.entity.Entity entity, int ticks) {
+    Entity nms = getEntity(entity);
+    nms.invulnerableTime = ticks;
+  }
+
+  public static void setAttackTicker(org.bukkit.entity.LivingEntity player, int strengthTicker) {
+    Field f = getStrengthTickerField();
+
+    try {
+      f.set(getEntity(player), strengthTicker);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static int getAttackTicker(org.bukkit.entity.LivingEntity player) {
+    Field f = getStrengthTickerField();
+
+    try {
+      return f.getInt(getEntity(player));
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static Field getStrengthTickerField() {
+    Field f;
+
+    try {
+      f = LivingEntity.class.getDeclaredField("attackStrengthTicker");
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    }
+
+    f.setAccessible(true);
+
+    return f;
   }
 }
