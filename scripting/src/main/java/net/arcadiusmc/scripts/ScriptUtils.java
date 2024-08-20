@@ -35,6 +35,7 @@ import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.NativeJSON;
+import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.Undefined;
@@ -187,6 +188,10 @@ public final class ScriptUtils {
   public static Component toText(Context context, Scriptable scope, Object val) {
     if (val == null || Undefined.isUndefined(val)) {
       return null;
+    }
+
+    if (val instanceof NativeJavaObject njo) {
+      return (Component) Context.jsToJava(njo, Component.class);
     }
 
     if (val instanceof Scriptable scriptable) {
