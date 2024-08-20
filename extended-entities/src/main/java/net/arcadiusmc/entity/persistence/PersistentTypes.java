@@ -11,8 +11,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
-import net.arcadiusmc.entity.phys.Shape;
-import net.arcadiusmc.entity.phys.ShapeType;
 import net.arcadiusmc.entity.system.EntityId;
 import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.registry.Registries;
@@ -65,7 +63,7 @@ public class PersistentTypes {
     registerSerializer(Vector2f.class, JomlCodecs.VEC2F, Vector2f::set);
 
     registerSerializer(World.class, ExtraCodecs.WORLD_CODEC);
-    registerSerializer(Shape.class, ShapeType.SHAPE_CODEC);
+    //registerSerializer(Shape.class, ShapeType.SHAPE_CODEC);
   }
 
   private static <T extends Component> void registerComponent(Class<T> type, Codec<T> supplier) {
