@@ -16,6 +16,7 @@ public class PluginScriptRuntime {
   static final Function EXEC_AS_SILENT = new ConsoleCommandFunction(true, true);
 
   static final Function GIVE_ITEM = new GiveItemFunction();
+  static final Function LOAD_ITEM = new LoadItemFunction();
 
   static final Function RENDER_PLACEHOLDERS = new RenderPlaceholdersFunction();
   static final Function SEND_MESSAGE = new SendMessageFunction(false);
@@ -37,6 +38,7 @@ public class PluginScriptRuntime {
     putConstProperty(object, "silentRunAs", EXEC_AS_SILENT);
 
     putConstProperty(object, "giveItem", GIVE_ITEM);
+    putConstProperty(object, "loadItem", LOAD_ITEM);
 
     putConstProperty(object, "currentTimeMillis", TIME_MILLIS);
     putConstProperty(object, "currentTimeSeconds", TIME_SECONDS);
