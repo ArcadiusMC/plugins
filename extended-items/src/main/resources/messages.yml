@@ -29,6 +29,9 @@ itemsPlugin:
     foundMoney:           "&eFound &6${amount}&e while digging."
     name:                 "&7=[&l<gradient=green,dark_green:Pirate's Spade>&7]="
 
+  pickaxe:
+    name:                 "&7&m&l &7&l(&l<gradient=gold,yellow:Emperor's Pickaxe>&7&l)&m&l "
+
   wreath:
     name:                 "&6=[&l<gradient=red,dark_purple:Emperor's Wreath>&6]="
     onHead:               "&7${item.modifiers.head}"
