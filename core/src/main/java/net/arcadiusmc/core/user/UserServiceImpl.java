@@ -69,6 +69,7 @@ public class UserServiceImpl implements UserService {
   private final NameFactoryImpl nameFactory;
   private final UserMaps userMaps;
   private final AltUsers altUsers;
+  private final Flags flags;
 
   private final ScoreIntMap<UUID> balances;
   private final ScoreIntMap<UUID> gems;
@@ -94,6 +95,7 @@ public class UserServiceImpl implements UserService {
     this.nameFactory      = new NameFactoryImpl();
     this.userMaps         = new UserMaps(this);
     this.altUsers         = new AltUsers();
+    this.flags            = new Flags();
 
     this.balances         = new ScoreIntMap<>();
     this.gems             = new ScoreIntMap<>();
@@ -175,6 +177,7 @@ public class UserServiceImpl implements UserService {
 
     storage.saveProfiles(lookup);
     storage.saveAlts(altUsers);
+    storage.saveFlags(flags);
 
     var userIt = userMaps.iterator();
     while (userIt.hasNext()) {
@@ -190,6 +193,7 @@ public class UserServiceImpl implements UserService {
   public void load() {
     storage.loadProfiles(lookup);
     storage.loadAlts(altUsers);
+    storage.loadFlags(flags);
 
     storage.loadMap(balances, storage.getBalances());
     storage.loadMap(gems,     storage.getGems());
@@ -273,8 +277,8 @@ public class UserServiceImpl implements UserService {
       return Result.error("Join time not set");
     }
 
-    var played = Time.timeSince(join) - user.getTime(TimeField.AFK_TIME);
-    var timeSeconds = (int) TimeUnit.MILLISECONDS.toSeconds(played);
+    long played = Time.timeSince(join) - user.getTime(TimeField.AFK_TIME);
+    int timeSeconds = (int) TimeUnit.MILLISECONDS.toSeconds(played);
 
     return Result.success(timeSeconds);
   }

@@ -5,11 +5,16 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.mojang.serialization.JsonOps;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import lombok.Getter;
-import net.arcadiusmc.core.user.UserLookupImpl.UserLookupEntry;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.core.user.UserLookupImpl.UserLookupEntry;
 import net.arcadiusmc.user.TimeField;
 import net.arcadiusmc.user.UserComponent;
 import net.arcadiusmc.utils.ScoreIntMap;
@@ -34,6 +39,7 @@ public class UserDataStorage {
   private final Path userDirectory;
 
   private final Path alts;
+  private final Path flags;
 
   private final Path balances;
   private final Path gems;
@@ -48,6 +54,7 @@ public class UserDataStorage {
     this.userDirectory   = directory.resolve("userdata");
 
     this.alts            = directory.resolve("alts.json");
+    this.flags           = directory.resolve("flags.json");
 
     this.balances        = directory.resolve("balances.json");
     this.gems            = directory.resolve("gems.json");
@@ -60,6 +67,46 @@ public class UserDataStorage {
 
   public Path file(String first, String... others) {
     return this.directory.resolve(directory.getFileSystem().getPath(first, others));
+  }
+
+  public void saveFlags(Flags flags) {
+    if (!flags.isDirty()) {
+      return;
+    }
+
+    boolean success = Flags.CODEC.encodeStart(JsonOps.INSTANCE, flags.getFlags())
+        .mapError(s -> "Failed to save player flags: " + s)
+        .resultOrPartial(LOGGER::error)
+        .map(element -> SerializationHelper.writeJson(this.flags, element))
+        .orElse(false);
+
+    if (!success) {
+      return;
+    }
+
+    flags.setDirty(false);
+  }
+
+  public void loadFlags(Flags flags) {
+    flags.getFlags().clear();
+    flags.setDirty(false);
+
+    SerializationHelper.readAsJson(this.flags, jsonObject -> {
+      Optional<Map<UUID, Set<String>>> opt = Flags.CODEC.parse(JsonOps.INSTANCE, jsonObject)
+          .mapError(s -> "Failed to read player flags: " + s)
+          .resultOrPartial(LOGGER::error);
+
+      if (opt.isEmpty()) {
+        return;
+      }
+
+      Map<UUID, Set<String>> uuidSetMap = opt.get();
+      Map<UUID, Set<String>> map = flags.getFlags();
+
+      uuidSetMap.forEach((uuid, strings) -> {
+        map.put(uuid, new ObjectOpenHashSet<>(strings));
+      });
+    });
   }
 
   public void saveMap(ScoreIntMap<UUID> map, Path file) {

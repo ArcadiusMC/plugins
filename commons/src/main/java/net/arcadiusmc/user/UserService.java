@@ -29,6 +29,12 @@ public interface UserService {
   UserNameFactory getNameFactory();
 
   /**
+   * Get the user flag tracker
+   * @return User flags
+   */
+  UserFlags getFlags();
+
+  /**
    * Begins an async load of ALL users known to the plugin
    * <p>
    * It is more suggestible to use {@link #executeOnAllUsers(Consumer)} for performing operations
