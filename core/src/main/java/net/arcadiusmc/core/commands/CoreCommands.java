@@ -6,6 +6,7 @@ import net.arcadiusmc.command.UserMapTopCommand;
 import net.arcadiusmc.core.CorePlugin;
 import net.arcadiusmc.core.commands.admin.CommandAlts;
 import net.arcadiusmc.core.commands.admin.CommandBroadcast;
+import net.arcadiusmc.core.commands.admin.CommandCoinPile;
 import net.arcadiusmc.core.commands.admin.CommandCooldown;
 import net.arcadiusmc.core.commands.admin.CommandArcadiusCore;
 import net.arcadiusmc.core.commands.admin.CommandGameMode;
@@ -94,6 +95,7 @@ public final class CoreCommands {
     new CommandSmite();
     new CommandTextToJson();
     new CommandUserFlags(plugin);
+    new CommandCoinPile();
 
     // Tool commands
     new CommandUserProperty(plugin);

@@ -11,6 +11,7 @@ public final class CoreListeners {
     register(new AdminBroadcastListener());
     register(new AltLoginListener(plugin));
     register(new ChatHandleListener());
+    register(new CoinpileListener());
     register(new DepositListener(plugin));
     register(new DurabilityListener(plugin));
     register(new GamemodeListener());

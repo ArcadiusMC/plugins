@@ -591,3 +591,8 @@ cmd.userflags:
   set:                "Set flag '&6${flag}&r' for &e${player}&r."
   unset:              "Removed flag '&6${flag}&r' from &e${player}&r."
   cleared:            "Removed all flags from &e${player}&r."
+
+cmd.coinpile:
+  _style: $normal
+  created:            "Spawned coin pile. worth=&e${worth}&r model=&e${model}&r."
+  pickedUp:           "&eGot &6${worth}&6."
