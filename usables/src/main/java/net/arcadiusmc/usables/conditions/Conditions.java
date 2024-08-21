@@ -28,6 +28,7 @@ public class Conditions {
     r.register("has_permission", TestPermission.TYPE);
     r.register("hand", HandCondition.TYPE);
     r.register("not", NotCondition.TYPE);
+    r.register("user_flag_set", TestUserFlag.TYPE);
 
     UserService service = Users.getService();
     Registry<Currency> currencies = service.getCurrencies();
