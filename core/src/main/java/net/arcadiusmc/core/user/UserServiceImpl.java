@@ -250,7 +250,7 @@ public class UserServiceImpl implements UserService {
 
         return;
       } else {
-        LOGGER.debug(
+        LOGGER.info(
             "Adding {} seconds or {} hours to {}'s playtime",
             seconds, TimeUnit.SECONDS.toHours(seconds), user
         );

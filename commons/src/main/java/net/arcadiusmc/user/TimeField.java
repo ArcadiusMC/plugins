@@ -44,15 +44,14 @@ public final class TimeField {
   /**
    * The first time when the user began owning a market
    */
-  public static final TimeField MARKET_OWNERSHIP_STARTED
-      = new TimeField("market_ownershipBegan", true);
+  public static final TimeField MARKET_OWNERSHIP_STARTED = field("market_ownershipBegan");
 
   /**
    * The last time this user bought/abandoned a market
    */
-  public static final TimeField MARKET_LAST_ACTION = new TimeField("market_lastAction", true);
+  public static final TimeField MARKET_LAST_ACTION = field("market_lastAction");
 
-  public static final TimeField LAST_MOVEIN = new TimeField("lastMoveIn", true);
+  public static final TimeField LAST_MOVEIN = field("lastMoveIn");
 
   private final String key;
   private final int id;
@@ -72,10 +71,10 @@ public final class TimeField {
   }
 
   public static TimeField field(String key) {
-    return new TimeField(key, false);
+    return new TimeField(key, true);
   }
 
   public static TimeField transientField(String key) {
-    return new TimeField(key, true);
+    return new TimeField(key, false);
   }
 }

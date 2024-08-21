@@ -40,10 +40,6 @@ public class CommandTimeFields {
 
     if (field == null) {
       for (TimeField value : TimeField.REGISTRY.values()) {
-        if (!value.isSerialized()) {
-          continue;
-        }
-
         writeField(writer, user, value);
       }
     } else {

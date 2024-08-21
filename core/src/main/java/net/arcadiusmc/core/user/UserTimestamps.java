@@ -70,6 +70,10 @@ public class UserTimestamps implements UserComponent {
       }
 
       TimeField.REGISTRY.getHolder(i).ifPresent(holder -> {
+        if (!holder.getValue().isSerialized()) {
+          return;
+        }
+
         json.addTimeStamp(holder.getKey(), l);
       });
     }
@@ -91,6 +95,10 @@ public class UserTimestamps implements UserComponent {
       long time = JsonUtils.readTimestamp(e.getValue());
 
       TimeField.REGISTRY.getHolder(e.getKey()).ifPresentOrElse(holder -> {
+        if (!holder.getValue().isSerialized()) {
+          return;
+        }
+
         setTime(holder.getValue(), time);
       }, () -> {
         LOGGER.warn("Unknown timestamp field '{}', adding to fallback list", e.getKey());
