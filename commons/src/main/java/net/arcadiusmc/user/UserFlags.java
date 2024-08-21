@@ -43,6 +43,13 @@ public interface UserFlags {
   boolean unsetFlag(@NotNull UUID playerId, @NotNull String flag);
 
   /**
+   * Clear all flags associated with the specified player
+   * @param playerId Player UUID
+   * @throws NullPointerException If {@code playerId} is {@code null}
+   */
+  void clearFlags(@NotNull UUID playerId);
+
+  /**
    * Get all flags set for a player.
    *
    * @param playerId Player UUID
@@ -50,5 +57,5 @@ public interface UserFlags {
    *
    * @throws NullPointerException If {@code playerId} is {@code null}
    */
-  Set<String> getFlags(@NotNull UUID playerId);
+  @NotNull Set<String> getFlags(@NotNull UUID playerId);
 }

@@ -73,7 +73,13 @@ public class Flags implements UserFlags {
   }
 
   @Override
-  public Set<String> getFlags(@NotNull UUID playerId) {
+  public void clearFlags(@NotNull UUID playerId) {
+    Objects.requireNonNull(playerId, "Null player id");
+    flags.remove(playerId);
+  }
+
+  @Override
+  public @NotNull Set<String> getFlags(@NotNull UUID playerId) {
     Objects.requireNonNull(playerId, "Null player id");
 
     Set<String> set = flags.get(playerId);

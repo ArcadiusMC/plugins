@@ -29,6 +29,7 @@ import net.arcadiusmc.core.commands.admin.CommandTextToJson;
 import net.arcadiusmc.core.commands.admin.CommandTime;
 import net.arcadiusmc.core.commands.admin.CommandTimeFields;
 import net.arcadiusmc.core.commands.admin.CommandTop;
+import net.arcadiusmc.core.commands.admin.CommandUserFlags;
 import net.arcadiusmc.core.commands.tools.CommandCloseInventory;
 import net.arcadiusmc.core.commands.tools.CommandUserProperty;
 import net.arcadiusmc.core.commands.admin.CommandVanish;
@@ -92,6 +93,7 @@ public final class CoreCommands {
     new CommandSudo();
     new CommandSmite();
     new CommandTextToJson();
+    new CommandUserFlags(plugin);
 
     // Tool commands
     new CommandUserProperty(plugin);

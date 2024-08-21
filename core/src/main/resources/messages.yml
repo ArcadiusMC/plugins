@@ -577,3 +577,17 @@ cmd.texttojson:
   format:             "&7Click to copy: ${jsonString} or ${nbtString}."
   jsonString:         "&b[JSON text]"
   nbtString:          "&b[Ready-for-NBT text]"
+
+cmd.userflags:
+  _style: $normal
+
+  errors:
+    _style: $err
+    nothingChanged:   "Nothing changed."
+
+  list.header:        "&e${player}&r's flags:"
+  list.entry:         "- &e${flag}"
+
+  set:                "Set flag '&6${flag}&r' for &e${player}&r."
+  unset:              "Removed flag '&6${flag}&r' from &e${player}&r."
+  cleared:            "Removed all flags from &e${player}&r."

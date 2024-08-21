@@ -63,6 +63,8 @@ public interface CorePermissions {
   Permission HOME                    = registerCmd("home");
   Permission HOME_OTHERS             = register(HOME, "others");
 
+  Permission CMD_USERFLAGS           = registerCmd("userflags");
+
   TieredPermission MAX_HOMES = TieredPermission.builder()
       .prefix("arcadius.homes.")
       .priority(TierPriority.HIGHEST)
