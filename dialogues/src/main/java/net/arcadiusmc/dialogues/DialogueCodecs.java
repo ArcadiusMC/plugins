@@ -107,15 +107,20 @@ public class DialogueCodecs {
                 .forGetter(node -> Optional.ofNullable(node.getOptions())),
 
             strictOptional(Codec.BOOL, "invalidate-interaction", false)
-                .forGetter(DialogueNode::isInvalidateInteraction)
+                .forGetter(DialogueNode::isInvalidateInteraction),
+
+            strictOptional(Codec.BOOL, "hide-if-unavailable", false)
+                .forGetter(DialogueNode::isHideIfUnavailable)
         )
-        .apply(instance, (prompt, hover, content, links, actions, conditions, options, invalidate) -> {
+        .apply(instance, (prompt, hover, content, links, actions, conditions, options, invalidate, hide) -> {
           DialogueNode node = new DialogueNode();
+
           node.setPrompt(prompt);
           node.setPromptHover(hover);
           node.getLinks().addAll(links);
           node.getContent().addAll(content);
           node.setInvalidateInteraction(invalidate);
+          node.setHideIfUnavailable(hide);
 
           options.ifPresent(node::setOptions);
 

@@ -45,6 +45,9 @@ public class DialogueNode {
   @Setter
   private boolean invalidateInteraction;
 
+  @Setter
+  private boolean hideIfUnavailable;
+
   Dialogue entry;
   String key;
 
@@ -108,6 +111,10 @@ public class DialogueNode {
     int failedIndex = exprList.getFailureIndex(interaction);
 
     if (failedIndex != NO_FAILURE) {
+      if (hideIfUnavailable) {
+        return null;
+      }
+
       endType = ButtonType.UNAVAILABLE;
       hoverText = exprList.formatError(failedIndex, viewer, interaction);
     } else {
