@@ -13,7 +13,6 @@ import net.arcadiusmc.sellshop.data.ItemSellData;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
 import net.arcadiusmc.utils.Tasks;
-import net.kyori.adventure.sound.Sound;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -98,13 +97,7 @@ class AutoSellListener implements Listener {
     player.sendActionBar(SellMessages.soldItems(player, session.amount, session.earned, mat));
 
     // Play sound
-    player.playSound(
-        Sound.sound(
-            org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP,
-            Sound.Source.MASTER,
-            2F, 1F
-        )
-    );
+    player.playSound(ItemSeller.SELL_SOUND);
 
     if (stack.getAmount() <= 0) {
       event.setCancelled(true);

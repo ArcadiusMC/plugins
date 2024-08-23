@@ -13,8 +13,9 @@ import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.inventory.ItemList;
 import net.arcadiusmc.utils.inventory.ItemLists;
 import net.arcadiusmc.utils.inventory.ItemStacks;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -23,7 +24,7 @@ import org.bukkit.inventory.ItemStack;
  * <p>
  * This class is instantiated by two methods that are both made to cater to the 2 ways a user can
  * sell items to the server sell shop: {@link #inventorySell(User, Material, ItemSellData)} and
- * {@link #itemPickup(User, ItemStack)}.
+ * {@link #itemPickup(User, ItemStack, ItemSellData)}.
  * <p>
  * The primary logic is all ran in {@link #run(boolean)}
  *
@@ -32,6 +33,10 @@ import org.bukkit.inventory.ItemStack;
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ItemSeller {
+
+  public static final Sound SELL_SOUND = Sound.sound()
+      .type(Key.key("arcadiusmc", "coin_jingle"))
+      .build();
 
   /**
    * The user selling items
@@ -136,7 +141,7 @@ public final class ItemSeller {
 
     if (send) {
       player.sendMessage(SellMessages.soldItems(player, result, material));
-      player.playSound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+      player.playSound(SELL_SOUND);
     }
 
     // If price dropped
