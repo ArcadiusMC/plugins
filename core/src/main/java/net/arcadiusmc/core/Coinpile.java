@@ -32,7 +32,7 @@ public class Coinpile {
 
     location = location.clone();
     location.setPitch(0);
-    location.setYaw((float) ((Math.random() * 180.0f) - 90.0f));
+    location.setYaw((float) ((Math.random() * 360.0f) - 180.0f));
 
     Interaction interaction = world.spawn(location, Interaction.class);
     ItemDisplay display = world.spawn(location, ItemDisplay.class);
