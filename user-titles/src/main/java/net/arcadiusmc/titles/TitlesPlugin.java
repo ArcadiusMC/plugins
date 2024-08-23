@@ -87,6 +87,9 @@ public class TitlesPlugin extends JavaPlugin {
     PluginJar.saveResources("ranks.yml", ranksFile);
     PluginJar.saveResources("tiers.yml", tiersFile);
 
+    // Force the default's menu to reset
+    Tiers.DEFAULT.setPage(null);
+
     loadToRegistry(tiersFile, "tiers", Tiers.REGISTRY, TitleCodecs.TIER_MAP);
     loadToRegistry(ranksFile, "ranks", Titles.REGISTRY, TitleCodecs.RANK_MAP);
   }
