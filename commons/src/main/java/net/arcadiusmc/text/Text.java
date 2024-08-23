@@ -411,6 +411,8 @@ public final class Text {
    * @return The item's display name
    */
   public static Component itemDisplayName(ItemStack item) {
+    item = ensureSafeSize(item);
+
     Component hoverName = VanillaAccess.hoverName(item);
     boolean hasDisplayName = item.getItemMeta().hasDisplayName();
 
@@ -493,12 +495,25 @@ public final class Text {
    * @return The formatted message
    */
   public static TextComponent itemAndAmount(ItemStack itemStack, int amount) {
+    ItemStack textItem = ensureSafeSize(itemStack);
+
     return text()
-        .hoverEvent(itemStack)
+        .hoverEvent(textItem)
         .append(text(amount))
         .append(space())
-        .append(itemDisplayName(itemStack))
+        .append(itemDisplayName(textItem))
         .build();
+  }
+
+  private static ItemStack ensureSafeSize(ItemStack stack) {
+    if (stack.getAmount() <= stack.getMaxStackSize()) {
+      return stack;
+    }
+
+    ItemStack res = stack.clone();
+    res.setAmount(res.getMaxStackSize());
+
+    return res;
   }
 
   /**
