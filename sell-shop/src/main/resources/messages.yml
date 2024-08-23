@@ -21,8 +21,8 @@ cmd.earnings:
 sellshop:
   mainPageMissing:    "&cInternal Error! &8Main Shop page not set!"
   priceDrop:          "&7Price for &e${material}&7 dropped from &6${before}&7 to &e${after}&7."
-  sold.single:        "&7Sold &e${item}&7 for &6${earned}&7."
-  sold.total:         "&7Sold a total of &e${item}&7 for &6${earned}&7."
+  sold.single:        "&7Sold &e${item.nameAndAmount}&7 for &6${earned}&7."
+  sold.total:         "&7Sold a total of &e${item.nameAndAmount}&7 for &6${earned}&7."
   reloaded:           "Reloaded SellShop Plugin."
 
   errors:

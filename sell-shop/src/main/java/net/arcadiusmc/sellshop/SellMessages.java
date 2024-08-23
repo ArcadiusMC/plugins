@@ -14,7 +14,7 @@ public interface SellMessages {
   }
 
   static Component soldItemsTotal(Audience viewer, int sold, int earned, Material material) {
-    return Messages.render("sellshop.sold.single")
+    return Messages.render("sellshop.sold.total")
         .addValue("item", new ItemStack(material, sold))
         .addValue("earned", UnitFormat.currency(earned))
         .addValue("sold", sold)
