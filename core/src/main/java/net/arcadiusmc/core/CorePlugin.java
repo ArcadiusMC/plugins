@@ -31,6 +31,9 @@ public class CorePlugin extends JavaPlugin {
   private CoreConfig coreConfig;
   private PeriodicalSaver saver;
 
+  private InventoryStorageImpl invStorage;
+  private CooldownsImpl cooldowns;
+
   private UserServiceImpl userService;
   private HelpListImpl helpList;
   private ArcadiusServerImpl serverImpl;
@@ -63,10 +66,13 @@ public class CorePlugin extends JavaPlugin {
     emojiLoader = new EmojiLoader();
     tabMenu = new TabMenu(this);
 
+    cooldowns = new CooldownsImpl(getDataPath());
+    invStorage = new InventoryStorageImpl(getDataPath());
+
     BukkitServices.register(ArcadiusServer.class, serverImpl);
     BukkitServices.register(ArcadiusHelpList.class, helpList);
-    BukkitServices.register(InventoryStorage.class, InventoryStorageImpl.getStorage());
-    BukkitServices.register(Cooldowns.class, CooldownsImpl.getCooldowns());
+    BukkitServices.register(InventoryStorage.class, invStorage);
+    BukkitServices.register(Cooldowns.class, cooldowns);
     BukkitServices.register(UserService.class, userService);
     BukkitServices.register(PlaceholderService.class, placeholderService);
 
@@ -120,14 +126,18 @@ public class CorePlugin extends JavaPlugin {
       serverImpl.save();
     }
 
-    InventoryStorageImpl.getStorage().save();
-    CooldownsImpl.getCooldowns().save();
+    if (invStorage != null) {
+      invStorage.save();
+    }
+    if (cooldowns != null) {
+      cooldowns.save();
+    }
   }
 
   public void reloadAll() {
     userService.load();
-    InventoryStorageImpl.getStorage().load();
-    CooldownsImpl.getCooldowns().load();
+    invStorage.load();
+    cooldowns.load();
 
     reload();
   }

@@ -12,12 +12,11 @@ import java.util.UUID;
 import lombok.Getter;
 import net.arcadiusmc.InventoryStorage;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.utils.inventory.ItemStacks;
+import net.arcadiusmc.utils.io.SerializationHelper;
 import net.forthecrown.nbt.BinaryTags;
 import net.forthecrown.nbt.CompoundTag;
 import net.forthecrown.nbt.ListTag;
-import net.arcadiusmc.utils.inventory.ItemStacks;
-import net.arcadiusmc.utils.io.PathUtil;
-import net.arcadiusmc.utils.io.SerializationHelper;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.slf4j.Logger;
@@ -33,9 +32,6 @@ public class InventoryStorageImpl implements InventoryStorage {
   public static final String CATEGORY_SURVIVAL = "survival";
 
   @Getter
-  private static final InventoryStorageImpl storage = new InventoryStorageImpl();
-
-  @Getter
   private final Path path;
 
   private final Map<UUID, InventoryMap> inventories
@@ -43,8 +39,8 @@ public class InventoryStorageImpl implements InventoryStorage {
 
   /* ---------------------------- CONSTRUCTOR ----------------------------- */
 
-  private InventoryStorageImpl() {
-    this.path = PathUtil.pluginPath("stored_inventories.dat");
+  public InventoryStorageImpl(Path dir) {
+    this.path = dir.resolve("stored_inventories.dat");
   }
 
   /* ------------------------------ METHODS ------------------------------- */

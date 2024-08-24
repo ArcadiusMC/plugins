@@ -17,7 +17,6 @@ import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.utils.Time;
 import net.arcadiusmc.utils.io.JsonWrapper;
-import net.arcadiusmc.utils.io.PathUtil;
 import net.arcadiusmc.utils.io.SerializationHelper;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.Nullable;
@@ -28,15 +27,12 @@ public class CooldownsImpl implements Cooldowns {
   private static final Logger LOGGER = Loggers.getLogger();
 
   @Getter
-  private static final CooldownsImpl cooldowns = new CooldownsImpl();
-
-  @Getter
   private final Path path;
 
   private final Map<String, CategoryMap> cooldownMap = new Object2ObjectOpenHashMap<>();
 
-  private CooldownsImpl() {
-    this.path = PathUtil.pluginPath("cooldowns.json");
+  public CooldownsImpl(Path dir) {
+    this.path = dir.resolve("cooldowns.json");
   }
 
   public void clear() {

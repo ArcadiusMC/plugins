@@ -10,7 +10,7 @@ import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.help.UsageFactory;
 import net.arcadiusmc.core.CorePermissions;
-import net.arcadiusmc.core.InventoryStorageImpl;
+import net.arcadiusmc.core.CorePlugin;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.loader.MessageRender;
 import net.arcadiusmc.user.User;
@@ -20,8 +20,12 @@ import net.forthecrown.grenadier.GrenadierCommand;
 
 public class CommandInvStore extends BaseCommand {
 
-  public CommandInvStore() {
+  private final CorePlugin plugin;
+
+  public CommandInvStore(CorePlugin plugin) {
     super("InvStore");
+
+    this.plugin = plugin;
 
     setPermission(CorePermissions.CMD_INVSTORE);
     setDescription("Lets you give players separate inventories");
@@ -100,7 +104,7 @@ public class CommandInvStore extends BaseCommand {
     command
         .then(literal("reload")
             .executes(c -> {
-              InventoryStorageImpl.getStorage().load();
+              plugin.getInvStorage().load();
 
               CommandSource source = c.getSource();
               source.sendSuccess(Messages.MESSAGE_LIST.renderText("cmd.invstore.reload", source));
@@ -111,7 +115,7 @@ public class CommandInvStore extends BaseCommand {
 
         .then(literal("save")
             .executes(c -> {
-              InventoryStorageImpl.getStorage().save();
+              plugin.getInvStorage().save();
 
               CommandSource source = c.getSource();
               source.sendSuccess(Messages.MESSAGE_LIST.renderText("cmd.invstore.saved", source));
@@ -175,7 +179,7 @@ public class CommandInvStore extends BaseCommand {
   private int storeInventory(CommandContext<CommandSource> c, boolean clearAfter)
       throws CommandSyntaxException
   {
-    InventoryStorage store = InventoryStorage.getInstance();
+    InventoryStorage store = plugin.getInvStorage();
 
     User user = getUser(c);
     String category = c.getArgument("category", String.class);
@@ -199,7 +203,7 @@ public class CommandInvStore extends BaseCommand {
   }
 
   private int returnItems(CommandContext<CommandSource> c) throws CommandSyntaxException {
-    InventoryStorage store = InventoryStorage.getInstance();
+    InventoryStorage store = plugin.getInvStorage();
 
     User user = getUser(c);
     String category = c.getArgument("category", String.class);
@@ -219,7 +223,7 @@ public class CommandInvStore extends BaseCommand {
   }
 
   private int storeAndReturn(CommandContext<CommandSource> c) throws CommandSyntaxException {
-    InventoryStorage store = InventoryStorage.getInstance();
+    InventoryStorage store = plugin.getInvStorage();
 
     User user = getUser(c);
     String category = c.getArgument("category", String.class);
@@ -235,7 +239,7 @@ public class CommandInvStore extends BaseCommand {
   }
 
   private int giveItems(CommandContext<CommandSource> c) throws CommandSyntaxException {
-    InventoryStorage store = InventoryStorage.getInstance();
+    InventoryStorage store = plugin.getInvStorage();
 
     User user = getUser(c);
     String category = c.getArgument("category", String.class);
