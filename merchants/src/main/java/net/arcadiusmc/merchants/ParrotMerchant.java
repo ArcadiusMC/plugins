@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.Getter;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.Permissions;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.menu.Menu;
 import net.arcadiusmc.menu.MenuBuilder;
@@ -40,6 +41,7 @@ import org.bukkit.entity.Parrot;
 import org.bukkit.entity.Parrot.Variant;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.permissions.Permission;
 import org.slf4j.Logger;
 
 public class ParrotMerchant extends Merchant {
@@ -63,11 +65,21 @@ public class ParrotMerchant extends Merchant {
 
   private final Map<UUID, List<Variant>> owned = new HashMap<>();
 
+  private final Map<Variant, Permission> variantPermissionMap;
+
   @Getter
   private Menu menu;
 
   public ParrotMerchant(MerchantsPlugin plugin) {
     super(plugin, "parrots");
+
+    variantPermissionMap = new HashMap<>();
+    for (Variant value : Variant.values()) {
+      variantPermissionMap.put(
+          value,
+          Permissions.register("arcadius.parrotpet.", value.name().toLowerCase())
+      );
+    }
   }
 
   @Override
@@ -147,6 +159,14 @@ public class ParrotMerchant extends Merchant {
               builder.addLore(Messages.renderText("merchants.parrots.ownedLore"));
             }
           } else {
+            if (!user.hasPermission(getVariantPermission(parrot.variant))) {
+              builder.addLore(
+                  Messages
+                      .render("merchants.parrots.noPermission", parrot.variant.name().toLowerCase())
+                      .create(user)
+              );
+            }
+
             int price = parrot.price;
             builder
                 .addLore(
@@ -175,6 +195,13 @@ public class ParrotMerchant extends Merchant {
 
             if (!allowed) {
               throw Messages.render("merchants.parrots.purchaseNotAllowed")
+                  .exception(user);
+            }
+
+
+            if (!user.hasPermission(getVariantPermission(parrot.variant))) {
+              throw Messages
+                  .render("merchants.parrots.noPermission", parrot.variant.name().toLowerCase())
                   .exception(user);
             }
 
@@ -244,6 +271,10 @@ public class ParrotMerchant extends Merchant {
     });
 
     user.getPlayer().setShoulderEntityLeft(spawned);
+  }
+
+  private Permission getVariantPermission(Variant variant) {
+    return variantPermissionMap.get(variant);
   }
 
   private Variant getVariant(User user) {

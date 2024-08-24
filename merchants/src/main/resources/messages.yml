@@ -16,3 +16,10 @@ merchants:
   parrots.ownedLore:          "&7Click to activate."
   parrots.active:             "&aActive."
   parrots.purchaseNotAllowed: "&cParrots can only be bought at Calavera. &7(/visit calavera)"
+
+  parrots.noPermission:
+    red:                      "&cNo permission to purchase this parrot. (Legatus-tier rank required)"
+    blue:                     "&cNo permission to purchase this parrot."
+    green:                    "&cNo permission to purchase this parrot."
+    cyan:                     "&cNo permission to purchase this parrot. (Tribunus-tier rank required)"
+    gray:                     "&cNo permission to purchase this parrot. (Centurion-tier rank required)"
