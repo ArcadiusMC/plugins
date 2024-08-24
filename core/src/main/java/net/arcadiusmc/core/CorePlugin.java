@@ -1,5 +1,8 @@
 package net.arcadiusmc.core;
 
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import lombok.Getter;
 import net.arcadiusmc.ArcadiusServer;
 import net.arcadiusmc.BukkitServices;
@@ -55,8 +58,28 @@ public class CorePlugin extends JavaPlugin {
     Grenadier.plugin(this);
     GraveImpl.init();
 
+    try {
+      userService = new UserServiceImpl(this);
+    } catch (Exception e) {
+      PrintStream ps = new PrintStream(new FileOutputStream(FileDescriptor.err));
+
+      ps.println(">> User system initialization error");
+
+      e.printStackTrace(ps);
+
+      ps.println(">>");
+      ps.println(">> =======================================");
+      ps.println(">> Failed to initialize user system...");
+      ps.println(">> Initiating system halt");
+      ps.println(">> Tell Julie");
+      ps.println(">> =======================================");
+
+      ps.flush();
+
+      Runtime.getRuntime().halt(1);
+    }
+
     helpList = new HelpListImpl();
-    userService = new UserServiceImpl(this);
     serverImpl = new ArcadiusServerImpl(this);
     dayChange = new DayChange();
     announcer = new AutoAnnouncer();
