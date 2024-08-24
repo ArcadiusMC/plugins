@@ -1,5 +1,6 @@
 package net.arcadiusmc.core.commands;
 
+import net.arcadiusmc.Loggers;
 import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.CurrencyCommand;
 import net.arcadiusmc.command.UserMapTopCommand;
@@ -14,6 +15,7 @@ import net.arcadiusmc.core.commands.admin.CommandArcadiusCore;
 import net.arcadiusmc.core.commands.admin.CommandGameMode;
 import net.arcadiusmc.core.commands.admin.CommandGetOffset;
 import net.arcadiusmc.core.commands.admin.CommandGetPos;
+import net.arcadiusmc.core.commands.admin.CommandHalt;
 import net.arcadiusmc.core.commands.admin.CommandInvStore;
 import net.arcadiusmc.core.commands.admin.CommandLaunch;
 import net.arcadiusmc.core.commands.admin.CommandMemory;
@@ -85,7 +87,7 @@ public final class CoreCommands {
     new CommandPlayerTime();
     new CommandMemory();
     new CommandLaunch();
-    new CommandInvStore();
+    new CommandInvStore(plugin);
     new CommandGetPos();
     new CommandGetOffset();
     new CommandGameMode();
@@ -98,6 +100,10 @@ public final class CoreCommands {
     new CommandTextToJson();
     new CommandUserFlags(plugin);
     new CommandCoinPile();
+
+    if (Loggers.getLogger().isDebugEnabled()) {
+      new CommandHalt();
+    }
 
     // Tool commands
     new CommandUserProperty(plugin);
