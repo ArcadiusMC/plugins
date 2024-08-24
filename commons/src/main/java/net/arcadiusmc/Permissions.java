@@ -43,4 +43,8 @@ public final class Permissions {
   public static Permission register(Permission prefix, String suffix) {
     return register(prefix.getName() + "." + suffix);
   }
+
+  public static Permission register(String prefix, String suffix) {
+    return register(prefix + "." + suffix);
+  }
 }
