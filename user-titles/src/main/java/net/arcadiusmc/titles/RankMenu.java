@@ -67,6 +67,7 @@ public final class RankMenu {
     });
 
     arr.sort(Tiers.BY_PRIORITY);
+    arr = arr.reversed();
 
     int index = arr.indexOf(tier);
 
@@ -80,7 +81,7 @@ public final class RankMenu {
       int idx = index + dir;
 
       if (idx < 0) {
-        nextIndex = arr.size() - idx - 1;
+        nextIndex = arr.size() + idx;
       } else {
         nextIndex = idx;
       }
