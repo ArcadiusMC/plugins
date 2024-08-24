@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import net.arcadiusmc.menu.ClickContext;
+import net.arcadiusmc.menu.CommonItems;
 import net.arcadiusmc.menu.MenuBuilder;
 import net.arcadiusmc.menu.MenuNode;
 import net.arcadiusmc.menu.Menus;
@@ -47,7 +48,7 @@ public final class RankMenu {
     open(user, tier);
   }
 
-  private Holder<Tier> getNext(Holder<Tier> tier, User user) {
+  private Holder<Tier> getNext(Holder<Tier> tier, User user, int dir) {
     Registry<Tier> reg = Tiers.REGISTRY;
     List<Holder<Tier>> arr = new ArrayList<>(reg.entries());
 
@@ -73,12 +74,25 @@ public final class RankMenu {
       return tier;
     }
 
-    int nextIndex = (index + 1) % arr.size();
+    int nextIndex;
+
+    if (dir < 0) {
+      int idx = index + dir;
+
+      if (idx < 0) {
+        nextIndex = arr.size() - idx;
+      } else {
+        nextIndex = idx;
+      }
+    } else {
+      nextIndex = (index + dir) % arr.size();
+    }
+
     return arr.get(nextIndex);
   }
 
-  private void openNext(User user, Holder<Tier> tier) {
-    open(user, getNext(tier, user));
+  private void openNext(User user, Holder<Tier> tier, int dir) {
+    open(user, getNext(tier, user, dir));
   }
 
   private void open(User user, Holder<Tier> holder) {
@@ -132,17 +146,27 @@ public final class RankMenu {
 
       builder.add(8,
           MenuNode.builder()
-              .setItem(
-                  ItemStacks.builder(Material.PAPER)
-                      .setName("&eNext page >")
-                      .build()
-              )
+              .setItem(CommonItems.nextPage())
 
               .setRunnable((user, context, click) -> {
                 click.shouldClose(false);
                 click.shouldReloadMenu(false);
 
-                openNext(user, tier);
+                openNext(user, tier, 1);
+              })
+
+              .build()
+      );
+
+      builder.add(0,
+          MenuNode.builder()
+              .setItem(CommonItems.previousPage())
+
+              .setRunnable((user, context, click) -> {
+                click.shouldClose(false);
+                click.shouldReloadMenu(false);
+
+                openNext(user, tier, -1);
               })
 
               .build()
