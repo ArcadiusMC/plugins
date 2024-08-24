@@ -80,7 +80,7 @@ public final class RankMenu {
       int idx = index + dir;
 
       if (idx < 0) {
-        nextIndex = arr.size() - idx;
+        nextIndex = arr.size() - idx - 1;
       } else {
         nextIndex = idx;
       }
