@@ -4,8 +4,10 @@ import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.arcadiusmc.command.BaseCommand;
+import net.arcadiusmc.command.arguments.chat.MessageSuggestions;
 import net.arcadiusmc.core.CorePlugin;
 import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.PlayerMessage;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.UserProperty;
 import net.forthecrown.grenadier.GrenadierCommand;
@@ -50,6 +52,8 @@ public class TabPrefixSuffixCommand extends BaseCommand {
         )
 
         .then(argument("value", StringArgumentType.greedyString())
+            .suggests(MessageSuggestions::get)
+
             .executes(c -> {
               User user = getUserSender(c);
               String value = StringArgumentType.getString(c, "value");
@@ -66,7 +70,7 @@ public class TabPrefixSuffixCommand extends BaseCommand {
 
               user.sendMessage(
                   Messages.render(setKey)
-                      .addValue("value", value)
+                      .addValue("value", PlayerMessage.of(value, user))
                       .create(user)
               );
 
