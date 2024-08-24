@@ -12,6 +12,17 @@ tpaExpireTime = "3m"
 # Maximum length a player's nickname can have
 maxNickLength = 16
 
+#
+# Maximum length a tab prefix/suffix can be when using
+# the /tab-prefix or /tab-suffix commands.
+#
+# Despite the name, this setting applies to both suffix
+# and prefix
+#
+# Default: 16
+#
+maxSuffixLength = 16
+
 # Maximum amount of hoppers in a chunk
 hoppersInOneChunk = 128
 

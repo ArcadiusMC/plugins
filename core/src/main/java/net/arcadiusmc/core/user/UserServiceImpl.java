@@ -135,6 +135,9 @@ public class UserServiceImpl implements UserService {
   }
 
   public void initialize() {
+    NameElements.registerAll(nameFactory);
+    ProfileFields.registerAll(nameFactory);
+
     // *Spongebob stinky sound effect*
     Reflection.initialize(Properties.class);
 

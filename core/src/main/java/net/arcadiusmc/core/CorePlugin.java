@@ -113,8 +113,12 @@ public class CorePlugin extends JavaPlugin {
   }
 
   public void save() {
-    userService.save();
-    serverImpl.save();
+    if (userService != null) {
+      userService.save();
+    }
+    if (serverImpl != null) {
+      serverImpl.save();
+    }
 
     InventoryStorageImpl.getStorage().save();
     CooldownsImpl.getCooldowns().save();

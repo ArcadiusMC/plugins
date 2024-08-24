@@ -3,7 +3,9 @@ package net.arcadiusmc.core.commands;
 import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.CurrencyCommand;
 import net.arcadiusmc.command.UserMapTopCommand;
+import net.arcadiusmc.core.CorePermissions;
 import net.arcadiusmc.core.CorePlugin;
+import net.arcadiusmc.core.PrefsBook;
 import net.arcadiusmc.core.commands.admin.CommandAlts;
 import net.arcadiusmc.core.commands.admin.CommandBroadcast;
 import net.arcadiusmc.core.commands.admin.CommandCoinPile;
@@ -142,6 +144,28 @@ public final class CoreCommands {
     ctx.registerCommand(new CommandTab(plugin));
     ctx.registerCommand(new CommandAlts());
     ctx.registerCommand(new CommandTimeFields());
+
+    TabPrefixSuffixCommand suffix = new TabPrefixSuffixCommand(
+        plugin,
+        "tab-suffix",
+        PrefsBook.PLAYER_DEFINED_SUFFIX,
+        "tabsuffix"
+    );
+    suffix.setDescription("Lets you change your tab name suffix");
+    suffix.setAliases("tabsuffix", "suffix");
+    suffix.setPermission(CorePermissions.CMD_TAB_SUFFIX);
+    suffix.register();
+
+    TabPrefixSuffixCommand prefix = new TabPrefixSuffixCommand(
+        plugin,
+        "tab-prefix",
+        PrefsBook.PLAYER_DEFINED_PREFIX,
+        "tabprefix"
+    );
+    prefix.setDescription("Lets you change your tab name prefix");
+    prefix.setAliases("tabprefix", "prefix");
+    prefix.setPermission(CorePermissions.CMD_TAB_PREFIX);
+    prefix.register();
   }
 
   static void createCurrencyCommands() {

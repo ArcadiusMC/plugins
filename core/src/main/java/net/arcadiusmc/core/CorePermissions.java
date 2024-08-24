@@ -66,6 +66,9 @@ public interface CorePermissions {
   Permission CMD_USERFLAGS           = registerCmd("userflags");
   Permission CMD_COINPILE            = registerCmd("coinpile");
 
+  Permission CMD_TAB_SUFFIX            = registerCmd("tabsuffix");
+  Permission CMD_TAB_PREFIX            = registerCmd("tabprefix");
+
   TieredPermission MAX_HOMES = TieredPermission.builder()
       .prefix("arcadius.homes.")
       .priority(TierPriority.HIGHEST)

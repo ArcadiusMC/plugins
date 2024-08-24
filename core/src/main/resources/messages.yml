@@ -596,3 +596,23 @@ cmd.coinpile:
   _style: $normal
   created:            "Spawned coin pile. worth=&e${worth}&r model=&e${model}&r."
   pickedUp:           "&eGot &6${worth}&6."
+
+cmd.tabprefix:
+  _style: $normal
+
+  errors:
+    _style: $err
+    maxLength:        "Tab prefix cannot be longer than ${maxLength}."
+
+  set:                "Set tab-prefix to &f${value}&r."
+  cleared:            "Cleared tab-prefix."
+
+cmd.tabsuffix:
+  _style: $normal
+
+  errors:
+    _style: $err
+    maxLength:        "Tab suffix cannot be longer than ${maxLength}."
+
+  set:                "Set tab-suffix to &f${value}&r."
+  cleared:            "Cleared tab-suffix."

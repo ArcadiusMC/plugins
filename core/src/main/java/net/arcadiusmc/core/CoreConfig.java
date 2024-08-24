@@ -26,6 +26,7 @@ public class CoreConfig {
   private Duration tpaExpireTime    = Duration.ofMinutes(3);
 
   private int maxNickLength = 16;
+  private int maxSuffixLength = 16;
 
   private LocalTime dayUpdateTime = LocalTime.of(0, 0, 1);
 

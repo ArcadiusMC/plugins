@@ -47,8 +47,7 @@ public class NameFactoryImpl implements UserNameFactory {
   private final List<ElementInfo<ProfileDisplayElement>> adminFields = new ArrayList<>();
 
   public NameFactoryImpl() {
-    NameElements.registerAll(this);
-    ProfileFields.registerAll(this);
+
   }
 
   @Override

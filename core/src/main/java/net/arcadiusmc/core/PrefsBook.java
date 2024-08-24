@@ -21,6 +21,20 @@ public class PrefsBook {
   public static final UserProperty<Boolean> DURABILITY_WARNINGS
       = Properties.booleanProperty("durabilityAlerts", true);
 
+  public static final UserProperty<String> PLAYER_DEFINED_SUFFIX
+      = Properties.stringProperty()
+      .key("playerDefinedSuffix")
+      .callback((user, value, oldValue) -> user.updateTabName())
+      .defaultValue("")
+      .build();
+
+  public static final UserProperty<String> PLAYER_DEFINED_PREFIX
+      = Properties.stringProperty()
+      .key("playerDefinedPrefix")
+      .callback((user, value, oldValue) -> user.updateTabName())
+      .defaultValue("")
+      .build();
+
   static void init(SettingsBook<User> settings) {
     Setting flying = Setting.create(Properties.FLYING)
         .setMessageKey("settings.fly")
