@@ -46,7 +46,7 @@ public final class CommonItems {
   }
 
   public static ItemStack previousPage() {
-    return nextPageBuilder().build();
+    return previousPageBuilder().build();
   }
 
   public static DefaultItemBuilder previousPageBuilder() {
