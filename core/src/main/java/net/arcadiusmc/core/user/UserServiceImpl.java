@@ -3,6 +3,7 @@ package net.arcadiusmc.core.user;
 import com.google.common.base.Preconditions;
 import com.google.common.reflect.Reflection;
 import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.lang.management.ManagementFactory;
@@ -377,6 +378,12 @@ public class UserServiceImpl implements UserService {
         ExtraCodecs.COMPONENT,
         ArgumentTypes.map(Arguments.CHAT, ViewerAwareMessage::asComponent)
     );
+  }
+
+  @Override
+  public Builder<String> createStringProperty() {
+    ensureNotFrozen();
+    return new BuilderImpl<>(Codec.STRING, StringArgumentType.greedyString());
   }
 
   @Override

@@ -5,10 +5,10 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import net.arcadiusmc.registry.Registry;
+import net.arcadiusmc.user.UserLookup.LookupEntry;
 import net.arcadiusmc.user.currency.Currency;
 import net.arcadiusmc.user.name.UserNameFactory;
 import net.arcadiusmc.utils.ScoreIntMap;
-import net.arcadiusmc.user.UserLookup.LookupEntry;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -143,6 +143,12 @@ public interface UserService {
    * @return Created builder
    */
   UserProperty.Builder<Component> createTextProperty();
+
+  /**
+   * Creates a string user property builder
+   * @return Created builder
+   */
+  UserProperty.Builder<String> createStringProperty();
 
   /**
    * Creates an enum user property builder

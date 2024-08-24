@@ -83,6 +83,10 @@ public final class Properties {
     return Users.getService().createUuidProperty();
   }
 
+  public static UserProperty.Builder<String> stringProperty() {
+    return Users.getService().createStringProperty();
+  }
+
   public static <T> T getValue(Audience audience, UserProperty<T> property) {
     User user = Audiences.getUser(audience);
     if (user == null) {
