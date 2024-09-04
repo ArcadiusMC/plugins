@@ -20,6 +20,8 @@ import org.slf4j.Logger;
 
 public final class Structures {
 
+  static final String FILE_FORMAT = ".dat";
+
   private static final Logger LOGGER = Loggers.getLogger();
 
   private static final Structures inst = new Structures();
@@ -77,22 +79,23 @@ public final class Structures {
       return;
     }
 
-    PathUtil.findAllFiles(directory, false).forEach(s -> {
-      if (s.startsWith("pools")) {
+    PathUtil.findAllFiles(directory, true).forEach(fpath -> {
+      if (fpath.startsWith("pools") || !fpath.endsWith(FILE_FORMAT)) {
         return;
       }
 
-      Path path = directory.resolve(s + ".dat");
+      Path path = directory.resolve(fpath);
       BlockStructure structure = new BlockStructure();
 
-      LOGGER.debug("loading structure '{}'", s);
+      LOGGER.debug("loading structure '{}'", fpath);
 
       if (!SerializationHelper.readTagFile(path, structure::load)) {
-        LOGGER.warn("Couldn't load '{}'", s);
+        LOGGER.warn("Couldn't load '{}'", fpath);
         return;
       }
 
-      registry.register(s, structure);
+      String key = fpath.substring(0, fpath.length() - FILE_FORMAT.length());
+      registry.register(key, structure);
     });
 
     PathUtil.iterateDirectory(pools, true, true, path -> {
@@ -133,6 +136,6 @@ public final class Structures {
 
   private Path getPath(Holder<BlockStructure> holder) {
     String strPath = holder.getKey();
-    return directory.resolve(strPath + ".dat");
+    return directory.resolve(strPath + FILE_FORMAT);
   }
 }
