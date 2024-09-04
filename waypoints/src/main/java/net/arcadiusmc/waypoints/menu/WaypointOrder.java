@@ -29,7 +29,7 @@ public enum WaypointOrder implements Comparator<Waypoint> {
 
       if (i1 == i2 && i1 == null) {
         return 0;
-      } if (i1 == null) {
+      } else if (i1 == null) {
         return 1;
       } else if (i2 == null) {
         return -1;
