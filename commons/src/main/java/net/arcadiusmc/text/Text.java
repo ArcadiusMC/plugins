@@ -684,6 +684,38 @@ public final class Text {
         .decorate(TextDecoration.STRIKETHROUGH);
   }
 
+  public static String timer(long millis) {
+    long minutes      = (millis / 60000);
+    long seconds      = (millis /  1000) %  60;
+    long milliseconds = (millis /    10) % 100;
+
+    StringBuilder builder = new StringBuilder();
+    if (minutes >= 60) {
+      long hours = minutes / 60;
+      minutes %= 60;
+
+      appendPadded(builder, hours);
+      builder.append(':');
+    }
+
+    builder.append(minutes)
+        .append(':')
+        .append(seconds)
+        .append(':')
+        .append(milliseconds);
+
+    return builder.toString();
+  }
+
+  private static void appendPadded(StringBuilder builder, long v) {
+    String str = String.valueOf(v);
+    if (str.length() < 2) {
+      builder.append('0');
+    }
+
+    builder.append(str);
+  }
+
   /* ----------------------------- FORMATTERS ------------------------------ */
 
   public static ViewerAwareMessage vformat(String format, Object... args) {
