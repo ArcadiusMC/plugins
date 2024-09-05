@@ -235,11 +235,7 @@ public class RhinoScript implements Script {
 
   @Override
   public Context context() {
-    Context ctx = Context.getCurrentContext();
-
-    if (ctx == null) {
-       ctx = Context.enter();
-    }
+    Context ctx = Context.enter();
 
     ctx.setLanguageVersion(VERSION_ES6);
     ctx.setOptimizationLevel(useClassGen ? 9 : -1);
