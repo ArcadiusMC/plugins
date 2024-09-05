@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import lombok.Getter;
 import net.arcadiusmc.Worlds;
 import net.arcadiusmc.scripts.builtin.PluginScriptRuntime;
@@ -96,6 +97,7 @@ public class ScriptManager implements ScriptService {
     autoImportedClasses.add(TextColor.class);
     autoImportedClasses.add(ItemStacks.class);
     autoImportedClasses.add(Worlds.class);
+    autoImportedClasses.add(UUID.class);
   }
 
   public TopLevel getTopLevelScope(Context ctx) {
