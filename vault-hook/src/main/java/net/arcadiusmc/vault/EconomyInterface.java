@@ -119,7 +119,7 @@ public class EconomyInterface extends AbstractEconomy {
           if (currentBalance < amount) {
             return new EconomyResponse(
                 amount, currentBalance, ResponseType.FAILURE,
-                "Cannot afford " + format(amount) + " Rhines"
+                "Cannot afford " + format(amount) + " " + currencyNamePlural()
             );
           }
 
