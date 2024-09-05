@@ -57,8 +57,13 @@ public @UtilityClass class Particles {
     }
   }
 
-  static void line(World w, Vector3d start, Vector3d end, ParticleBuilder builder) {
+  public static void line(World w, Vector3d start, Vector3d end, ParticleBuilder builder) {
     line(start, end, 0.5, w, builder);
+  }
+
+  public static void line(World w, Vector3d start, Vector3d end, Color color) {
+    ParticleBuilder builder = Particle.DUST.builder().color(color, 1.5f);
+    line(w, start, end, builder);
   }
 
   public static void drawBounds(World w, AbstractBounds3i bounds, Color color) {
