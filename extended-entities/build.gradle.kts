@@ -1,5 +1,5 @@
 plugins {
-  java
+  `java-library`
   id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
@@ -12,7 +12,7 @@ repositories {
 dependencies {
   compileOnly(project(":commons"))
   implementation(project(":class-loader-tools"))
-  compileOnly(ashley)
+  api(ashley)
 }
 
 pluginYml {
