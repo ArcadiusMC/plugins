@@ -132,4 +132,18 @@ public interface ItemList extends List<ItemStack> {
   default ItemStack[] toItemArray() {
     return toArray(ItemStack[]::new);
   }
+
+  default int countMatching(ItemStack item) {
+    int r = 0;
+
+    for (ItemStack itemStack : this) {
+      if (!item.isSimilar(itemStack)) {
+        continue;
+      }
+
+      r += itemStack.getAmount();
+    }
+
+    return r;
+  }
 }
