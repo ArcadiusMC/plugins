@@ -40,6 +40,8 @@ include("structures")
 include("kingmaker")
 include("merchants")
 include("voicechat-hook")
+include("cosmetics")
+include("bank")
 
 include("mail")
 include("mail-impl")

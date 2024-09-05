@@ -1,0 +1,144 @@
+
+#
+# Specifies a list of variations the vault can have.
+#
+# Each variation can be named whatever. Each item under the variation is the name of
+# of a loot table that variation will use.
+#
+# Default: No variations
+#
+variations:
+  regular:
+    $default-table: "minecraft:stronghold"
+
+#
+# Name of the world the vault is located in
+#
+# Default: void
+#
+world-name: void
+
+#
+# Amount of time the 'ending' state will take.
+#
+# The ending state is the point in the run where the player is given a specific
+# amount of time to exit the vault before all their gains are removed from them.
+#
+# Set to 0 or less to disable ending time all together. If disabled, the player
+# is removed from the vault and allowed to keep all their winnings (Old FTC
+# vault style)
+#
+# Default: 5s (5 seconds)
+#
+ending-duration: 5s
+
+#
+# The bounding box of the vault room
+#
+# Used to kill all dropped items and coin piles inside.
+#
+# Default: Nil (Room with a min and max of 0)
+#
+vault-room:
+  min:
+    x: 0
+    y: 0
+    z: 0
+  max:
+    x: 0
+    y: 0
+    z: 0
+
+#
+# Specifies a list of chest groups, each with a set loot table id
+# that references an entry in the above variation.
+#
+# Default: [] (No chest groups)
+#
+chests:
+  #
+  # 'loot-table':
+  #   Sets the loot table used by the group, this can either be a loot table
+  #   resource key (eg: "minecraft:loot_table") or the name of a loot table in
+  #   the variation
+  #
+  # 'positions':
+  #   List of X, Y, Z positions, and directions that set where chests are placed
+  #   and what direction it's looking in.
+  #
+  - loot-table: $default-table
+    positions:
+      - {x: 0, y: 0, z: 0, facing: west}
+      - {x: 0, y: 0, z: 0, facing: west}
+
+  - loot-table: "minecraft:some_loot_table"
+    positions:
+      - {x: 0, y: 0, z: 0, facing: north}
+      - {x: 0, y: 0, z: 0, facing: north}
+      - {x: 0, y: 0, z: 0, facing: north}
+      - {x: 0, y: 0, z: 0, facing: north}
+      - {x: 0, y: 0, z: 0, facing: north}
+      - {x: 0, y: 0, z: 0, facing: north}
+      - {x: 0, y: 0, z: 0, facing: north}
+      - {x: 0, y: 0, z: 0, facing: north}
+      - {x: 0, y: 0, z: 0, facing: north}
+
+#
+# List of coin spawn positions
+#
+# Default: [] (No coins spawns)
+#
+coins:
+  - { x: 0, y: 0, z: 0 }
+  - { x: 0, y: 0, z: 0 }
+  - { x: 0, y: 0, z: 0 }
+  - { x: 0, y: 0, z: 0 }
+  - { x: 0, y: 0, z: 0 }
+  - { x: 0, y: 0, z: 0 }
+  - { x: 0, y: 0, z: 0 }
+  - { x: 0, y: 0, z: 0 }
+
+#
+# Minimum value of the coins the vault can spawn
+#
+# Default: 10
+#
+min-coin-value: 10
+
+#
+# Maximum value of the coins the vault can spawn
+#
+# Default: 1000
+#
+max-coin-value: 1000
+
+#
+# The position the player will be teleported to when they exit the vault
+#
+# Default: Null position, player won't be teleported
+#
+exit-position:
+  x: 0
+  y: 0
+  z: 0
+  yaw: 0
+  pitch: 0
+
+#
+# The position the player will be teleported to when they enter the vault
+#
+# Default: Null position, player won't be teleported
+#
+enter-position:
+  x: 0
+  y: 0
+  z: 0
+  yaw: 0
+  pitch: 0
+
+#
+# Amount of time players are given for vault runs
+#
+# Default: 1m
+#
+run-time: "1m"

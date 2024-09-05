@@ -1,0 +1,29 @@
+_styles:
+  normal: gray
+  err: red
+
+bankruns:
+  kicked:           "&c&lTimes up! &7Kicked from the vault before you could leave.\n&cAll picked up coins and items are lost."
+  completed:        "&a&lTimes up! &7Made it out of the vault with &6${coinEarnings}&r of coins."
+  kickout.title:    "&c&l${secondsLeft}"
+  kickout.subtitle: "&6Until total loss of gains."
+
+cmd.bankruns:
+  _style: $normal
+
+  error:
+    _style: $err
+    alreadyInVault: "${player} is already doing a bank run."
+    notInVault:     "${player} is not in any bank run."
+    unknownWorld:   "Cannot make ${player} enter vault! ${vault} has unknown world '${worldName}'"
+
+  debug:            "Set &edebug.${debugName}&r to &6${state}&r."
+  debug.toggle:     "Set bank plugin debug mode to &e${state}&r."
+
+  list.header:      "${border:20} &eCurrent bank runs &r${border:20}"
+  list.format:      "• &e${player}&r: &6${vault}&r."
+  list.footer:      "${border:66}"
+  enter:            "Made &e${player}&r start a &6${vault}&r bank run."
+  kick:             "Kicked &e${player}&r from their bank run."
+  finish:           "Made &e${player}&r's bank run finish successfully."
+  reload:           "Reloaded bank vaults."
