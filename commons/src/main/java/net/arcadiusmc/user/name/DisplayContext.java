@@ -8,7 +8,9 @@ import net.arcadiusmc.user.Users;
 import net.arcadiusmc.user.NameRenderFlags;
 import net.arcadiusmc.user.UserProperty;
 import net.arcadiusmc.utils.Audiences;
+import net.forthecrown.grenadier.CommandSource;
 import net.kyori.adventure.audience.Audience;
+import org.bukkit.permissions.Permissible;
 import org.bukkit.permissions.Permission;
 
 public record DisplayContext(
@@ -52,9 +54,12 @@ public record DisplayContext(
   }
 
   public boolean viewerHasPermission(String permission) {
-    return viewerUser()
-        .map(user -> user.hasPermission(permission))
-        .orElse(false);
+    return switch (viewer) {
+      case Permissible perm -> perm.hasPermission(permission);
+      case User user -> user.hasPermission(permission);
+      case CommandSource source -> source.hasPermission(permission);
+      case null, default -> false;
+    };
   }
 
   public boolean viewerHasPermission(Permission permission) {
