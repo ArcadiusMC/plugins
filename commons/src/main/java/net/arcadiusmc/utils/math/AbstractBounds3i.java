@@ -334,6 +334,12 @@ public abstract class AbstractBounds3i<T extends AbstractBounds3i<T>> {
     return new int[]{minX(), minY(), minZ(), maxX(), maxY(), maxZ()};
   }
 
+  public void joml_getClosestPosition(org.joml.Vector3d pos, org.joml.Vector3d out) {
+    out.x = clamp(pos.x, minX, maxX);
+    out.y = clamp(pos.y, minY, maxY);
+    out.z = clamp(pos.z, minZ, maxZ);
+  }
+
   public Vector3d getClosestPosition(Vector3d pos) {
     return Vector3d.from(
         clamp(pos.x(), minX, maxX),
