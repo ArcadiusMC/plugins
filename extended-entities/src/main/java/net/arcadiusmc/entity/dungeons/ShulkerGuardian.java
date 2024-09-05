@@ -12,6 +12,7 @@ import com.destroystokyo.paper.ParticleBuilder;
 import java.util.List;
 import java.util.Random;
 import net.arcadiusmc.entity.Entities;
+import net.arcadiusmc.entity.persistence.PersistentTypes;
 import net.arcadiusmc.entity.system.Handle;
 import net.arcadiusmc.entity.system.Transform;
 import net.arcadiusmc.events.Events;
@@ -56,6 +57,8 @@ public class ShulkerGuardian extends IteratingSystem {
 
     this.random = new Random();
     this.listener = new BukkitListener();
+
+    PersistentTypes.registerComponent("shulker_guardian", ShulkerGuardianData.class);
   }
 
   @Override

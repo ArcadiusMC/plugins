@@ -12,9 +12,12 @@ import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import net.arcadiusmc.entity.system.EntityId;
+import net.arcadiusmc.entity.system.Handle;
+import net.arcadiusmc.entity.system.Transform;
 import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.registry.Registries;
 import net.arcadiusmc.registry.Registry;
+import net.arcadiusmc.registry.RegistryIndex;
 import net.arcadiusmc.utils.PluginUtil;
 import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.JomlCodecs;
@@ -32,16 +35,22 @@ public class PersistentTypes {
 
   public static final List<ObjectSerializer<?>> SERIALIZERS;
   public static final Registry<PersistentType> REGISTRY;
+  public static final RegistryIndex<Class, PersistentType> CLASS_LOOKUP;
 
   static {
     SERIALIZERS = new ArrayList<>();
     REGISTRY = Registries.newRegistry();
+
+    CLASS_LOOKUP = new RegistryIndex<>(holder -> holder.getValue().getComponentClass());
+    REGISTRY.setListener(CLASS_LOOKUP);
   }
 
   /* --------------------------- STATIC METHODS --------------------------- */
 
   public static void registerAll() {
-    registerComponent(EntityId.class, ExtraCodecs.STRING_UUID.xmap(EntityId::new, EntityId::getId));
+    registerComponent("id", EntityId.class, ExtraCodecs.STRING_UUID.xmap(EntityId::new, EntityId::getId));
+    registerComponent("bukkit_handle", Handle.class);
+    registerComponent("transform", Transform.class);
 
     registerPrimitive(Boolean.TYPE, Boolean.class,  Codec.BOOL);
 
@@ -63,23 +72,38 @@ public class PersistentTypes {
     registerSerializer(Vector2f.class, JomlCodecs.VEC2F, Vector2f::set);
 
     registerSerializer(World.class, ExtraCodecs.WORLD_CODEC);
-    //registerSerializer(Shape.class, ShapeType.SHAPE_CODEC);
   }
 
-  private static <T extends Component> void registerComponent(Class<T> type, Codec<T> supplier) {
-    String key = type.getName();
+  public static <T extends Component> void registerComponent(String typeName, Class<T> type) {
+    registerComponent(typeName, type, null);
+  }
 
+  public static <T extends Component> void registerComponent(
+      String key,
+      Class<T> type,
+      Codec<T> codec
+  ) {
     if (REGISTRY.contains(key)) {
       throw new IllegalStateException("Type " + key + "already registered");
     }
 
-    PersistentType<T> persistentType = new PersistentType<>(type, supplier);
+    PersistentType<T> persistentType = new PersistentType<>(type, codec);
     REGISTRY.register(key, persistentType);
   }
 
-  public static <T extends Component> Holder<PersistentType<T>> getType(Class<T> type) {
+  public static <T extends Component> void registerComponent(Class<T> type, Codec<T> supplier) {
     String key = type.getName();
-    Optional<Holder<PersistentType<T>>> opt = (Optional) REGISTRY.getHolder(key);
+    registerComponent(key, type, supplier);
+  }
+
+  public static <T extends Component> Holder<PersistentType<T>> getType(Class<T> type) {
+    Optional<Holder<PersistentType<T>>> opt = (Optional) CLASS_LOOKUP.lookup(type);
+    if (opt.isPresent()) {
+      return opt.get();
+    }
+
+    String key = type.getName();
+    opt = (Optional) REGISTRY.getHolder(key);
 
     if (opt.isPresent()) {
       return opt.get();

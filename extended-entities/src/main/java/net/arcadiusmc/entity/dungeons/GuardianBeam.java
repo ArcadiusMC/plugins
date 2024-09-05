@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.entity.persistence.PersistentTypes;
 import net.arcadiusmc.entity.system.Transform;
 import net.arcadiusmc.utils.VanillaAccess;
 import org.bukkit.Color;
@@ -47,6 +48,8 @@ public class GuardianBeam extends IteratingSystem {
 
   public GuardianBeam() {
     super(Family.all(GuardianBeamData.class, Transform.class).get());
+
+    PersistentTypes.registerComponent("guardian_beam", GuardianBeamData.class);
   }
 
   @Override
