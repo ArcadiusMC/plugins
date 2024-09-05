@@ -1,6 +1,7 @@
 package net.arcadiusmc.core.listeners;
 
 import net.arcadiusmc.core.Coinpile;
+import net.arcadiusmc.events.CoinpileCollectEvent;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
@@ -34,8 +35,22 @@ public class CoinpileListener implements Listener {
       return;
     }
 
+    event.setCancelled(false);
+
     Player player = event.getPlayer();
     User user = Users.get(player);
+
+    CoinpileCollectEvent collectEvent = new CoinpileCollectEvent(
+        player,
+        entity,
+        entity.getPassenger(),
+        coinWorth
+    );
+    collectEvent.callEvent();
+
+    if (collectEvent.isCancelled() || collectEvent.getCoinValue() < 1) {
+      return;
+    }
 
     user.addBalance(coinWorth);
     user.playSound(SOUND);
@@ -51,6 +66,5 @@ public class CoinpileListener implements Listener {
     }
 
     entity.remove();
-    event.setCancelled(false);
   }
 }
