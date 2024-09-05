@@ -359,7 +359,7 @@ public final class PathUtil {
   public static String getFileKey(Path directory, Path file) {
     String fileName = directory.relativize(file).toString();
 
-    // Cut off '.json' extension
+    // Cut off any '.' extension
     int extensionIndex = fileName.indexOf('.');
     if (extensionIndex != -1) {
       fileName = fileName.substring(0, extensionIndex);
