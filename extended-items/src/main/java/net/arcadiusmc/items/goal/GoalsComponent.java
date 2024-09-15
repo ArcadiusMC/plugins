@@ -116,6 +116,10 @@ public class GoalsComponent extends ItemComponent implements CallbackComponent, 
   }
 
   private void checkForDonatorGoal(Player player) {
+    if (!player.hasPermission(GoalKey.DONATOR.getPredicate())) {
+      return;
+    }
+
     triggerGoal(GoalKey.DONATOR, 1f, player);
   }
 
