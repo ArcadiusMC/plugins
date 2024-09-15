@@ -10,7 +10,9 @@ import net.arcadiusmc.items.goal.GoalKey;
 import net.arcadiusmc.items.goal.ItemGoals;
 import net.arcadiusmc.items.lore.LoreElement;
 import net.arcadiusmc.items.upgrade.AddEnchantMod;
+import net.arcadiusmc.items.upgrade.ItemTypeMod;
 import net.arcadiusmc.items.upgrade.ItemUpgrades;
+import net.arcadiusmc.items.upgrade.ModelDataMod;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.kyori.adventure.text.Component;
@@ -32,11 +34,16 @@ public class SpadeItem implements ItemType {
       .level(1, level -> {
         level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 1));
         level.upgrade(new AddEnchantMod(ArcadiusEnchantments.SOULBOUND, 1));
+
+        level.upgrade(new ModelDataMod(10040001));
       })
 
       .level(2, level -> {
         level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 2));
         level.upgrade(new AddEnchantMod(ArcadiusEnchantments.PIRATES_LUCK, 1));
+
+        level.upgrade(new ItemTypeMod(Material.STONE_SHOVEL));
+        level.upgrade(new ModelDataMod(10040002));
       })
 
       .level(3, level -> {
@@ -49,7 +56,8 @@ public class SpadeItem implements ItemType {
       })
 
       .level(5, level -> {
-
+        level.upgrade(new ItemTypeMod(Material.IRON_SHOVEL));
+        level.upgrade(new ModelDataMod(10040003));
       })
 
       .level(6, level -> {
@@ -58,7 +66,8 @@ public class SpadeItem implements ItemType {
       })
 
       .level(7, level -> {
-
+        level.upgrade(new ItemTypeMod(Material.DIAMOND_SHOVEL));
+        level.upgrade(new ModelDataMod(10040004));
       })
 
       .level(8, level -> {
@@ -67,7 +76,8 @@ public class SpadeItem implements ItemType {
       })
 
       .level(9, level -> {
-
+        level.upgrade(new ItemTypeMod(Material.NETHERITE_SHOVEL));
+        level.upgrade(new ModelDataMod(10040005));
       })
 
       .level(10, level -> {
