@@ -50,7 +50,7 @@ public class BattleAxe implements ItemType {
         level.upgrade(new AddEnchantMod(ArcadiusEnchantments.CUTTING_MASTERY, 3));
       })
       .level(7, level -> {
-        level.upgrade(new ItemTypeMod(Material.DIAMOND_SHOVEL));
+        level.upgrade(new ItemTypeMod(Material.DIAMOND_AXE));
         level.upgrade(new ModelDataMod(10050004));
       })
       .level(8, level -> {
@@ -58,7 +58,7 @@ public class BattleAxe implements ItemType {
         level.upgrade(new AddEnchantMod(ArcadiusEnchantments.CUTTING_MASTERY, 4));
       })
       .level(9, level -> {
-        level.upgrade(new ItemTypeMod(Material.NETHERITE_SHOVEL));
+        level.upgrade(new ItemTypeMod(Material.NETHERITE_AXE));
         level.upgrade(new ModelDataMod(10050005));
       })
       .level(10, level -> {
