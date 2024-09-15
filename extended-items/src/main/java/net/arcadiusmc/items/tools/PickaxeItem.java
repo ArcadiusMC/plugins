@@ -29,17 +29,17 @@ public class PickaxeItem implements ItemType {
       .level(1, level -> {
         level.upgrade(new AddEnchantMod(ArcadiusEnchantments.SOULBOUND, 1));
         level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 1));
-        level.upgrade(new ModelDataMod(10060000));
+        level.upgrade(new ModelDataMod(10060001));
       })
       .level(2, level -> {
         level.upgrade(new AddEnchantMod(ArcadiusEnchantments.IMPERIAL_DUPING, 1));
         level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 2));
         level.upgrade(new ItemTypeMod(Material.STONE_PICKAXE));
-        level.upgrade(new ModelDataMod(10060001));
+        level.upgrade(new ModelDataMod(10060002));
       })
       .level(3, level -> {
         level.upgrade(new ItemTypeMod(Material.IRON_PICKAXE));
-        level.upgrade(new ModelDataMod(10060002));
+        level.upgrade(new ModelDataMod(10060003));
       })
       .level(4, level -> {
         level.upgrade(new AddEnchantMod(ArcadiusEnchantments.IMPERIAL_DUPING, 2));
@@ -47,7 +47,7 @@ public class PickaxeItem implements ItemType {
       })
       .level(5, level -> {
         level.upgrade(new ItemTypeMod(Material.DIAMOND_PICKAXE));
-        level.upgrade(new ModelDataMod(10060003));
+        level.upgrade(new ModelDataMod(10060004));
       })
       .level(6, level -> {
         level.upgrade(new AddEnchantMod(ArcadiusEnchantments.IMPERIAL_DUPING, 3));
@@ -66,7 +66,7 @@ public class PickaxeItem implements ItemType {
       .level(10, level -> {
         level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 7));
         level.upgrade(new ItemTypeMod(Material.NETHERITE_PICKAXE));
-        level.upgrade(new ModelDataMod(10060004));
+        level.upgrade(new ModelDataMod(10060005));
       })
       .build();
 
