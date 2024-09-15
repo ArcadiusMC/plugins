@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import net.arcadiusmc.items.CallbackComponent;
 import net.arcadiusmc.items.ItemComponent;
 import net.arcadiusmc.items.Level;
+import net.arcadiusmc.items.LevelUpListener;
 import net.arcadiusmc.items.goal.ItemGoalsImpl.LevelGoalImpl;
 import net.forthecrown.nbt.BinaryTags;
 import net.forthecrown.nbt.CompoundTag;
@@ -14,7 +15,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
-public class GoalsComponent extends ItemComponent implements CallbackComponent {
+public class GoalsComponent extends ItemComponent implements CallbackComponent, LevelUpListener {
 
   private final Object2FloatMap<String> progress = new Object2FloatOpenHashMap<>();
   private final ItemGoalsImpl goals;
@@ -77,7 +78,6 @@ public class GoalsComponent extends ItemComponent implements CallbackComponent {
     }
 
     level.levelUp(player);
-    this.progress.clear();
   }
 
   private Goal findGoal(GoalKey trigger) {
@@ -158,5 +158,10 @@ public class GoalsComponent extends ItemComponent implements CallbackComponent {
 
       progress.put(s, binaryTag.asNumber().floatValue());
     });
+  }
+
+  @Override
+  public void onLevelUp(Player player) {
+    progress.clear();
   }
 }

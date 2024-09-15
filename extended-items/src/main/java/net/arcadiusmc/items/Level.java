@@ -75,5 +75,13 @@ public class Level extends ItemComponent implements LoreElement {
     );
 
     player.playEffect(EntityEffect.TOTEM_RESURRECT);
+
+    for (ItemComponent component : item.getComponents()) {
+      if (!(component instanceof LevelUpListener listener)) {
+        continue;
+      }
+
+      listener.onLevelUp(player);
+    }
   }
 }
