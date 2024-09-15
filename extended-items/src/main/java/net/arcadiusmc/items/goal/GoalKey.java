@@ -16,6 +16,9 @@ public class GoalKey {
   public static final String TYPE_BLOCK_PLACE = "block/place";
   public static final String TYPE_ENTITY_KILL = "entity/kill";
   public static final String TYPE_ENTITY_DAMAGE = "entity/damage";
+  public static final String TYPE_PERMISSION = "permission";
+
+  public static GoalKey DONATOR = valueOf(TYPE_PERMISSION, "arcadius.items.donator");
 
   private final String key;
   private final String type;

@@ -13,6 +13,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
 public class GoalsComponent extends ItemComponent implements CallbackComponent, LevelUpListener {
@@ -112,8 +115,14 @@ public class GoalsComponent extends ItemComponent implements CallbackComponent, 
     return null;
   }
 
+  private void checkForDonatorGoal(Player player) {
+    triggerGoal(GoalKey.DONATOR, 1f, player);
+  }
+
   @Override
   public void onMineBlock(BlockBreakEvent event, EquipmentSlot slot) {
+    checkForDonatorGoal(event.getPlayer());
+
     if (slot != EquipmentSlot.HAND || !hasGoalsOfType(GoalKey.TYPE_BLOCK_BREAK)) {
       return;
     }
@@ -124,6 +133,8 @@ public class GoalsComponent extends ItemComponent implements CallbackComponent, 
 
   @Override
   public void onAttack(Player player, EntityDamageByEntityEvent event, EquipmentSlot slot) {
+    checkForDonatorGoal(player);
+
     if (slot != EquipmentSlot.HAND || !hasGoalsOfType(GoalKey.TYPE_ENTITY_DAMAGE)) {
       return;
     }
@@ -140,6 +151,21 @@ public class GoalsComponent extends ItemComponent implements CallbackComponent, 
 
     GoalKey key = GoalKey.valueOf(GoalKey.TYPE_ENTITY_KILL, event.getEntityType());
     triggerGoal(key, 1f, player);
+  }
+
+  @Override
+  public void onPickup(EntityPickupItemEvent event) {
+    checkForDonatorGoal((Player) event.getEntity());
+  }
+
+  @Override
+  public void onInteractEntity(PlayerInteractEntityEvent event, EquipmentSlot slot) {
+    checkForDonatorGoal(event.getPlayer());
+  }
+
+  @Override
+  public void onInteractBlock(PlayerInteractEvent event, EquipmentSlot slot) {
+    checkForDonatorGoal(event.getPlayer());
   }
 
   @Override
