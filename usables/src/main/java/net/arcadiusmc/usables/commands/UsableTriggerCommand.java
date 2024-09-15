@@ -1,5 +1,7 @@
 package net.arcadiusmc.usables.commands;
 
+import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
+
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
@@ -22,6 +24,7 @@ import net.arcadiusmc.usables.UPermissions;
 import net.arcadiusmc.usables.UsablesPlugin;
 import net.arcadiusmc.usables.trigger.AreaTrigger;
 import net.arcadiusmc.usables.trigger.AreaTrigger.Type;
+import net.arcadiusmc.usables.trigger.TriggerDraw;
 import net.arcadiusmc.usables.trigger.TriggerManager;
 import net.arcadiusmc.utils.math.WorldBounds3i;
 import net.forthecrown.grenadier.CommandSource;
@@ -72,6 +75,14 @@ public class UsableTriggerCommand extends InteractableCommand<AreaTrigger> {
 
   @Override
   protected void createPrefixedUsages(UsageFactory factory) {
+    factory.usage("toggle-rendering")
+        .addInfo("Toggles/disabled nearby triggers being drawn.")
+        .addInfo("Each particle is color coded by type:")
+        .addInfo("- red: exit-type triggers")
+        .addInfo("- green: enter-type triggers")
+        .addInfo("- blue: move-type triggers")
+        .addInfo("- red-green: exit-or-enter-type triggers");
+
     factory.usage("create <name>")
         .addInfo("Defines a new trigger, using your world edit")
         .addInfo("selection as the trigger's area");
@@ -79,24 +90,41 @@ public class UsableTriggerCommand extends InteractableCommand<AreaTrigger> {
 
   @Override
   protected void addPrefixedArguments(LiteralArgumentBuilder<CommandSource> builder) {
-    builder.then(literal("define")
-        .then(argument("name", Arguments.RESOURCE_KEY)
+    builder
+        .then(literal("toggle-rendering")
             .executes(c -> {
-              define(c, false);
-              return 0;
-            })
+              org.bukkit.entity.Player player = c.getSource().asPlayer();
+              TriggerDraw draw = manager.getDraw();
 
-            // Area input given, use that
-            .then(argument("pos1", ArgumentTypes.blockPosition())
-                .then(argument("pos2", ArgumentTypes.blockPosition())
-                    .executes(c -> {
-                      define(c, true);
-                      return 0;
-                    })
+              if (draw.isToggled(player)) {
+                draw.removePlayer(player);
+                player.sendMessage(Component.text("Stopped drawing triggers", NamedTextColor.GRAY));
+              } else {
+                draw.addPlayer(player);
+                player.sendMessage(Component.text("Started drawing triggers", NamedTextColor.YELLOW));
+              }
+
+              return SINGLE_SUCCESS;
+            })
+        )
+
+        .then(literal("define")
+            .then(argument("name", Arguments.RESOURCE_KEY)
+                .executes(c -> {
+                  define(c, false);
+                  return 0;
+                })
+                // Area input given, use that
+                .then(argument("pos1", ArgumentTypes.blockPosition())
+                    .then(argument("pos2", ArgumentTypes.blockPosition())
+                        .executes(c -> {
+                          define(c, true);
+                          return 0;
+                        })
+                    )
                 )
             )
-        )
-    );
+        );
   }
 
   private void define(CommandContext<CommandSource> c, boolean boundsSet)

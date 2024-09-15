@@ -27,12 +27,19 @@ public class TriggerManager {
 
   @Getter
   private final CollisionSystem<Player, AreaTrigger> collisionSystem;
+
+  @Getter
   private final WorldChunkMap<AreaTrigger> chunkMap;
+
+  @Getter
+  private final TriggerDraw draw;
 
   public TriggerManager(Path file) {
     this.chunkMap = new WorldChunkMap<>();
     this.collisionSystem = CollisionSystems.createSystem(chunkMap, new TriggerCollisions());
     this.file = file;
+
+    this.draw = new TriggerDraw(this);
   }
 
   public void clear() {
