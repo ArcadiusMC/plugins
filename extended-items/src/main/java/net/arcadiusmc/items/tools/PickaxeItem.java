@@ -94,6 +94,7 @@ public class PickaxeItem implements ItemType {
       .level(6, level -> {
         level.add(Goal.blocksBroken(Material.CALCITE, 2000));
         level.add(Goal.blocksBroken(Material.DEEPSLATE, 2000));
+        level.add(Goal.DONATOR);
       })
       .level(7, level -> {
         level.add(Goal.blocksBroken(Material.TUFF, 1000));

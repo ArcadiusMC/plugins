@@ -119,7 +119,8 @@ public class SpadeItem implements ItemType {
             .add(Goal.blocksBroken(Material.SOUL_SAND, 1000))
             .add(pickupGoal(125, 1))
             .add(pickupGoal(25, 10))
-            .add(pickupGoal(2, 100));
+            .add(pickupGoal(2, 100))
+            .add(Goal.DONATOR);
       })
 
       .level(7, level -> {
