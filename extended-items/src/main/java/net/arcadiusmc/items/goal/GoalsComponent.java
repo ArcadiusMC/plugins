@@ -189,5 +189,6 @@ public class GoalsComponent extends ItemComponent implements CallbackComponent, 
   @Override
   public void onLevelUp(Player player) {
     progress.clear();
+    checkForDonatorGoal(player);
   }
 }
