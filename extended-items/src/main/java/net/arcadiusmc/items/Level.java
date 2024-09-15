@@ -6,9 +6,12 @@ import net.arcadiusmc.items.lore.LoreElement;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.TextWriter;
+import net.arcadiusmc.utils.Tasks;
 import net.forthecrown.nbt.CompoundTag;
 import net.kyori.adventure.text.Component;
-import org.bukkit.EntityEffect;
+import org.bukkit.Location;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
 @Getter @Setter
@@ -74,7 +77,7 @@ public class Level extends ItemComponent implements LoreElement {
             .create(player)
     );
 
-    player.playEffect(EntityEffect.TOTEM_RESURRECT);
+    playLevelUpEffect(player.getLocation());
 
     for (ItemComponent component : item.getComponents()) {
       if (!(component instanceof LevelUpListener listener)) {
@@ -83,5 +86,21 @@ public class Level extends ItemComponent implements LoreElement {
 
       listener.onLevelUp(player);
     }
+  }
+
+  static void playLevelUpEffect(Location loc) {
+    double x = loc.getX();
+    double y = loc.getY() + 1;
+    double z = loc.getZ();
+
+    for (int i = 0; i < 20; i++) {
+      Tasks.runLater(() -> {
+        for (int i1 = 0; i1 < 2; i1++) {
+          loc.getWorld().spawnParticle(Particle.TOTEM_OF_UNDYING, x, y, z, 5, 0, 0, 0, 0.4);
+        }
+      }, i);
+    }
+
+    loc.getWorld().playSound(loc, Sound.ITEM_TOTEM_USE, 1, 1);
   }
 }
