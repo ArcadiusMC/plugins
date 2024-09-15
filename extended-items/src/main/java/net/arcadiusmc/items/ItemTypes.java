@@ -7,6 +7,7 @@ import static net.arcadiusmc.items.ExtendedItem.TAG_TYPE_KEY;
 import java.util.Optional;
 import java.util.UUID;
 import net.arcadiusmc.items.guns.GunTypes;
+import net.arcadiusmc.items.tools.BattleAxe;
 import net.arcadiusmc.items.tools.PickaxeItem;
 import net.arcadiusmc.items.tools.SpadeItem;
 import net.arcadiusmc.items.wreath.WreathType;
@@ -28,6 +29,7 @@ public final class ItemTypes {
     register("emperors_wreath", new WreathType());
     register("pirates_spade", new SpadeItem());
     register("emperors_pickaxe", new PickaxeItem());
+    register("battle_axe", new BattleAxe());
 
     register("gun/pistol", GunTypes.PISTOL);
     register("gun/shotgun", GunTypes.SHOTGUN);
