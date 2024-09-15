@@ -3,8 +3,6 @@ package net.arcadiusmc.items.tools;
 import net.arcadiusmc.items.ArcadiusEnchantments;
 import net.arcadiusmc.items.ExtendedItem;
 import net.arcadiusmc.items.ItemType;
-import net.arcadiusmc.items.Level;
-import net.arcadiusmc.items.Owner;
 import net.arcadiusmc.items.goal.Goal;
 import net.arcadiusmc.items.goal.GoalKey;
 import net.arcadiusmc.items.goal.ItemGoals;
@@ -34,20 +32,17 @@ public class SpadeItem implements ItemType {
       .level(1, level -> {
         level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 1));
         level.upgrade(new AddEnchantMod(ArcadiusEnchantments.SOULBOUND, 1));
-
         level.upgrade(new ModelDataMod(10040001));
       })
 
       .level(2, level -> {
         level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 2));
         level.upgrade(new AddEnchantMod(ArcadiusEnchantments.PIRATES_LUCK, 1));
-
-        level.upgrade(new ItemTypeMod(Material.STONE_SHOVEL));
-        level.upgrade(new ModelDataMod(10040002));
       })
 
       .level(3, level -> {
-
+        level.upgrade(new ItemTypeMod(Material.STONE_SHOVEL));
+        level.upgrade(new ModelDataMod(10040002));
       })
 
       .level(4, level -> {
@@ -183,22 +178,7 @@ public class SpadeItem implements ItemType {
 
   @Override
   public void addComponents(ExtendedItem item) {
-    Level level = new Level(MAX_LEVEL);
-    Owner owner = new Owner();
-
-    item.addComponent(level);
-    item.addComponent(owner);
-    item.addComponent(UPGRADES.createComponent());
-    item.addComponent(GOALS.createComponent());
-
-    //item.addLore(EnchantsLoreElement.ENCHANTS);
-    item.addLore(LoreElement.SINGLE_EMPTY_LINE);
-    item.addLore(level);
-    item.addLore(GOALS.createGoalText());
-    item.addLore(UPGRADES.createPreviewElement());
-    item.addLore(LoreElement.BORDER);
-    item.addLore(CraftedForLore.ELEMENT);
-    item.addLore(UPGRADES.createStatusElement());
+    ToolItem.configure(item, MAX_LEVEL, UPGRADES, GOALS);
   }
 
   private static Goal pickupGoal(int goal, int multiplier) {

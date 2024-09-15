@@ -3,8 +3,6 @@ package net.arcadiusmc.items.tools;
 import net.arcadiusmc.items.ArcadiusEnchantments;
 import net.arcadiusmc.items.ExtendedItem;
 import net.arcadiusmc.items.ItemType;
-import net.arcadiusmc.items.Level;
-import net.arcadiusmc.items.Owner;
 import net.arcadiusmc.items.goal.Goal;
 import net.arcadiusmc.items.goal.ItemGoals;
 import net.arcadiusmc.items.lore.LoreElement;
@@ -34,39 +32,37 @@ public class PickaxeItem implements ItemType {
       .level(2, level -> {
         level.upgrade(new AddEnchantMod(ArcadiusEnchantments.IMPERIAL_DUPING, 1));
         level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 2));
-        level.upgrade(new ItemTypeMod(Material.STONE_PICKAXE));
-        level.upgrade(new ModelDataMod(10060002));
       })
       .level(3, level -> {
-        level.upgrade(new ItemTypeMod(Material.IRON_PICKAXE));
-        level.upgrade(new ModelDataMod(10060003));
+        level.upgrade(new ItemTypeMod(Material.STONE_PICKAXE));
+        level.upgrade(new ModelDataMod(10060002));
       })
       .level(4, level -> {
         level.upgrade(new AddEnchantMod(ArcadiusEnchantments.IMPERIAL_DUPING, 2));
         level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 3));
       })
       .level(5, level -> {
-        level.upgrade(new ItemTypeMod(Material.DIAMOND_PICKAXE));
-        level.upgrade(new ModelDataMod(10060004));
+        level.upgrade(new ItemTypeMod(Material.IRON_PICKAXE));
+        level.upgrade(new ModelDataMod(10060003));
       })
       .level(6, level -> {
         level.upgrade(new AddEnchantMod(ArcadiusEnchantments.IMPERIAL_DUPING, 3));
         level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 4));
       })
       .level(7, level -> {
-
+        level.upgrade(new ItemTypeMod(Material.DIAMOND_PICKAXE));
+        level.upgrade(new ModelDataMod(10060004));
       })
       .level(8, level -> {
         level.upgrade(new AddEnchantMod(ArcadiusEnchantments.IMPERIAL_DUPING, 4));
         level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 5));
       })
       .level(9, level -> {
-        level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 6));
-      })
-      .level(10, level -> {
-        level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 7));
         level.upgrade(new ItemTypeMod(Material.NETHERITE_PICKAXE));
         level.upgrade(new ModelDataMod(10060005));
+      })
+      .level(10, level -> {
+        level.upgrade(new AddEnchantMod(Enchantment.EFFICIENCY, 6));
       })
       .build();
 
@@ -126,19 +122,6 @@ public class PickaxeItem implements ItemType {
 
   @Override
   public void addComponents(ExtendedItem item) {
-    Level level = new Level(MAX_LEVEL);
-
-    item.addComponent(level);
-    item.addComponent(new Owner());
-    item.addComponent(UPGRADES.createComponent());
-    item.addComponent(GOALS.createComponent());
-
-    item.addLore(LoreElement.SINGLE_EMPTY_LINE);
-    item.addLore(level);
-    item.addLore(GOALS.createGoalText());
-    item.addLore(UPGRADES.createPreviewElement());
-    item.addLore(LoreElement.BORDER);
-    item.addLore(CraftedForLore.ELEMENT);
-    item.addLore(UPGRADES.createStatusElement());
+    ToolItem.configure(item, MAX_LEVEL, UPGRADES, GOALS);
   }
 }
