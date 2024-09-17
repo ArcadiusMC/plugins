@@ -2,31 +2,44 @@ package net.arcadiusmc.waypoints.event;
 
 import lombok.Getter;
 import net.arcadiusmc.user.User;
-import net.arcadiusmc.waypoints.visit.WaypointVisit;
+import net.arcadiusmc.user.event.UserEvent;
+import net.arcadiusmc.waypoints.Waypoint;
 import org.bukkit.Location;
-import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
 @Getter
-public class WaypointVisitEvent extends Event {
+public class WaypointVisitEvent extends UserEvent {
 
   @Getter
   private static final HandlerList handlerList = new HandlerList();
 
-  private final User user;
-  private final Location teleportDestination;
+  private final Location destination;
+  private final Location currentLocation;
 
   private final EventType type;
+  private final Waypoint waypoint;
 
-  public WaypointVisitEvent(User user, Location teleportDestination, EventType type) {
-    this.user = user;
-    this.teleportDestination = teleportDestination;
+  public WaypointVisitEvent(
+      User user,
+      Location destination,
+      Location currentLocation,
+      EventType type,
+      Waypoint waypoint
+  ) {
+    super(user);
+    this.destination = destination;
+    this.currentLocation = currentLocation;
     this.type = type;
+    this.waypoint = waypoint;
   }
 
-  public WaypointVisitEvent(WaypointVisit visit, EventType type) {
-    this(visit.getUser(), visit.getTeleportLocation(), type);
+  public Location getDestination() {
+    return destination.clone();
+  }
+
+  public Location getCurrentLocation() {
+    return currentLocation.clone();
   }
 
   @Override
@@ -35,10 +48,10 @@ public class WaypointVisitEvent extends Event {
   }
 
   public enum EventType {
-    ON_INSTANT_TELEPORT,
-    ON_HULK_BEGIN,
-    ON_TICK_UP,
-    ON_TICK_DOWN,
-    ON_LAND;
+    INSTANT_TELEPORT,
+    HULK_BEGIN,
+    TICK_UP,
+    TICK_DOWN,
+    LAND;
   }
 }

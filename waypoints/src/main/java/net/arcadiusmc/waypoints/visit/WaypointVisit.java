@@ -281,7 +281,14 @@ public class WaypointVisit implements Runnable {
       user.getPlayer().setVelocity(new Vector(0, 20, 0));
       user.playSound(Sound.ENTITY_ENDER_DRAGON_SHOOT, 1, 1.2f);
 
-      new WaypointVisitEvent(WaypointVisit.this, EventType.ON_HULK_BEGIN).callEvent();
+      WaypointVisitEvent event = new WaypointVisitEvent(
+          user,
+          teleportLocation,
+          user.getLocation(),
+          EventType.HULK_BEGIN,
+          destination
+      );
+      event.callEvent();
 
       // Run the goingUp thing, so we can run the cosmetic effects while
       // they're ascending and then teleport them after they've reached
@@ -292,17 +299,22 @@ public class WaypointVisit implements Runnable {
           GAME_TICKS_PER_COSMETIC_TICK
       );
     } else {
+      Location beforeTp = user.getLocation();
+
       Tasks.runLater(() -> {
-        new WaypointVisitEvent(WaypointVisit.this, EventType.ON_INSTANT_TELEPORT).callEvent();
+        WaypointVisitEvent event = new WaypointVisitEvent(user,
+            teleportLocation,
+            beforeTp,
+            EventType.INSTANT_TELEPORT,
+            destination
+        );
+
+        event.callEvent();
       }, 2);
 
       if (!cancelTeleport) {
         // Just TP them to pole... boring
-        teleportedEntity.teleport(
-            getTeleportLocation(),
-            EntityState.RETAIN_PASSENGERS
-        );
-
+        teleportedEntity.teleport(getTeleportLocation(), EntityState.RETAIN_PASSENGERS);
         user.playSound(Sound.ENTITY_ENDERMAN_TELEPORT, 1, 1);
       }
 
@@ -340,8 +352,14 @@ public class WaypointVisit implements Runnable {
     public void accept(BukkitTask task) {
       try {
         // If they have travel effect, run it
-        new WaypointVisitEvent(WaypointVisit.this, EventType.ON_TICK_UP)
-            .callEvent();
+        WaypointVisitEvent event = new WaypointVisitEvent(
+            user,
+            teleportLocation,
+            user.getLocation(),
+            EventType.TICK_UP,
+            destination
+        );
+        event.callEvent();
 
         // If we're below the tick limit,
         // stop and move on to fall listener

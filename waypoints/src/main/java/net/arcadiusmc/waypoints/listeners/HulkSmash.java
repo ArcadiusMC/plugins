@@ -92,7 +92,15 @@ public class HulkSmash implements Listener {
     }
 
     try {
-      new WaypointVisitEvent(user, user.getLocation(), EventType.ON_TICK_DOWN).callEvent();
+      WaypointVisitEvent event = new WaypointVisitEvent(
+          user,
+          user.getLocation(),
+          user.getLocation(),
+          EventType.TICK_DOWN,
+          null
+      );
+
+      event.callEvent();
     } catch (Exception e) {
       unregister(true);
     }
@@ -123,7 +131,15 @@ public class HulkSmash implements Listener {
         .offset(1, 1, 1)
         .spawn();
 
-    new WaypointVisitEvent(user, user.getLocation(), EventType.ON_LAND).callEvent();
+    WaypointVisitEvent event = new WaypointVisitEvent(
+        user,
+        user.getLocation(),
+        user.getLocation(),
+        EventType.LAND,
+        null
+    );
+
+    event.callEvent();
   }
 
   @EventHandler(ignoreCancelled = true)
