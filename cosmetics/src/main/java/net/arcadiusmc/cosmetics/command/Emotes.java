@@ -39,7 +39,7 @@ public final class Emotes {
   public static CosmeticType<Emote> createType() {
     CosmeticType<Emote> type = new CosmeticType<>();
     type.setMenuTitle(text("Emotes"));
-    type.setMenuItem(Material.FEATHER);
+    type.setMenuItem(Material.GLOWSTONE_DUST);
     type.setMenuSize(Menus.sizeFromRows(4));
     type.setMenuSlot(Slot.of(3, 2));
     type.setMenuCallbacks(MenuCallbacks.nop());
