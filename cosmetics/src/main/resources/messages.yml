@@ -1,0 +1,69 @@
+cosmetics:
+  _style: gray
+  set:                "Set &e${cosmetic}&r as your &6${type}&r."
+  unset:              "Removed your &e${type}&r."
+
+  purchased:          "Bought &e${cosmetic}&r for &6${value}&r."
+
+  status:
+    notOwned:         "You do not own this cosmetic."
+    active:           "&aThis your current ${type}."
+    price:            "&6Price: ${value}."
+
+  errors:
+    _style: red
+    notOwned:         "You don't own this cosmetic."
+    alreadySet:       "This is already your ${type}."
+    emotesSelf:       "You have emotes disabled.\n&7Use '&e/toggleemotes&r' to enable them."
+    emotesTarget:     "${target} has emotes disabled."
+
+  emotes:
+    _style: reset
+
+    granted:
+      _style: gray
+      jingle:         "You've been given the '&e/jingle&r' command for joining during Christmas!\n&6&lHappy Holidays!"
+      scare:          "You've been given the '&e/scare&r' command for joining during Halloween!"
+
+    smooch:
+      sender:         ":heart: You smooched &e${target}&r! :heart:"
+      target:         ":heart: &e${sender}&r smooched you! :heart:"
+      target.hover:   "Click to return the kiss :heart:"
+      self:           "&eLove yourself!&r ( ^ 3^) ❤"
+      cooldown:       "&cYou kiss too much lol"
+    bonk:
+      sender:         "You bonked &e${target}&r!"
+      target:         "&e${sender}&r bonked you!"
+      target.hover:   "Click to bonk them back!"
+      self:           "&eDon't hurt yourself :heart:"
+      cooldown:       "&cYou bonk too much..."
+    poke:
+      sender:         "You poked &e${target}&r!"
+      target:         "&e${sender}&r poked you!"
+      target.hover:   "Click to poke them back >:)"
+      self:           "&eYou poked yourself... weirdo."
+      cooldown:       "&cYou poke people too much... weirdo"
+    jingle:
+      sender:         "You sent &e${target}&r a sick Christmas beat!"
+      target:         "&e${sender}&r sent you a sick Christmas beat!"
+      target.hover:   "Click to send some jingles back."
+      cooldown:       "You're too jolly"
+    scare:
+      sender:         "You scared &e${target}&r!"
+      target:         "&6&lBoo! &e${sender}&r scared you!"
+      target.hover:   "Click to scare them back!"
+      cooldown:       "You scare people too much"
+    hug:
+      sender:         "You hugged ${target}"
+      target:         "${sender} hugged you."
+      target.hover:   "Click to show them some love too, hug them back!"
+      self:           "It's important to love yourself :heart:"
+      cooldown:       "You're too affectionate :("
+
+    setting:
+      name:           "Emotes"
+      description:    "Toggles being able to use emote commands."
+      on:             "Emotes enabled."
+      off:            "Emotes disabled"
+      toggledesc.on:  "Enable emotes."
+      toggledesc.off: "Disable emotes."

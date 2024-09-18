@@ -1,0 +1,20 @@
+#
+# Price of the death effects (In gems)
+#
+# Default: 2000
+#
+death-effect-price: 2000
+
+#
+# Price of the arrow effects (In gems)
+#
+# Default: 1000
+#
+arrow-effect-price: 1000
+
+#
+# Price of the waypoint travel effects (In gems)
+#
+# Default: 3000
+#
+travel-effect-price: 3000
