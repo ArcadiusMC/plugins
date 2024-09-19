@@ -1,6 +1,9 @@
 package net.arcadiusmc.dungeons;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import net.arcadiusmc.Worlds;
+import net.arcadiusmc.utils.io.PathUtil;
 import net.arcadiusmc.utils.math.Vectors;
 import net.kyori.adventure.util.TriState;
 import org.bukkit.Bukkit;
@@ -27,6 +30,12 @@ public final class DungeonWorld {
 
     if (world != null) {
       removeWorld(world);
+    } else {
+      Path worldFile = Bukkit.getWorldContainer().toPath().resolve(WORLD_NAME);
+
+      if (Files.exists(worldFile)) {
+        PathUtil.safeDelete(worldFile);
+      }
     }
 
     return new WorldCreator(WORLD_NAME)
