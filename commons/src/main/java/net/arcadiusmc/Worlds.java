@@ -8,6 +8,7 @@ import net.arcadiusmc.utils.io.PathUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 
 public final class Worlds {
   private Worlds() {}
@@ -59,6 +60,11 @@ public final class Worlds {
       Loggers.getLogger().warn("Unloading world {} mid-tick, this may be dangerous",
           world.getName()
       );
+    }
+
+    World main = Worlds.overworld();
+    for (Player player : world.getPlayers()) {
+      player.teleport(main.getSpawnLocation());
     }
 
     if (!Bukkit.unloadWorld(world, false)) {
