@@ -14,7 +14,9 @@ import net.arcadiusmc.usables.UsableComponent;
 import net.arcadiusmc.user.UserFlags;
 import net.arcadiusmc.user.Users;
 import net.forthecrown.grenadier.CommandSource;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class TestUserFlag implements Condition {
 
@@ -40,6 +42,11 @@ public class TestUserFlag implements Condition {
   @Override
   public ObjectType<? extends UsableComponent> getType() {
     return TYPE;
+  }
+
+  @Override
+  public @Nullable Component displayInfo() {
+    return Component.text(flag);
   }
 }
 
