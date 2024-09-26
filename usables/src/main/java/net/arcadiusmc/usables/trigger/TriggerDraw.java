@@ -14,6 +14,7 @@ import org.bukkit.scheduler.BukkitTask;
 public class TriggerDraw {
 
   static final int DISTANCE = 30;
+  static final int RENDER_INTERVAL = 3;
   static final double PARTICLE_DIST = 1.5;
 
   private final TriggerManager manager;
@@ -55,7 +56,7 @@ public class TriggerDraw {
       return;
     }
 
-    task = Tasks.runTimer(this::render, 1, 1);
+    task = Tasks.runTimer(this::render, RENDER_INTERVAL, RENDER_INTERVAL);
   }
 
   public void stopDrawing() {
