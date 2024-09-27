@@ -29,6 +29,7 @@ public class Conditions {
     r.register("hand", HandCondition.TYPE);
     r.register("not", NotCondition.TYPE);
     r.register("user_flag_set", TestUserFlag.TYPE);
+    r.register("in_wg_region", InWorldguardRegion.TYPE);
 
     UserService service = Users.getService();
     Registry<Currency> currencies = service.getCurrencies();
