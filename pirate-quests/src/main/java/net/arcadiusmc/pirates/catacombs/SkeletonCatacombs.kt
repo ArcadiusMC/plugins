@@ -34,9 +34,9 @@ const val TIME_BEFORE_RESPAWN_AFTER_DEFEAT = 5L * 60L * 1000L
 
 private val DOOR_PASTE = Vector3i.from(5532, 64, 1786)
 private val OPEN_ORIGIN_MIN = Vector3i.from(5499, 119, 1879)
-private val OPEN_ORIGIN_MAX = Vector3i.from(5512, 133, 1883)
-private val CLOSED_ORIGIN_MIN = Vector3i.from(5499, 119, 1885)
-private val CLOSED_ORIGIN_MAX = Vector3i.from(5512, 133, 1889)
+private val OPEN_ORIGIN_MAX = Vector3i.from(5512, 133, 1884)
+private val CLOSED_ORIGIN_MIN = Vector3i.from(5499, 119, 1886)
+private val CLOSED_ORIGIN_MAX = Vector3i.from(5512, 133, 1891)
 
 private val SPAWNS: List<Vector3d> = listOf(
   Vector3d(5554.5, 63.0, 1736.5),
