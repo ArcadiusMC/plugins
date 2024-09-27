@@ -14,8 +14,8 @@ import org.bukkit.boss.BarColor
 import org.bukkit.boss.BarFlag
 import org.bukkit.boss.BarStyle
 import org.bukkit.boss.BossBar
+import org.bukkit.entity.AbstractSkeleton
 import org.bukkit.entity.Player
-import org.bukkit.entity.Skeleton
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -61,9 +61,10 @@ fun onEnterCatacombRegion(boundingBox: WorldBounds3i, player: Player) {
     currentState.boundingBox = boundingBox
   }
 
-  if (Tasks.isScheduled(currentState.killTask)) {
+  if (currentState.state == CatacombState.AWAITING_DESPAWN) {
     Tasks.cancel(currentState.killTask)
     currentState.killTask = null
+    currentState.state = CatacombState.SPAWNED
   }
 
   if (currentState.state == CatacombState.DEFEATED) {
@@ -131,6 +132,10 @@ private fun spawn(boundingBox: WorldBounds3i, player: Player) {
 
 // Called in the same way as the above onEnter method
 fun onLeaveCatacombRegion(boundingBox: WorldBounds3i, player: Player) {
+  if (currentState.state == CatacombState.INACTIVE) {
+    return
+  }
+
   currentState.bossbar.removePlayer(player)
 
   if (currentState.state == CatacombState.DEFEATED) {
@@ -301,7 +306,7 @@ enum class CatacombState {
 
 class Catacombs {
   val random: Random = Random()
-  val skeletons: MutableList<Skeleton> = ArrayList()
+  val skeletons: MutableList<AbstractSkeleton> = ArrayList()
 
   var state: CatacombState = CatacombState.INACTIVE
   var totalSpawnedHealth: Double = 0.0

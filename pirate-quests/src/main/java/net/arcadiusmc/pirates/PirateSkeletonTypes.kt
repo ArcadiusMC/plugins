@@ -2,6 +2,7 @@ package net.arcadiusmc.pirates
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import net.arcadiusmc.utils.WeightedList
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.*
@@ -9,6 +10,8 @@ import org.bukkit.attribute.Attributable
 import org.bukkit.attribute.Attribute
 import org.bukkit.attribute.AttributeModifier
 import org.bukkit.enchantments.Enchantment
+import org.bukkit.entity.AbstractSkeleton
+import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Skeleton
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
@@ -21,7 +24,8 @@ import java.util.*
 import java.util.function.Consumer
 
 class PirateSkeletonType {
-  var name: String? = null
+  var name: Component? = null
+  var entityType: Class<out AbstractSkeleton> = Skeleton::class.java
 
   var health: Float? = null
   var attackDamage: Float? = null
@@ -53,7 +57,7 @@ private fun createTypes(): WeightedList<PirateSkeletonType> {
   val list = WeightedList<PirateSkeletonType>()
 
   val crew = PirateSkeletonType().apply {
-    name = "Skeleton Crew"
+    name = text("Skeleton Crew", NamedTextColor.YELLOW)
 
     health = 40f
     attackDamage = 20f
@@ -96,7 +100,7 @@ private fun createTypes(): WeightedList<PirateSkeletonType> {
   }
 
   val swabbie = PirateSkeletonType().apply {
-    name = "Swabbie"
+    name = text("Swabbie", NamedTextColor.YELLOW)
 
     health = 20f
     attackDamage = 20f
@@ -171,7 +175,7 @@ fun getRandomSkeletonType(random: Random): PirateSkeletonType {
   return SKELETON_TYPES.get(random)
 }
 
-fun riseFromTheGrave(skeleton: Skeleton) {
+fun riseFromTheGrave(skeleton: LivingEntity) {
   skeleton.isInvulnerable = true
 
   val effect = PotionEffect(
@@ -211,7 +215,7 @@ private fun graveParticles(location: Location) {
     .spawn()
 }
 
-private class GraveRiseTask(val skeleton: Skeleton, val moveSpeed: Double):
+private class GraveRiseTask(val skeleton: LivingEntity, val moveSpeed: Double):
   Consumer<ScheduledTask>
 {
 
@@ -226,12 +230,12 @@ private class GraveRiseTask(val skeleton: Skeleton, val moveSpeed: Double):
   }
 }
 
-fun spawnSkeletonTypeAt(type: PirateSkeletonType, location: Location, random: Random): Skeleton {
+fun spawnSkeletonTypeAt(type: PirateSkeletonType, location: Location, random: Random): AbstractSkeleton {
   val w = location.world
 
-  return w.spawn(location, Skeleton::class.java) {
+  return w.spawn(location, type.entityType) {
     if (type.name != null) {
-      it.customName(text(type.name!!))
+      it.customName(type.name)
     }
 
     it.lootTable = LootTables.EMPTY.lootTable

@@ -23,8 +23,10 @@ import org.bukkit.boss.BarFlag
 import org.bukkit.boss.BarStyle
 import org.bukkit.boss.BossBar
 import org.bukkit.enchantments.Enchantment
+import org.bukkit.entity.AbstractSkeleton
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Skeleton
+import org.bukkit.entity.WitherSkeleton
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -44,7 +46,8 @@ const val CAPTAIN_TAG = "blunderbeard.skeleton_captain"
 const val DEATH_PLAYER_FLAG = "quest.blunderbeard.note-found"
 
 private val CAPTAIN_TYPE = PirateSkeletonType().apply {
-  name = "Captain"
+  name = text("Captain", NamedTextColor.GOLD)
+  entityType = WitherSkeleton::class.java
 
   offhandDropChance = 2f
 
@@ -274,7 +277,7 @@ private fun findHighestYAt(world: World, x: Int, z: Int): Double {
   return y.toDouble()
 }
 
-private fun spawnWithTypeAt(type: PirateSkeletonType, location: Location): Skeleton {
+private fun spawnWithTypeAt(type: PirateSkeletonType, location: Location): AbstractSkeleton {
   val spawned = spawnSkeletonTypeAt(type, location, currentFight.random)
 
   spawned.removeWhenFarAway = false
@@ -433,11 +436,11 @@ enum class CaptainState {
 
 class CaptainFight {
   val players: MutableList<UUID> = ArrayList()
-  val skeletons: MutableList<Skeleton> = ArrayList()
+  val skeletons: MutableList<AbstractSkeleton> = ArrayList()
   val random: Random = Random()
 
   var state: CaptainState = CaptainState.DEAD
-  var bossEntity: Skeleton? = null
+  var bossEntity: AbstractSkeleton? = null
   var worldBorder: WorldBorder? = null
 
   private var internalBossBar: BossBar? = null
