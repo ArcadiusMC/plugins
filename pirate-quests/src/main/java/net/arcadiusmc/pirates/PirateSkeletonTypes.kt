@@ -3,6 +3,7 @@ package net.arcadiusmc.pirates
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import net.arcadiusmc.utils.WeightedList
 import net.kyori.adventure.text.Component.text
+import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.*
 import org.bukkit.attribute.Attributable
 import org.bukkit.attribute.Attribute
@@ -15,6 +16,7 @@ import org.bukkit.inventory.meta.LeatherArmorMeta
 import org.bukkit.loot.LootTables
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
+import org.bukkit.scoreboard.Team
 import java.util.*
 import java.util.function.Consumer
 
@@ -40,6 +42,7 @@ class PirateSkeletonType {
 
 private const val ARMOR_MOD_KEY = "arcadiusmc:armor_boost"
 private const val ARMOR_TOUGHNESS_MOD_KEY = "arcadiusmc:armor_toughness_boost"
+private const val TEAM_NAME = "pirate_skeletons"
 
 const val LEVITATION_POTION_AMPLIFIER = 2
 const val LEVITATION_POTION_DURATION = 1 * 20 // 2 seconds
@@ -256,6 +259,8 @@ fun spawnSkeletonTypeAt(type: PirateSkeletonType, location: Location, random: Ra
     applyAttributeValue(it, Attribute.GENERIC_FOLLOW_RANGE, type.followRange)
 
     it.health = it.getAttribute(Attribute.GENERIC_MAX_HEALTH)!!.value
+
+    getSkeletonTeam().addEntity(it)
   }
 }
 
@@ -282,4 +287,18 @@ private fun getClonedItem(list: List<ItemStack?>?, random: Random): ItemStack? {
   }
 
   return (item ?: return null).clone()
+}
+
+private fun getSkeletonTeam(): Team {
+  val scoreboard = Bukkit.getScoreboardManager().mainScoreboard
+  var team: Team? = scoreboard.getTeam(TEAM_NAME)
+
+  if (team == null) {
+    val nteam = scoreboard.registerNewTeam(TEAM_NAME)
+    nteam.color(NamedTextColor.RED)
+    nteam.setAllowFriendlyFire(false)
+    team = nteam
+  }
+
+  return team
 }
