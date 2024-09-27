@@ -25,7 +25,6 @@ import org.bukkit.boss.BossBar
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.AbstractSkeleton
 import org.bukkit.entity.LivingEntity
-import org.bukkit.entity.Skeleton
 import org.bukkit.entity.WitherSkeleton
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -69,8 +68,8 @@ private val CAPTAIN_TYPE = PirateSkeletonType().apply {
         lore.add(text("of the key to my most prized possession... Do with this what I would"))
         lore.add(text("have and rule over the high seas forever!"))
         lore.add(empty())
-        lore.add(text("The location of the Key is:"))
-        lore.add(text("INSERT KEY LOCATION HERE :)"))
+        lore.add(text("You'll find me stash in a cove at the start"))
+        lore.add(text("of a river in the jungle."))
         lore.add(empty())
         lore.add(text("Signed,"))
         lore.add(text("Blunder Beard"))
@@ -356,7 +355,7 @@ class CaptainListener: Listener {
       return
     }
 
-    entity as Skeleton
+    entity as AbstractSkeleton
 
     val minionCount = getMinionCount()
     if (minionCount <= 0) {
