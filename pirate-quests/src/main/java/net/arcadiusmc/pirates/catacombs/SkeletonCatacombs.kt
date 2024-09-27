@@ -1,5 +1,7 @@
 package net.arcadiusmc.pirates.catacombs
 
+import net.arcadiusmc.Worlds
+import net.arcadiusmc.pirates.copyBlocks
 import net.arcadiusmc.pirates.getRandomSkeletonType
 import net.arcadiusmc.pirates.riseFromTheGrave
 import net.arcadiusmc.pirates.spawnSkeletonTypeAt
@@ -19,8 +21,10 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.EntityDeathEvent
+import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.scheduler.BukkitTask
 import org.joml.Vector3d
+import org.spongepowered.math.vector.Vector3i
 import java.lang.System.currentTimeMillis
 import java.util.*
 
@@ -28,7 +32,13 @@ const val SKELETON_TAG = "blunderbeard.catacomb_guard"
 const val DESPAWN_DELAY = 30L * 20L
 const val TIME_BEFORE_RESPAWN_AFTER_DEFEAT = 5L * 60L * 1000L
 
-private val spawns: List<Vector3d> = listOf(
+private val DOOR_PASTE = Vector3i.from(5532, 64, 1786)
+private val OPEN_ORIGIN_MIN = Vector3i.from(5499, 119, 1879)
+private val OPEN_ORIGIN_MAX = Vector3i.from(5512, 133, 1883)
+private val CLOSED_ORIGIN_MIN = Vector3i.from(5499, 119, 1885)
+private val CLOSED_ORIGIN_MAX = Vector3i.from(5512, 133, 1889)
+
+private val SPAWNS: List<Vector3d> = listOf(
   Vector3d(5554.5, 63.0, 1736.5),
   Vector3d(5557.5, 63.0, 1737.5),
   Vector3d(5541.5, 63.0, 1733.5),
@@ -85,7 +95,7 @@ private fun spawn(boundingBox: WorldBounds3i, player: Player) {
 
   currentState.totalSpawnedHealth = 0.0
 
-  for (spawn in spawns) {
+  for (spawn in SPAWNS) {
     val pitch = currentState.random.nextFloat(-22.5f, 22.5f)
     val yaw = currentState.random.nextFloat(-180f, 180f)
 
@@ -114,6 +124,8 @@ private fun spawn(boundingBox: WorldBounds3i, player: Player) {
   bar.setTitle("Remaining Skeletons (${currentState.skeletons.size})")
   bar.addPlayer(player)
 
+  closeGate()
+
   currentState.state = CatacombState.SPAWNED
 }
 
@@ -136,6 +148,28 @@ fun onLeaveCatacombRegion(boundingBox: WorldBounds3i, player: Player) {
     currentState.killTask = task
     currentState.state = CatacombState.AWAITING_DESPAWN
   }, 1)
+}
+
+private fun closeGate() {
+  val world = currentState.boundingBox?.world ?: return
+
+  copyBlocks(
+    CLOSED_ORIGIN_MIN,
+    CLOSED_ORIGIN_MAX,
+    DOOR_PASTE,
+    world
+  )
+}
+
+private fun openGate() {
+  val world = currentState.boundingBox?.world ?: return
+
+  copyBlocks(
+    OPEN_ORIGIN_MIN,
+    OPEN_ORIGIN_MAX,
+    DOOR_PASTE,
+    world
+  )
 }
 
 private class KillTask(val boundingBox: WorldBounds3i): Runnable {
@@ -199,6 +233,8 @@ class CatacombListener: Listener {
 
       currentState.state = CatacombState.DEFEATED
       currentState.defeatTime = currentTimeMillis()
+
+      openGate()
       return
     }
 
@@ -241,6 +277,18 @@ class CatacombListener: Listener {
 
     val prog = health / maxHealth
     currentState.bossbar.progress = prog
+  }
+
+  @EventHandler
+  fun onPlayerLeave(event: PlayerQuitEvent) {
+    val bb = currentState.boundingBox ?: return
+
+    if (!bb.contains(event.player)) {
+      return
+    }
+
+    val exitPos = Location(Worlds.overworld(), 2834.5, 64.0, 1321.5, -135f, 0f)
+    event.player.teleport(exitPos)
   }
 }
 
