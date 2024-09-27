@@ -8,6 +8,7 @@ import net.arcadiusmc.pirates.spawnSkeletonTypeAt
 import net.arcadiusmc.user.Users
 import net.arcadiusmc.utils.Tasks
 import net.arcadiusmc.utils.math.WorldBounds3i
+import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.Component.empty
 import net.kyori.adventure.text.Component.text
@@ -203,6 +204,7 @@ fun trySpawnSkeletonCaptain(boundingBox: WorldBounds3i) {
   // Spawn boss
   val boss = spawnWithTypeAt(CAPTAIN_TYPE, findSpawnLocation(spawnArea))
   boss.addScoreboardTag(CAPTAIN_TAG)
+  boss.isGlowing = true
 
   currentFight.bossEntity = boss
   currentFight.state = CaptainState.ALIVE
@@ -279,6 +281,8 @@ private fun spawnWithTypeAt(type: PirateSkeletonType, location: Location): Skele
   spawned.isPersistent = true
   spawned.setShouldBurnInDay(false)
 
+  currentFight.skeletons.add(spawned)
+
   riseFromTheGrave(spawned)
   return spawned
 }
@@ -288,6 +292,23 @@ class CaptainListener: Listener {
   @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
   fun onEntityDeath(event: EntityDeathEvent) {
     val entity = event.entity
+
+    currentFight.skeletons.removeIf { it.uniqueId == entity.uniqueId }
+
+    val minionCount = getMinionCount()
+    if (minionCount < 1 && currentFight.bossEntity != null && currentFight.bossEntity!!.isGlowing) {
+      currentFight.bossEntity?.isGlowing = false
+
+      entity.world.playSound(
+        Sound.sound()
+          .type(org.bukkit.Sound.BLOCK_CONDUIT_DEACTIVATE)
+          .build(),
+
+        entity.x,
+        entity.y,
+        entity.z,
+      )
+    }
 
     if (entity != currentFight.bossEntity) {
       return
@@ -317,6 +338,47 @@ class CaptainListener: Listener {
     currentFight.state = CaptainState.DEAD
     currentFight.players.clear()
     currentFight.bossEntity = null
+  }
+
+  @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+  fun onCaptainDamage(event: EntityDamageEvent) {
+    val entity = event.entity
+
+    if (!entity.scoreboardTags.contains(CAPTAIN_TAG)) {
+      return
+    }
+
+    entity as Skeleton
+
+    val minionCount = getMinionCount()
+    if (minionCount <= 0) {
+      return
+    }
+
+    event.isCancelled = true
+
+    Particle.SQUID_INK.builder().apply {
+      location(entity.eyeLocation)
+      count(5)
+      offset(0.1, 0.1, 0.1)
+      extra(0.05)
+      spawn()
+    }
+
+    entity.world.playSound(
+      Sound.sound()
+        .type(org.bukkit.Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR)
+        .volume(0.3f)
+        .pitch(1.2f)
+        .build(),
+      entity.x,
+      entity.y,
+      entity.z,
+    )
+  }
+
+  private fun getMinionCount(): Int {
+    return currentFight.skeletons.count { !it.isDead && !it.scoreboardTags.contains(CAPTAIN_TAG) }
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -371,6 +433,7 @@ enum class CaptainState {
 
 class CaptainFight {
   val players: MutableList<UUID> = ArrayList()
+  val skeletons: MutableList<Skeleton> = ArrayList()
   val random: Random = Random()
 
   var state: CaptainState = CaptainState.DEAD
