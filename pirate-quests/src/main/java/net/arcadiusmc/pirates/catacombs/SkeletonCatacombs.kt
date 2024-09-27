@@ -68,6 +68,13 @@ fun onEnterCatacombRegion(boundingBox: WorldBounds3i, player: Player) {
   }
 
   if (currentState.state == CatacombState.DEFEATED) {
+    val players = boundingBox.players
+
+    if (!players.isEmpty()) {
+      currentState.bossbar.addPlayer(player)
+      return
+    }
+
     val time = System.currentTimeMillis()
     val nextAllowedSpawn = currentState.defeatTime + TIME_BEFORE_RESPAWN_AFTER_DEFEAT
 
