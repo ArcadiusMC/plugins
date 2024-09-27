@@ -254,6 +254,8 @@ fun spawnSkeletonTypeAt(type: PirateSkeletonType, location: Location, random: Ra
     applyAttributeValue(it, Attribute.GENERIC_MOVEMENT_SPEED, type.moveSpeed)
     applyAttributeValue(it, Attribute.GENERIC_ATTACK_DAMAGE, type.attackDamage)
     applyAttributeValue(it, Attribute.GENERIC_FOLLOW_RANGE, type.followRange)
+
+    it.health = it.getAttribute(Attribute.GENERIC_MAX_HEALTH)!!.value
   }
 }
 
