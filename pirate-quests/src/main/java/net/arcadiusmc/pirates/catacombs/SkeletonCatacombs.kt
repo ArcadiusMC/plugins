@@ -238,7 +238,7 @@ class CatacombListener: Listener {
       return
     }
 
-    if (currentState.skeletons.size < (currentState.originallySpawnedCount / 2)) {
+    if (currentState.skeletons.size <= (currentState.originallySpawnedCount / 2)) {
       for (skeleton in currentState.skeletons) {
         skeleton.isGlowing = true
       }
