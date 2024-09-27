@@ -338,8 +338,13 @@ class CaptainListener: Listener {
       player.worldBorder = null
     }
 
+    for (skeleton in currentFight.skeletons) {
+      skeleton.remove()
+    }
+
     currentFight.state = CaptainState.DEAD
     currentFight.players.clear()
+    currentFight.skeletons.clear()
     currentFight.bossEntity = null
   }
 
