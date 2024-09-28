@@ -184,6 +184,48 @@ private fun openGate() {
   )
 }
 
+fun catacombsShutdown() {
+  for (skeleton in currentState.skeletons) {
+    skeleton.remove()
+  }
+
+  if (currentState.boundingBox == null) {
+    return
+  }
+
+  killEntities()
+}
+
+fun killEntities() {
+  val boundingBox = currentState.boundingBox!!
+
+  val chunkBounds = boundingBox.set(
+    Vectors.toChunk(boundingBox.minX()),
+    Vectors.toChunk(boundingBox.minY()),
+    Vectors.toChunk(boundingBox.minZ()),
+    Vectors.toChunk(boundingBox.maxX()),
+    Vectors.toChunk(boundingBox.maxY()),
+    Vectors.toChunk(boundingBox.maxZ())
+  )
+
+  val world = boundingBox.world
+
+  for (x in chunkBounds.minX() until chunkBounds.maxX()) {
+    for (z in chunkBounds.minZ() until chunkBounds.maxZ()) {
+      val chunk = world.getChunkAt(x, z)
+      val entities = chunk.entities
+
+      for (entity in entities) {
+        if (!entity.scoreboardTags.contains(SKELETON_TAG)) {
+          continue
+        }
+
+        entity.remove()
+      }
+    }
+  }
+}
+
 private class KillTask(val boundingBox: WorldBounds3i): Runnable {
 
   override fun run() {
@@ -194,34 +236,6 @@ private class KillTask(val boundingBox: WorldBounds3i): Runnable {
 
     currentState.bossbar.removeAll()
     currentState.bossbar.isVisible = false
-  }
-
-  fun killEntities() {
-    val chunkBounds = boundingBox.set(
-      Vectors.toChunk(boundingBox.minX()),
-      Vectors.toChunk(boundingBox.minY()),
-      Vectors.toChunk(boundingBox.minZ()),
-      Vectors.toChunk(boundingBox.maxX()),
-      Vectors.toChunk(boundingBox.maxY()),
-      Vectors.toChunk(boundingBox.maxZ())
-    )
-
-    val world = boundingBox.world
-
-    for (x in chunkBounds.minX() until chunkBounds.maxX()) {
-      for (z in chunkBounds.minZ() until chunkBounds.maxZ()) {
-        val chunk = world.getChunkAt(x, z)
-        val entities = chunk.entities
-
-        for (entity in entities) {
-          if (!entity.scoreboardTags.contains(SKELETON_TAG)) {
-            continue
-          }
-
-          entity.remove()
-        }
-      }
-    }
   }
 }
 
