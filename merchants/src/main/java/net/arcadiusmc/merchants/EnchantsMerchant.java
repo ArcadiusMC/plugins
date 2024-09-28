@@ -10,12 +10,14 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import lombok.Getter;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.menu.MenuBuilder;
 import net.arcadiusmc.menu.MenuNode;
 import net.arcadiusmc.menu.Menus;
 import net.arcadiusmc.menu.Slot;
+import net.arcadiusmc.merchants.commands.CommandEnchantMerchant;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.utils.inventory.DefaultItemBuilder;
 import net.arcadiusmc.utils.inventory.ItemStacks;
@@ -33,6 +35,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.slf4j.Logger;
 
+@Getter
 public class EnchantsMerchant extends Merchant {
 
   private static final Logger LOGGER = Loggers.getLogger();
@@ -44,6 +47,9 @@ public class EnchantsMerchant extends Merchant {
   static final String TAG_CURRENT_LEVEL = "current_level";
   static final String TAG_CURRENT_PRICE = "current_price";
   static final String TAG_ALREADY_PURCHASED = "already_purchased";
+  static final String TAG_EARNINGS_MONTHLY = "monthly_earnings";
+  static final String TAG_EARNINGS_WEEKLY = "weekly_earnings";
+  static final String TAG_EARNINGS_TOTAL = "lifetime_earnings";
 
   static final Slot BOOK_SLOT = Slot.of(4, 1);
 
@@ -62,6 +68,10 @@ public class EnchantsMerchant extends Merchant {
   private Enchantment current = null;
   private int currentLevel = NONE;
   private int currentPrice = NONE;
+
+  private int lifetimeEarnings = 0;
+  private int monthlyEarnings = 0;
+  private int weeklyEarnings = 0;
 
   private final Random random;
 
@@ -88,12 +98,21 @@ public class EnchantsMerchant extends Merchant {
     selectRandomEnchantment();
 
     if (time.getDayOfWeek() == DayOfWeek.MONDAY) {
+      LOGGER.info("Earned {} over the past week", weeklyEarnings);
       alreadyChosen.clear();
+      weeklyEarnings = 0;
+    }
+
+    if (time.getDayOfMonth() == 1) {
+      LOGGER.info("Earned {} over the past month", monthlyEarnings);
+      monthlyEarnings = 0;
     }
   }
 
   @Override
   protected void onEnable() {
+    new CommandEnchantMerchant(this);
+
     if (current != null && currentLevel > 0) {
       return;
     }
@@ -157,6 +176,7 @@ public class EnchantsMerchant extends Merchant {
           }
 
           user.removeBalance(currentPrice);
+          onPurchase();
 
           ItemStack item = ItemStacks.builder(Material.ENCHANTED_BOOK)
               .addEnchant(current, currentLevel)
@@ -174,6 +194,12 @@ public class EnchantsMerchant extends Merchant {
           );
         })
         .build();
+  }
+
+  private void onPurchase() {
+    monthlyEarnings += currentPrice;
+    weeklyEarnings += currentPrice;
+    lifetimeEarnings += currentPrice;
   }
 
   public void selectRandomEnchantment() {
@@ -282,6 +308,10 @@ public class EnchantsMerchant extends Merchant {
     tag.putInt(TAG_CURRENT_LEVEL, currentLevel);
     tag.putInt(TAG_CURRENT_PRICE, currentPrice);
 
+    tag.putInt(TAG_EARNINGS_TOTAL, lifetimeEarnings);
+    tag.putInt(TAG_EARNINGS_MONTHLY, monthlyEarnings);
+    tag.putInt(TAG_EARNINGS_WEEKLY, weeklyEarnings);
+
     if (current != null) {
       CURRENT_CODEC.encodeStart(TagOps.OPS, current)
           .mapError(s -> "Failed to save " + TAG_CURRENT + ": " + s)
@@ -312,6 +342,10 @@ public class EnchantsMerchant extends Merchant {
 
     currentLevel = tag.getInt(TAG_CURRENT_LEVEL);
     currentPrice = tag.getInt(TAG_CURRENT_PRICE);
+
+    lifetimeEarnings = tag.getInt(TAG_EARNINGS_TOTAL);
+    monthlyEarnings = tag.getInt(TAG_EARNINGS_MONTHLY);
+    weeklyEarnings = tag.getInt(TAG_EARNINGS_WEEKLY);
 
     ListTag list = tag.getList(TAG_CHOSEN, TagTypes.stringType());
     for (BinaryTag binaryTag : list) {
