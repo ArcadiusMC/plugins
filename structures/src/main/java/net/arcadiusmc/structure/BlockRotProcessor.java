@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.Random;
 import lombok.Getter;
 import org.apache.commons.lang3.mutable.Mutable;
+import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.math.vector.Vector3i;
@@ -39,8 +40,8 @@ public class BlockRotProcessor implements BlockProcessor {
       return previous;
     }
 
-    var data = previous.getData();
-    var rottedData = RotLookup.rot(data, random);
+    BlockData data = previous.getData();
+    BlockData rottedData = RotLookup.rot(data, random);
 
     if (rottedData == null) {
       return previous;

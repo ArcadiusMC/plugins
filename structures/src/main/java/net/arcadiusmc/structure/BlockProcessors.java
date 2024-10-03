@@ -2,9 +2,10 @@ package net.arcadiusmc.structure;
 
 import java.util.Random;
 import net.arcadiusmc.structure.BlockRotProcessor.IntegrityProvider;
-import net.arcadiusmc.utils.VanillaAccess;
 import net.arcadiusmc.utils.math.Transform;
 import org.apache.commons.lang3.mutable.Mutable;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.structure.StructureRotation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.math.vector.Vector3i;
@@ -38,9 +39,7 @@ public final class BlockProcessors {
     return rot(IntegrityProvider.fixed(integrity), random);
   }
 
-  public static BlockRotProcessor rot(IntegrityProvider provider,
-      Random random
-  ) {
+  public static BlockRotProcessor rot(IntegrityProvider provider, Random random) {
     return new BlockRotProcessor(provider, random);
   }
 
@@ -94,10 +93,16 @@ public final class BlockProcessors {
       }
       Transform transform = context.getTransform();
 
-      // So fun fact, rotation is built into vanilla, Bukkit,
-      // in their infinite wisdom haven't made that part API
-      // though, the geniuses that they are
-      var data = VanillaAccess.rotate(previous.getData(), transform.getRotation());
+      StructureRotation structRot = switch (transform.getRotation()) {
+        case NONE -> StructureRotation.NONE;
+        case CLOCKWISE_90 -> StructureRotation.CLOCKWISE_90;
+        case CLOCKWISE_180 -> StructureRotation.CLOCKWISE_180;
+        case COUNTERCLOCKWISE_90 -> StructureRotation.COUNTERCLOCKWISE_90;
+      };
+
+      BlockData data = previous.getData();
+      data.rotate(structRot);
+
       return previous.withData(data);
     }
   }
