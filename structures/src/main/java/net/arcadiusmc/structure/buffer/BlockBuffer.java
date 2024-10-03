@@ -39,6 +39,10 @@ public interface BlockBuffer {
     setBlock(pos.x(), pos.y(), pos.z(), block);
   }
 
+  default void setBlock(int x, int y, int z, BlockData data) {
+    setBlock(x, y, z, new BufferBlock(data, null));
+  }
+
   void setBlock(int x, int y, int z, @Nullable BufferBlock block);
 
   @Nullable Bounds3i getBounds();
