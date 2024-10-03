@@ -99,14 +99,15 @@ public final class Structures {
     });
 
     PathUtil.iterateDirectory(pools, true, true, path -> {
-      var relative = pools.relativize(path);
-      var key = relative.toString();
+      String key = PathUtil.getFileKey(pools, path);
+      JsonElement element;
 
-      if (!key.endsWith(".json")) {
+      try {
+        element = JsonUtils.readFile(path);
+      } catch (IOException exc) {
+        LOGGER.error("Failed to read structure pool file {}", path, exc);
         return;
       }
-
-      JsonElement element = JsonUtils.readFile(path);
 
       if (!element.isJsonArray()) {
         LOGGER.error(
