@@ -4,12 +4,16 @@ import static net.arcadiusmc.structure.commands.CommandStructFunction.COMMAND_NA
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import it.unimi.dsi.fastutil.Pair;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.command.arguments.Arguments;
+import net.arcadiusmc.utils.io.TagUtil;
+import net.arcadiusmc.utils.math.Direction;
+import net.arcadiusmc.utils.math.Vectors;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.forthecrown.grenadier.types.BlockArgument;
 import net.forthecrown.grenadier.types.options.ArgumentOption;
@@ -19,10 +23,6 @@ import net.forthecrown.grenadier.types.options.ParsedOptions;
 import net.forthecrown.nbt.BinaryTag;
 import net.forthecrown.nbt.BinaryTags;
 import net.forthecrown.nbt.CompoundTag;
-import net.arcadiusmc.utils.VanillaAccess;
-import net.arcadiusmc.utils.io.TagUtil;
-import net.arcadiusmc.utils.math.Direction;
-import net.arcadiusmc.utils.math.Vectors;
 import org.bukkit.block.CommandBlock;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
@@ -111,11 +111,15 @@ public class FunctionInfo {
       return;
     }
 
-    Vector3i pos = config.getTransform().apply(offset);
-    BlockData data = turnsInto.clone();
-    data = VanillaAccess.rotate(data, config.getTransform().getRotation());
+    BlockInfo info = new BlockInfo(turnsInto, null);
+    Pair<BlockInfo, Vector3i> pair = config.run(info, offset);
 
-    config.getBuffer().setBlock(pos, data, null);
+    info = pair.left();
+    if (info == null) {
+      return;
+    }
+
+    info.place(config, pair.right());
   }
 
   /* ----------------------------- PARSE ------------------------------ */
