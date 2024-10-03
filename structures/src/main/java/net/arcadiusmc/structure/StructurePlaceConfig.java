@@ -15,7 +15,6 @@ import org.apache.commons.lang3.mutable.Mutable;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.math.vector.Vector3i;
 
 @Getter
@@ -50,12 +49,10 @@ public class StructurePlaceConfig {
     return new Builder();
   }
 
-  public @Nullable Pair<BlockInfo, Vector3i> run(
-      @NotNull BlockInfo original,
-      @NotNull Vector3i offset
-  ) {
-    var result = original.copy();
+  public @NotNull Pair<BlockInfo, Vector3i> run(BlockInfo original, Vector3i offset) {
+    BlockInfo result = original.copy();
     original = original.copy();
+
     Mutable<Vector3i> position = new MutableObject<>(offset);
 
     for (var p : processors) {
