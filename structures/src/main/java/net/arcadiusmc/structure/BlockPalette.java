@@ -36,6 +36,8 @@ public class BlockPalette {
 
   private final BlockStructure structure;
   private final List<EntityInfo> entities = new ObjectArrayList<>();
+
+  @Getter
   private final Map<BlockInfo, LongList> block2Positions = new Object2ObjectOpenHashMap<>();
 
   @Getter
@@ -121,8 +123,8 @@ public class BlockPalette {
       }
     }
 
-    for (var f : structure.functions) {
-      var processor = config.getFunctions().get(f.getFunctionKey());
+    for (FunctionInfo f : structure.functions) {
+      FunctionProcessor processor = config.getFunctions().get(f.getFunctionKey());
 
       if (processor != null) {
         processor.process(f, config);
