@@ -1,5 +1,6 @@
 package net.arcadiusmc.structure.pool;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import java.util.Collections;
@@ -52,16 +53,17 @@ public class StructurePool {
           .ifPresentOrElse(
               holder -> {
                 Map<String, BlockPalette> palettes = holder.getValue().getPalettes();
+                String palette = paletteKey(entry.paletteName());
 
-                if (!palettes.containsKey(entry.paletteName())) {
+                if (!palettes.containsKey(palette)) {
                   LOGGER.error("Couldn't find palette '{}' in structure '{}'",
-                      entry.paletteName(), entry.structureName()
+                      palette, entry.structureName()
                   );
 
                   return;
                 }
 
-                result.add(entry.weight(), new StructureAndPalette(holder, entry.paletteName()));
+                result.add(entry.weight(), new StructureAndPalette(holder, palette));
               },
               () -> {
                 LOGGER.error("Couldn't find structure named '{}' for structure pool",
@@ -86,16 +88,26 @@ public class StructurePool {
       PoolEntry entry = entries.get(index);
       weightVal -= entry.weight();
 
+      String palette = paletteKey(entry.paletteName());
+
       if (weightVal <= 0) {
         return structures.getHolder(entry.structureName())
-            .filter(h -> h.getValue().getPalettes().containsKey(entry.paletteName()))
-            .map(structure -> new StructureAndPalette(structure, entry.paletteName()));
+            .filter(h -> h.getValue().getPalettes().containsKey(palette))
+            .map(structure -> new StructureAndPalette(structure, palette));
       }
 
       index++;
     }
 
     return Optional.empty();
+  }
+
+  public String paletteKey(String key) {
+    if (Strings.isNullOrEmpty(key)) {
+      return BlockStructure.DEFAULT_PALETTE_NAME;
+    }
+
+    return key;
   }
 
   public boolean isEmpty() {
