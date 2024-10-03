@@ -15,7 +15,7 @@ public record PoolEntry(int weight, String structureName, String paletteName) {
 
   public static Pattern SPLIT_PATTERN = Pattern.compile(
       "(" + Registries.VALID_KEY_REGEX + ")"
-          + "(?:::(" + Registries.VALID_KEY_REGEX + "))"
+          + "(?:::(" + Registries.VALID_KEY_REGEX + "))?"
   );
 
   private static final Codec<PoolEntry> STRING_CODEC = Codec.STRING.comapFlatMap(
@@ -26,7 +26,7 @@ public record PoolEntry(int weight, String structureName, String paletteName) {
         }
 
         String struct = matcher.group(1);
-        String palette = matcher.group(2);
+        String palette = Strings.nullToEmpty(matcher.group(2));
 
         return Results.success(new PoolEntry(1, struct, palette));
       },
