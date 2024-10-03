@@ -80,6 +80,10 @@ class ChunkedBufferPlacement implements Runnable {
       Tasks.runLater(() -> place(section), tickOffset);
       sectionsScheduled++;
     }
+
+    if (sectionsScheduled <= 0) {
+      future.complete(null);
+    }
   }
 
   void place(Section section) {
