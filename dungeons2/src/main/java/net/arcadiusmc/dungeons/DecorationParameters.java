@@ -65,6 +65,10 @@ public class DecorationParameters {
             .getter(DecorationParameters::getFoliageUsesLeaves)
             .setter(DecorationParameters::setFoliageUsesLeaves);
 
+        builder.optional("foliage-rate", Codec.FLOAT)
+            .getter(DecorationParameters::getFoliageRate)
+            .setter(DecorationParameters::setFoliageRate);
+
         builder.optional("waterlog-puddles", Codec.BOOL)
             .getter(DecorationParameters::isWaterlogPuddles)
             .setter(DecorationParameters::setWaterlogPuddles);
@@ -75,6 +79,7 @@ public class DecorationParameters {
   private int maxLeafLength = 5;
 
   private float foliageUsesLeaves = 0.1f;
+  private float foliageRate = 0.75f;
 
   private NoiseParameter blockRot = new NoiseParameter();
   private NoiseParameter edgeRot = new NoiseParameter();

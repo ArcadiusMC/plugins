@@ -1274,7 +1274,9 @@ public class DungeonGenerator {
       if (!matchesBlock(x, by, z, MOSS_BLOCK, DIRT, GRASS_BLOCK)) {
         return;
       }
-      if (random.nextBoolean()) {
+
+      float rate = config.getDecoration().getFoliageRate();
+      if (random.nextFloat() >= rate) {
         return;
       }
 
