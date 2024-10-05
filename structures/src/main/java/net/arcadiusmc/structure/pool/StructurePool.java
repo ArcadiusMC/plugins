@@ -3,6 +3,7 @@ package net.arcadiusmc.structure.pool;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +81,9 @@ public class StructurePool {
     if (isEmpty()) {
       return Optional.empty();
     }
+
+    List<PoolEntry> entries = new ArrayList<>(this.entries);
+    Collections.shuffle(entries, random);
 
     int weightVal = random.nextInt(0, totalWeight);
     int index = 0;
