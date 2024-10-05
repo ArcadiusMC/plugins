@@ -44,7 +44,8 @@ val TEST_DEPENDENCIES = arrayOf(
     MATH_LIB,
     TOML,
     CONFIGURATE,
-    PAPER_NBT,
+    PAPER_API,
+    DATA_FIXER_UPPER,
     "com.google.guava:guava:33.2.1-jre"
 )
 
