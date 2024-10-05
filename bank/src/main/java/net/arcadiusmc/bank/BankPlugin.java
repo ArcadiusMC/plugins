@@ -13,9 +13,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.Getter;
+import net.arcadiusmc.delphi.Delphi;
+import net.arcadiusmc.delphi.DelphiProvider;
+import net.arcadiusmc.delphi.resource.JarResourceModule;
 import net.arcadiusmc.events.Events;
 import net.arcadiusmc.text.loader.MessageLoader;
 import net.arcadiusmc.user.User;
+import net.arcadiusmc.utils.PluginUtil;
 import net.arcadiusmc.utils.io.PathUtil;
 import net.arcadiusmc.utils.io.PluginJar;
 import net.arcadiusmc.utils.io.SerializationHelper;
@@ -42,6 +46,14 @@ public class BankPlugin extends JavaPlugin {
     reloadConfig();
     new CommandBankVault(this);
     Events.register(new BankListener(this));
+
+    if (PluginUtil.isEnabled("Delphi")) {
+      JarResourceModule module = new JarResourceModule(getClassLoader(), "pages");
+      module.setFilePaths(List.of("exit.xml"));
+
+      Delphi delphi = DelphiProvider.get();
+      delphi.getResources().registerModule("bank-page", module);
+    }
   }
 
   @Override

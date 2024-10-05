@@ -1,0 +1,23 @@
+:root {
+  background-color: black;
+  outline-color: white;
+}
+:root:hover {
+  background-color: darken(gray, 75%);
+}
+
+.flex-container {
+  display: flex;
+  justify-content: center;
+}
+
+.leavetitle {
+  padding-top: 10px;
+  margin-bottom: 2px;
+  color: white;
+}
+
+.leavebutton {
+  padding: 4px;
+  color: white;
+}

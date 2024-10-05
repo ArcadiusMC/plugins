@@ -3,13 +3,20 @@ package net.arcadiusmc.bank;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import java.time.Duration;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import net.arcadiusmc.Loggers;
 import net.arcadiusmc.core.Coinpile;
+import net.arcadiusmc.delphi.Delphi;
+import net.arcadiusmc.delphi.DelphiProvider;
+import net.arcadiusmc.delphi.DocumentView;
+import net.arcadiusmc.delphi.resource.ResourcePath;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
+import net.arcadiusmc.utils.PluginUtil;
 import net.arcadiusmc.utils.Tasks;
 import net.arcadiusmc.utils.Time;
 import net.arcadiusmc.utils.inventory.ItemList;
@@ -33,9 +40,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
+import org.bukkit.util.Vector;
+import org.slf4j.Logger;
 
 @Getter
 public class BankRun {
+
+  private static final Logger LOGGER = Loggers.getLogger();
 
   static final Times TIMES = Times.times(
       Duration.ZERO,
@@ -179,6 +190,7 @@ public class BankRun {
     startTicking();
     switchState(RunState.ONGOING);
     generateRoom();
+    spawnPage();
 
     Location entrance = vault.getEnterPosition().toLocation(world);
     player.teleport(entrance);
@@ -195,6 +207,7 @@ public class BankRun {
     switchState(RunState.INACTIVE);
     clearRoom();
     stopTicking();
+    killPage();
 
     if (bossBar != null) {
       bossBar.setVisible(false);
@@ -222,6 +235,48 @@ public class BankRun {
     }
 
     compareAndRemoveItems();
+  }
+
+  private void spawnPage() {
+    if (!PluginUtil.isEnabled("Delphi")) {
+      return;
+    }
+
+    Delphi delphi = DelphiProvider.get();
+
+    delphi
+        .openDocument("bank-page:exit.xml?vault=" + vaultKey, player)
+        .ifError(e -> {
+          LOGGER.error("Error opening page for {}: {}", player.getName(), e.getMessage());
+        })
+        .ifSuccess(view -> {
+          Location enter = vault.getEnterPosition().toLocation(world);
+          Vector direction = enter.getDirection().multiply(-1d);
+
+          enter.setDirection(direction);
+          enter.add(direction);
+          enter.setY(enter.getY() + 1.0d);
+
+          view.moveTo(enter);
+        });
+  }
+
+  public void killPage() {
+    if (!PluginUtil.isEnabled("Delphi")) {
+      return;
+    }
+
+    Delphi delphi = DelphiProvider.get();
+    List<DocumentView> openViews = delphi.getOpenViews(player);
+
+    for (DocumentView openView : openViews) {
+      ResourcePath path = openView.getPath();
+      if (!path.toString().equals("bank-page:exit.xml?vault=" + vaultKey)) {
+        continue;
+      }
+
+      openView.close();
+    }
   }
 
   private void generateRoom() {

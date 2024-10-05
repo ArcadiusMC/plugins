@@ -1,0 +1,15 @@
+<page>
+  <header>
+    <options screen-width="1" screen-height="1"/>
+    <java-object class-name="net.arcadiusmc.bank.menus.FinishRunPage"/>
+    <style src="style.scss"/>
+  </header>
+  <body>
+    <div class="flex-container leavetitle">
+      <h1>Leave?</h1>
+    </div>
+    <div class="flex-container">
+      <button action="close" id="btn" class="leavebutton">Finish Run</button>
+    </div>
+  </body>
+</page>
