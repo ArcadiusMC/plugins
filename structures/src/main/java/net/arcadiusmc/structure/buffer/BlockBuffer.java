@@ -45,10 +45,11 @@ public interface BlockBuffer {
 
   void setBlock(int x, int y, int z, @Nullable BufferBlock block);
 
+  void clearBlock(int x, int y, int z);
+
   @Nullable Bounds3i getBounds();
 
   default boolean isBoundaryLimited() {
     return getBounds() == null;
   }
-
 }

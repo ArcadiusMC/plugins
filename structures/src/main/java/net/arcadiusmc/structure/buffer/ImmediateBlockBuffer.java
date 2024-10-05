@@ -7,6 +7,7 @@ import net.arcadiusmc.utils.math.Bounds3i;
 import net.arcadiusmc.utils.math.Transform;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.jetbrains.annotations.Nullable;
 
 @Getter
@@ -37,6 +38,12 @@ public class ImmediateBlockBuffer implements BlockBuffer {
     } else {
       block.applyTo(b, false);
     }
+  }
+
+  @Override
+  public void clearBlock(int x, int y, int z) {
+    Block b = world.getBlockAt(x, y, z);
+    b.setType(Material.AIR, false);
   }
 
   @Override

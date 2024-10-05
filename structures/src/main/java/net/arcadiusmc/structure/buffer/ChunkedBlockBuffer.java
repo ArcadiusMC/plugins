@@ -145,6 +145,22 @@ public class ChunkedBlockBuffer implements BlockBuffer {
     section.setBlock(x, y, z, block);
   }
 
+  @Override
+  public void clearBlock(int x, int y, int z) {
+    int index = toSectionIndex(x, y, z);
+
+    if (index < 0 || index >= sections.length) {
+      return;
+    }
+
+    Section section = sections[index];
+    if (section == null) {
+      return;
+    }
+
+    section.setBlock(x, y, z, null);
+  }
+
   @Getter
   @RequiredArgsConstructor
   static class Section {
