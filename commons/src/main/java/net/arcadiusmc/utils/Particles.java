@@ -10,6 +10,9 @@ import org.spongepowered.math.vector.Vector3d;
 
 public @UtilityClass class Particles {
 
+  public static final double LINE_DRAW_DIST = 0.5;
+  public static double lineDrawDist = LINE_DRAW_DIST;
+
   public void line(
       Vector3d dir,
       Vector3d start,
@@ -58,7 +61,7 @@ public @UtilityClass class Particles {
   }
 
   public static void line(World w, Vector3d start, Vector3d end, ParticleBuilder builder) {
-    line(start, end, 0.5, w, builder);
+    line(start, end, lineDrawDist, w, builder);
   }
 
   public static void line(World w, Vector3d start, Vector3d end, Color color) {
