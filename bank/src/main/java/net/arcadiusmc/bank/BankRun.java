@@ -6,8 +6,8 @@ import java.time.Duration;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import net.arcadiusmc.ArcadiusServer;
 import net.arcadiusmc.Loggers;
-import net.arcadiusmc.core.Coinpile;
 import net.arcadiusmc.delphi.Delphi;
 import net.arcadiusmc.delphi.DelphiProvider;
 import net.arcadiusmc.delphi.DocumentView;
@@ -290,6 +290,7 @@ public class BankRun {
     }
 
     WorldBounds3i worldBounds = bounds.toWorldBounds(world);
+    ArcadiusServer server = ArcadiusServer.server();
 
     for (Entity entity : worldBounds.getEntities()) {
       if (entity instanceof Item) {
@@ -297,10 +298,11 @@ public class BankRun {
         continue;
       }
 
-      if (entity.getScoreboardTags().contains(Coinpile.SCOREBOARD_TAG)) {
-        entity.remove();
+      if (!server.isCoinPile(entity)) {
         continue;
       }
+
+      entity.remove();
     }
   }
 

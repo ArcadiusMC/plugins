@@ -9,7 +9,6 @@ repositories {
 
 dependencies {
   compileOnly(project(":commons"))
-  compileOnly(project(":core"))
   compileOnly("net.arcadiusmc:delphi:1.0.0-SNAPSHOT")
 }
 

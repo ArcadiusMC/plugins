@@ -7,8 +7,9 @@ import java.util.List;
 import java.util.Random;
 import lombok.Getter;
 import lombok.Setter;
+import net.arcadiusmc.ArcadiusServer;
+import net.arcadiusmc.ArcadiusServer.CoinPileSize;
 import net.arcadiusmc.Loggers;
-import net.arcadiusmc.core.Coinpile;
 import net.arcadiusmc.utils.io.ExistingObjectCodec;
 import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.JomlCodecs;
@@ -111,22 +112,23 @@ public class BankVault {
     int valueThird = coinValueDif / 3;
 
     Location location = new Location(world, 0, 0, 0);
+    ArcadiusServer server = ArcadiusServer.server();
 
     for (Vector3f coinPosition : coinPositions) {
       location.set(coinPosition.x, coinPosition.y, coinPosition.z);
 
       int value = random.nextInt(coinMin, coinMax + 1);
-      int modelId;
+      CoinPileSize size;
 
       if (value <= valueThird) {
-        modelId = Coinpile.MODEL_SMALL;
+        size = CoinPileSize.SMALL;
       } else if (value <= (valueThird * 2)) {
-        modelId = Coinpile.MODEL_MEDIUM;
+        size = CoinPileSize.MEDIUM;
       } else {
-        modelId = Coinpile.MODEL_LARGE;
+        size = CoinPileSize.LARGE;
       }
 
-      Coinpile.create(location, roundCoinValue(value), modelId);
+      server.spawnCoinPile(location, roundCoinValue(value), size);
     }
   }
 
