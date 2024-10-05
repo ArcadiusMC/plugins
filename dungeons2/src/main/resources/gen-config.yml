@@ -22,14 +22,59 @@ gen-parameters:
   required-rooms: 3
 
 deco-parameters:
-  block-rot-frequency: 1
-  edge-rot-frequency: 1
+  block-rot:
+    noise-scale: 0.08
+    frequency: 10
+    amplitude: 0.5
+    octaves: 4
+  edge-rot:
+    noise-scale: 1
+    frequency: 1
+    amplitude: 1
+    octaves: 1
+  puddles:
+    noise-scale: 0.08
+    frequency: 10
+    amplitude: 0.5
+    octaves: 4
+    noise-gate: 0.6
+  candles:
+    noise-scale: 0.08
+    frequency: 1
+    amplitude: 1
+    octave: 1
+    noise-gate: 0.65
+  vegetation:
+    noise-scale: 0.1
+    frequency: 20
+    amplitude: 0.8
+    octaves: 5
+    noise-gate: 0.6
+  moss:
+    noise-scale: 0.1
+    frequency: 20
+    amplitude: 0.8
+    octaves: 5
+    noise-gate: 0.58
+  leaf-materials:
+    - "oak_leaves"
+    - "spruce_leaves"
+    - "birch_leaves"
+    - "jungle_leaves"
+    - "acacia_leaves"
+    - "dark_oak_leaves"
+    - "mangrove_leaves"
+  disabled-decorators:
+    - "edge-rot"
+  flora-materials:
+    - "short_grass"
+    - "tall_grass"
+    - "poppy"
+    - "torchflower"
   max-hanging-light-length: 4
   max-leaf-length: 10
-  puddle-frequency: 0.08
-  puddle-noise-gate: 0.65
-  candle-frequency: 0.08
-  candle-noise-gate: 0.65
+  bind-candles-to-edges: true
+  waterlog-puddles: true
 
 pieces:
   # Root

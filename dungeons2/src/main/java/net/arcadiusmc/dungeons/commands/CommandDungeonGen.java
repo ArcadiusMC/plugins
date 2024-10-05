@@ -28,6 +28,7 @@ import net.arcadiusmc.dungeons.Opening;
 import net.arcadiusmc.dungeons.PieceType;
 import net.arcadiusmc.dungeons.gen.DungeonGenerator;
 import net.arcadiusmc.dungeons.gen.PieceGenerator;
+import net.arcadiusmc.dungeons.gen.StairQuadrants;
 import net.arcadiusmc.dungeons.gen.StepResult;
 import net.arcadiusmc.dungeons.gen.StructureGenerator;
 import net.arcadiusmc.registry.Holder;
@@ -51,8 +52,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Difficulty;
 import org.bukkit.GameRule;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.sign.Side;
+import org.bukkit.block.sign.SignSide;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -61,6 +68,7 @@ import org.bukkit.map.MapCanvas;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.noise.NoiseGenerator;
 import org.bukkit.util.noise.PerlinNoiseGenerator;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -72,9 +80,12 @@ public class CommandDungeonGen extends BaseCommand {
   private static boolean drawDoorways = false;
   private static boolean drawRooms = true;
 
-  private static final PerlinNoiseGenerator perlin = new PerlinNoiseGenerator(new Random());
+  public static NoiseGenerator perlin = new PerlinNoiseGenerator(new Random());
   private static int octaves = 1;
   private static float frequency = 1f;
+  private static float noiseScale = 1f;
+  private static float noiseGate = 0f;
+  private static float amplitude = 1f;
 
   private StructureGenerator currentGen;
   private BukkitTask renderTask;
@@ -119,6 +130,46 @@ public class CommandDungeonGen extends BaseCommand {
             })
         )
 
+        .then(literal("test-stairs")
+            .executes(c -> {
+              Player player = c.getSource().asPlayer();
+              Location location = player.getLocation();
+
+              World world = player.getWorld();
+
+              int x = location.getBlockX();
+              int y = location.getBlockY();
+              int z = location.getBlockZ();
+
+              for (int i = 0; i < 16; i++) {
+                BlockData data = StairQuadrants.createStairs(Material.STONE_STAIRS, i);
+                if (data == null) {
+                  data = Material.RED_CONCRETE.createBlockData();
+                }
+
+                x += 2;
+                Block b = world.getBlockAt(x, y, z);
+                b.setBlockData(data, false);
+
+                Block above = world.getBlockAt(x, y + 1, z);
+                above.setType(Material.OAK_SIGN, false);
+
+                Sign sign = (Sign) above.getState();
+                SignSide side = sign.getSide(Side.FRONT);
+
+                String[] names = StairQuadrants.quadrantName(i).split(" \\| ");
+                for (int i1 = 0; i1 < names.length; i1++) {
+                  side.line(i1, Component.text(names[i1]));
+                }
+
+                side.setGlowingText(true);
+                sign.update(true, false);
+              }
+
+              return SINGLE_SUCCESS;
+            })
+        )
+
         .then(literal("perlin-noise-map")
             .then(literal("give")
                 .executes(c -> {
@@ -133,9 +184,11 @@ public class CommandDungeonGen extends BaseCommand {
                   });
 
                   player.sendMessage(
-                      Text.format("Giving perlin map: octaves={0} frequency={1}",
+                      Text.format("Giving perlin map: octaves={0} frequency={1} amplitude={2} noise-scale={3}",
                           octaves,
-                          frequency
+                          frequency,
+                          amplitude,
+                          noiseScale
                       )
                   );
 
@@ -147,8 +200,7 @@ public class CommandDungeonGen extends BaseCommand {
             .then(literal("set-octaves")
                 .then(argument("octaves", IntegerArgumentType.integer(1))
                     .executes(c -> {
-                      int oct = c.getArgument("octaves", Integer.class);
-                      octaves = oct;
+                      octaves = c.getArgument("octaves", Integer.class);
                       return SINGLE_SUCCESS;
                     })
                 )
@@ -156,8 +208,31 @@ public class CommandDungeonGen extends BaseCommand {
             .then(literal("set-frequency")
                 .then(argument("frequency", FloatArgumentType.floatArg())
                     .executes(c -> {
-                      float freq = c.getArgument("frequency", Float.class);
-                      frequency = freq;
+                      frequency = c.getArgument("frequency", Float.class);
+                      return SINGLE_SUCCESS;
+                    })
+                )
+            )
+            .then(literal("set-amplitude")
+                .then(argument("value", FloatArgumentType.floatArg())
+                    .executes(c -> {
+                      amplitude = c.getArgument("value", Float.class);
+                      return SINGLE_SUCCESS;
+                    })
+                )
+            )
+            .then(literal("set-noise-scale")
+                .then(argument("value", FloatArgumentType.floatArg())
+                    .executes(c -> {
+                      noiseScale = c.getArgument("value", Float.class);
+                      return SINGLE_SUCCESS;
+                    })
+                )
+            )
+            .then(literal("set-noise-gate")
+                .then(argument("value", FloatArgumentType.floatArg())
+                    .executes(c -> {
+                      noiseGate = c.getArgument("value", Float.class);
                       return SINGLE_SUCCESS;
                     })
                 )
@@ -452,8 +527,13 @@ public class CommandDungeonGen extends BaseCommand {
   private static World worldReset() {
     World world = DungeonWorld.reset();
     world.setDifficulty(Difficulty.PEACEFUL);
-    world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
     world.setTime(6000L);
+
+    world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
+    world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
+    world.setGameRule(GameRule.DO_FIRE_TICK, false);
+    world.setGameRule(GameRule.RANDOM_TICK_SPEED, 0);
+
     return world;
   }
 
@@ -533,15 +613,36 @@ public class CommandDungeonGen extends BaseCommand {
     
     @Override
     public void render(@NotNull MapView map, @NotNull MapCanvas canvas, @NotNull Player player) {
-      for (int x = 0; x < MAP_SIZE; x++) {
-        for (int z = 0; z < MAP_SIZE; z++) {
-          float mx = x;
-          float mz = z;
+      double px = player.getX();
+      double py = Math.floor(player.getY());
+      double pz = player.getZ();
 
-          mx *= frequency;
-          mz *= frequency;
+      for (int x = 0; x <= MAP_SIZE; x++) {
+        for (int z = 0; z <= MAP_SIZE; z++) {
+          double mx = x + px - ((double) MAP_SIZE / 2);
+          double mz = z + pz - ((double) MAP_SIZE / 2);
+          double my = py;
 
-          double noise = perlin.noise(mx, mz, octaves, 1f, 1, true);
+          double xdif = Math.abs(px - mx);
+          double zdif = Math.abs(pz - mz);
+
+          if (xdif < 1 && zdif < 1) {
+            canvas.setPixelColor(x, z, java.awt.Color.GREEN);
+            continue;
+          }
+
+          mx *= noiseScale;
+          my *= noiseScale;
+          mz *= noiseScale;
+
+          double noise = perlin.noise(mx, my, mz, octaves, frequency, amplitude, true);
+          noise += 1.0;
+          noise /= 2.0;
+
+          if (noise < noiseGate) {
+            canvas.setPixelColor(x, z, java.awt.Color.BLACK);
+            continue;
+          }
 
           int c = (int) (255 * ((noise + 1.0) / 2.0));
           canvas.setPixelColor(x, z, new java.awt.Color(c, c, c));

@@ -69,7 +69,7 @@ public class BoundsSet {
         && z >= bb.minZ() && z <= bb.maxZ();
   }
 
-  public void forEachBlock(XyzFunction function) {
+  public void forEachBlock(XyzFunction function) throws XyzIterationException {
     for (Bounds3i boundingBox : boundingBoxes) {
       int minX = boundingBox.minX();
       int minY = boundingBox.minY();
@@ -82,7 +82,11 @@ public class BoundsSet {
       for (int x = minX; x < maxX; x++) {
         for (int y = minY; y < maxY; y++) {
           for (int z = minZ; z < maxZ; z++) {
-            function.accept(x, y, z);
+            try {
+              function.accept(x, y, z);
+            } catch (Throwable t) {
+              throw new XyzIterationException(t, x, y ,z);
+            }
           }
         }
       }

@@ -27,13 +27,33 @@
     "block": "cobblestone",
     "stairs": "cobblestone_stairs",
     "slab": "cobblestone_slab",
-    "wall": "cobblestone_wall"
+    "wall": "cobblestone_wall",
+    "mossy-block": "mossy_cobblestone",
+    "mossy-stairs": "mossy_cobblestone_stairs",
+    "mossy-slab": "mossy_cobblestone_slab",
+    "mossy-wall": "mossy_cobblestone_wall"
   },
   {
     "block": "stone_bricks",
     "stairs": "stone_brick_stairs",
     "slab": "stone_brick_slab",
-    "wall": "stone_brick_wall"
+    "wall": "stone_brick_wall",
+    "mossy-block": "mossy_stone_bricks",
+    "mossy-stairs": "mossy_stone_brick_stairs",
+    "mossy-slab": "mossy_stone_brick_slab",
+    "mossy-wall": "mossy_stone_brick_wall"
+  },
+  {
+    "block": "mossy_cobblestone",
+    "stairs": "mossy_cobblestone_stairs",
+    "slab": "mossy_cobblestone_slab",
+    "wall": "mossy_cobblestone_wall"
+  },
+  {
+    "block": "mossy_stone_bricks",
+    "stairs": "mossy_stone_brick_stairs",
+    "slab": "mossy_stone_brick_slab",
+    "wall": "mossy_stone_brick_wall"
   },
   {
     "block": "oak_planks",

@@ -1,13 +1,36 @@
 package net.arcadiusmc.dungeons.gen;
 
+import static net.arcadiusmc.dungeons.gen.StairQuadrants.Q_ALL;
+import static net.arcadiusmc.dungeons.gen.StairQuadrants.Q_NE;
+import static net.arcadiusmc.dungeons.gen.StairQuadrants.Q_NONE;
+import static net.arcadiusmc.dungeons.gen.StairQuadrants.Q_NW;
+import static net.arcadiusmc.dungeons.gen.StairQuadrants.Q_SE;
+import static net.arcadiusmc.dungeons.gen.StairQuadrants.Q_SW;
+import static net.arcadiusmc.dungeons.gen.StairQuadrants.createStairs;
+import static org.bukkit.Material.ANDESITE;
+import static org.bukkit.Material.ANDESITE_STAIRS;
 import static org.bukkit.Material.BROWN_CANDLE;
 import static org.bukkit.Material.CANDLE;
+import static org.bukkit.Material.CAVE_VINES;
+import static org.bukkit.Material.CAVE_VINES_PLANT;
+import static org.bukkit.Material.CHAIN;
+import static org.bukkit.Material.COBBLESTONE;
 import static org.bukkit.Material.COBBLESTONE_SLAB;
+import static org.bukkit.Material.COBBLESTONE_STAIRS;
+import static org.bukkit.Material.DEEPSLATE;
+import static org.bukkit.Material.DIRT;
+import static org.bukkit.Material.FIRE;
+import static org.bukkit.Material.GRASS_BLOCK;
 import static org.bukkit.Material.GRAVEL;
 import static org.bukkit.Material.GRAY_CANDLE;
 import static org.bukkit.Material.GREEN_CANDLE;
+import static org.bukkit.Material.LANTERN;
 import static org.bukkit.Material.LIGHT_GRAY_CANDLE;
+import static org.bukkit.Material.MOSS_BLOCK;
+import static org.bukkit.Material.MOSS_CARPET;
 import static org.bukkit.Material.ORANGE_CANDLE;
+import static org.bukkit.Material.STONE;
+import static org.bukkit.Material.STONE_BRICKS;
 import static org.bukkit.Material.STONE_BRICK_WALL;
 import static org.bukkit.Material.WHITE_CANDLE;
 
@@ -26,6 +49,8 @@ import net.arcadiusmc.Loggers;
 import net.arcadiusmc.dungeons.DungeonConfig;
 import net.arcadiusmc.dungeons.DungeonPiece;
 import net.arcadiusmc.dungeons.LevelFunctions;
+import net.arcadiusmc.dungeons.NoiseParameter;
+import net.arcadiusmc.dungeons.commands.CommandDungeonGen;
 import net.arcadiusmc.dungeons.gen.BlockIterations.BlockIteration;
 import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.structure.BlockProcessors;
@@ -37,6 +62,7 @@ import net.arcadiusmc.structure.StructurePlaceConfig;
 import net.arcadiusmc.structure.buffer.BlockBuffer;
 import net.arcadiusmc.structure.buffer.BlockBuffers;
 import net.arcadiusmc.structure.buffer.BufferBlock;
+import net.arcadiusmc.utils.VanillaAccess;
 import net.arcadiusmc.utils.math.Bounds3i;
 import net.arcadiusmc.utils.math.Direction;
 import net.arcadiusmc.utils.math.Transform;
@@ -45,10 +71,16 @@ import org.bukkit.Axis;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockSupport;
+import org.bukkit.block.data.Bisected;
+import org.bukkit.block.data.Bisected.Half;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Waterlogged;
 import org.bukkit.block.data.type.Candle;
+import org.bukkit.block.data.type.CaveVines;
+import org.bukkit.block.data.type.CaveVinesPlant;
 import org.bukkit.block.data.type.Chain;
 import org.bukkit.block.data.type.Lantern;
+import org.bukkit.block.data.type.Leaves;
 import org.bukkit.block.data.type.Stairs;
 import org.bukkit.block.data.type.Stairs.Shape;
 import org.bukkit.block.data.type.Wall;
@@ -71,6 +103,7 @@ public class DungeonGenerator {
   private final BlockBuffer buffer;
   private final Map<String, List<GeneratorFunction>> functions = new Object2ObjectOpenHashMap<>();
   private final NoiseGenerator noiseGen;
+  private final NoiseGenerator vegitationNoise;
 
   private Vector3i position = Vector3i.ZERO;
 
@@ -86,6 +119,7 @@ public class DungeonGenerator {
     this.buffer = BlockBuffers.allocate(combined);
 
     noiseGen = new PerlinNoiseGenerator(random);
+    vegitationNoise = new PerlinNoiseGenerator(random);
   }
 
   public static DungeonPiece generateLevel(DungeonConfig config, Random random) {
@@ -156,23 +190,39 @@ public class DungeonGenerator {
       rootPiece.transform(Transform.offset(position));
     }
 
+    Stopwatch genTimer = Stopwatch.createStarted();
+
+    try {
+      performGeneration();
+    } finally {
+      genTimer.stop();
+      LOGGER.info("Generated dungeon, took {}", stopwatchElapsed(genTimer));
+    }
+
+    return buffer;
+  }
+
+  private void performGeneration() {
     PlacingVisitor visitor = new PlacingVisitor();
     rootPiece.forEachDescendant(visitor);
 
-    //runPass("vegetation", this::vegetationPass);
+    runPass("vegetation", this::vegetationPass);
+    runPass("moss-and-grass", this::mossGrassPass);
+    runPass("foliage", this::foliagePass);
     runPass("puddles", this::puddlePass);
     runPass("hanging-lights", this::hangingLightsPass);
     runPass("sitting-lights", this::sittingLightPass);
     runPass("fire-pass", this::firePass);
     runPass("edge-rot", this::edgeRotPass);
-
-    return buffer;
   }
 
   private void runPass(String name, Runnable runnable) {
-    Stopwatch stopWatch = Stopwatch.createStarted();
+    if (config.getDecoration().getDisabledDecorators().contains(name)) {
+      LOGGER.info("Decorator {} is disabled. Skipping...", name);
+      return;
+    }
 
-    LOGGER.debug("Starting pass {}", name);
+    Stopwatch stopWatch = Stopwatch.createStarted();
 
     try {
       runnable.run();
@@ -180,40 +230,47 @@ public class DungeonGenerator {
       LOGGER.error("Failed to run {} pass", name, exc);
     } finally {
       stopWatch.stop();
-
-      Duration elapsed = stopWatch.elapsed();
-
-      long millis = elapsed.toMillis();
-      float seconds = ((float) millis) / 1000f;
-
-      LOGGER.info("Finished {} pass, took {}ms or {}sec", name, millis, seconds);
+      LOGGER.info("Finished {} pass, took {}", name, stopwatchElapsed(stopWatch));
     }
+  }
+
+  static String stopwatchElapsed(Stopwatch stopwatch) {
+    Duration elapsed = stopwatch.elapsed();
+    long millis = elapsed.toMillis();
+    float seconds = ((float) millis) / 1000f;
+    return String.format("%sms or %ssec", millis, seconds);
   }
 
   /* --------------------------- Sitting light pass ---------------------------- */
 
   public void sittingLightPass() {
-    CandlePass pass = new CandlePass();
-    boundsSet.forEachBlock(pass);
+    boundsSet.forEachBlock(new CandlePass());
   }
 
   /* --------------------------- Vegetation pass ---------------------------- */
 
   public void vegetationPass() {
-    VegetationPass pass = new VegetationPass();
-    boundsSet.forEachBlock(pass);
+    boundsSet.forEachBlock(new LeafPass(vegitationNoise));
   }
 
+  public void mossGrassPass() {
+    boundsSet.forEachBlock(new MossGrassPass(vegitationNoise));
+  }
+
+  public void foliagePass() {
+    boundsSet.forEachBlock(new FoliagePass());
+  }
+
+  /* --------------------------- Indent pass ---------------------------- */
+
   public void puddlePass() {
-    PuddlePass puddlePass = new PuddlePass();
-    boundsSet.forEachBlock(puddlePass);
+    boundsSet.forEachBlock(new PuddlePass());
   }
 
   /* --------------------------- Edge rot pass ---------------------------- */
 
   public void edgeRotPass() {
-    EdgeRotPass func = new EdgeRotPass();
-    boundsSet.forEachBlock(func);
+    boundsSet.forEachBlock(new EdgeRotPass());
   }
 
   /* --------------------------- Fire pass ---------------------------- */
@@ -232,7 +289,8 @@ public class DungeonGenerator {
         }
       }
 
-      buffer.setBlock(generatorFunction.getPosition(), Material.FIRE.createBlockData(), null);
+      var pos = generatorFunction.getPosition();
+      setBlock(pos.x(), pos.y(), pos.z(), FIRE.createBlockData());
     }
   }
 
@@ -262,10 +320,36 @@ public class DungeonGenerator {
 
   private void generateHangingLight(Vector3i originPoint) {
     int x = originPoint.x();
+    int y = originPoint.y();
     int z = originPoint.z();
 
+    int freeSpace = freeSpaceDown(x, y, z);
+
+    int maxLen = config.getDecoration().getMaxHangingLightLength();
+    int chainLen = freeSpace <= 0 ? 0 : Math.min(maxLen, random.nextInt(freeSpace / 4));
+
+    int by = y;
+
+    if (isAir(x, by + 1, z)) {
+      addHangingTop(x, by + 1, z);
+    }
+
+    BlockData chainData = createChainData();
+
+    for (int i = 0; i < chainLen; i++) {
+      setBlock(x, by, z, chainData);
+      by--;
+    }
+
+    Lantern lantern = (Lantern) LANTERN.createBlockData();
+    lantern.setHanging(true);
+
+    setBlock(x, by, z, lantern);
+  }
+
+  private int freeSpaceDown(int x, int y, int z) {
     int freeSpace = 0;
-    int fy = originPoint.y();
+    int fy = y;
 
     while (freeSpace < 20) {
       if (!isAir(x, fy, z)) {
@@ -276,30 +360,11 @@ public class DungeonGenerator {
       fy--;
     }
 
-    int maxLen = config.getDecoration().getMaxHangingLightLength();
-    int chainLen = freeSpace <= 0 ? 0 : Math.min(maxLen, random.nextInt(freeSpace / 4));
-
-    int by = originPoint.y();
-
-    if (isAir(x, by + 1, z)) {
-      addHangingTop(x, by + 1, z);
-    }
-
-    BlockData chainData = createChainData();
-
-    for (int i = 0; i < chainLen; i++) {
-      buffer.setBlock(x, by, z, chainData);
-      by--;
-    }
-
-    Lantern lantern = (Lantern) Material.LANTERN.createBlockData();
-    lantern.setHanging(true);
-
-    buffer.setBlock(x, by, z, lantern);
+    return freeSpace;
   }
 
   private boolean hasSupport(int x, int y, int z, BlockFace face) {
-    BufferBlock block = buffer.getBlock(x, y, z);
+    BufferBlock block = getBlock(x, y, z);
     if (block == null) {
       return false;
     }
@@ -324,11 +389,11 @@ public class DungeonGenerator {
       wall.setHeight(BlockFace.WEST, Height.LOW);
     }
 
-    buffer.setBlock(x, y, z, wall);
+    setBlock(x, y, z, wall);
   }
 
   private BlockData createChainData() {
-    Chain data = (Chain) Material.CHAIN.createBlockData();
+    Chain data = (Chain) CHAIN.createBlockData();
     data.setAxis(Axis.Y);
     return data;
   }
@@ -361,7 +426,7 @@ public class DungeonGenerator {
   }
 
   private boolean isAir(int x, int y, int z) {
-    BufferBlock block = buffer.getBlock(x, y, z);
+    BufferBlock block = getBlock(x, y, z);
     if (block == null) {
       return true;
     }
@@ -374,12 +439,111 @@ public class DungeonGenerator {
       return false;
     }
 
-    BufferBlock block = buffer.getBlock(x, y, z);
+    BufferBlock block = getBlock(x, y, z);
     if (block == null) {
       return false;
     }
 
     return block.data().isFaceSturdy(BlockFace.UP, BlockSupport.FULL);
+  }
+
+  public BufferBlock getBlock(int x, int y, int z) {
+    return buffer.getBlock(x, y, z);
+  }
+
+  public BlockData getBlockData(int x, int y, int z) {
+    var b = getBlock(x, y, z);
+    if (b == null) {
+      return null;
+    }
+    return b.data();
+  }
+
+  public Material getBlockType(int x, int y, int z) {
+    var b = getBlock(x, y, z);
+    if (b == null) {
+      return null;
+    }
+    return b.data().getMaterial();
+  }
+
+  public boolean matchesBlock(int x, int y, int z, Material... anyOf) {
+    Material mat = getBlockType(x, y, z);
+
+    if (mat == null) {
+      for (Material material1 : anyOf) {
+        if (material1.isAir()) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    for (Material material1 : anyOf) {
+      if (material1 == mat) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  public void setBlock(int x, int y, int z, BlockData data) {
+    buffer.setBlock(x, y, z, data);
+  }
+
+  public void setBlock(int x, int y, int z, BufferBlock block) {
+    buffer.setBlock(x, y, z, block);
+  }
+
+  public void clearBlock(int x, int y, int z) {
+    buffer.clearBlock(x, y, z);
+  }
+
+  public void mossify(int x, int y, int z, int radius) {
+    for (int ox = -radius; ox <= radius; ox++) {
+      for (int oy = -radius; oy <= radius; oy++) {
+        for (int oz = -radius; oz <= radius; oz++) {
+          int bx = x + ox;
+          int by = y + oy;
+          int bz = z + oz;
+
+          BufferBlock block = getBlock(bx, by, bz);
+          if (block == null) {
+            continue;
+          }
+
+          BlockData data = block.data();
+          Material material = data.getMaterial();
+
+          BlockIteration iteration = BlockIterations.getIteration(material);
+          if (iteration == null) {
+            continue;
+          }
+
+          Material mossy;
+          if (material == iteration.getBlock()) {
+            mossy = iteration.getMossyBlock();
+          } else if (material == iteration.getSlab()) {
+            mossy = iteration.getMossySlab();
+          } else if (material == iteration.getStairs()) {
+            mossy = iteration.getMossyStairs();
+          } else {
+            mossy = iteration.getMossyWall();
+          }
+
+          if (mossy == null) {
+            continue;
+          }
+
+          BlockData mossyData = mossy.createBlockData();
+          mossyData = VanillaAccess.merge(mossyData, data);
+
+          setBlock(bx, by, bz, mossyData);
+        }
+      }
+    }
   }
 
   public void collectFunctions(Holder<BlockStructure> structure, StructurePlaceConfig cfg) {
@@ -444,7 +608,7 @@ public class DungeonGenerator {
   }
 
   boolean isWallBlock(int x, int y, int z) {
-    BufferBlock block = buffer.getBlock(x, y, z);
+    BufferBlock block = getBlock(x, y, z);
     if (block == null) {
       return false;
     }
@@ -492,24 +656,23 @@ public class DungeonGenerator {
 
     @Override
     public double getIntegrity(Vector3i worldPosition) {
-      float freq = config.getDecoration().getBlockRotFrequency();
-
-      float x = worldPosition.x() * freq;
-      float y = worldPosition.y() * freq;
-      float z = worldPosition.z() * freq;
-
-      double n = noiseGen.noise(x, y, z);
-      return (n + 1.0d) / 2.0d;
+      NoiseParameter parameter = config.getDecoration().getBlockRot();
+      return parameter.sample(noiseGen, worldPosition.x(), worldPosition.y(), worldPosition.z());
     }
   }
 
-  class EdgeRotPass implements XyzFunction {
+  class EdgeRotPass extends NoisePass {
 
     Direction[] arr2 = new Direction[2];
     Direction[] arr3 = new Direction[3];
 
     static BlockIteration getMaterial(Material base) {
       return BlockIterations.getIteration(base);
+    }
+
+    @Override
+    NoiseParameter noiseParameters() {
+      return config.getDecoration().getEdgeRot();
     }
 
     @Override
@@ -525,15 +688,14 @@ public class DungeonGenerator {
         return;
       }
 
-      float freq = config.getDecoration().getEdgeRotFrequency();
-      double noise = (noiseGen.noise(x * freq, y * freq, z * freq) + 1.0d) / 2.0d;
+      double noise = getNoise(x, y, z);
       float rnd = random.nextFloat();
 
       if (rnd >= noise) {
         return;
       }
 
-      BufferBlock block = buffer.getBlock(x, y, z);
+      BufferBlock block = getBlock(x, y, z);
       if (block == null) {
         return;
       }
@@ -554,7 +716,7 @@ public class DungeonGenerator {
         arr2[0] = edgeDir.left();
         arr2[1] = edgeDir.right();
       } else {
-        buffer.setBlock(x, y, z, mat.slab().createBlockData());
+        setBlock(x, y, z, mat.getSlab().createBlockData());
 
         potentialDirections = arr3;
         arr3[0] = edgeDir.left();
@@ -580,7 +742,7 @@ public class DungeonGenerator {
         }
 
         if (isGroundBlock(slabX, y, slabZ)) {
-          buffer.setBlock(slabX, y + 1, slabZ, data);
+          setBlock(slabX, y + 1, slabZ, data);
         }
       }
 
@@ -593,7 +755,7 @@ public class DungeonGenerator {
           continue;
         }
 
-        BufferBlock b = buffer.getBlock(x, y, z);
+        BufferBlock b = getBlock(x, y, z);
         BlockIteration dirMat;
 
         if (b == null) {
@@ -620,7 +782,7 @@ public class DungeonGenerator {
 
           placeStair(nx, y, nz, dirMat, dir);
         } else {
-          buffer.setBlock(nx, y, nz, dirMat.slab().createBlockData());
+          setBlock(nx, y, nz, dirMat.getSlab().createBlockData());
         }
       }
     }
@@ -630,39 +792,44 @@ public class DungeonGenerator {
     }
 
     void placeStair(int x, int y, int z, BlockIteration mat, Direction direction, Shape shape) {
-      Stairs stair = (Stairs) mat.stairs().createBlockData();
+      Stairs stair = (Stairs) mat.getStairs().createBlockData();
       stair.setFacing(direction.asBlockFace());
       stair.setWaterlogged(false);
       stair.setShape(shape);
 
       BufferBlock block = new BufferBlock(stair, null);
-      buffer.setBlock(x, y, z, block);
+      setBlock(x, y, z, block);
     }
   }
 
   abstract class NoisePass implements XyzFunction {
+    private static final NoiseParameter DEFAULT = new NoiseParameter();
 
     private final NoiseGenerator noiseGen;
 
+    public NoisePass(NoiseGenerator noiseGen) {
+      this.noiseGen = noiseGen;
+    }
+
     public NoisePass() {
-      this.noiseGen = new PerlinNoiseGenerator(random);
+      this(new PerlinNoiseGenerator(random));
     }
 
-    float frequency() {
-      return 0.08f;
+    NoiseParameter noiseParameters() {
+      return DEFAULT;
     }
 
-    float gate() {
-      return 0.65f;
+    double getNoise(double x, double y, double z) {
+      NoiseParameter param = noiseParameters();
+      return param.sample(noiseGen, x, y, z);
     }
 
-    double getNoise(int x, int y, int z) {
-      float freq = frequency();
-      return (noiseGen.noise(x * freq, y * freq, z * freq) + 1.0) / 2.0;
+    boolean testNoise(double noise) {
+      return noiseParameters().getNoiseGate() <= noise;
     }
 
-    boolean testNoise(int x, int y, int z) {
-      return getNoise(x, y, z) >= gate();
+    boolean testNoise(double x, double y, double z) {
+      return testNoise(getNoise(x, y, z));
     }
   }
 
@@ -679,13 +846,8 @@ public class DungeonGenerator {
     };
 
     @Override
-    float frequency() {
-      return config.getDecoration().getCandleFrequency();
-    }
-
-    @Override
-    float gate() {
-      return config.getDecoration().getCandleNoiseGate();
+    NoiseParameter noiseParameters() {
+      return config.getDecoration().getCandles();
     }
 
     @Override
@@ -718,11 +880,11 @@ public class DungeonGenerator {
       data.setLit(random.nextFloat() < 0.75);
       data.setCandles(candles);
 
-      buffer.setBlock(x, y, z, data);
+      setBlock(x, y, z, data);
     }
 
     boolean canSupportCandle(int x, int y, int z) {
-      BufferBlock block = buffer.getBlock(x, y, z);
+      BufferBlock block = getBlock(x, y, z);
       if (block == null) {
         return false;
       }
@@ -734,14 +896,14 @@ public class DungeonGenerator {
 
   class PuddlePass extends NoisePass {
 
-    @Override
-    float gate() {
-      return config.getDecoration().getPuddleNoiseGate();
+    public PuddlePass() {
+      super();
+      CommandDungeonGen.perlin = noiseGen;
     }
 
     @Override
-    float frequency() {
-      return config.getDecoration().getPuddleFrequency();
+    NoiseParameter noiseParameters() {
+      return config.getDecoration().getPuddles();
     }
 
     @Override
@@ -750,7 +912,7 @@ public class DungeonGenerator {
         return;
       }
 
-      BufferBlock block = buffer.getBlock(x, y, z);
+      BufferBlock block = getBlock(x, y, z);
       if (block == null) {
         return;
       }
@@ -761,13 +923,70 @@ public class DungeonGenerator {
         return;
       }
 
-      if (iteration.block() != mat) {
+      if (iteration.getBlock() != mat) {
         return;
       }
 
-      double noise = getNoise(x, y, z);
+      int mask = sampleMask(x, y, z);
 
-      buffer.setBlock(x, y, z, iteration.slab().createBlockData());
+      if (mask == Q_NONE) {
+        return;
+      }
+      if (mask == Q_ALL) {
+        setPuddleBlock(x, y, z, iteration.getSlab().createBlockData());
+        return;
+      }
+
+      BlockData data = createStairs(iteration.getStairs(), mask);
+      if (data == null) {
+        data = iteration.getSlab().createBlockData();
+      }
+
+      setPuddleBlock(x, y, z, data);
+    }
+
+    void setPuddleBlock(int x, int y, int z, BlockData data) {
+      boolean waterlogged = false;
+
+      if (data instanceof Waterlogged logged) {
+        waterlogged = config.getDecoration().isWaterlogPuddles();
+        logged.setWaterlogged(waterlogged);
+      }
+
+      setBlock(x, y, z, data);
+
+      if (waterlogged) {
+        mossify(x, y, z, 1);
+      }
+    }
+
+    int sampleMask(int x, int y, int z) {
+      double minX = x + 0.25;
+      double minZ = z + 0.25;
+      double maxX = minX + 0.5;
+      double maxZ = minZ + 0.5;
+      double ny = y + 0.75d;
+
+      return blockQuadrantsMask(
+          getNoise(minX, ny, minZ),
+          getNoise(maxX, ny, minZ),
+          getNoise(minX, ny, maxZ),
+          getNoise(maxX, ny, maxZ)
+      );
+    }
+
+    int blockQuadrantsMask(double nw, double ne, double sw, double se) {
+      return getMask(Q_NW, nw)
+          | getMask(Q_NE, ne)
+          | getMask(Q_SW, sw)
+          | getMask(Q_SE, se);
+    }
+
+    int getMask(int mask, double noise) {
+      if (!testNoise(noise)) {
+        return 0;
+      }
+      return mask;
     }
 
     boolean isPuddleBlock(int x, int y, int z) {
@@ -775,11 +994,11 @@ public class DungeonGenerator {
         return false;
       }
 
-//      if (isSkyAbove(x, y, z)) {
-//        return false;
-//      }
+      if (isSkyAbove(x, y, z)) {
+        return false;
+      }
 
-      BufferBlock block = buffer.getBlock(x, y, z);
+      BufferBlock block = getBlock(x, y, z);
       if (block != null) {
         BlockIteration iter = BlockIterations.getIteration(block.data().getMaterial());
 
@@ -788,17 +1007,43 @@ public class DungeonGenerator {
         }
       }
 
-      return testNoise(x, y, z);
+      return true;
     }
   }
 
-  class VegetationPass extends NoisePass {
+  //
+  //
+  // Leaf gen types:
+  //
+  //  1. Dangling leaf - Falls straight down, simplest type of leaf to generate.
+  //     Move down until resistance is met. These will be better as 'cave_vine'
+  //     trails. Ideally with moss underneath or at the root.
+  //
+  //  2. Ceiling Snake - Snake along the ceiling for as long as possible before
+  //     going downwards.
+  //
+  //  3. Ground Snake - Generates on the ground, snake around on the ground
+  //     until ideal length reached.
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  class LeafPass extends NoisePass {
 
-    final int[] moves = {-1, 0, 1};
+    final int[] possibleMovesX = new int[10];
+    final int[] possibleMovesZ = new int[10];
+    int possibleMovesLen = 0;
+
+    public LeafPass(NoiseGenerator noiseGen) {
+      super(noiseGen);
+    }
 
     @Override
-    float frequency() {
-      return 1f;
+    NoiseParameter noiseParameters() {
+      return config.getDecoration().getVegetation();
     }
 
     @Override
@@ -806,17 +1051,267 @@ public class DungeonGenerator {
       if (isSkyAbove(x, y, z) || isVoidBelow(x, y, z) || !isAir(x, y, z)) {
         return;
       }
-      if (isAir(x, y + 1, z) || isAir(x, y - 1, z)) {
+      if (!hasSupport(x, y + 1, z, BlockFace.DOWN)) {
         return;
       }
       if (!testNoise(x, y, z)) {
         return;
       }
 
+      caveVineTrail(x, y, z);
+    }
+
+    private void drippingLeaves(int x, int y, int z) {
+      List<Material> materials = config.getDecoration().getLeafMaterials();
+      if (materials.isEmpty()) {
+        return;
+      }
+
       int maxLength = config.getDecoration().getMaxLeafLength();
       int length = random.nextInt(maxLength);
 
+      for (int i = 0; i < length; i++) {
+        if (!isAir(x, y, z)) {
+          findPossibleMoves(x, y, z);
 
+          if (possibleMovesLen < 1) {
+            break;
+          }
+
+          int moveIdx = random.nextInt(possibleMovesLen);
+
+          x = possibleMovesX[moveIdx];
+          z = possibleMovesZ[moveIdx];
+        }
+
+        Material material = materials.get(random.nextInt(materials.size()));
+        BlockData data = material.createBlockData();
+
+        if (data instanceof Leaves leaves) {
+          leaves.setPersistent(true);
+        }
+
+        setBlock(x, y, z, material.createBlockData());
+        mossify(x, y, z, 1);
+
+        y--;
+      }
+    }
+
+    private void caveVineTrail(int x, int y, int z) {
+      int freeSpace = freeSpaceDown(x, y, z) / 3;
+      int maxLength = config.getDecoration().getMaxLeafLength();
+
+      if (freeSpace < 1) {
+        return;
+      }
+
+      int length = Math.min(maxLength, random.nextInt(freeSpace));
+
+      for (int i = 0; i < length; i++) {
+        if (!isAir(x, y, z)) {
+          break;
+        }
+
+        CaveVinesPlant data;
+
+        if (!isAir(x, y - 1, z) || i == (length - 1)) {
+          CaveVines cdata = (CaveVines) CAVE_VINES.createBlockData();
+          cdata.setAge(cdata.getMaximumAge());
+          data = cdata;
+        } else {
+          data = (CaveVinesPlant) CAVE_VINES_PLANT.createBlockData();
+        }
+
+        data.setBerries(random.nextFloat() < 0.25);
+        setBlock(x, y, z, data);
+
+        mossify(x, y, z, 1);
+
+        y--;
+      }
+    }
+
+    private void findPossibleMoves(int x, int y, int z) {
+      possibleMovesLen = 0;
+
+      for (int ox = -1; ox <= 1; ox++) {
+        for (int oz = -1; oz <= 1; oz++) {
+          int bx = ox + x;
+          int bz = oz + z;
+
+          if (!isAir(bx, y, bz)) {
+            continue;
+          }
+
+          possibleMovesX[possibleMovesLen] = bx;
+          possibleMovesZ[possibleMovesLen] = bz;
+          possibleMovesLen++;
+        }
+      }
+    }
+
+  }
+
+  class MossGrassPass extends NoisePass {
+
+    static final Material[] CAN_REPLACE = {
+        STONE,
+        ANDESITE,
+        COBBLESTONE
+    };
+
+    static final Material[] MAYBE_REPLACE = {
+        STONE_BRICKS,
+        DEEPSLATE,
+        ANDESITE_STAIRS,
+        COBBLESTONE_STAIRS,
+    };
+
+    public MossGrassPass(NoiseGenerator noiseGen) {
+      super(noiseGen);
+    }
+
+    @Override
+    NoiseParameter noiseParameters() {
+      return config.getDecoration().getMoss();
+    }
+
+    @Override
+    public void accept(int x, int y, int z) {
+      if (!testNoise(x, y, z)) {
+        return;
+      }
+
+      if (isAir(x, y, z)) {
+        boolean supportUp = hasSupport(x, y - 1, z, BlockFace.UP);
+        int by = y - 1;
+
+//        if (matchesBlock(x, by, z, MOSS_BLOCK) || (supportUp && testNoise(x, by, z))) {
+//          int below = countMossBelow(x, y, z);
+//
+//          if (below < 4) {
+//            setBlock(x, y, z, (random.nextBoolean() ? MOSS_BLOCK : GRASS_BLOCK).createBlockData());
+//            mossify(x, y, z, 1);
+//
+//            if (matchesBlock(x, by, z, GRASS_BLOCK)) {
+//              setBlock(x, by, z, DIRT.createBlockData());
+//            }
+//          }
+//
+//          return;
+//        }
+
+        if (supportUp && random.nextBoolean()) {
+          setBlock(x, y, z, MOSS_CARPET.createBlockData());
+          mossify(x, y, z, 1);
+        }
+
+        return;
+      }
+
+      if (!canReplace(x, y, z)) {
+        return;
+      }
+
+      setBlock(x, y, z, MOSS_BLOCK.createBlockData());
+      mossify(x, y, z, 1);
+    }
+
+    int countMossBelow(int x, int y, int z) {
+      y--;
+      int c = 0;
+
+      while (y > boundsSet.combine().minY()) {
+        if (!matchesBlock(x, y, z, MOSS_BLOCK, GRASS_BLOCK, DIRT)) {
+          break;
+        }
+
+        c++;
+        y--;
+      }
+
+      return c;
+    }
+
+    boolean canReplace(int x, int y, int z) {
+      BufferBlock block = getBlock(x, y, z);
+      if (block == null) {
+        return false;
+      }
+
+      Material mat = block.data().getMaterial();
+
+      for (Material material : CAN_REPLACE) {
+        if (material == mat) {
+          return true;
+        }
+      }
+
+      for (Material material : MAYBE_REPLACE) {
+        if (material != mat) {
+          continue;
+        }
+
+        if (random.nextBoolean()) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+  }
+
+  class FoliagePass implements XyzFunction {
+
+    @Override
+    public void accept(int x, int y, int z) {
+      if (!isAir(x, y, z)) {
+        return;
+      }
+
+      int by = y - 1;
+      if (!matchesBlock(x, by, z, MOSS_BLOCK, DIRT, GRASS_BLOCK)) {
+        return;
+      }
+      if (random.nextBoolean()) {
+        return;
+      }
+
+      List<Material> foliageList;
+
+      if (random.nextFloat() < config.getDecoration().getFoliageUsesLeaves()) {
+        foliageList = config.getDecoration().getLeafMaterials();
+        if (foliageList.isEmpty()) {
+          foliageList = config.getDecoration().getFlora();
+        }
+      } else {
+        foliageList = config.getDecoration().getFlora();
+      }
+
+      if (foliageList.isEmpty()) {
+        return;
+      }
+
+      Material m = foliageList.get(random.nextInt(foliageList.size()));
+      BlockData data = m.createBlockData();
+
+      if (data instanceof Bisected bis) {
+        bis.setHalf(Half.BOTTOM);
+        setBlock(x, y, z, bis);
+
+        int uy = y + 1;
+
+        if (isAir(x, uy, z)) {
+          Bisected upper = (Bisected) m.createBlockData();
+          upper.setHalf(Half.TOP);
+          setBlock(x, uy, z, upper);
+        }
+
+        return;
+      }
+
+      setBlock(x, y, z, data);
     }
   }
 }

@@ -6,7 +6,6 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,8 +13,10 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Optional;
+import lombok.Getter;
+import lombok.Setter;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.utils.io.ExistingObjectCodec;
 import net.arcadiusmc.utils.io.ExtraCodecs;
 import org.bukkit.Material;
 import org.slf4j.Logger;
@@ -75,34 +76,59 @@ public class BlockIterations {
         });
   }
 
+  @Getter @Setter
+  public static class BlockIteration {
 
-  public record BlockIteration(Material block, Material stairs, Material slab, Material wall) {
+    static final Codec<BlockIteration> CODEC
+        = ExistingObjectCodec.<BlockIteration>create(builder -> {
+          builder.field("block", ExtraCodecs.MATERIAL_CODEC)
+              .getter(BlockIteration::getBlock)
+              .setter(BlockIteration::setBlock);
 
-    static final Codec<BlockIteration> CODEC = RecordCodecBuilder.create(instance -> {
-      return instance
-          .group(
-              ExtraCodecs.MATERIAL_CODEC.fieldOf("block")
-                  .forGetter(BlockIteration::block),
+          builder.field("slab", ExtraCodecs.MATERIAL_CODEC)
+              .getter(BlockIteration::getSlab)
+              .setter(BlockIteration::setSlab);
 
-              ExtraCodecs.MATERIAL_CODEC.optionalFieldOf("stairs")
-                  .forGetter(b -> Optional.ofNullable(b.stairs)),
+          builder.field("stairs", ExtraCodecs.MATERIAL_CODEC)
+              .getter(BlockIteration::getStairs)
+              .setter(BlockIteration::setStairs);
 
-              ExtraCodecs.MATERIAL_CODEC.optionalFieldOf("slab")
-                  .forGetter(b -> Optional.ofNullable(b.slab)),
+          builder.optional("wall", ExtraCodecs.MATERIAL_CODEC)
+              .getter(BlockIteration::getWall)
+              .setter(BlockIteration::setWall);
 
-              ExtraCodecs.MATERIAL_CODEC.optionalFieldOf("wall")
-                  .forGetter(b -> Optional.ofNullable(b.wall))
-          )
-          .apply(instance, (block, stairs, slab, wall) -> {
-            return new BlockIteration(
-                block,
-                stairs.orElse(null),
-                slab.orElse(null),
-                wall.orElse(null)
-            );
-          });
-    });
+          builder.optional("mossy-block", ExtraCodecs.MATERIAL_CODEC)
+              .getter(BlockIteration::getMossyBlock)
+              .setter(BlockIteration::setMossyBlock);
 
-    static final Codec<List<BlockIteration>> LIST_CODEC = CODEC.listOf();
+          builder.optional("mossy-slab", ExtraCodecs.MATERIAL_CODEC)
+              .getter(BlockIteration::getMossySlab)
+              .setter(BlockIteration::setMossySlab);
+
+          builder.optional("mossy-stairs", ExtraCodecs.MATERIAL_CODEC)
+              .getter(BlockIteration::getMossyStairs)
+              .setter(BlockIteration::setMossyStairs);
+
+          builder.optional("mossy-wall", ExtraCodecs.MATERIAL_CODEC)
+              .getter(BlockIteration::getMossyWall)
+              .setter(BlockIteration::setMossyWall);
+        })
+        .codec(Codec.unit(BlockIteration::new));
+
+    public static final Codec<List<BlockIteration>> LIST_CODEC = CODEC.listOf();
+
+    private Material block = null;
+    private Material stairs = null;
+    private Material slab = null;
+    private Material wall = null;
+
+    private Material mossyBlock = null;
+    private Material mossyStairs = null;
+    private Material mossySlab = null;
+    private Material mossyWall = null;
+
+    public BlockIteration() {
+
+    }
   }
 }
