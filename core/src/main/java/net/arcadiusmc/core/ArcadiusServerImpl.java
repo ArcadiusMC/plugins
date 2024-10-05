@@ -16,7 +16,9 @@ import net.arcadiusmc.utils.io.PathUtil;
 import net.arcadiusmc.utils.io.SerializationHelper;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class ArcadiusServerImpl implements ArcadiusServer {
 
@@ -105,5 +107,14 @@ public class ArcadiusServerImpl implements ArcadiusServer {
     };
 
     Coinpile.create(location, value, modelId);
+  }
+
+  @Override
+  public boolean isCoinPile(@Nullable Entity entity) {
+    if (entity == null) {
+      return false;
+    }
+
+    return entity.getScoreboardTags().contains(Coinpile.SCOREBOARD_TAG);
   }
 }

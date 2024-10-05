@@ -7,7 +7,10 @@ import net.arcadiusmc.text.channel.MessageRenderer;
 import net.arcadiusmc.user.User;
 import net.kyori.adventure.text.ComponentLike;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Service for general functions
@@ -77,6 +80,14 @@ public interface ArcadiusServer {
    * @param pileSize The model size to use.
    */
   void spawnCoinPile(Location location, int value, CoinPileSize pileSize);
+
+  /**
+   * Test if a specified {@code entity} is a coin pile or not
+   * @param entity Entity to test
+   * @return {@code true}, if the entity is a coin pile, {@code false} otherwise.
+   */
+  @Contract("null -> false")
+  boolean isCoinPile(@Nullable Entity entity);
 
   /**
    * Coin pile size
