@@ -1,0 +1,87 @@
+potential-levels: 35
+
+location:
+  x: 0
+  y: 0
+  z: 0
+
+gen-parameters:
+  depth-range:
+    min: 5
+    max: 10
+  room-depth-range:
+    min: 1
+    max: 1
+  connector-depth-range:
+    min: 1
+    max: 2
+  max-room-exits: 2
+  max-connector-exits: 4
+  room-open-chance: 0.1
+  decorated-gate-chance: 0.5
+  required-rooms: 3
+
+deco-parameters:
+  block-rot-frequency: 1
+  edge-rot-frequency: 1
+  max-hanging-light-length: 4
+  max-leaf-length: 10
+  puddle-frequency: 0.08
+  puddle-noise-gate: 0.65
+  candle-frequency: 0.08
+  candle-noise-gate: 0.65
+
+pieces:
+  # Root
+  - structure: dungeons/roots/root_1
+    type: root
+
+  # Boss Rooms
+  - structure: dungeons/boss_rooms/room1
+    type: boss_room
+
+  # Connectors
+  - structure: dungeons/3_way_left_right_hallway
+    type: connector
+  - structure: dungeons/4_way_hallway
+    type: connector
+  - structure: dungeons/lturn_left
+    type: connector
+  - structure: dungeons/short_hallway
+    type: connector
+
+  # Stair connectors
+  - structure: dungeons/stairs/3_way
+    type: connector
+  - structure: dungeons/stairs/4_way
+    type: connector
+  - structure: dungeons/stairs/less_short
+    type: connector
+  - structure: dungeons/stairs/regular
+    type: connector
+  - structure: dungeons/stairs/short
+    type: connector
+
+  # Regular rooms
+  - structure: dungeons/rooms/jail
+    type: mob_room
+  - structure: dungeons/rooms/library
+    type: mob_room
+  - structure: dungeons/rooms/lion
+    type: mob_room
+  - structure: dungeons/rooms/skylights
+    type: mob_room
+  - structure: dungeons/rooms/wide
+    type: mob_room
+
+  # Regular gates
+  - structure: dungeons/default_gate
+    type: open_gate
+  - structure: dungeons/closed_gate
+    type: closed_gate
+
+  # Decorated gates
+  - structure: dungeons/knight_gate
+    type: decorated_gate
+  - structure: dungeons/collapsed_gate
+    type: decorated_gate
