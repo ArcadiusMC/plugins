@@ -93,4 +93,17 @@ public class ArcadiusServerImpl implements ArcadiusServer {
     Objects.requireNonNull(id, "Null ID");
     CommandLeave.listeners.remove(id);
   }
+
+  @Override
+  public void spawnCoinPile(Location location, int value, CoinPileSize pileSize) {
+    Objects.requireNonNull(pileSize, "Null pile size");
+
+    int modelId = switch (pileSize) {
+      case LARGE -> Coinpile.MODEL_LARGE;
+      case MEDIUM -> Coinpile.MODEL_MEDIUM;
+      case SMALL -> Coinpile.MODEL_SMALL;
+    };
+
+    Coinpile.create(location, value, modelId);
+  }
 }

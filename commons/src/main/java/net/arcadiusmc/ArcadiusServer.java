@@ -72,10 +72,11 @@ public interface ArcadiusServer {
   /**
    * Spawn a pile of coins that can be picked up by players.
    *
+   * @param location Coin pile spawn location
    * @param value The amount of money the pile will reward.
    * @param pileSize The model size to use.
    */
-  void spawnCoinPile(int value, CoinPileSize pileSize);
+  void spawnCoinPile(Location location, int value, CoinPileSize pileSize);
 
   /**
    * Coin pile size
