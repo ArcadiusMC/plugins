@@ -7,15 +7,17 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.List;
+import net.arcadiusmc.utils.io.JsonUtils;
+import net.arcadiusmc.utils.io.JsonWrapper;
 import net.forthecrown.nbt.BinaryTag;
 import net.forthecrown.nbt.BinaryTags;
+import net.forthecrown.nbt.CompoundTag;
 import net.forthecrown.nbt.DoubleTag;
 import net.forthecrown.nbt.FloatTag;
 import net.forthecrown.nbt.IntArrayTag;
 import net.forthecrown.nbt.ListTag;
 import net.forthecrown.nbt.LongArrayTag;
-import net.arcadiusmc.utils.io.JsonUtils;
-import net.arcadiusmc.utils.io.JsonWrapper;
+import net.forthecrown.nbt.TypeIds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.Location;
@@ -374,6 +376,33 @@ public final class Vectors {
   }
 
   public static Vector3i read3i(BinaryTag tag) {
+    if (tag == null || tag.getId() == TypeIds.END) {
+      return Vector3i.ZERO;
+    }
+
+    if (tag.isCompound()) {
+      CompoundTag c = tag.asCompound();
+
+      return Vector3i.from(
+          c.getInt("x"),
+          c.getInt("y"),
+          c.getInt("z")
+      );
+    }
+    if (tag.isList()) {
+      ListTag ltag = tag.asList();
+      if (ltag.isEmpty()) {
+        return Vector3i.ZERO;
+      }
+
+      int len = ltag.size();
+      return switch (len) {
+        case 1 -> Vector3i.from(ltag.getInt(0));
+        case 2 -> Vector3i.from(ltag.getInt(0), ltag.getInt(1), 0);
+        default -> Vector3i.from(ltag.getInt(0), ltag.getInt(1), ltag.getInt(2));
+      };
+    }
+
     int[] arr = ((IntArrayTag) tag).toIntArray();
     return Vector3i.from(
         arr[AXIS_ID_X],
