@@ -126,7 +126,7 @@ public class FunctionInfo {
 
   public static FunctionInfo parse(Vector3d origin, CommandBlock cmd)
       throws CommandSyntaxException {
-    String command = cmd.getCommand();
+    String command = cmd.getCommand().trim();
     StringReader reader = new StringReader(command);
 
     if (reader.peek() == '/') {
