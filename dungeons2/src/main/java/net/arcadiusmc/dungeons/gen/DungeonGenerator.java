@@ -608,12 +608,11 @@ public class DungeonGenerator {
   }
 
   boolean isWallBlock(int x, int y, int z) {
-    BufferBlock block = getBlock(x, y, z);
-    if (block == null) {
+    BlockData data = getBlockData(x, y, z);
+
+    if (data == null) {
       return false;
     }
-
-    BlockData data = block.data();
 
     return data.isFaceSturdy(BlockFace.NORTH, BlockSupport.FULL)
         && data.isFaceSturdy(BlockFace.SOUTH, BlockSupport.FULL)
@@ -695,12 +694,12 @@ public class DungeonGenerator {
         return;
       }
 
-      BufferBlock block = getBlock(x, y, z);
-      if (block == null) {
+      Material type = getBlockType(x, y, z);
+      if (type == null) {
         return;
       }
 
-      BlockIteration mat = getMaterial(block.data().getMaterial());
+      BlockIteration mat = getMaterial(type);
       int size = random.nextBoolean() ? 1 : 2;
 
       if (mat == null) {
@@ -755,13 +754,13 @@ public class DungeonGenerator {
           continue;
         }
 
-        BufferBlock b = getBlock(x, y, z);
+        Material b = getBlockType(x, y, z);
         BlockIteration dirMat;
 
         if (b == null) {
           dirMat = mat;
         } else {
-          dirMat = getMaterial(b.data().getMaterial());
+          dirMat = getMaterial(b);
           if (dirMat == null) {
             dirMat = mat;
           }
@@ -884,12 +883,7 @@ public class DungeonGenerator {
     }
 
     boolean canSupportCandle(int x, int y, int z) {
-      BufferBlock block = getBlock(x, y, z);
-      if (block == null) {
-        return false;
-      }
-
-      Material material = block.data().getMaterial();
+      Material material = getBlockType(x, y, z);
       return material != GRAVEL;
     }
   }
@@ -912,12 +906,11 @@ public class DungeonGenerator {
         return;
       }
 
-      BufferBlock block = getBlock(x, y, z);
-      if (block == null) {
+      Material mat = getBlockType(x, y, z);
+      if (mat == null) {
         return;
       }
 
-      Material mat = block.data().getMaterial();
       BlockIteration iteration = BlockIterations.getIteration(mat);
       if (iteration == null) {
         return;
@@ -1235,12 +1228,10 @@ public class DungeonGenerator {
     }
 
     boolean canReplace(int x, int y, int z) {
-      BufferBlock block = getBlock(x, y, z);
-      if (block == null) {
+      Material mat = getBlockType(x, y, z);
+      if (mat == null) {
         return false;
       }
-
-      Material mat = block.data().getMaterial();
 
       for (Material material : CAN_REPLACE) {
         if (material == mat) {
