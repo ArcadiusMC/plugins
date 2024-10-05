@@ -243,19 +243,26 @@ fun validateJavaFileExists(project: Project, fqcn: String, category: String) {
   val jPlugin = project.extensions.findByType(JavaPluginExtension::class.java)
   val sourceSets = jPlugin!!.sourceSets
 
+  val searchedFiles = ArrayList<String>()
+
   sourceSets.forEach { it ->
     val dirs = it.allJava.srcDirs
 
     dirs.forEach {
-      val srcFile = it.toPath().resolve("$filePath.java")
+      val jFile = it.toPath().resolve("$filePath.java")
+      val kFile = it.toPath().resolve("$filePath.kt")
 
-      if (Files.exists(srcFile)) {
+      if (Files.exists(jFile) || Files.exists(kFile)) {
         return
       }
+
+      searchedFiles.add(jFile.toString())
+      searchedFiles.add(kFile.toString())
     }
   }
 
+  val search = searchedFiles.joinToString(separator = "\n-", prefix = "\n-")
   throw IllegalArgumentException(
-    "${project.name}::pluginYml: $category class '$fqcn' doesn't exist"
+    "${project.name}::pluginYml: $category class '$fqcn' doesn't exist:\nSearched files:${search}"
   )
 }
