@@ -877,7 +877,7 @@ public class DungeonGenerator {
 
       int candles = random.nextInt(data.getMinimumCandles(), data.getMaximumCandles() + 1);
 
-      data.setLit(random.nextFloat() < 0.75);
+      data.setLit(random.nextFloat() < config.getDecoration().getLitCandleRate());
       data.setCandles(candles);
 
       setBlock(x, y, z, data);
