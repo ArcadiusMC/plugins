@@ -866,6 +866,33 @@ public class Registry<V> implements Iterable<V> {
     };
   }
 
+  public Codec<Holder<V>> holderCodec() {
+    return new Codec<>() {
+      @Override
+      public <T> DataResult<Pair<Holder<V>, T>> decode(DynamicOps<T> ops, T input) {
+        return ops.getStringValue(input)
+            .flatMap(s -> {
+              var opt = getHolder(s);
+              if (opt.isEmpty()) {
+                return Results.error("Unknown value '%s'", s);
+              }
+
+              return Results.success(opt.get());
+            })
+            .map(vHolder -> Pair.of(vHolder, input));
+      }
+
+      @Override
+      public <T> DataResult<T> encode(Holder<V> input, DynamicOps<T> ops, T prefix) {
+        if (!Registry.this.equals(input.getRegistry())) {
+          return Results.error("Unknown holder value");
+        }
+
+        return Results.success(ops.createString(input.getKey()));
+      }
+    };
+  }
+
   public <S> DataResult<S> encode(DynamicOps<S> ops, V value) {
     return getKey(value)
         .map(ops::createString)
