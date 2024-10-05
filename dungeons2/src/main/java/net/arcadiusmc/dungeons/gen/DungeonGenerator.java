@@ -1123,7 +1123,7 @@ public class DungeonGenerator {
           data = (CaveVinesPlant) CAVE_VINES_PLANT.createBlockData();
         }
 
-        data.setBerries(random.nextFloat() < 0.25);
+        data.setBerries(random.nextFloat() < config.getDecoration().getBerryRate());
         setBlock(x, y, z, data);
 
         mossify(x, y, z, 1);

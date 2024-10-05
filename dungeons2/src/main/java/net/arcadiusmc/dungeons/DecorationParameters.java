@@ -69,6 +69,10 @@ public class DecorationParameters {
             .getter(DecorationParameters::getFoliageRate)
             .setter(DecorationParameters::setFoliageRate);
 
+        builder.optional("vine-berry-rate", Codec.FLOAT)
+            .getter(DecorationParameters::getBerryRate)
+            .setter(DecorationParameters::setBerryRate);
+
         builder.optional("waterlog-puddles", Codec.BOOL)
             .getter(DecorationParameters::isWaterlogPuddles)
             .setter(DecorationParameters::setWaterlogPuddles);
@@ -80,6 +84,7 @@ public class DecorationParameters {
 
   private float foliageUsesLeaves = 0.1f;
   private float foliageRate = 0.75f;
+  private float berryRate = 0.25f;
 
   private NoiseParameter blockRot = new NoiseParameter();
   private NoiseParameter edgeRot = new NoiseParameter();
