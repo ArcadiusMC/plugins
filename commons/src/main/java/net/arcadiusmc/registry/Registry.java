@@ -866,6 +866,14 @@ public class Registry<V> implements Iterable<V> {
     };
   }
 
+  /**
+   * Create a codec which encodes/decodes registry entries by their string key.
+   * <p>
+   * Unlike {@link #registryCodec()} and {@link #decode(Dynamic)} this doesn't
+   * support decoding entries by their integer ID.
+   *
+   * @return Created codec
+   */
   public Codec<Holder<V>> holderCodec() {
     return new Codec<>() {
       @Override
