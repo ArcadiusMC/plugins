@@ -26,6 +26,8 @@ import org.spongepowered.math.vector.Vector3i;
 
 public class PoolFunctionProcessor implements FunctionProcessor {
 
+  static final int MAX_DEPTH = 16;
+
   static final String TAG_ROTATION = "rotation";
   static final String TAG_OFFSET = "offset";
   static final String TAG_POOL_NAME = "pool_name";
@@ -39,6 +41,8 @@ public class PoolFunctionProcessor implements FunctionProcessor {
   private final DungeonGenerator generator;
   private final Random random;
 
+  private int depth = 0;
+
   public PoolFunctionProcessor(BlockBuffer buffer, Random random, DungeonGenerator generator) {
     this.buffer = buffer;
     this.random = random;
@@ -47,6 +51,10 @@ public class PoolFunctionProcessor implements FunctionProcessor {
 
   @Override
   public void process(@NotNull FunctionInfo info, @NotNull StructurePlaceConfig config) {
+    if (depth >= MAX_DEPTH) {
+      return;
+    }
+
     CompoundTag data = info.getTag();
     if (data == null || data.isEmpty()) {
       return;
@@ -126,7 +134,13 @@ public class PoolFunctionProcessor implements FunctionProcessor {
 
     StructurePlaceConfig cfg = builder.build();
 
-    result.structure().getValue().place(cfg);
+    depth++;
+    try {
+      result.structure().getValue().place(cfg);
+    } finally {
+      depth--;
+    }
+
     generator.collectFunctions(result.structure(), cfg);
   }
 
