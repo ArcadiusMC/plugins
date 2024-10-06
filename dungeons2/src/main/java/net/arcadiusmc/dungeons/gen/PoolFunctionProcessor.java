@@ -6,6 +6,7 @@ import java.util.Random;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.dungeons.LevelFunctions;
 import net.arcadiusmc.registry.Registry;
+import net.arcadiusmc.structure.BlockStructure;
 import net.arcadiusmc.structure.FunctionInfo;
 import net.arcadiusmc.structure.FunctionProcessor;
 import net.arcadiusmc.structure.StructurePlaceConfig;
@@ -14,6 +15,7 @@ import net.arcadiusmc.structure.Structures;
 import net.arcadiusmc.structure.buffer.BlockBuffer;
 import net.arcadiusmc.structure.pool.StructureAndPalette;
 import net.arcadiusmc.structure.pool.StructurePool;
+import net.arcadiusmc.utils.math.Direction;
 import net.arcadiusmc.utils.math.Rotation;
 import net.arcadiusmc.utils.math.Transform;
 import net.arcadiusmc.utils.math.Vectors;
@@ -28,6 +30,8 @@ public class PoolFunctionProcessor implements FunctionProcessor {
   static final String TAG_OFFSET = "offset";
   static final String TAG_POOL_NAME = "pool_name";
   static final String TAG_DEEP = "deep";
+  static final String TAG_ALIGN_POINT = "use_alignment_point";
+  static final String TAG_CHECK_COLLISION = "check_collision";
 
   private static final Logger LOGGER = Loggers.getLogger();
 
@@ -62,6 +66,15 @@ public class PoolFunctionProcessor implements FunctionProcessor {
       return;
     }
 
+    StructurePool pool = opt.get();
+    Optional<StructureAndPalette> structOpt = pool.getRandom(structures.getRegistry(), random);
+
+    if (structOpt.isEmpty()) {
+      LOGGER.warn("Pool '{}' returned a non-existing structure", poolKey);
+      return;
+    }
+
+    StructureAndPalette result = structOpt.get();
     Transform transform = config.getTransform();
     Rotation originalRotate = transform.getRotation();
 
@@ -84,16 +97,19 @@ public class PoolFunctionProcessor implements FunctionProcessor {
       transform = transform.addOffset(rotation.rotate(transformOffset));
     }
 
-    StructurePool pool = opt.get();
-    Vector3i position = originalRotate.rotate(info.getOffset());
+    if (data.getBoolean(TAG_ALIGN_POINT, true)) {
+      Direction direction = info.getFacing();
+      if (direction.isRotatable()) {
+        direction = direction.rotate(rotation);
+      }
 
-    Optional<StructureAndPalette> structOpt = pool.getRandom(structures.getRegistry(), random);
-    if (structOpt.isEmpty()) {
-      LOGGER.warn("Pool '{}' returned a non-existing structure", poolKey);
-      return;
+      Transform t = applyAlign(result.structure().getValue(), rotation, direction);
+      if (!t.isIdentity()) {
+        transform = transform.combine(t);
+      }
     }
 
-    StructureAndPalette result = structOpt.get();
+    Vector3i position = originalRotate.rotate(info.getOffset());
 
     Builder builder = StructurePlaceConfig.builder()
         .pos(position)
@@ -112,5 +128,38 @@ public class PoolFunctionProcessor implements FunctionProcessor {
 
     result.structure().getValue().place(cfg);
     generator.collectFunctions(result.structure(), cfg);
+  }
+
+  private FunctionInfo getAlignmentPoint(BlockStructure structure) {
+    return structure.getFunctions().stream()
+        .filter(info -> info.getFunctionKey().equals(LevelFunctions.ALIGNMENT_POINT))
+        .findFirst()
+        .orElse(null);
+  }
+
+  private Transform applyAlign(BlockStructure target, Rotation rotation, Direction currentDir) {
+    FunctionInfo targetPoint = getAlignmentPoint(target);
+
+    if (targetPoint == null) {
+      return Transform.IDENTITY;
+    }
+
+    Vector3i off = rotation.rotate(targetPoint.getOffset());
+    Direction facing = targetPoint.getFacing();
+
+    if (facing.isRotatable()) {
+      facing = facing.rotate(rotation);
+    }
+
+    Rotation transRotate;
+
+    if (currentDir == facing || !currentDir.isRotatable() || !facing.isRotatable()) {
+      transRotate = Rotation.NONE;
+    } else {
+      transRotate = facing.deriveRotationFrom(currentDir);
+      off = transRotate.rotate(off);
+    }
+
+    return Transform.offset(off.mul(-1)).addRotation(transRotate);
   }
 }
