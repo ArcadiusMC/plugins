@@ -37,9 +37,13 @@ public class DecorationParameters {
             .getter(DecorationParameters::getCandles)
             .setter(DecorationParameters::setCandles);
 
-        builder.optional("vegetation", NoiseParameter.CODEC)
-            .getter(DecorationParameters::getVegetation)
-            .setter(DecorationParameters::setVegetation);
+        builder.optional("leaves", NoiseParameter.CODEC)
+            .getter(DecorationParameters::getLeaves)
+            .setter(DecorationParameters::setLeaves);
+
+        builder.optional("cave-vines", NoiseParameter.CODEC)
+            .getter(DecorationParameters::getCaveVines)
+            .setter(DecorationParameters::setCaveVines);
 
         builder.optional("moss", NoiseParameter.CODEC)
             .getter(DecorationParameters::getMoss)
@@ -56,6 +60,10 @@ public class DecorationParameters {
         builder.optional("flora-materials", ExtraCodecs.MATERIAL_CODEC.listOf())
             .getter(DecorationParameters::getFlora)
             .setter(DecorationParameters::setFlora);
+
+        builder.optional("leaves-can-replace", ExtraCodecs.MATERIAL_CODEC.listOf())
+            .getter(DecorationParameters::getLeavesCanReplace)
+            .setter(DecorationParameters::setLeavesCanReplace);
 
         builder.optional("disabled-decorators", Codec.STRING.listOf())
             .getter(DecorationParameters::getDisabledDecorators)
@@ -80,22 +88,49 @@ public class DecorationParameters {
         builder.optional("waterlog-puddles", Codec.BOOL)
             .getter(DecorationParameters::isWaterlogPuddles)
             .setter(DecorationParameters::setWaterlogPuddles);
+
+        builder.optional("mossy-radius", Codec.INT)
+            .getter(DecorationParameters::getMossRadius)
+            .setter(DecorationParameters::setMossRadius);
+
+        builder.optional("moss-dropoff-after", Codec.INT)
+            .getter(DecorationParameters::getMossDropOffAfter)
+            .setter(DecorationParameters::setMossDropOffAfter);
+
+        builder.optional("cave-vine-block", ExtraCodecs.MATERIAL_CODEC)
+            .getter(DecorationParameters::getCaveVineBlock)
+            .setter(DecorationParameters::setCaveVineBlock);
+
+        builder.optional("cave-vine-bottom-block", ExtraCodecs.MATERIAL_CODEC)
+            .getter(DecorationParameters::getCaveVineBottom)
+            .setter(DecorationParameters::setCaveVineBottom);
+
+        builder.optional("glow-lichen-instead-of-moss-rate", Codec.FLOAT)
+            .getter(DecorationParameters::getGlowLichenInsteadLeavesRate)
+            .setter(DecorationParameters::setGlowLichenInsteadLeavesRate);
       })
       .codec(Codec.unit(DecorationParameters::new));
 
   private int maxHangingLightLength = 4;
   private int maxLeafLength = 5;
+  private int mossRadius = 1;
+  private int mossDropOffAfter = 1;
 
   private float foliageUsesLeaves = 0.1f;
   private float foliageRate = 0.75f;
   private float berryRate = 0.25f;
   private float litCandleRate = 0.75f;
+  private float glowLichenInsteadLeavesRate = 0.10f;
+
+  private Material caveVineBlock = Material.CAVE_VINES_PLANT;
+  private Material caveVineBottom = Material.CAVE_VINES;
 
   private NoiseParameter blockRot = new NoiseParameter();
   private NoiseParameter edgeRot = new NoiseParameter();
   private NoiseParameter puddles = new NoiseParameter();
   private NoiseParameter candles = new NoiseParameter();
-  private NoiseParameter vegetation = new NoiseParameter();
+  private NoiseParameter leaves = new NoiseParameter();
+  private NoiseParameter caveVines = new NoiseParameter();
   private NoiseParameter moss = new NoiseParameter();
 
   private boolean bindCandleToEdge = true;
@@ -103,5 +138,6 @@ public class DecorationParameters {
 
   private List<Material> leafMaterials = List.of();
   private List<Material> flora = List.of();
+  private List<Material> leavesCanReplace = List.of(Material.GLOW_LICHEN);
   private List<String> disabledDecorators = List.of();
 }

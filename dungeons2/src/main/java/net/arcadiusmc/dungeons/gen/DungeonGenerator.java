@@ -11,8 +11,6 @@ import static org.bukkit.Material.ANDESITE;
 import static org.bukkit.Material.ANDESITE_STAIRS;
 import static org.bukkit.Material.BROWN_CANDLE;
 import static org.bukkit.Material.CANDLE;
-import static org.bukkit.Material.CAVE_VINES;
-import static org.bukkit.Material.CAVE_VINES_PLANT;
 import static org.bukkit.Material.CHAIN;
 import static org.bukkit.Material.COBBLESTONE;
 import static org.bukkit.Material.COBBLESTONE_SLAB;
@@ -20,6 +18,7 @@ import static org.bukkit.Material.COBBLESTONE_STAIRS;
 import static org.bukkit.Material.DEEPSLATE;
 import static org.bukkit.Material.DIRT;
 import static org.bukkit.Material.FIRE;
+import static org.bukkit.Material.GLOW_LICHEN;
 import static org.bukkit.Material.GRASS_BLOCK;
 import static org.bukkit.Material.GRAVEL;
 import static org.bukkit.Material.GRAY_CANDLE;
@@ -35,6 +34,7 @@ import static org.bukkit.Material.STONE_BRICK_WALL;
 import static org.bukkit.Material.WHITE_CANDLE;
 
 import com.google.common.base.Stopwatch;
+import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
@@ -42,6 +42,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
@@ -71,16 +72,16 @@ import org.bukkit.Axis;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockSupport;
+import org.bukkit.block.data.Ageable;
 import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.Bisected.Half;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.MultipleFacing;
 import org.bukkit.block.data.Waterlogged;
 import org.bukkit.block.data.type.Candle;
-import org.bukkit.block.data.type.CaveVines;
 import org.bukkit.block.data.type.CaveVinesPlant;
 import org.bukkit.block.data.type.Chain;
 import org.bukkit.block.data.type.Lantern;
-import org.bukkit.block.data.type.Leaves;
 import org.bukkit.block.data.type.Stairs;
 import org.bukkit.block.data.type.Stairs.Shape;
 import org.bukkit.block.data.type.Wall;
@@ -206,7 +207,8 @@ public class DungeonGenerator {
     PlacingVisitor visitor = new PlacingVisitor();
     rootPiece.forEachDescendant(visitor);
 
-    runPass("vegetation", this::vegetationPass);
+    runPass("cave-vines", this::vinePass);
+    runPass("leaves", this::leafPass);
     runPass("moss-and-grass", this::mossGrassPass);
     runPass("foliage", this::foliagePass);
     runPass("puddles", this::puddlePass);
@@ -249,7 +251,11 @@ public class DungeonGenerator {
 
   /* --------------------------- Vegetation pass ---------------------------- */
 
-  public void vegetationPass() {
+  public void vinePass() {
+    boundsSet.forEachBlock(new CaveVinePass(vegitationNoise));
+  }
+
+  public void leafPass() {
     boundsSet.forEachBlock(new LeafPass(vegitationNoise));
   }
 
@@ -501,7 +507,16 @@ public class DungeonGenerator {
     buffer.clearBlock(x, y, z);
   }
 
-  public void mossify(int x, int y, int z, int radius) {
+  public void mossify(int x, int y, int z) {
+    final int radius = config.getDecoration().getMossRadius();
+
+    if (radius < 1) {
+      return;
+    }
+
+    final int dropOffAfter = config.getDecoration().getMossDropOffAfter();
+    final int maxMhDist = radius * 3;
+
     for (int ox = -radius; ox <= radius; ox++) {
       for (int oy = -radius; oy <= radius; oy++) {
         for (int oz = -radius; oz <= radius; oz++) {
@@ -509,41 +524,129 @@ public class DungeonGenerator {
           int by = y + oy;
           int bz = z + oz;
 
-          BufferBlock block = getBlock(bx, by, bz);
-          if (block == null) {
+          if (isAir(bx, by, bz)) {
+            if (isSupportedByAnyFace(bx, by, bz)) {
+              mossifyAir(bx, by, bz, ox, oy, oz, maxMhDist, dropOffAfter);
+            }
+
             continue;
           }
 
-          BlockData data = block.data();
-          Material material = data.getMaterial();
-
-          BlockIteration iteration = BlockIterations.getIteration(material);
-          if (iteration == null) {
-            continue;
-          }
-
-          Material mossy;
-          if (material == iteration.getBlock()) {
-            mossy = iteration.getMossyBlock();
-          } else if (material == iteration.getSlab()) {
-            mossy = iteration.getMossySlab();
-          } else if (material == iteration.getStairs()) {
-            mossy = iteration.getMossyStairs();
-          } else {
-            mossy = iteration.getMossyWall();
-          }
-
-          if (mossy == null) {
-            continue;
-          }
-
-          BlockData mossyData = mossy.createBlockData();
-          mossyData = VanillaAccess.merge(mossyData, data);
-
-          setBlock(bx, by, bz, mossyData);
+          mossifyBlock(bx, by, bz, ox, oy, oz, maxMhDist, dropOffAfter);
         }
       }
     }
+  }
+
+  private boolean isSupportedByAnyFace(int x, int y, int z) {
+    return hasSupport(x, y + 1, z, BlockFace.DOWN)
+        || hasSupport(x, y - 1, z, BlockFace.UP)
+        || hasSupport(x + 1, y, z, BlockFace.WEST)
+        || hasSupport(x - 1, y, z, BlockFace.EAST)
+        || hasSupport(x, y, z + 1, BlockFace.NORTH)
+        || hasSupport(x, y, z - 1, BlockFace.SOUTH);
+  }
+
+  private boolean testMossDistance(int ox, int oy, int oz, int maxMhDist, int dropOffAfter) {
+    // Blocks directly next to ox=0, oy=0, oz=0 should always have moss,
+    // but other blocks should randomly drop off their mossy-ness
+    // mhDist is the manhattan distance from ox=0, oy=0, oz=0
+    int mhDist = Math.abs(ox) + Math.abs(oy) + Math.abs(oz);
+
+    if (mhDist <= dropOffAfter) {
+      return true;
+    }
+
+    float spawnRate = (float) mhDist / ((float) maxMhDist);
+    float rand = random.nextFloat();
+
+    return rand <= spawnRate;
+  }
+
+  private void mossifyAir(
+      int x, int y, int z,
+      int ox, int oy, int oz,
+      int maxMhDist,
+      int dropOffAfter
+  ) {
+    if (!testMossDistance(ox, oy, oz, maxMhDist, dropOffAfter)) {
+      return;
+    }
+
+    float rate = config.getDecoration().getGlowLichenInsteadLeavesRate();
+    if (random.nextFloat() >= rate) {
+      return;
+    }
+
+    placeGlowLichen(x, y, z);
+  }
+
+  private void mossifyBlock(
+      int x, int y, int z,
+      int ox, int oy, int oz,
+      int maxMhDist,
+      int dropOffAfter
+  ) {
+    BlockData data = getBlockData(x, y, z);
+    if (data == null) {
+      return;
+    }
+
+    Material material = data.getMaterial();
+    BlockIteration iteration = BlockIterations.getIteration(material);
+
+    if (iteration == null) {
+      return;
+    }
+
+    Material mossy;
+    if (material == iteration.getBlock()) {
+      mossy = iteration.getMossyBlock();
+    } else if (material == iteration.getSlab()) {
+      mossy = iteration.getMossySlab();
+    } else if (material == iteration.getStairs()) {
+      mossy = iteration.getMossyStairs();
+    } else {
+      mossy = iteration.getMossyWall();
+    }
+
+    if (mossy == null) {
+      return;
+    }
+    if (!testMossDistance(ox, oy, oz, maxMhDist, dropOffAfter)) {
+      return;
+    }
+
+    BlockData mossyData = mossy.createBlockData();
+    mossyData = VanillaAccess.merge(mossyData, data);
+
+    setBlock(x, y, z, mossyData);
+  }
+
+  public void placeGlowLichen(int x, int y, int z) {
+    MultipleFacing facing = (MultipleFacing) GLOW_LICHEN.createBlockData();
+    Set<BlockFace> allowed = facing.getAllowedFaces();
+
+    if (allowed.contains(BlockFace.UP)) {
+      facing.setFace(BlockFace.UP, hasSupport(x, y + 1, z, BlockFace.DOWN));
+    }
+    if (allowed.contains(BlockFace.DOWN)) {
+      facing.setFace(BlockFace.DOWN, hasSupport(x, y - 1, z, BlockFace.UP));
+    }
+    if (allowed.contains(BlockFace.WEST)) {
+      facing.setFace(BlockFace.WEST, hasSupport(x - 1, y, z, BlockFace.EAST));
+    }
+    if (allowed.contains(BlockFace.EAST)) {
+      facing.setFace(BlockFace.EAST, hasSupport(x + 1, y, z, BlockFace.WEST));
+    }
+    if (allowed.contains(BlockFace.NORTH)) {
+      facing.setFace(BlockFace.NORTH, hasSupport(x, y, z - 1, BlockFace.SOUTH));
+    }
+    if (allowed.contains(BlockFace.SOUTH)) {
+      facing.setFace(BlockFace.SOUTH, hasSupport(x, y, z + 1, BlockFace.NORTH));
+    }
+
+    setBlock(x, y, z, facing);
   }
 
   public void collectFunctions(Holder<BlockStructure> structure, StructurePlaceConfig cfg) {
@@ -949,7 +1052,7 @@ public class DungeonGenerator {
       setBlock(x, y, z, data);
 
       if (waterlogged) {
-        mossify(x, y, z, 1);
+        mossify(x, y, z);
       }
     }
 
@@ -1004,6 +1107,66 @@ public class DungeonGenerator {
     }
   }
 
+  class CaveVinePass extends NoisePass {
+
+    public CaveVinePass(NoiseGenerator noiseGen) {
+      super(noiseGen);
+    }
+
+    @Override
+    public void accept(int x, int y, int z) {
+      if (isSkyAbove(x, y, z) || isVoidBelow(x, y, z) || !isAir(x, y, z)) {
+        return;
+      }
+      if (!testNoise(x, y, z)) {
+        return;
+      }
+      if (!hasSupport(x, y + 1, z, BlockFace.DOWN)) {
+        return;
+      }
+
+      caveVineTrail(x, y, z);
+    }
+
+    private void caveVineTrail(int x, int y, int z) {
+      int freeSpace = freeSpaceDown(x, y, z) / 3;
+      int maxLength = config.getDecoration().getMaxLeafLength();
+
+      if (freeSpace < 1) {
+        return;
+      }
+
+      int length = Math.min(maxLength, random.nextInt(freeSpace));
+
+      for (int i = 0; i < length; i++) {
+        if (!isAir(x, y, z)) {
+          break;
+        }
+
+        BlockData data;
+
+        if (!isAir(x, y - 1, z) || i == (length - 1)) {
+          data = config.getDecoration().getCaveVineBottom().createBlockData();
+
+          if (data instanceof Ageable ageable) {
+            ageable.setAge(ageable.getMaximumAge());
+          }
+        } else {
+          data = config.getDecoration().getCaveVineBlock().createBlockData();
+        }
+
+        if (data instanceof CaveVinesPlant plant) {
+          plant.setBerries(random.nextFloat() < config.getDecoration().getBerryRate());
+        }
+
+        setBlock(x, y, z, data);
+        mossify(x, y, z);
+
+        y--;
+      }
+    }
+  }
+
   //
   //
   // Leaf gen types:
@@ -1026,9 +1189,8 @@ public class DungeonGenerator {
   //
   class LeafPass extends NoisePass {
 
-    final int[] possibleMovesX = new int[10];
-    final int[] possibleMovesZ = new int[10];
-    int possibleMovesLen = 0;
+    final int[] xMoves = {-1, 0, 1};
+    final int[] zMoves = {-1, 0, 1};
 
     public LeafPass(NoiseGenerator noiseGen) {
       super(noiseGen);
@@ -1036,7 +1198,21 @@ public class DungeonGenerator {
 
     @Override
     NoiseParameter noiseParameters() {
-      return config.getDecoration().getVegetation();
+      return config.getDecoration().getLeaves();
+    }
+
+    private boolean hasLeafBlocks() {
+      return !config.getDecoration().getLeafMaterials().isEmpty();
+    }
+
+    private BlockData getLeafBlock() {
+      List<Material> list = config.getDecoration().getLeafMaterials();
+
+      if (list.isEmpty()) {
+        return null;
+      }
+
+      return list.get(random.nextInt(list.size())).createBlockData();
     }
 
     @Override
@@ -1044,105 +1220,83 @@ public class DungeonGenerator {
       if (isSkyAbove(x, y, z) || isVoidBelow(x, y, z) || !isAir(x, y, z)) {
         return;
       }
-      if (!hasSupport(x, y + 1, z, BlockFace.DOWN)) {
-        return;
-      }
       if (!testNoise(x, y, z)) {
         return;
       }
 
-      caveVineTrail(x, y, z);
-    }
-
-    private void drippingLeaves(int x, int y, int z) {
-      List<Material> materials = config.getDecoration().getLeafMaterials();
-      if (materials.isEmpty()) {
+      if (hasSupport(x, y - 1, z, BlockFace.UP)) {
+        groundSnakeLeaves(x, y, z);
         return;
       }
 
-      int maxLength = config.getDecoration().getMaxLeafLength();
-      int length = random.nextInt(maxLength);
-
-      for (int i = 0; i < length; i++) {
-        if (!isAir(x, y, z)) {
-          findPossibleMoves(x, y, z);
-
-          if (possibleMovesLen < 1) {
-            break;
-          }
-
-          int moveIdx = random.nextInt(possibleMovesLen);
-
-          x = possibleMovesX[moveIdx];
-          z = possibleMovesZ[moveIdx];
-        }
-
-        Material material = materials.get(random.nextInt(materials.size()));
-        BlockData data = material.createBlockData();
-
-        if (data instanceof Leaves leaves) {
-          leaves.setPersistent(true);
-        }
-
-        setBlock(x, y, z, material.createBlockData());
-        mossify(x, y, z, 1);
-
-        y--;
-      }
+      ceillingSnakeLeaves(x, y, z);
     }
 
-    private void caveVineTrail(int x, int y, int z) {
-      int freeSpace = freeSpaceDown(x, y, z) / 3;
-      int maxLength = config.getDecoration().getMaxLeafLength();
+    private boolean isLeafReplaceable(int x, int y, int z) {
+      if (isAir(x, y, z)) {
+        return true;
+      }
 
-      if (freeSpace < 1) {
+      Material type = getBlockType(x, y, z);
+      return config.getDecoration().getLeavesCanReplace().contains(type);
+    }
+
+    private void groundSnakeLeaves(int x, int y, int z) {
+      if (!hasLeafBlocks()) {
         return;
       }
 
-      int length = Math.min(maxLength, random.nextInt(freeSpace));
+      int maxLength = random.nextInt(config.getDecoration().getMaxLeafLength());
+      int len = 0;
 
-      for (int i = 0; i < length; i++) {
-        if (!isAir(x, y, z)) {
-          break;
+      int lastXMove = 0;
+      int lastZMove = 0;
+
+      outer: while (len < maxLength) {
+        setBlock(x, y, z, getLeafBlock());
+        mossify(x, y, z);
+
+        len++;
+
+        if (isLeafReplaceable(x, y - 1, z)) {
+          y--;
+          continue;
         }
 
-        CaveVinesPlant data;
+        IntArrays.shuffle(xMoves, random);
 
-        if (!isAir(x, y - 1, z) || i == (length - 1)) {
-          CaveVines cdata = (CaveVines) CAVE_VINES.createBlockData();
-          cdata.setAge(cdata.getMaximumAge());
-          data = cdata;
-        } else {
-          data = (CaveVinesPlant) CAVE_VINES_PLANT.createBlockData();
-        }
+        for (int mx : xMoves) {
+          IntArrays.shuffle(zMoves, random);
 
-        data.setBerries(random.nextFloat() < config.getDecoration().getBerryRate());
-        setBlock(x, y, z, data);
+          for (int mz : zMoves) {
+            int bx = mx + x;
+            int bz = mz + z;
 
-        mossify(x, y, z, 1);
+            if (!isLeafReplaceable(bx, y, bz)) {
+              continue;
+            }
+            if (mx != lastXMove && mz != lastZMove) {
+              continue;
+            }
 
-        y--;
-      }
-    }
+            lastXMove = mx;
+            lastZMove = mz;
 
-    private void findPossibleMoves(int x, int y, int z) {
-      possibleMovesLen = 0;
+            x = bx;
+            z = bz;
 
-      for (int ox = -1; ox <= 1; ox++) {
-        for (int oz = -1; oz <= 1; oz++) {
-          int bx = ox + x;
-          int bz = oz + z;
-
-          if (!isAir(bx, y, bz)) {
-            continue;
+            continue outer;
           }
-
-          possibleMovesX[possibleMovesLen] = bx;
-          possibleMovesZ[possibleMovesLen] = bz;
-          possibleMovesLen++;
         }
+
+        break;
       }
     }
+
+    private void ceillingSnakeLeaves(int x, int y, int z) {
+
+    }
+
 
   }
 
@@ -1197,7 +1351,7 @@ public class DungeonGenerator {
 
         if (supportUp && random.nextBoolean()) {
           setBlock(x, y, z, MOSS_CARPET.createBlockData());
-          mossify(x, y, z, 1);
+          mossify(x, y, z);
         }
 
         return;
@@ -1208,7 +1362,7 @@ public class DungeonGenerator {
       }
 
       setBlock(x, y, z, MOSS_BLOCK.createBlockData());
-      mossify(x, y, z, 1);
+      mossify(x, y, z);
     }
 
     int countMossBelow(int x, int y, int z) {
