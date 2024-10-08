@@ -27,6 +27,7 @@ import net.arcadiusmc.utils.io.PluginJar;
 import net.arcadiusmc.utils.io.SerializationHelper;
 import net.forthecrown.grenadier.CommandSource;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.World;
@@ -76,6 +77,10 @@ public class PlaceholderServiceImpl implements PlaceholderService {
     addObjectPlaceholder(Vectori.class,       ObjectPlaceholder.VECTOR_I);
     addObjectPlaceholder(Vectord.class,       ObjectPlaceholder.VECTOR_D);
     addObjectPlaceholder(Vectorf.class,       ObjectPlaceholder.VECTOR_F);
+
+    if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+      defaultSources.add(new PlaceholderApiHook());
+    }
   }
 
   @Override
