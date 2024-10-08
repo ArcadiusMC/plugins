@@ -103,4 +103,12 @@ public class Transform {
   public Transform addRotation(Rotation rotation) {
     return withRotation(this.rotation.add(rotation));
   }
+
+  public Transform combine(Transform t) {
+    return new Transform(
+        this.rotation.add(t.rotation),
+        this.pivot.add(t.pivot),
+        this.offset.add(t.offset)
+    );
+  }
 }
