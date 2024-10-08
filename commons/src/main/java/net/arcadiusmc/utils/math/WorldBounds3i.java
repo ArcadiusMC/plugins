@@ -109,6 +109,15 @@ public class WorldBounds3i extends AbstractBounds3i<WorldBounds3i> implements Ar
   }
 
   @Override
+  public boolean contains(Entity entity) {
+    if (!entity.getWorld().equals(getWorld())) {
+      return false;
+    }
+
+    return super.contains(entity);
+  }
+
+  @Override
   public boolean contains(Location vec) {
     if (!world.equals(vec.getWorld())) {
       return false;
