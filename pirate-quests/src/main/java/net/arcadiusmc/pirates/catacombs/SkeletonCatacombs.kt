@@ -162,6 +162,19 @@ fun onLeaveCatacombRegion(boundingBox: WorldBounds3i, player: Player) {
   }, 1)
 }
 
+fun onCatacombsLeaveCommand(player: Player): Boolean {
+  val bb = currentState.boundingBox ?: return false
+
+  if (!bb.contains(player)) {
+    return false
+  }
+
+  val loc = Location(Worlds.overworld(), 2833.5, 64.0, 1320.5, -90.0f, 0.0f)
+  player.teleport(loc)
+
+  return true
+}
+
 private fun closeGate() {
   val world = currentState.boundingBox?.world ?: return
 
