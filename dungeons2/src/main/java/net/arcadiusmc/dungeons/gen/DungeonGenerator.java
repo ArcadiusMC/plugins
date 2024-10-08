@@ -70,6 +70,7 @@ import net.arcadiusmc.utils.math.Transform;
 import net.forthecrown.nbt.CompoundTag;
 import org.bukkit.Axis;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockSupport;
 import org.bukkit.block.data.Ageable;
@@ -88,6 +89,7 @@ import org.bukkit.block.data.type.Wall;
 import org.bukkit.block.data.type.Wall.Height;
 import org.bukkit.util.noise.NoiseGenerator;
 import org.bukkit.util.noise.PerlinNoiseGenerator;
+import org.joml.Vector2i;
 import org.slf4j.Logger;
 import org.spongepowered.math.vector.Vector3i;
 
@@ -138,8 +140,9 @@ public class DungeonGenerator {
         result.setGreatestDepth(mdepth);
 
         switch (k) {
-          case MOB_ROOM:
           case BOSS_ROOM:
+            result.setBossRoom(piece);
+          case MOB_ROOM:
             result.setNonConnectorRooms(result.getNonConnectorRooms() + 1);
             break;
 
@@ -471,6 +474,16 @@ public class DungeonGenerator {
       return null;
     }
     return b.data().getMaterial();
+  }
+
+  public boolean isTagged(int x, int y, int z, Tag<Material> tag) {
+    Material type = getBlockType(x, y, z);
+
+    if (type == null) {
+      return tag == Tag.AIR;
+    }
+
+    return tag.isTagged(type);
   }
 
   public boolean matchesBlock(int x, int y, int z, Material... anyOf) {
@@ -1063,12 +1076,32 @@ public class DungeonGenerator {
       double maxZ = minZ + 0.5;
       double ny = y + 0.75d;
 
-      return blockQuadrantsMask(
+      int mask = blockQuadrantsMask(
           getNoise(minX, ny, minZ),
           getNoise(maxX, ny, minZ),
           getNoise(minX, ny, maxZ),
           getNoise(maxX, ny, maxZ)
       );
+
+      boolean westAir = isAir(x - 1, y, z /*, BlockFace.WEST*/);
+      boolean eastAir = isAir(x + 1, y, z /*, BlockFace.EAST*/);
+      boolean northAir = isAir(x, y, z - 1 /*, BlockFace.NORTH*/);
+      boolean southAir = isAir(x, y, z + 1 /*, BlockFace.SOUTH*/);
+
+      if (westAir | northAir) {
+        mask &= ~Q_NW;
+      }
+      if (westAir | southAir) {
+        mask &= ~Q_SW;
+      }
+      if (eastAir | northAir) {
+        mask &= ~Q_NE;
+      }
+      if (eastAir | southAir) {
+        mask &= ~Q_SE;
+      }
+
+      return mask;
     }
 
     int blockQuadrantsMask(double nw, double ne, double sw, double se) {
@@ -1190,7 +1223,11 @@ public class DungeonGenerator {
   class LeafPass extends NoisePass {
 
     final int[] xMoves = {-1, 0, 1};
+    final int[] yMoves = {-1, 0, 1};
     final int[] zMoves = {-1, 0, 1};
+
+    int lastXMove = 0;
+    int lastZMove = 0;
 
     public LeafPass(NoiseGenerator noiseGen) {
       super(noiseGen);
@@ -1223,13 +1260,22 @@ public class DungeonGenerator {
       if (!testNoise(x, y, z)) {
         return;
       }
+      if (!hasLeafBlocks()) {
+        return;
+      }
+      if (!hasSupport(x, y + 1, z, BlockFace.DOWN)) {
+        return;
+      }
+
+      lastXMove = 0;
+      lastZMove = 0;
 
       if (hasSupport(x, y - 1, z, BlockFace.UP)) {
         groundSnakeLeaves(x, y, z);
         return;
       }
 
-      ceillingSnakeLeaves(x, y, z);
+      ceilingSnakeLeaves(x, y, z);
     }
 
     private boolean isLeafReplaceable(int x, int y, int z) {
@@ -1242,17 +1288,12 @@ public class DungeonGenerator {
     }
 
     private void groundSnakeLeaves(int x, int y, int z) {
-      if (!hasLeafBlocks()) {
-        return;
-      }
-
       int maxLength = random.nextInt(config.getDecoration().getMaxLeafLength());
       int len = 0;
 
-      int lastXMove = 0;
-      int lastZMove = 0;
+      Vector2i move = new Vector2i();
 
-      outer: while (len < maxLength) {
+      while (len < maxLength) {
         setBlock(x, y, z, getLeafBlock());
         mossify(x, y, z);
 
@@ -1263,41 +1304,149 @@ public class DungeonGenerator {
           continue;
         }
 
-        IntArrays.shuffle(xMoves, random);
-
-        for (int mx : xMoves) {
-          IntArrays.shuffle(zMoves, random);
-
-          for (int mz : zMoves) {
-            int bx = mx + x;
-            int bz = mz + z;
-
-            if (!isLeafReplaceable(bx, y, bz)) {
-              continue;
-            }
-            if (mx != lastXMove && mz != lastZMove) {
-              continue;
-            }
-
-            lastXMove = mx;
-            lastZMove = mz;
-
-            x = bx;
-            z = bz;
-
-            continue outer;
-          }
+        if (!findNextValidMove(x, y, z, move)) {
+          break;
         }
 
-        break;
+        x = move.x;
+        z = move.y;
       }
     }
 
-    private void ceillingSnakeLeaves(int x, int y, int z) {
+    private boolean findNextValidMove(int x, int y, int z, Vector2i out) {
+      IntArrays.shuffle(xMoves, random);
 
+      for (int mx : xMoves) {
+        IntArrays.shuffle(zMoves, random);
+
+        for (int mz : zMoves) {
+          int bx = mx + x;
+          int bz = mz + z;
+
+          if (!isLeafReplaceable(bx, y, bz)) {
+            continue;
+          }
+          if (mx != lastXMove && mz != lastZMove) {
+            continue;
+          }
+
+          lastXMove = mx;
+          lastZMove = mz;
+
+          out.x = bx;
+          out.y = bz;
+
+          return true;
+        }
+      }
+
+      return false;
     }
 
+    private void ceilingSnakeLeaves(int x, int y, int z) {
+      int upperBound = config.getDecoration().getMaxLeafLength();
+      int length = random.nextInt(upperBound);
 
+      if (length < 1) {
+        return;
+      }
+
+      int dripLength = random.nextInt(length);
+      int snakeLength = length - dripLength;
+
+      int currentLength = 0;
+
+      Vector2i nextPosition = new Vector2i();
+      org.joml.Vector3i nextPos3i = new org.joml.Vector3i();
+
+      int dropStartX = 0;
+      int dropStartZ = 0;
+
+      while (currentLength < length) {
+        currentLength++;
+
+        setBlock(x, y, z, getLeafBlock());
+        mossify(x, y, z);
+
+        if (currentLength >= length) {
+          continue;
+        }
+
+        if (currentLength == snakeLength) {
+          dropStartX = x;
+          dropStartZ = z;
+        }
+
+        if (currentLength > snakeLength) {
+          x = dropStartX;
+          z = dropStartZ;
+
+          if (!isLeafReplaceable(x, y - 1, z)
+              || (random.nextBoolean() && currentLength < (length - 1))
+          ) {
+            int by = y - 1;
+
+            if (!findNextValidMove(x, by, z, nextPosition)) {
+              break;
+            }
+
+            x = nextPosition.x;
+            z = nextPosition.y;
+          }
+
+          y--;
+          continue;
+        }
+
+        if (!findCeilingSnakeNextMove(x, y, z, nextPos3i)) {
+          break;
+        }
+
+        x = nextPos3i.x;
+        y = nextPos3i.y;
+        z = nextPos3i.z;
+      }
+    }
+
+    private boolean findCeilingSnakeNextMove(int x, int y, int z, org.joml.Vector3i out) {
+      IntArrays.shuffle(yMoves, random);
+
+      for (int yo : yMoves) {
+        IntArrays.shuffle(xMoves, random);
+
+        for (int xo : xMoves) {
+          IntArrays.shuffle(zMoves, random);
+
+          for (int zo : zMoves) {
+            int bx = xo + x;
+            int by = yo + y;
+            int bz = zo + z;
+
+            if (!isLeafReplaceable(bx, by, bz)) {
+              continue;
+            }
+            if (!isSupportedByAnyFace(bx, by, bz)) {
+              continue;
+            }
+
+            if (xo != lastXMove && zo != lastZMove) {
+              continue;
+            }
+
+            out.x = bx;
+            out.y = by;
+            out.z = bz;
+
+            lastXMove = xo;
+            lastZMove = zo;
+
+            return true;
+          }
+        }
+      }
+
+      return false;
+    }
   }
 
   class MossGrassPass extends NoisePass {
@@ -1357,12 +1506,31 @@ public class DungeonGenerator {
         return;
       }
 
+      if (isTagged(x, y, z, Tag.LEAVES)
+          && canOverrideLeavesMoss(x, y, z)
+          && random.nextFloat() < 0.25
+      ) {
+        setBlock(x, y, z, MOSS_BLOCK.createBlockData());
+        return;
+      }
+
       if (!canReplace(x, y, z)) {
         return;
       }
 
       setBlock(x, y, z, MOSS_BLOCK.createBlockData());
       mossify(x, y, z);
+    }
+
+    boolean canOverrideLeavesMoss(int x, int y, int z) {
+      if (!isAir(x, y + 1, z)) {
+        return false;
+      }
+
+      return (hasSupport(x + 1, y, z, BlockFace.WEST) && !isTagged(x + 1, y, z, Tag.LEAVES))
+          || (hasSupport(x - 1, y, z, BlockFace.EAST) && !isTagged(x - 1, y, z, Tag.LEAVES))
+          || (hasSupport(x, y, z + 1, BlockFace.NORTH) && !isTagged(x, y, z + 1, Tag.LEAVES))
+          || (hasSupport(x, y, z - 1, BlockFace.SOUTH) && !isTagged(x, y, z - 1, Tag.LEAVES));
     }
 
     int countMossBelow(int x, int y, int z) {

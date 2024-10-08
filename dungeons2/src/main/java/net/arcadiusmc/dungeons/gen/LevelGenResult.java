@@ -13,6 +13,7 @@ public class LevelGenResult {
       .reversed();
 
   private final DungeonPiece rootPiece;
+  private DungeonPiece bossRoom;
   private int nonConnectorRooms = 0;
   private int greatestDepth = Integer.MIN_VALUE;
 
