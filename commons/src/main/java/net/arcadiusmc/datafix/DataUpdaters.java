@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import lombok.Getter;
 import net.arcadiusmc.utils.PluginUtil;
-import net.arcadiusmc.utils.io.PathUtil;
 import net.arcadiusmc.utils.io.SerializationHelper;
 import org.bukkit.plugin.Plugin;
 
@@ -19,6 +18,9 @@ public class DataUpdaters {
   @Getter
   final Path completedTxt;
 
+  @Getter
+  final Path directory;
+
   private final List<DataUpdater> updaters = new ArrayList<>();
   private final List<String> completed = new ArrayList<>();
 
@@ -26,7 +28,9 @@ public class DataUpdaters {
     Objects.requireNonNull(plugin);
 
     this.plugin = plugin;
-    this.completedTxt = PathUtil.pluginPath(plugin, "datafixer", "completed.txt");
+
+    this.directory = Path.of("plugins", ".data-update", plugin.getName().toLowerCase());
+    this.completedTxt = directory.resolve("completed.txt");
   }
 
   public static DataUpdaters create() {

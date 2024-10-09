@@ -11,11 +11,14 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 import net.arcadiusmc.utils.io.IOConsumer;
 import net.arcadiusmc.utils.io.PathUtil;
+import org.bukkit.plugin.Plugin;
 
 public abstract class DataUpdater {
 
   private final ImmutableMap<String, String> renames;
   protected UpdaterLogger logger;
+  protected Plugin plugin;
+  protected DataUpdaters updater;
 
   public DataUpdater() {
     var builder = ImmutableMap.<String, String>builder();
@@ -25,7 +28,9 @@ public abstract class DataUpdater {
   }
 
   final void bind(DataUpdaters updaters) {
-    logger = UpdaterLogger.create(updaters.getPlugin());
+    this.updater = updaters;
+    this.plugin = updaters.getPlugin();
+    this.logger = UpdaterLogger.create(plugin);
   }
 
   protected void createRenames(ImmutableMap.Builder<String, String> builder) {
@@ -46,7 +51,7 @@ public abstract class DataUpdater {
     }
 
     if (logger.getOutput() == null) {
-      logger.initFilePrinter();
+      logger.initFilePrinter(updater.getDirectory());
     }
 
     logger.info("Starting updater: {}", getClass().getSimpleName());
