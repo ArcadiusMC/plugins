@@ -6,11 +6,13 @@ plugins {
 }
 
 repositories {
-
+  maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
 }
 
 dependencies {
   compileOnly("net.luckperms:api:5.4")
+  compileOnly("me.clip:placeholderapi:2.11.6")
+
   implementation(project(":commons"))
   implementation(project(":class-loader-tools"))
 }
@@ -24,6 +26,7 @@ pluginYml {
     required("LuckPerms")
     required("FastAsyncWorldEdit")
     required("WorldGuard")
+    optional("PlaceholderAPI")
   }
 
   loadBefore {
