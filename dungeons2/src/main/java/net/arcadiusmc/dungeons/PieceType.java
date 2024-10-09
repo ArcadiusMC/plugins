@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.structure.BlockStructure;
-import net.arcadiusmc.structure.Structures;
+import net.arcadiusmc.structure.StructuresPlugin;
 import net.arcadiusmc.utils.io.ExtraCodecs;
 
 @Getter
@@ -16,7 +16,7 @@ public class PieceType {
   static final Codec<PieceType> CODEC = RecordCodecBuilder.create(instance -> {
     return instance
         .group(
-            Structures.get().getRegistry().holderCodec()
+            StructuresPlugin.getManager().getRegistry().holderCodec()
                 .fieldOf("structure")
                 .forGetter(PieceType::getHolder),
 

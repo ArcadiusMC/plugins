@@ -12,6 +12,7 @@ import net.arcadiusmc.structure.FunctionProcessor;
 import net.arcadiusmc.structure.StructurePlaceConfig;
 import net.arcadiusmc.structure.StructurePlaceConfig.Builder;
 import net.arcadiusmc.structure.Structures;
+import net.arcadiusmc.structure.StructuresPlugin;
 import net.arcadiusmc.structure.buffer.BlockBuffer;
 import net.arcadiusmc.structure.pool.StructureAndPalette;
 import net.arcadiusmc.structure.pool.StructurePool;
@@ -65,7 +66,7 @@ public class PoolFunctionProcessor implements FunctionProcessor {
       return;
     }
 
-    Structures structures = Structures.get();
+    Structures structures = StructuresPlugin.getManager();
     Registry<StructurePool> registry = structures.getPoolRegistry();
     Optional<StructurePool> opt = registry.get(poolKey);
 
