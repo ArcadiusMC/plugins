@@ -2,22 +2,23 @@ package net.arcadiusmc.command;
 
 import static net.kyori.adventure.text.Component.text;
 
+import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.List;
 import java.util.function.Consumer;
-import net.arcadiusmc.text.Text;
-import net.arcadiusmc.text.TextJoiner;
 import net.arcadiusmc.command.help.Usage;
 import net.arcadiusmc.command.help.UsageFactory;
+import net.arcadiusmc.text.Text;
+import net.arcadiusmc.text.TextJoiner;
+import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Nodes;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.forthecrown.nbt.BinaryTag;
 import net.forthecrown.nbt.CompoundTag;
 import net.forthecrown.nbt.path.TagPath;
-import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.inventory.ItemStack;
@@ -123,8 +124,8 @@ public class DataCommands extends Nodes {
     return literal;
   }
 
-  public static void addArguments(
-      LiteralArgumentBuilder<CommandSource> builder,
+  public static <T extends ArgumentBuilder<CommandSource, T>> void addArguments(
+      T builder,
       String name,
       DataAccessor accessor
   ) {
