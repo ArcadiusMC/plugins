@@ -38,6 +38,7 @@ public class MessageLoader {
 
   private static final String STYLE_KEY = "_style";
   private static final String STYLES_KEY = "_styles";
+  private static final String NAMESPACE_KEY = "_namespace";
 
   private static final Logger LOGGER = Loggers.getLogger();
 
@@ -254,6 +255,11 @@ public class MessageLoader {
           ctx.addStyle(name, mutable.getValue());
         }
       }
+    }
+
+    if (obj.has(NAMESPACE_KEY)) {
+      String namespace = obj.get(NAMESPACE_KEY).getAsString();
+      ctx.pushPrefix(namespace);
     }
 
     loadFromPrefixedJson(ctx, obj, list);
