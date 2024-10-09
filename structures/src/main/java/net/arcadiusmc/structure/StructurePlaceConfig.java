@@ -73,7 +73,7 @@ public class StructurePlaceConfig {
   public static class Builder {
 
     private BlockBuffer buffer;
-    private Vector3i pos;
+    private Vector3i pos = Vector3i.ZERO;
 
     private final ImmutableList.Builder<BlockProcessor> processors = ImmutableList.builder();
     private final ImmutableMap.Builder<String, FunctionProcessor> functions = ImmutableMap.builder();

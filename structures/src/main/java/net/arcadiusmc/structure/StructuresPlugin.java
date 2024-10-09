@@ -1,8 +1,9 @@
 package net.arcadiusmc.structure;
 
 import java.time.Duration;
-import net.arcadiusmc.structure.commands.CommandFtcStruct;
-import net.arcadiusmc.structure.commands.CommandStructFunction;
+import lombok.Getter;
+import net.arcadiusmc.structure.commands.StructureCommands;
+import net.arcadiusmc.text.loader.MessageLoader;
 import net.arcadiusmc.utils.PeriodicalSaver;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -10,12 +11,27 @@ public class StructuresPlugin extends JavaPlugin {
 
   private PeriodicalSaver saver;
 
+  @Getter
+  private Structures structures;
+
+  public static StructuresPlugin getPlugin() {
+    return JavaPlugin.getPlugin(StructuresPlugin.class);
+  }
+
+  public static Structures getManager() {
+    return getPlugin().getStructures();
+  }
+
   @Override
   public void onEnable() {
-    Structures.get().load();
+    StructPluginUpdater.run(this);
 
-    new CommandFtcStruct();
-    new CommandStructFunction();
+    structures = new Structures(this);
+    structures.load();
+
+    reloadConfig();
+
+    StructureCommands.createCommands(this);
 
     saver = PeriodicalSaver.create(this::save, () -> Duration.ofMinutes(30));
     saver.start();
@@ -23,11 +39,16 @@ public class StructuresPlugin extends JavaPlugin {
 
   @Override
   public void onDisable() {
-    Structures.get().save();
+    structures.save();
     saver.stop();
   }
 
   void save() {
-    Structures.get().save();
+    structures.save();
+  }
+
+  @Override
+  public void reloadConfig() {
+    MessageLoader.loadPluginMessages(this);
   }
 }

@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import lombok.Getter;
 import net.arcadiusmc.Loggers;
-import net.arcadiusmc.command.arguments.RegistryArguments;
 import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.registry.Registries;
 import net.arcadiusmc.registry.Registry;
@@ -24,8 +23,6 @@ public final class Structures {
 
   private static final Logger LOGGER = Loggers.getLogger();
 
-  private static final Structures inst = new Structures();
-
   @Getter
   private final Registry<BlockStructure> registry = Registries.newRegistry();
 
@@ -38,12 +35,9 @@ public final class Structures {
 
   private boolean deleteRemovedStructures = true;
 
-  @Getter
-  private RegistryArguments<BlockStructure> structureArgument;
-
-  public Structures() {
-    this.directory = PathUtil.pluginPath();
-    this.pools = directory.resolve("pools");
+  public Structures(StructuresPlugin plugin) {
+    this.directory = PathUtil.pluginPath(plugin, "structures");
+    this.pools = PathUtil.pluginPath(plugin, "pools");
 
     PathUtil.ensureDirectoryExists(pools);
 
@@ -54,12 +48,6 @@ public final class Structures {
 
       delete(holder);
     }));
-
-    structureArgument = new RegistryArguments<>(registry, "Structure");
-  }
-
-  public static Structures get() {
-    return inst;
   }
 
   public void save() {
@@ -126,12 +114,12 @@ public final class Structures {
   }
 
   public void delete(Holder<BlockStructure> structure) {
-    var path = getPath(structure);
+    Path path = getPath(structure);
 
     try {
       Files.deleteIfExists(path);
     } catch (IOException e) {
-      e.printStackTrace();
+      LOGGER.error("Error deleting structure {} at {}", structure.getKey(), path, e);
     }
   }
 

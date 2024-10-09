@@ -1,7 +1,19 @@
 package net.arcadiusmc.structure.commands;
 
-import net.arcadiusmc.command.Commands;
+import net.arcadiusmc.command.arguments.Arguments;
+import net.arcadiusmc.registry.Holder;
+import net.arcadiusmc.structure.BlockProcessors;
+import net.arcadiusmc.structure.BlockStructure;
+import net.arcadiusmc.structure.StructureEntitySpawner;
+import net.arcadiusmc.structure.StructurePlaceConfig;
+import net.arcadiusmc.structure.StructuresPlugin;
+import net.arcadiusmc.structure.buffer.BlockBuffers;
+import net.arcadiusmc.utils.math.Rotation;
+import net.arcadiusmc.utils.math.Transform;
+import net.arcadiusmc.utils.math.Vectors;
 import net.forthecrown.grenadier.CommandSource;
+import net.forthecrown.grenadier.Completions;
+import net.forthecrown.grenadier.Suggester;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.forthecrown.grenadier.types.ParsedPosition;
 import net.forthecrown.grenadier.types.options.ArgumentOption;
@@ -10,13 +22,6 @@ import net.forthecrown.grenadier.types.options.Options;
 import net.forthecrown.grenadier.types.options.OptionsArgument;
 import net.forthecrown.grenadier.types.options.OptionsArgumentBuilder;
 import net.forthecrown.grenadier.types.options.ParsedOptions;
-import net.arcadiusmc.structure.BlockProcessors;
-import net.arcadiusmc.structure.StructureEntitySpawner;
-import net.arcadiusmc.structure.StructurePlaceConfig;
-import net.arcadiusmc.structure.commands.CommandFtcStruct.VectorParser;
-import net.arcadiusmc.utils.math.Rotation;
-import net.arcadiusmc.utils.math.Transform;
-import net.arcadiusmc.utils.math.Vectors;
 import org.spongepowered.math.vector.Vector3d;
 
 public final class StructureCommands {
@@ -41,36 +46,60 @@ public final class StructureCommands {
 
   private static final ArgumentOption<ParsedPosition> POS_ARG
       = Options.argument(ArgumentTypes.blockPosition())
-      .setLabel("pos")
+      .setLabel("position")
       .setDefaultValue(ParsedPosition.IDENTITY)
       .build();
 
-  static final FlagOption PLACE_ENTITIES = Options.flag("place_entities");
-  static final FlagOption IGNORE_AIR = Options.flag("ignore_air");
+  static final FlagOption PLACE_ENTITIES = Options.flag("place-entities");
+  static final FlagOption IGNORE_AIR = Options.flag("ignore-air");
 
-  public static void createCommands() {
-    var ctx = Commands.createAnnotationContext();
+  public static void createCommands(StructuresPlugin plugin) {
+    new CommandStructure(plugin);
+    new CommandStructFunction();
   }
 
   static OptionsArgumentBuilder createPlacementOptions() {
-    OptionsArgumentBuilder builder = OptionsArgument.builder();
-    builder.addOptional(OFFSET_ARG);
-    builder.addOptional(ROT_ARG);
-    builder.addOptional(POS_ARG);
-    builder.addOptional(PIVOT_ARG);
-    builder.addFlag(PLACE_ENTITIES);
-    builder.addFlag(IGNORE_AIR);
-    return builder;
+    return OptionsArgument.builder()
+        .addOptional(OFFSET_ARG)
+        .addOptional(ROT_ARG)
+        .addOptional(POS_ARG)
+        .addOptional(PIVOT_ARG)
+        .addFlag(PLACE_ENTITIES)
+        .addFlag(IGNORE_AIR);
+  }
+
+  static ArgumentOption<String> createPaletteArg(String structureArgument) {
+    return Options.argument(Arguments.RESOURCE_KEY)
+        .setLabel("palette")
+        .setDefaultValue(BlockStructure.DEFAULT_PALETTE_NAME)
+        .setSuggester(createPaletteSuggestions(structureArgument))
+        .build();
+  }
+
+  static Suggester<CommandSource> createPaletteSuggestions(String argumentName) {
+    return (context, builder) -> {
+      Holder<BlockStructure> struct = context.getArgument(argumentName, Holder.class);
+      return Completions.suggest(builder, struct.getValue().getPalettes().keySet());
+    };
   }
 
   static void configurePlacement(
       StructurePlaceConfig.Builder builder,
       CommandSource source,
-      ParsedOptions options
+      ParsedOptions options,
+      ArgumentOption<String> paletteName
   ) {
-    options.getValueOptional(POS_ARG).ifPresent(position -> {
-      builder.pos(Vectors.intFrom(position.apply(source)));
-    });
+    builder.buffer(BlockBuffers.immediate(source.getWorld()));
+
+    options.getValueOptional(POS_ARG)
+        .ifPresentOrElse(
+            position -> {
+              builder.pos(Vectors.intFrom(position.apply(source)));
+            },
+            () -> {
+              builder.pos(Vectors.intFrom(source.getLocation()));
+            }
+        );
 
     Vector3d pivot = options.getValue(PIVOT_ARG);
     Vector3d offset = options.getValue(OFFSET_ARG);
@@ -89,6 +118,10 @@ public final class StructureCommands {
 
     if (options.has(IGNORE_AIR)) {
       builder.addProcessor(BlockProcessors.IGNORE_AIR);
+    }
+
+    if (paletteName != null && options.has(paletteName)) {
+      builder.paletteName(options.getValue(paletteName));
     }
   }
 }
