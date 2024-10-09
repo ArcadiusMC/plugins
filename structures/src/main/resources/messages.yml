@@ -1,0 +1,23 @@
+_namespace: structures
+_style: gray
+
+saved:                  "Saved structures plugin."
+reloaded:
+  structures:           "Reloaded Structure/Pools data."
+  config:               "Reloaded Structures config."
+
+created:                "Created structured named &e${name}&r."
+placed:                 "Placed structure &e${structure}&r."
+removed:                "Removed structure &e${structure}&r."
+
+palettes:
+  added:                "Added palette &e${name}&r to structure."
+  removed:              "Removed palette &e${name}&r from &6${structure}&r."
+  list.header:          "&e${structure}&r palettes:"
+  list.format:          "- &e${palette}"
+
+errors:
+  _style: red
+  cannotRemoveDefault:  "Cannot remove the default palette."
+  paletteAlreadyUsed:   "Palette ${palette} already exists."
+  invalidSize:          "Invalid size! Structure must be the same size as the default palette!"

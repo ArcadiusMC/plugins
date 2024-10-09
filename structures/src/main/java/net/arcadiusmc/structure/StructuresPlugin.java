@@ -24,8 +24,6 @@ public class StructuresPlugin extends JavaPlugin {
 
   @Override
   public void onEnable() {
-    StructPluginUpdater.run(this);
-
     structures = new Structures(this);
     structures.load();
 

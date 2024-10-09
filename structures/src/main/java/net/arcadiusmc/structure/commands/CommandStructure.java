@@ -229,7 +229,7 @@ public class CommandStructure extends BaseCommand {
     Holder<BlockStructure> holder = getStructure(context);
 
     if (paletteName.equals(DEFAULT_PALETTE_NAME)) {
-      throw Messages.render("structures.erarors.cannotRemoveDefault")
+      throw Messages.render("structures.errors.cannotRemoveDefault")
           .exception(context.getSource());
     }
 
