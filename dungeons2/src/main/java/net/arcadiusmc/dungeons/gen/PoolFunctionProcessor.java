@@ -35,6 +35,7 @@ public class PoolFunctionProcessor implements FunctionProcessor {
   static final String TAG_DEEP = "deep";
   static final String TAG_ALIGN_POINT = "use_alignment_point";
   static final String TAG_CHECK_COLLISION = "check_collision";
+  static final String TAG_CHANCE = "gen_chance";
 
   private static final Logger LOGGER = Loggers.getLogger();
 
@@ -81,6 +82,15 @@ public class PoolFunctionProcessor implements FunctionProcessor {
     if (structOpt.isEmpty()) {
       LOGGER.warn("Pool '{}' returned a non-existing structure", poolKey);
       return;
+    }
+
+    float rate = data.getFloat(TAG_CHANCE, 1f);
+    if (rate < 1f) {
+      float rand = generator.getRandom().nextFloat();
+
+      if (rand >= rate) {
+        return;
+      }
     }
 
     StructureAndPalette result = structOpt.get();
