@@ -3,7 +3,6 @@ package net.arcadiusmc.structure.commands;
 import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 import static net.arcadiusmc.structure.BlockStructure.DEFAULT_PALETTE_NAME;
 
-import com.google.common.base.Strings;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -165,6 +164,16 @@ public class CommandStructure extends BaseCommand {
             )
         )
 
+        .then(literal("redefine")
+            .then(structureArg()
+                .executes(this::fillStructure)
+
+                .then(argument("options", FILL_ARGS)
+                    .executes(this::fillStructure)
+                )
+            )
+        )
+
         .then(literal("remove")
             .then(structureArg()
                 .executes(c -> {
@@ -273,25 +282,48 @@ public class CommandStructure extends BaseCommand {
     Map<String, ParsedArgument<CommandSource, ?>> arguments = CommandContexts.getArguments(c);
     CommandSource source = c.getSource();
 
+    Registry<BlockStructure> registry = plugin.getStructures().getRegistry();
+
+    final int ft_palette_add = 0;
+    final int ft_create = 1;
+    final int ft_redefine = 2;
+
     BlockStructure structure;
     String paletteName;
     String registryKey;
+    int fillType;
 
     if (arguments.containsKey("palette")) {
       Holder<BlockStructure> holder = getStructure(c);
       structure = holder.getValue();
       paletteName = c.getArgument("palette", String.class);
-      registryKey = null;
+      registryKey = holder.getKey();
+      fillType = ft_palette_add;
 
       if (structure.getPalette(paletteName) != null) {
         throw Messages.render("structures.errors.paletteAlreadyUsed")
             .addValue("palette", paletteName)
             .exception(source);
       }
-    } else {
+    } else if (arguments.containsKey("name")) {
       structure = new BlockStructure();
       paletteName = DEFAULT_PALETTE_NAME;
       registryKey = c.getArgument("name", String.class);
+      fillType = ft_create;
+
+      if (registry.contains(registryKey)) {
+        throw Messages.render("structures.errors.alreadyExists")
+            .addValue("structure", registry)
+            .exception(source);
+      }
+    } else {
+      Holder<BlockStructure> holder = getStructure(c);
+      structure = new BlockStructure();
+      paletteName = DEFAULT_PALETTE_NAME;
+      registryKey = holder.getKey();
+      fillType = ft_redefine;
+
+      registry.remove(holder.getId());
     }
 
     Player player = source.asPlayer();
@@ -302,8 +334,7 @@ public class CommandStructure extends BaseCommand {
     }
 
     // Ensure palette is not a different size from default palette
-    if (paletteName != null
-        && !paletteName.equals(DEFAULT_PALETTE_NAME)
+    if (!paletteName.equals(DEFAULT_PALETTE_NAME)
         && !structure.getDefaultSize().equals(Vector3i.ZERO)
         && !selection.size().equals(structure.getDefaultSize())
     ) {
@@ -356,21 +387,37 @@ public class CommandStructure extends BaseCommand {
 
     structure.fill(config);
 
-    if (!Strings.isNullOrEmpty(registryKey)) {
-      Registry<BlockStructure> registry = plugin.getStructures().getRegistry();
-      registry.register(registryKey, structure);
+    switch (fillType) {
+      case ft_redefine -> {
+        registry.register(registryKey, structure);
 
-      source.sendSuccess(
-          Messages.render("structures.created")
-              .addValue("name", registryKey)
-              .create(source)
-      );
-    } else {
-      source.sendSuccess(
-          Messages.render("structures.palettes.added")
-              .addValue("name", paletteName)
-              .create(source)
-      );
+        source.sendSuccess(
+            Messages.render("structures.redefined")
+                .addValue("structure", registryKey)
+                .create(source)
+        );
+      }
+
+      case ft_palette_add -> {
+        source.sendSuccess(
+            Messages.render("structures.palettes.added")
+                .addValue("name", paletteName)
+                .addValue("structure", registryKey)
+                .create(source)
+        );
+      }
+
+      case ft_create -> {
+        registry.register(registryKey, structure);
+
+        source.sendSuccess(
+            Messages.render("structures.created")
+                .addValue("name", registryKey)
+                .create(source)
+        );
+      }
+
+      default -> throw new IllegalStateException("Unexpected value: " + fillType);
     }
 
     return SINGLE_SUCCESS;

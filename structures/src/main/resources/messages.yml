@@ -9,9 +9,10 @@ reloaded:
 created:                "Created structured named &e${name}&r."
 placed:                 "Placed structure &e${structure}&r."
 removed:                "Removed structure &e${structure}&r."
+redefined:              "Redefined structure &e${structure}."
 
 palettes:
-  added:                "Added palette &e${name}&r to structure."
+  added:                "Added palette &e${name}&r to &6${structure}&r."
   removed:              "Removed palette &e${name}&r from &6${structure}&r."
   list.header:          "&e${structure}&r palettes:"
   list.format:          "- &e${palette}"
@@ -21,3 +22,4 @@ errors:
   cannotRemoveDefault:  "Cannot remove the default palette."
   paletteAlreadyUsed:   "Palette ${palette} already exists."
   invalidSize:          "Invalid size! Structure must be the same size as the default palette!"
+  alreadyExists:        "Structure ${structure} already exists!"
