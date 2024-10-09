@@ -210,15 +210,15 @@ public class DungeonGenerator {
     PlacingVisitor visitor = new PlacingVisitor();
     rootPiece.forEachDescendant(visitor);
 
-    runPass("cave-vines", this::vinePass);
-    runPass("leaves", this::leafPass);
+    runPass("cave-vines",     this::vinePass);
+    runPass("leaves",         this::leafPass);
     runPass("moss-and-grass", this::mossGrassPass);
-    runPass("foliage", this::foliagePass);
-    runPass("puddles", this::puddlePass);
+    runPass("foliage",        this::foliagePass);
+    runPass("puddles",        this::puddlePass);
     runPass("hanging-lights", this::hangingLightsPass);
-    runPass("sitting-lights", this::sittingLightPass);
-    runPass("fire-pass", this::firePass);
-    runPass("edge-rot", this::edgeRotPass);
+    runPass("candles",        this::candlesPass);
+    runPass("fire-pass",      this::firePass);
+    runPass("edge-rot",       this::edgeRotPass);
   }
 
   private void runPass(String name, Runnable runnable) {
@@ -248,7 +248,7 @@ public class DungeonGenerator {
 
   /* --------------------------- Sitting light pass ---------------------------- */
 
-  public void sittingLightPass() {
+  public void candlesPass() {
     boundsSet.forEachBlock(new CandlePass());
   }
 
