@@ -28,6 +28,7 @@ import static org.bukkit.Material.LIGHT_GRAY_CANDLE;
 import static org.bukkit.Material.MOSS_BLOCK;
 import static org.bukkit.Material.MOSS_CARPET;
 import static org.bukkit.Material.ORANGE_CANDLE;
+import static org.bukkit.Material.SPAWNER;
 import static org.bukkit.Material.STONE;
 import static org.bukkit.Material.STONE_BRICKS;
 import static org.bukkit.Material.STONE_BRICK_WALL;
@@ -47,6 +48,7 @@ import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.Worlds;
 import net.arcadiusmc.dungeons.DungeonConfig;
 import net.arcadiusmc.dungeons.DungeonPiece;
 import net.arcadiusmc.dungeons.LevelFunctions;
@@ -62,17 +64,20 @@ import net.arcadiusmc.structure.FunctionInfo;
 import net.arcadiusmc.structure.StructurePlaceConfig;
 import net.arcadiusmc.structure.buffer.BlockBuffer;
 import net.arcadiusmc.structure.buffer.BlockBuffers;
-import net.arcadiusmc.structure.buffer.BufferBlock;
 import net.arcadiusmc.utils.VanillaAccess;
 import net.arcadiusmc.utils.math.Bounds3i;
 import net.arcadiusmc.utils.math.Direction;
 import net.arcadiusmc.utils.math.Transform;
 import net.forthecrown.nbt.CompoundTag;
 import org.bukkit.Axis;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Tag;
+import org.bukkit.World;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.BlockSupport;
+import org.bukkit.block.CreatureSpawner;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.Bisected.Half;
@@ -87,6 +92,9 @@ import org.bukkit.block.data.type.Stairs;
 import org.bukkit.block.data.type.Stairs.Shape;
 import org.bukkit.block.data.type.Wall;
 import org.bukkit.block.data.type.Wall.Height;
+import org.bukkit.block.spawner.SpawnRule;
+import org.bukkit.entity.EntitySnapshot;
+import org.bukkit.entity.Skeleton;
 import org.bukkit.util.noise.NoiseGenerator;
 import org.bukkit.util.noise.PerlinNoiseGenerator;
 import org.joml.Vector2i;
@@ -219,6 +227,7 @@ public class DungeonGenerator {
     runPass("candles",        this::candlesPass);
     runPass("fire-pass",      this::firePass);
     runPass("edge-rot",       this::edgeRotPass);
+    runPass("spawners",       this::spawnerPass);
   }
 
   private void runPass(String name, Runnable runnable) {
@@ -244,6 +253,39 @@ public class DungeonGenerator {
     long millis = elapsed.toMillis();
     float seconds = ((float) millis) / 1000f;
     return String.format("%sms or %ssec", millis, seconds);
+  }
+
+  /* --------------------------- Spawner pass ---------------------------- */
+
+  public void spawnerPass() {
+    List<GeneratorFunction> list = getFunctions(LevelFunctions.SPAWNER);
+    World world = Worlds.overworld();
+    Location l = new Location(world, 0, 0, 0);
+
+    Skeleton skeleton = world.createEntity(l, Skeleton.class);
+
+    EntitySnapshot snapshot = skeleton.createSnapshot();
+    assert snapshot != null;
+
+    for (GeneratorFunction func : list) {
+      int x = func.getPosition().x();
+      int y = func.getPosition().y();
+      int z = func.getPosition().z();
+
+      if (!isAir(x, y, z)) {
+        continue;
+      }
+
+      CreatureSpawner state = (CreatureSpawner) SPAWNER.createBlockData().createBlockState();
+      state.setSpawnCount(3);
+      state.setMinSpawnDelay(2 * 20);
+      state.setMaxSpawnDelay(10 * 20);
+      state.setRequiredPlayerRange(10);
+
+      state.addPotentialSpawn(snapshot, 10, new SpawnRule(0, 15, 0, 15));
+
+      setBlock(x, y, z, state);
+    }
   }
 
   /* --------------------------- Sitting light pass ---------------------------- */
@@ -373,12 +415,12 @@ public class DungeonGenerator {
   }
 
   private boolean hasSupport(int x, int y, int z, BlockFace face) {
-    BufferBlock block = getBlock(x, y, z);
+    BlockState block = getBlock(x, y, z);
     if (block == null) {
       return false;
     }
 
-    BlockData data = block.data();
+    BlockData data = block.getBlockData();
     return data.isFaceSturdy(face, BlockSupport.FULL);
   }
 
@@ -435,12 +477,12 @@ public class DungeonGenerator {
   }
 
   private boolean isAir(int x, int y, int z) {
-    BufferBlock block = getBlock(x, y, z);
+    BlockState block = getBlock(x, y, z);
     if (block == null) {
       return true;
     }
 
-    return block.data().getMaterial().isAir();
+    return block.getBlockData().getMaterial().isAir();
   }
 
   private boolean isGroundBlock(int x, int y, int z) {
@@ -448,15 +490,15 @@ public class DungeonGenerator {
       return false;
     }
 
-    BufferBlock block = getBlock(x, y, z);
+    BlockState block = getBlock(x, y, z);
     if (block == null) {
       return false;
     }
 
-    return block.data().isFaceSturdy(BlockFace.UP, BlockSupport.FULL);
+    return block.getBlockData().isFaceSturdy(BlockFace.UP, BlockSupport.FULL);
   }
 
-  public BufferBlock getBlock(int x, int y, int z) {
+  public BlockState getBlock(int x, int y, int z) {
     return buffer.getBlock(x, y, z);
   }
 
@@ -465,7 +507,7 @@ public class DungeonGenerator {
     if (b == null) {
       return null;
     }
-    return b.data();
+    return b.getBlockData();
   }
 
   public Material getBlockType(int x, int y, int z) {
@@ -473,7 +515,7 @@ public class DungeonGenerator {
     if (b == null) {
       return null;
     }
-    return b.data().getMaterial();
+    return b.getType();
   }
 
   public boolean isTagged(int x, int y, int z, Tag<Material> tag) {
@@ -512,8 +554,8 @@ public class DungeonGenerator {
     buffer.setBlock(x, y, z, data);
   }
 
-  public void setBlock(int x, int y, int z, BufferBlock block) {
-    buffer.setBlock(x, y, z, block);
+  private void setBlock(int x, int y, int z, BlockState state) {
+    buffer.setBlock(x, y, z, state);
   }
 
   public void clearBlock(int x, int y, int z) {
@@ -912,8 +954,7 @@ public class DungeonGenerator {
       stair.setWaterlogged(false);
       stair.setShape(shape);
 
-      BufferBlock block = new BufferBlock(stair, null);
-      setBlock(x, y, z, block);
+      setBlock(x, y, z, stair);
     }
   }
 
@@ -1127,9 +1168,9 @@ public class DungeonGenerator {
         return false;
       }
 
-      BufferBlock block = getBlock(x, y, z);
-      if (block != null) {
-        BlockIteration iter = BlockIterations.getIteration(block.data().getMaterial());
+      Material blockType = getBlockType(x, y, z);
+      if (blockType != null) {
+        BlockIteration iter = BlockIterations.getIteration(blockType);
 
         if (iter == null) {
           return false;
