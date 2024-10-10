@@ -375,9 +375,14 @@ public class DungeonGenerator {
     int z = originPoint.z();
 
     int freeSpace = freeSpaceDown(x, y, z);
+    int fourth = freeSpace / 4;
+
+    if (fourth < 1) {
+      return;
+    }
 
     int maxLen = config.getDecoration().getMaxHangingLightLength();
-    int chainLen = freeSpace <= 0 ? 0 : Math.min(maxLen, random.nextInt(freeSpace / 4));
+    int chainLen = Math.min(maxLen, random.nextInt(fourth));
 
     int by = y;
 
