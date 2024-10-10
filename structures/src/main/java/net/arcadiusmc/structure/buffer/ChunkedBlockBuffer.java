@@ -6,9 +6,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.arcadiusmc.utils.math.Bounds3i;
 import net.arcadiusmc.utils.math.Transform;
-import net.arcadiusmc.utils.math.Vectors;
+import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.spongepowered.math.vector.Vector3i;
 
 @Getter
@@ -107,7 +107,7 @@ public class ChunkedBlockBuffer implements BlockBuffer {
   }
 
   @Override
-  public BufferBlock getBlock(int x, int y, int z) {
+  public BlockState getBlock(int x, int y, int z) {
     int index = toSectionIndex(x, y, z);
 
     if (index < 0 || index >= sections.length) {
@@ -124,7 +124,7 @@ public class ChunkedBlockBuffer implements BlockBuffer {
   }
 
   @Override
-  public void setBlock(int x, int y, int z, BufferBlock block) {
+  public void setBlock(int x, int y, int z, BlockState state) {
     int index = toSectionIndex(x, y, z);
 
     if (index < 0 || index >= sections.length) {
@@ -142,7 +142,7 @@ public class ChunkedBlockBuffer implements BlockBuffer {
       sections[index] = section;
     }
 
-    section.setBlock(x, y, z, block);
+    section.setBlock(x, y, z, state);
   }
 
   @Override
@@ -166,7 +166,7 @@ public class ChunkedBlockBuffer implements BlockBuffer {
   static class Section {
     final Vector3i origin;
 
-    final BufferBlock[] blocks = new BufferBlock[SECTION_SIZE_CUBED];
+    final BlockState[] blocks = new BlockState[SECTION_SIZE_CUBED];
 
     int toIndex(int sx, int sy, int sz) {
       return ((sx & BIT_MASK) << SHIFT_X)
@@ -183,24 +183,28 @@ public class ChunkedBlockBuffer implements BlockBuffer {
     }
 
     void place(World world, Transform transform, boolean update) {
+      Location location = new Location(world, 0, 0, 0);
+
       for (int i = 0; i < blocks.length; i++) {
-        BufferBlock block = blocks[i];
+        BlockState block = blocks[i];
 
         if (block == null) {
           continue;
         }
 
         Vector3i pos = transform.apply(origin.add(fromIndex(i)));
-        Block bukkit = Vectors.getBlock(pos, world);
-        block.applyTo(bukkit, update);
+        location.set(pos.x(), pos.y(), pos.z());
+
+        BlockState copy = block.copy(location);
+        copy.update(true, update);
       }
     }
 
-    BufferBlock getBlock(int rx, int ry, int rz) {
+    BlockState getBlock(int rx, int ry, int rz) {
       return blocks[toIndex(rx, ry, rz)];
     }
 
-    void setBlock(int rx, int ry, int rz, BufferBlock block) {
+    void setBlock(int rx, int ry, int rz, BlockState block) {
       blocks[toIndex(rx, ry, rz)] = block;
     }
   }

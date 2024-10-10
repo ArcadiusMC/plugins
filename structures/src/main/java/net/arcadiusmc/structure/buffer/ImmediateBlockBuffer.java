@@ -5,9 +5,11 @@ import java.util.concurrent.CompletableFuture;
 import lombok.Getter;
 import net.arcadiusmc.utils.math.Bounds3i;
 import net.arcadiusmc.utils.math.Transform;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 @Getter
@@ -24,20 +26,22 @@ public class ImmediateBlockBuffer implements BlockBuffer {
   }
 
   @Override
-  public BufferBlock getBlock(int x, int y, int z) {
-    var block = world.getBlockAt(x, y, z);
-    return BufferBlock.fromBlock(block);
+  public BlockState getBlock(int x, int y, int z) {
+    Block block = world.getBlockAt(x, y, z);
+    return block.getState();
   }
 
   @Override
-  public void setBlock(int x, int y, int z, @Nullable BufferBlock block) {
-    var b = world.getBlockAt(x, y, z);
-
-    if (block == null) {
-      b.setType(Material.AIR, false);
-    } else {
-      block.applyTo(b, false);
+  public void setBlock(int x, int y, int z, BlockState state) {
+    if (state == null) {
+      clearBlock(x, y, z);
+      return;
     }
+
+    Location l = new Location(world, x, y, z);
+    state = state.copy(l);
+
+    state.update(true, false);
   }
 
   @Override

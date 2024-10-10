@@ -68,7 +68,9 @@ public class BlockInfo {
   void place(StructurePlaceConfig config, Vector3i position) {
     Vector3i pos = config.getTransform().apply(position);
     BlockBuffer buf = config.getBuffer();
-    buf.setBlock(pos, getData(), getTag());
+
+    BlockState state = getState(pos);
+    buf.setBlock(pos.x(), pos.y(), pos.z(), state);
   }
 
   public BlockData getData() {
