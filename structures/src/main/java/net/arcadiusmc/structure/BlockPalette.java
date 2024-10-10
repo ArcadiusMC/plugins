@@ -51,14 +51,14 @@ public class BlockPalette {
     block2Positions.clear();
   }
 
-  public void fill(StructureFillConfig config) {
+  public void fill(StructureFillConfig config, FillResult result) {
     clear();
 
     AreaSelection area = config.getArea();
     this.size = area.size();
+    result.size = this.size;
 
     Vector3d origin = area.min().toDouble();
-    int blocks = 0;
 
     for (Block b : area) {
       if (!config.includeBlock(b)) {
@@ -72,6 +72,7 @@ public class BlockPalette {
         try {
           var info = FunctionInfo.parse(origin, cmd);
           structure.functions.add(info);
+          result.functionCount++;
         } catch (CommandSyntaxException exc) {
           Loggers.getLogger().error("Couldn't parse function block at {}:",
               Vectors.from(b), exc
@@ -86,7 +87,7 @@ public class BlockPalette {
       Vector3i offset = Vectors.from(b).sub(origin.toInt());
 
       posList.add(Vectors.toLong(offset));
-      ++blocks;
+      result.blockCount++;
     }
 
     area.entities().forEachRemaining(e -> {
@@ -96,11 +97,8 @@ public class BlockPalette {
 
       EntityInfo info = EntityInfo.of(origin, e);
       this.entities.add(info);
+      result.entityCount++;
     });
-
-    Loggers.getLogger().info("Scanned {} blocks and {} entities",
-        blocks, entities.size()
-    );
   }
 
   public void place(StructurePlaceConfig config) {

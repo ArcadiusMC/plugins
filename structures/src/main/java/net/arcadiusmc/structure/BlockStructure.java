@@ -81,13 +81,15 @@ public class BlockStructure {
     palette.place(config);
   }
 
-  public void fill(StructureFillConfig config) {
+  public FillResult fill(StructureFillConfig config) {
     var palette = getPalette(config.getPaletteName());
 
     if (palette == null) {
       palette = new BlockPalette(this);
       palettes.put(config.getPaletteName(), palette);
     }
+
+    FillResult result = new FillResult();
 
     if (!DEFAULT_PALETTE_NAME.equals(config.getPaletteName())) {
       var scanSize = config.getArea().size();
@@ -107,7 +109,9 @@ public class BlockStructure {
       this.defaultSize = config.getArea().size();
     }
 
-    palette.fill(config);
+    palette.fill(config, result);
+
+    return result;
   }
 
   /* --------------------------- SERIALIZATION ---------------------------- */

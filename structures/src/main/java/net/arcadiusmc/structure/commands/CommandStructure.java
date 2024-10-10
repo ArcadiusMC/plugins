@@ -8,6 +8,10 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.ParsedArgument;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.bukkit.BukkitPlayer;
+import com.sk89q.worldedit.function.mask.Mask;
+import com.sk89q.worldedit.math.BlockVector3;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +29,7 @@ import net.arcadiusmc.registry.Holder;
 import net.arcadiusmc.registry.Registry;
 import net.arcadiusmc.structure.BlockPalette;
 import net.arcadiusmc.structure.BlockStructure;
+import net.arcadiusmc.structure.FillResult;
 import net.arcadiusmc.structure.StructureFillConfig;
 import net.arcadiusmc.structure.StructurePlaceConfig;
 import net.arcadiusmc.structure.StructurePlaceConfig.Builder;
@@ -40,12 +45,14 @@ import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.forthecrown.grenadier.types.BlockFilterArgument;
+import net.forthecrown.grenadier.types.BlockFilterArgument.Result;
 import net.forthecrown.grenadier.types.options.ArgumentOption;
 import net.forthecrown.grenadier.types.options.FlagOption;
 import net.forthecrown.grenadier.types.options.Options;
 import net.forthecrown.grenadier.types.options.OptionsArgument;
 import net.forthecrown.grenadier.types.options.ParsedOptions;
 import net.forthecrown.nbt.CompoundTag;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -74,10 +81,14 @@ public class CommandStructure extends BaseCommand {
   private static final FlagOption INCLUDE_FUNCTIONS
       = Options.flag("include-functions");
 
+  private static final FlagOption USE_GMASK
+      = Options.flag("use-gmask");
+
   private static final OptionsArgument FILL_ARGS = OptionsArgument.builder()
       .addOptional(BLOCK_FILTER)
       .addOptional(IGNORE_ENT_ARG)
       .addFlag(INCLUDE_FUNCTIONS)
+      .addFlag(USE_GMASK)
       .build();
 
   private static final ArgumentOption<String> PALETTE_NAME
@@ -344,9 +355,6 @@ public class CommandStructure extends BaseCommand {
           .exception(source);
     }
 
-    Predicate<Block> blockFilter = block -> block.getType() != Material.STRUCTURE_VOID;
-    Predicate<Entity> entityFilter = entity -> entity.getType() != EntityType.PLAYER;
-
     ParsedOptions args;
     if (arguments.containsKey("options")) {
       args = ArgumentTypes.getOptions(c, "options");
@@ -354,28 +362,8 @@ public class CommandStructure extends BaseCommand {
       args = ParsedOptions.EMPTY;
     }
 
-    if (args.has(BLOCK_FILTER)) {
-      var list = args.getValue(BLOCK_FILTER);
-
-      blockFilter = blockFilter.and(block -> {
-        for (var r : list) {
-          if (r.test(block)) {
-            return false;
-          }
-        }
-
-        return true;
-      });
-    }
-
-    if (args.has(IGNORE_ENT_ARG)) {
-      List<EntityType> list = args.getValue(IGNORE_ENT_ARG);
-      Set<EntityType> ignoreTypes = new ObjectOpenHashSet<>(list);
-
-      entityFilter = entityFilter.and(entity -> {
-        return !ignoreTypes.contains(entity.getType());
-      });
-    }
+    Predicate<Block> blockFilter = createBlockFilter(source, args);
+    Predicate<Entity> entityFilter = createEntityFilter(args);
 
     StructureFillConfig config = StructureFillConfig.builder()
         .area(selection)
@@ -385,42 +373,113 @@ public class CommandStructure extends BaseCommand {
         .paletteName(paletteName)
         .build();
 
-    structure.fill(config);
+    FillResult result = structure.fill(config);
+    String messageKey;
 
     switch (fillType) {
       case ft_redefine -> {
         registry.register(registryKey, structure);
-
-        source.sendSuccess(
-            Messages.render("structures.redefined")
-                .addValue("structure", registryKey)
-                .create(source)
-        );
+        messageKey = "structures.redefined";
       }
 
       case ft_palette_add -> {
-        source.sendSuccess(
-            Messages.render("structures.palettes.added")
-                .addValue("name", paletteName)
-                .addValue("structure", registryKey)
-                .create(source)
-        );
+        messageKey = "structures.palettes.added";
       }
 
       case ft_create -> {
         registry.register(registryKey, structure);
-
-        source.sendSuccess(
-            Messages.render("structures.created")
-                .addValue("name", registryKey)
-                .create(source)
-        );
+        messageKey = "structures.created";
       }
 
       default -> throw new IllegalStateException("Unexpected value: " + fillType);
     }
 
+    Component baseMessage = Messages.render(messageKey)
+        .addValue("structure", registryKey)
+        .addValue("palette", paletteName)
+        .create(source);
+
+    if (!source.acceptsSuccessMessage() || source.isSilent()) {
+      return SINGLE_SUCCESS;
+    }
+
+    source.broadcastAdmin(baseMessage);
+
+    source.sendMessage(
+        Messages.render("structures.scanTemplate")
+            .addValue("baseMessage", baseMessage)
+
+            .addValue("includeFunctions", args.has(INCLUDE_FUNCTIONS))
+            .addValue("blockFilter", args.has(BLOCK_FILTER))
+            .addValue("entityFilter", args.has(IGNORE_ENT_ARG))
+            .addValue("gmask", args.has(USE_GMASK))
+
+            .addValue("size", result.getSize())
+            .addValue("blockCount", result.getBlockCount())
+            .addValue("functionCount", result.getFunctionCount())
+            .addValue("entityCount", result.getEntityCount())
+
+            .create(source)
+    );
+
     return SINGLE_SUCCESS;
+  }
+
+  private Predicate<Entity> createEntityFilter(ParsedOptions args) {
+    Predicate<Entity> entityFilter = entity -> entity.getType() != EntityType.PLAYER;
+
+    if (!args.has(IGNORE_ENT_ARG)) {
+      return entityFilter;
+    }
+
+    List<EntityType> list = args.getValue(IGNORE_ENT_ARG);
+    Set<EntityType> ignoreTypes = new ObjectOpenHashSet<>(list);
+
+    entityFilter = entityFilter.and(entity -> {
+      return !ignoreTypes.contains(entity.getType());
+    });
+
+    return entityFilter;
+  }
+
+  private Predicate<Block> createBlockFilter(CommandSource source, ParsedOptions args)
+      throws CommandSyntaxException
+  {
+    Player player = source.asPlayer();
+    Predicate<Block> blockFilter = block -> block.getType() != Material.STRUCTURE_VOID;
+
+    if (args.has(BLOCK_FILTER)) {
+      List<Result> list = args.getValue(BLOCK_FILTER);
+      assert list != null;
+
+      blockFilter = blockFilter.and(block -> {
+        for (Result r : list) {
+          if (!r.test(block)) {
+            continue;
+          }
+
+          return false;
+        }
+
+        return true;
+      });
+    }
+
+    if (args.has(USE_GMASK)) {
+      BukkitPlayer wePlayer = BukkitAdapter.adapt(player);
+      Mask gmask = wePlayer.getSession().getMask();
+
+      if (gmask == null) {
+        throw Messages.render("structures.errors.noGmask")
+            .exception(source);
+      }
+
+      blockFilter = blockFilter.and(block -> {
+        return gmask.test(BlockVector3.at(block.getX(), block.getY(), block.getZ()));
+      });
+    }
+
+    return blockFilter;
   }
 
   private int placeStructure(CommandContext<CommandSource> c) throws CommandSyntaxException {
