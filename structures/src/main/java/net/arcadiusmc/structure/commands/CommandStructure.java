@@ -14,6 +14,7 @@ import com.sk89q.worldedit.function.mask.Mask;
 import com.sk89q.worldedit.math.BlockVector3;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,6 +52,7 @@ import net.forthecrown.grenadier.types.options.FlagOption;
 import net.forthecrown.grenadier.types.options.Options;
 import net.forthecrown.grenadier.types.options.OptionsArgument;
 import net.forthecrown.grenadier.types.options.ParsedOptions;
+import net.forthecrown.nbt.BinaryTags;
 import net.forthecrown.nbt.CompoundTag;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
@@ -356,10 +358,14 @@ public class CommandStructure extends BaseCommand {
     }
 
     ParsedOptions args;
+    String optionsInput;
+
     if (arguments.containsKey("options")) {
       args = ArgumentTypes.getOptions(c, "options");
+      optionsInput = CommandContexts.getInput(c, "options");
     } else {
       args = ParsedOptions.EMPTY;
+      optionsInput = null;
     }
 
     Predicate<Block> blockFilter = createBlockFilter(source, args);
@@ -394,6 +400,8 @@ public class CommandStructure extends BaseCommand {
       default -> throw new IllegalStateException("Unexpected value: " + fillType);
     }
 
+    recordCopySource(selection, structure, source, paletteName, optionsInput);
+
     Component baseMessage = Messages.render(messageKey)
         .addValue("structure", registryKey)
         .addValue("palette", paletteName)
@@ -423,6 +431,34 @@ public class CommandStructure extends BaseCommand {
     );
 
     return SINGLE_SUCCESS;
+  }
+
+  private void recordCopySource(
+      AreaSelection selection,
+      BlockStructure structure,
+      CommandSource source,
+      String paletteName,
+      String optionsInput
+  ) {
+    Vector3i copyMin = selection.min();
+    Vector3i copyMax = selection.max();
+
+    CompoundTag copySourceRecord = BinaryTags.compoundTag();
+    copySourceRecord.putString("date", new Date().toString());
+    copySourceRecord.putString("world_name", selection.getWorld().getName());
+    copySourceRecord.putString("author", source.textName());
+    copySourceRecord.put("min_point", Vectors.writeTag(copyMin));
+    copySourceRecord.put("max_point", Vectors.writeTag(copyMax));
+
+    if (optionsInput != null) {
+      copySourceRecord.putString("scan_options", optionsInput);
+    }
+
+    CompoundTag header = structure.getHeader();
+    CompoundTag paletteSources = header.getCompound("copy_sources");
+
+    paletteSources.put(paletteName, copySourceRecord);
+    header.put("copy_sources", paletteSources);
   }
 
   private Predicate<Entity> createEntityFilter(ParsedOptions args) {
