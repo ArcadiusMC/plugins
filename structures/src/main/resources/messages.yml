@@ -7,13 +7,13 @@ reloaded:
   config:               "Reloaded Structures config."
 
 created:                "Created Structure: &6${structure}&r."
-placed:                 "Placed structure &e${structure}&r."
-removed:                "Removed structure &e${structure}&r."
-redefined:              "Redefined structure &e${structure}."
+placed:                 "Placed structure &6${structure}&r."
+removed:                "Removed structure &6${structure}&r."
+redefined:              "Redefined structure &6${structure}."
 
 scanTemplate: |-
   ${border:80}
-  ${baseMessage}.
+  ${baseMessage}
   Options: 
     - Include Function blocks: &e${includeFunctions}&r
     - Block filter: &e${blockFilter}&r
