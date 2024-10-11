@@ -4,12 +4,13 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import lombok.Getter;
 import lombok.Setter;
+import net.arcadiusmc.dungeons.gen.NoiseDecorator.NoiseSettingHolder;
 import org.bukkit.util.noise.NoiseGenerator;
 
 @Getter @Setter
-public class NoiseParameter {
+public class NoiseParameter implements NoiseSettingHolder {
 
-  static final Codec<NoiseParameter> CODEC = RecordCodecBuilder.create(instance -> {
+  public static final Codec<NoiseParameter> CODEC = RecordCodecBuilder.create(instance -> {
     return instance
         .group(
             Codec.FLOAT.optionalFieldOf("frequency", 1f)
@@ -21,15 +22,18 @@ public class NoiseParameter {
             Codec.FLOAT.optionalFieldOf("noise-scale", 0.08f)
                 .forGetter(NoiseParameter::getNoiseScale),
             Codec.INT.optionalFieldOf("octaves", 1)
-                .forGetter(NoiseParameter::getOctaves)
+                .forGetter(NoiseParameter::getOctaves),
+            Codec.STRING.optionalFieldOf("noise-map-name", "")
+                .forGetter(NoiseParameter::getNoiseMapName)
         )
-        .apply(instance, (f, a, n, s, o) -> {
+        .apply(instance, (f, a, n, s, o, nmn) -> {
           NoiseParameter parameter = new NoiseParameter();
           parameter.setNoiseScale(s);
           parameter.setFrequency(f);
           parameter.setAmplitude(a);
           parameter.setNoiseGate(n);
           parameter.setOctaves(o);
+          parameter.setNoiseMapName(nmn);
           return parameter;
         });
   });
@@ -39,6 +43,8 @@ public class NoiseParameter {
   private float noiseGate = 0.65f;
   private float noiseScale = 0.08f;
   private int octaves = 1;
+
+  private String noiseMapName = "";
 
   public double sample(NoiseGenerator generator, double x, double y, double z) {
     if (octaves < 1) {
@@ -51,5 +57,10 @@ public class NoiseParameter {
 
     double noise = generator.noise(nx, ny, nz, octaves, frequency, amplitude, true);
     return (noise + 1.0) / 2.0;
+  }
+
+  @Override
+  public NoiseParameter noiseParameters() {
+    return this;
   }
 }

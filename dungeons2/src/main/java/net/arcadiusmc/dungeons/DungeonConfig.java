@@ -7,6 +7,7 @@ import java.util.Random;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.Setter;
+import net.arcadiusmc.dungeons.gen.DecorationPass;
 import net.arcadiusmc.utils.io.ExistingObjectCodec;
 import net.arcadiusmc.utils.math.Vectors;
 import org.spongepowered.math.vector.Vector3i;
@@ -38,11 +39,20 @@ public class DungeonConfig {
               cfg.pieceTypes.clear();
               cfg.pieceTypes.addAll(types);
             });
+
+        builder.optional("decoration-passes", DecorationPass.CODEC.listOf())
+            .getter(DungeonConfig::getDecorationPasses)
+            .setter((config, passes) -> {
+              config.decorationPasses.clear();
+              config.decorationPasses.addAll(passes);
+            });
       })
       .codec(Codec.unit(DungeonConfig::new));
 
   private GenerationParameters parameters = new GenerationParameters();
   private DecorationParameters decoration = new DecorationParameters();
+
+  private final List<DecorationPass> decorationPasses = new ObjectArrayList<>();
 
   private Vector3i location = Vector3i.ZERO;
   private int potentialLevels = 35;
