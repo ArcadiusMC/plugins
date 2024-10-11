@@ -8,8 +8,16 @@
 # Default: No variations
 #
 variations:
-  regular:
+  default:
     $default-table: "minecraft:stronghold"
+
+#
+# Table of variation identifiers to their display names
+#
+# Default: Empty table
+#
+variation-names:
+  default: "Default"
 
 #
 # Name of the world the vault is located in
@@ -84,7 +92,9 @@ chests:
       - {x: 0, y: 0, z: 0, facing: north}
 
 #
-# List of coin spawn positions
+# List of coin spawn positions.
+#
+# This list is shuffled everytime the bank vault is entered.
 #
 # Default: [] (No coins spawns)
 #
@@ -113,6 +123,20 @@ min-coin-value: 10
 max-coin-value: 1000
 
 #
+# Maximum amount of coins that can be spawned
+#
+# Default: No limit
+#
+max-spawned-coins: -1
+
+#
+# Maximum total monetary value of coins that can be spawned
+#
+# Default: No limit
+#
+max-spawned-coin-value: -1
+
+#
 # The position the player will be teleported to when they exit the vault
 #
 # Default: Null position, player won't be teleported
@@ -130,6 +154,30 @@ exit-position:
 # Default: Null position, player won't be teleported
 #
 enter-position:
+  x: 0
+  y: 0
+  z: 0
+  yaw: 0
+  pitch: 0
+
+#
+# The position the "Enter Vault?" menu page will be spawned at
+#
+# Default: Null position, menu won't be spawned.
+#
+enter-menu-position:
+  x: 0
+  y: 0
+  z: 0
+  yaw: 0
+  pitch: 0
+
+#
+# The position the "Finish Run?" menu page will be spawned at.
+#
+# Default: Null position, menu won't be spawned.
+#
+exit-menu-position:
   x: 0
   y: 0
   z: 0

@@ -1,9 +1,12 @@
 package net.arcadiusmc.bank;
 
 import com.mojang.serialization.Codec;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,6 +33,10 @@ public class BankVault {
             .getter(BankVault::getTable)
             .setter((v, t) -> v.table.getVariantTable().putAll(t.getVariantTable()));
 
+        builder.optional("variation-names", Codec.unboundedMap(Codec.STRING, Codec.STRING))
+            .getter(BankVault::getVariationNames)
+            .setter((vault, map) -> vault.variationNames.putAll(map));
+
         builder.optional("chests", ChestGroup.CODEC.listOf())
             .getter(BankVault::getChestGroups)
             .setter((bankVault, chestGroups1) -> bankVault.chestGroups.addAll(chestGroups1));
@@ -46,6 +53,14 @@ public class BankVault {
             .getter(BankVault::getMaxCoinValue)
             .setter(BankVault::setMaxCoinValue);
 
+        builder.optional("max-spawned-coin-value", Codec.INT)
+            .getter(BankVault::getMaxSpawnedCoinValue)
+            .setter(BankVault::setMaxSpawnedCoinValue);
+
+        builder.optional("max-spawned-coins", Codec.INT)
+            .getter(BankVault::getMaxSpawnedCoins)
+            .setter(BankVault::setMaxSpawnedCoins);
+
         builder.optional("exit-position", FullPosition.CODEC)
             .getter(BankVault::getExitPosition)
             .setter((bankVault, pos) -> bankVault.exitPosition.set(pos));
@@ -53,6 +68,14 @@ public class BankVault {
         builder.optional("enter-position", FullPosition.CODEC)
             .getter(BankVault::getEnterPosition)
             .setter((bankVault, pos) -> bankVault.enterPosition.set(pos));
+
+        builder.optional("menu-enter-position", FullPosition.CODEC)
+            .getter(BankVault::getMenuEnterPosition)
+            .setter((bankVault, pos) -> bankVault.menuEnterPosition.set(pos));
+
+        builder.optional("menu-exit-position", FullPosition.CODEC)
+            .getter(BankVault::getMenuExitPosition)
+            .setter((bankVault, pos) -> bankVault.menuExitPosition.set(pos));
 
         builder.optional("run-time", ExtraCodecs.DURATION)
             .defaultsTo(Duration.ofMinutes(1))
@@ -77,14 +100,21 @@ public class BankVault {
       .codec(Codec.unit(BankVault::new));
 
   private final VaultVariationTable table = new VaultVariationTable();
+  private final Map<String, String> variationNames = new Object2ObjectOpenHashMap<>();
+
   private final List<ChestGroup> chestGroups = new ArrayList<>();
 
   private final List<Vector3f> coinPositions = new ArrayList<>();
   private int minCoinValue = 10;
   private int maxCoinValue = 1000;
 
+  private int maxSpawnedCoinValue = Integer.MAX_VALUE;
+  private int maxSpawnedCoins = Integer.MAX_VALUE;
+
   private final FullPosition exitPosition = new FullPosition();
   private final FullPosition enterPosition = new FullPosition();
+  private final FullPosition menuEnterPosition = new FullPosition();
+  private final FullPosition menuExitPosition = new FullPosition();
 
   private String worldName;
   private Bounds3i vaultRoom = Bounds3i.EMPTY;
@@ -114,6 +144,11 @@ public class BankVault {
     Location location = new Location(world, 0, 0, 0);
     ArcadiusServer server = ArcadiusServer.server();
 
+    int spawnedCount = 0;
+    int spawnedValue = 0;
+
+    Collections.shuffle(coinPositions, random);
+
     for (Vector3f coinPosition : coinPositions) {
       location.set(coinPosition.x, coinPosition.y, coinPosition.z);
 
@@ -128,7 +163,15 @@ public class BankVault {
         size = CoinPileSize.LARGE;
       }
 
-      server.spawnCoinPile(location, roundCoinValue(value), size);
+      int rounded = roundCoinValue(value);
+      spawnedValue += rounded;
+      spawnedCount++;
+
+      server.spawnCoinPile(location, rounded, size);
+
+      if (spawnedValue > maxSpawnedCoinValue || spawnedCount > maxSpawnedCoins) {
+        break;
+      }
     }
   }
 

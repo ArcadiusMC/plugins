@@ -40,7 +40,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
-import org.bukkit.util.Vector;
 import org.slf4j.Logger;
 
 @Getter
@@ -242,23 +241,25 @@ public class BankRun {
       return;
     }
 
+    FullPosition position = vault.getMenuExitPosition();
+    if (position.isNullLocation()) {
+      return;
+    }
+
     Delphi delphi = DelphiProvider.get();
 
     delphi
-        .openDocument("bank-page:exit.xml?vault=" + vaultKey, player)
+        .openDocument(getPagePath(), player)
         .ifError(e -> {
           LOGGER.error("Error opening page for {}: {}", player.getName(), e.getMessage());
         })
         .ifSuccess(view -> {
-          Location enter = vault.getEnterPosition().toLocation(world);
-          Vector direction = enter.getDirection().multiply(-1d);
-
-          enter.setDirection(direction);
-          enter.add(direction);
-          enter.setY(enter.getY() + 1.0d);
-
-          view.moveTo(enter);
+          view.moveTo(position.toLocation(world));
         });
+  }
+
+  private String getPagePath() {
+    return "bank-page:exit.xml?vault=" + vaultKey;
   }
 
   public void killPage() {
@@ -271,7 +272,7 @@ public class BankRun {
 
     for (DocumentView openView : openViews) {
       ResourcePath path = openView.getPath();
-      if (!path.toString().equals("bank-page:exit.xml?vault=" + vaultKey)) {
+      if (!path.toString().equals(getPagePath())) {
         continue;
       }
 

@@ -48,4 +48,8 @@ public class FullPosition {
   public Location toLocation(World world) {
     return new Location(world, x, y, z, yaw, pitch);
   }
+
+  public boolean isNullLocation() {
+    return x == 0 && z == 0 && y == 0;
+  }
 }

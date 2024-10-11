@@ -1,11 +1,7 @@
 package net.arcadiusmc.bank;
 
 import com.google.gson.JsonObject;
-import com.google.gson.internal.bind.TypeAdapters;
-import com.google.gson.stream.JsonWriter;
 import com.mojang.serialization.JsonOps;
-import java.io.IOException;
-import java.io.StringWriter;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +11,7 @@ import java.util.UUID;
 import lombok.Getter;
 import net.arcadiusmc.delphi.Delphi;
 import net.arcadiusmc.delphi.DelphiProvider;
+import net.arcadiusmc.delphi.DocumentView;
 import net.arcadiusmc.delphi.resource.JarResourceModule;
 import net.arcadiusmc.events.Events;
 import net.arcadiusmc.text.loader.MessageLoader;
@@ -39,6 +36,10 @@ public class BankPlugin extends JavaPlugin {
 
   private VaultDebug debug;
 
+  public static BankPlugin getPlugin() {
+    return JavaPlugin.getPlugin(BankPlugin.class);
+  }
+
   @Override
   public void onEnable() {
     debug = new VaultDebug(this);
@@ -49,7 +50,7 @@ public class BankPlugin extends JavaPlugin {
 
     if (PluginUtil.isEnabled("Delphi")) {
       JarResourceModule module = new JarResourceModule(getClassLoader(), "pages");
-      module.setFilePaths(List.of("exit.xml"));
+      module.setFilePaths(List.of("exit.xml", "enter.xml"));
 
       Delphi delphi = DelphiProvider.get();
       delphi.getResources().registerModule("bank-page", module);
@@ -78,6 +79,7 @@ public class BankPlugin extends JavaPlugin {
 
     MessageLoader.loadPluginMessages(this);
 
+    killOpenPages();
     vaultMap.clear();
 
     Path dir = getDataPath().resolve("vaults");
@@ -96,25 +98,6 @@ public class BankPlugin extends JavaPlugin {
             }
 
             vaultMap.put(key, bankVault);
-
-            BankVault.CODEC.encodeStart(JsonOps.INSTANCE, bankVault)
-                .resultOrPartial()
-                .ifPresent(element -> {
-                  StringWriter writer = new StringWriter();
-                  JsonWriter wr = new JsonWriter(writer);
-                  wr.setLenient(true);
-                  wr.setIndent("  ");
-
-                  try {
-                    TypeAdapters.JSON_ELEMENT.write(wr, element);
-                  } catch (IOException e) {
-                    throw new RuntimeException(e);
-                  }
-
-                  if (debug.isTicking()) {
-                    getSLF4JLogger().info("Loaded bank, debug info: {}", writer);
-                  }
-                });
           });
     });
   }
@@ -139,5 +122,18 @@ public class BankPlugin extends JavaPlugin {
     run.start();
 
     return ENTER_SUCCESS;
+  }
+
+  private void killOpenPages() {
+    if (!PluginUtil.isEnabled("Delphi")) {
+      return;
+    }
+
+    Delphi delphi = DelphiProvider.get();
+
+    delphi.getAllViews()
+        .stream()
+        .filter(view -> view.getPath().toString().startsWith("bank-page:enter.xml"))
+        .forEach(DocumentView::close);
   }
 }

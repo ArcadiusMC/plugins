@@ -1,0 +1,15 @@
+<page>
+  <header>
+    <style src="style.scss"/>
+    <java-object class-name="net.arcadiusmc.bank.menus.EnterVaultPage"/>
+    <options screen-width="2" screen-height="1"/>
+  </header>
+  <body>
+    <div class="flex-container">
+      <h1 class="leavetitle">Enter vault?</h1>
+    </div>
+    <div class="flex-container">
+      <button class="leavebutton" id="enter-button">Enter Vault</button>
+    </div>
+  </body>
+</page>

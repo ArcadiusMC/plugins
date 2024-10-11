@@ -1,8 +1,8 @@
 <page>
   <header>
-    <options screen-width="1" screen-height="1"/>
-    <java-object class-name="net.arcadiusmc.bank.menus.FinishRunPage"/>
     <style src="style.scss"/>
+    <java-object class-name="net.arcadiusmc.bank.menus.FinishRunPage"/>
+    <options screen-width="2" screen-height="1"/>
   </header>
   <body>
     <div class="flex-container leavetitle">

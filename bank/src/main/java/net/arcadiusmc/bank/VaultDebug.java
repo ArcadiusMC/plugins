@@ -5,7 +5,6 @@ import static net.arcadiusmc.Permissions.register;
 import com.destroystokyo.paper.ParticleBuilder;
 import java.util.stream.Stream;
 import net.arcadiusmc.Loggers;
-import net.arcadiusmc.bank.ChestGroup.ChestPosition;
 import net.arcadiusmc.utils.Particles;
 import net.arcadiusmc.utils.Tasks;
 import net.arcadiusmc.utils.math.Bounds3i;
@@ -119,7 +118,7 @@ public class VaultDebug implements Runnable {
     final float off = 0.5f;
 
     for (ChestGroup chestGroup : vault.getChestGroups()) {
-      for (ChestPosition position : chestGroup.getPositions()) {
+      for (FacingPosition position : chestGroup.getPositions()) {
         chestPos.x = position.x() + off;
         chestPos.y = position.y() + off;
         chestPos.z = position.z() + off;

@@ -8,11 +8,9 @@ import java.util.List;
 import java.util.Random;
 import lombok.Getter;
 import lombok.Setter;
-import net.arcadiusmc.utils.io.ExtraCodecs;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.loot.LootTable;
 
@@ -22,7 +20,7 @@ public class ChestGroup {
   static final Codec<ChestGroup> CODEC = RecordCodecBuilder.create(instance -> {
     return instance
         .group(
-            ChestPosition.CODEC.listOf()
+            FacingPosition.CODEC.listOf()
                 .optionalFieldOf("positions", List.of())
                 .forGetter(ChestGroup::getPositions),
 
@@ -38,7 +36,7 @@ public class ChestGroup {
         });
   });
 
-  private final List<ChestPosition> positions = new ArrayList<>();
+  private final List<FacingPosition> positions = new ArrayList<>();
   private String lootTableId = "";
 
   public void spawn(World world, Random random, String variant, VaultVariationTable table) {
@@ -48,14 +46,14 @@ public class ChestGroup {
 
     LootTable lootTable = table.getLootTable(variant, lootTableId);
 
-    for (ChestPosition position : positions) {
-      Block block = world.getBlockAt(position.x, position.y, position.z);
+    for (FacingPosition position : positions) {
+      Block block = world.getBlockAt(position.x(), position.y(), position.z());
 
       if (block.getType() != Material.CHEST) {
         org.bukkit.block.data.type.Chest blockData
             = (org.bukkit.block.data.type.Chest) Material.CHEST.createBlockData();
 
-        blockData.setFacing(position.facing);
+        blockData.setFacing(position.facing());
         block.setBlockData(blockData, false);
       }
 
@@ -67,19 +65,4 @@ public class ChestGroup {
     }
   }
 
-  public record ChestPosition(int x, int y, int z, BlockFace facing) {
-    static final Codec<ChestPosition> CODEC = RecordCodecBuilder.create(instance -> {
-      return instance
-          .group(
-              Codec.INT.optionalFieldOf("x", 0).forGetter(ChestPosition::x),
-              Codec.INT.optionalFieldOf("y", 0).forGetter(ChestPosition::y),
-              Codec.INT.optionalFieldOf("z", 0).forGetter(ChestPosition::z),
-
-              ExtraCodecs.enumCodec(BlockFace.class)
-                  .optionalFieldOf("facing", BlockFace.NORTH)
-                  .forGetter(ChestPosition::facing)
-          )
-          .apply(instance, ChestPosition::new);
-    });
-  }
 }
