@@ -9,30 +9,33 @@ reloaded:
 created:                "Created Structure: &6${structure}&r."
 removed:                "Removed structure &6${structure}&r."
 redefined:              "Redefined structure &6${structure}."
+placed:                 "Placed structure &6${structure}&r."
 
 scanTemplate: |-
   &8${border:80}&r
-  ${baseMessage}
-  &lOptions:&r 
-    - Include Function blocks: &e${includeFunctions}&r
-    - Block filter: &e${blockFilter}&r
-    - Entity filter: &e${entityFilter}&r
-    - Uses WorldEdit gmask: &e${gmask}&r 
-  &lResult:&r
-    Size: &e${size}&r
-    Blocks: &e${blockCount}&r.
-    Functions: &e${functionCount}&r.
-    Entities: &e${entityCount}&r.
+    ${baseMessage}
+  &8&lOptions:&r 
+    • Include Function blocks: &e${includeFunctions}&r
+    • Block filter: &e${blockFilter}&r
+    • Entity filter: &e${entityFilter}&r
+    • Uses WorldEdit gmask: &e${gmask}&r 
+  &8&lResult:&r
+    • Size: &e${size}&r
+    • Blocks: &e${blockCount}&r.
+    • Functions: &e${functionCount}&r.
+    • Entities: &e${entityCount}&r.
   &8${border:80}&r
 
-placed: |-
+placementTemplate: |-
   &8${border:80}&r
-  Placed &6${structure}&r :: &e${palette}&r at &6${position}&r.
-  &lOptions:&r
-   - Spawn entities: &e${entities}&r.
-   - Offset: &e${offset}&r.
-   - Rotation: &e${rotation}&r.
-   - Pivot: &e${pivot}&r.
+    ${base}
+    Palette: &e${palette}&r.
+  &8&lOptions:&r
+   • Position: &e${position}&r.
+   • Spawn entities: &e${entities}&r.
+   • Offset: &e${offset}&r.
+   • Rotation: &e${rotation}&r.
+   • Pivot: &e${pivot}&r.
   &8${border:80}&r
 
 palettes:

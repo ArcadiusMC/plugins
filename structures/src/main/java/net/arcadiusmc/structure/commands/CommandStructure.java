@@ -521,21 +521,32 @@ public class CommandStructure extends BaseCommand {
   private int placeStructure(CommandContext<CommandSource> c) throws CommandSyntaxException {
     Holder<BlockStructure> holder = getStructure(c);
     Builder cfgBuilder = StructurePlaceConfig.builder();
+    CommandSource source = c.getSource();
 
     if (CommandContexts.getArguments(c).containsKey("options")) {
       ParsedOptions options = ArgumentTypes.getOptions(c, "options");
-      StructureCommands.configurePlacement(cfgBuilder, c.getSource(), options, PALETTE_NAME);
+      StructureCommands.configurePlacement(cfgBuilder, source, options, PALETTE_NAME);
     } else {
       cfgBuilder
-          .pos(Vectors.intFrom(c.getSource().getLocation()))
-          .world(c.getSource().getWorld());
+          .pos(Vectors.intFrom(source.getLocation()))
+          .world(source.getWorld());
     }
 
     StructurePlaceConfig build = cfgBuilder.build();
     holder.getValue().place(build);
 
-    c.getSource().sendSuccess(
-        Messages.render("structures.placed")
+    Component base = Messages.render("structures.placed")
+        .addValue("structure", holder.getKey())
+        .create(source);
+
+    if (!source.isSilent() && source.acceptsSuccessMessage()) {
+      source.broadcastAdmin(base);
+    }
+
+    source.sendMessage(
+        Messages.render("structures.placementTemplate")
+            .addValue("base", base)
+
             .addValue("structure", holder.getKey())
             .addValue("palette", cfgBuilder.paletteName())
 
@@ -546,7 +557,7 @@ public class CommandStructure extends BaseCommand {
             .addValue("pivot", cfgBuilder.transform().getPivot())
             .addValue("rotation", cfgBuilder.transform().getRotation())
 
-            .create(c.getSource())
+            .create(source)
     );
     return SINGLE_SUCCESS;
   }
