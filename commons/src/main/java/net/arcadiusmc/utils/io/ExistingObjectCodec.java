@@ -29,6 +29,11 @@ public class ExistingObjectCodec<T> {
     return new Builder<>();
   }
 
+  public static <T> Codec<T> createCodec(Supplier<T> ctor, Consumer<Builder<T>> consumer) {
+    ExistingObjectCodec<T> existing = create(consumer);
+    return existing.codec(Codec.unit(ctor));
+  }
+
   public static <T> ExistingObjectCodec<T> create(Consumer<Builder<T>> consumer) {
     Builder<T> builder = builder();
     consumer.accept(builder);
