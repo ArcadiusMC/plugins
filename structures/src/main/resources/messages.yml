@@ -7,24 +7,33 @@ reloaded:
   config:               "Reloaded Structures config."
 
 created:                "Created Structure: &6${structure}&r."
-placed:                 "Placed structure &6${structure}&r."
 removed:                "Removed structure &6${structure}&r."
 redefined:              "Redefined structure &6${structure}."
 
 scanTemplate: |-
-  ${border:80}
+  &8${border:80}&r
   ${baseMessage}
-  Options: 
+  &lOptions:&r 
     - Include Function blocks: &e${includeFunctions}&r
     - Block filter: &e${blockFilter}&r
     - Entity filter: &e${entityFilter}&r
     - Uses WorldEdit gmask: &e${gmask}&r 
-  Result:
+  &lResult:&r
     Size: &e${size}&r
     Blocks: &e${blockCount}&r.
     Functions: &e${functionCount}&r.
     Entities: &e${entityCount}&r.
-  ${border:80}
+  &8${border:80}&r
+
+placed: |-
+  &8${border:80}&r
+  Placed &6${structure}&r :: &e${palette}&r at &6${position}&r.
+  &lOptions:&r
+   - Spawn entities: &e${entities}&r.
+   - Offset: &e${offset}&r.
+   - Rotation: &e${rotation}&r.
+   - Pivot: &e${pivot}&r.
+  &8${border:80}&r
 
 palettes:
   added:                "Added palette &e${palette}&r to &6${structure}&r."

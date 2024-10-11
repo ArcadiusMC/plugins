@@ -536,6 +536,16 @@ public class CommandStructure extends BaseCommand {
 
     c.getSource().sendSuccess(
         Messages.render("structures.placed")
+            .addValue("structure", holder.getKey())
+            .addValue("palette", cfgBuilder.paletteName())
+
+            .addValue("position", cfgBuilder.pos())
+            .addValue("entities", cfgBuilder.entitySpawner() != null)
+
+            .addValue("offset", cfgBuilder.transform().getOffset())
+            .addValue("pivot", cfgBuilder.transform().getPivot())
+            .addValue("rotation", cfgBuilder.transform().getRotation())
+
             .create(c.getSource())
     );
     return SINGLE_SUCCESS;
