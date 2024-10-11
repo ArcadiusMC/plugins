@@ -50,6 +50,7 @@ import net.arcadiusmc.utils.io.TagOps;
 import net.arcadiusmc.utils.io.TagUtil;
 import net.arcadiusmc.utils.math.Bounds3i;
 import net.arcadiusmc.utils.math.Direction;
+import net.arcadiusmc.utils.math.Rotation;
 import net.arcadiusmc.utils.math.Vectors;
 import net.arcadiusmc.utils.property.IdPropertyMap;
 import net.arcadiusmc.waypoints.type.WaypointType;
@@ -74,7 +75,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.type.Light;
 import org.bukkit.block.sign.Side;
 import org.bukkit.block.sign.SignSide;
@@ -466,7 +466,7 @@ public class Waypoint {
   }
 
   private void setInfoSign(World w, Vector3i pos, Direction dir, String[] text) {
-    BlockFace face = dir.asBlockFace();
+    dir = dir.rotate(getWaypointRotation());
     Vector3i blockPos = pos.add(dir.getMod());
 
     Block block = Vectors.getBlock(blockPos, w);
@@ -476,7 +476,7 @@ public class Waypoint {
       return;
     }
 
-    Waypoints.setSign(block, true, face, sign -> {
+    Waypoints.setSign(block, true, dir, sign -> {
       SignSide front = sign.getSide(Side.FRONT);
 
       front.setGlowingText(true);
@@ -522,15 +522,17 @@ public class Waypoint {
       return false;
     }
 
-    Vector3i pos = top.add(0, 1, 0);
+    Vector3i pos = rotatePos(top, Vector3i.from(0, 1, 0));
     Block b = Vectors.getBlock(pos, w);
 
     if (name == null) {
       b.setType(Material.AIR);
     } else {
       String actualName = name.isEmpty() ? "Wilderness" : name;
+      Rotation rot = getWaypointRotation();
+      Direction direction = Direction.EAST.rotate(rot);
 
-      Waypoints.setSign(b, false, BlockFace.EAST, sign -> {
+      Waypoints.setSign(b, false, direction, sign -> {
         setNameOnSide(sign.getSide(Side.FRONT), actualName);
         setNameOnSide(sign.getSide(Side.BACK), actualName);
       });
@@ -578,7 +580,7 @@ public class Waypoint {
     if (top == null) {
       return null;
     }
-    return top.sub(-1, 1, 0);
+    return rotatePos(top, Vector3i.from(1, -1, 0));
   }
 
   public void setEditSign(boolean state) {
@@ -596,7 +598,9 @@ public class Waypoint {
       return;
     }
 
-    Waypoints.setSign(block, true, BlockFace.EAST, sign -> {
+    Direction direction = Direction.EAST.rotate(getWaypointRotation());
+
+    Waypoints.setSign(block, true, direction, sign -> {
       var pdc = sign.getPersistentDataContainer();
       pdc.set(Waypoints.EDIT_WAYPOINT_KEY, UuidPersistentDataType.INSTANCE, getId());
 
@@ -638,6 +642,22 @@ public class Waypoint {
     builder.addLoreRaw(writer.getBuffer());
 
     return builder;
+  }
+
+  private Vector3i rotatePos(Vector3i position, Vector3i offset) {
+    Rotation rot = getWaypointRotation();
+    return position.add(rot.rotate(offset));
+  }
+
+  private Rotation getWaypointRotation() {
+    Direction direction = get(WaypointProperties.DIRECTION);
+    Direction defaultValue = WaypointProperties.DIRECTION.getDefaultValue();
+
+    if (direction == null || direction == defaultValue) {
+      return Rotation.NONE;
+    }
+
+    return defaultValue.deriveRotationFrom(direction);
   }
 
   public void update(boolean state) {
@@ -824,7 +844,7 @@ public class Waypoint {
       return null;
     }
 
-    return top.add(1, 0, 0);
+    return rotatePos(top, Vector3i.from(1, 0, 0));
   }
 
   public void removeResidentsSign() {
@@ -848,8 +868,9 @@ public class Waypoint {
     }
 
     Block block = Vectors.getBlock(signPos, world);
+    Direction direction = Direction.EAST.rotate(getWaypointRotation());
 
-    Waypoints.setSign(block, true, BlockFace.EAST, sign -> {
+    Waypoints.setSign(block, true, direction, sign -> {
       SignSide front = sign.getSide(Side.FRONT);
 
       front.setGlowingText(true);

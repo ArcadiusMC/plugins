@@ -18,11 +18,19 @@ import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.registry.Registries;
 import net.arcadiusmc.registry.Registry;
 import net.arcadiusmc.utils.io.ExtraCodecs;
+import net.arcadiusmc.utils.math.Bounds3i;
+import net.arcadiusmc.utils.math.Direction;
+import net.arcadiusmc.utils.math.WorldBounds3i;
 import net.arcadiusmc.waypoints.command.StringListArgument;
 import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.kyori.adventure.text.format.TextColor;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
 import org.bukkit.inventory.ItemStack;
+import org.spongepowered.math.vector.Vector3i;
 
 public class WaypointProperties {
 
@@ -157,6 +165,35 @@ public class WaypointProperties {
   public static final WaypointProperty<UUID> OWNER
       = new WaypointProperty<>("owner", ArgumentTypes.uuid(), ExtraCodecs.INT_ARRAY_UUID, null)
       .setUpdatesMarker(false);
+
+  public static final WaypointProperty<Direction> DIRECTION
+      = new WaypointProperty<>("direction", ArgumentTypes.enumType(Direction.class), ExtraCodecs.enumCodec(Direction.class), Direction.EAST)
+      .setUpdatesMarker(false)
+      .setCallback((waypoint, oldValue, value) -> {
+        Vector3i anchor = waypoint.getAnchor();
+        if (anchor == null) {
+          return;
+        }
+
+        // Clear signs before updating
+        WorldBounds3i bounds = Bounds3i.of(anchor, 1).toWorldBounds(waypoint.getWorld());
+        for (Block block : bounds) {
+          BlockState state = block.getState();
+          if (!(state instanceof Sign)) {
+            continue;
+          }
+          block.setType(Material.AIR, false);
+        }
+
+        waypoint.update(true);
+      })
+      .setValidator((waypoint, newValue) -> {
+        if (newValue.isRotatable()) {
+          return;
+        }
+
+        throw Exceptions.create("Direction value must not be 'up' or 'down'");
+      });
 
   private static Codec<TextColor> createColorCodec() {
     return INT.xmap(TextColor::color, TextColor::value);

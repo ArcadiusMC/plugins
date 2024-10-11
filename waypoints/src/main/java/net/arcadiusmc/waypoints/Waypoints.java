@@ -26,6 +26,7 @@ import net.arcadiusmc.utils.io.PluginJar;
 import net.arcadiusmc.utils.io.Results;
 import net.arcadiusmc.utils.io.SerializationHelper;
 import net.arcadiusmc.utils.math.Bounds3i;
+import net.arcadiusmc.utils.math.Direction;
 import net.arcadiusmc.utils.math.Vectors;
 import net.arcadiusmc.utils.math.WorldBounds3i;
 import net.arcadiusmc.waypoints.WaypointPlatform.FloorPlacer;
@@ -410,17 +411,19 @@ public final class Waypoints {
   public static void setSign(
       Block block,
       boolean wall,
-      @Nullable BlockFace direction,
+      @Nullable Direction direction,
       @Nullable Consumer<Sign> consumer
   ) {
     Material material = wall ? Material.OAK_WALL_SIGN : Material.OAK_SIGN;
     BlockData data = material.createBlockData();
 
     if (direction != null) {
+      BlockFace face = direction.asBlockFace();
+
       if (data instanceof org.bukkit.block.data.type.Sign sign) {
-        sign.setRotation(direction);
+        sign.setRotation(face);
       } else if (data instanceof WallSign wallSign) {
-        wallSign.setFacing(direction);
+        wallSign.setFacing(face);
       }
     }
 
