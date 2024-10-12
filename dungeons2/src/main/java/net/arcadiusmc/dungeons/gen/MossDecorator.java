@@ -62,9 +62,11 @@ public class MossDecorator extends NoiseDecorator<MossConfig> implements XyzFunc
 
     if (isAir(x, y, z)) {
       boolean supportUp = hasSupport(x, y - 1, z, BlockFace.UP);
+      Material carpet = config.carpetBlock;
+      float rate = config.carpetRate;
 
-      if (supportUp && random.nextBoolean()) {
-        setBlock(x, y, z, MOSS_CARPET.createBlockData());
+      if (supportUp && carpet != null && (rate < random.nextFloat())) {
+        setBlock(x, y, z, carpet.createBlockData());
         mossify(x, y, z);
       }
 
@@ -148,6 +150,14 @@ public class MossDecorator extends NoiseDecorator<MossConfig> implements XyzFunc
           builder.optional("overgrowth-blocks", ExtraCodecs.MATERIAL_CODEC.listOf())
               .getter(MossConfig::getBlocks)
               .setter(MossConfig::setBlocks);
+
+          builder.optional("carpet", ExtraCodecs.MATERIAL_CODEC)
+              .getter(MossConfig::getCarpetBlock)
+              .setter(MossConfig::setCarpetBlock);
+
+          builder.optional("carpet-rate", Codec.FLOAT)
+              .getter(MossConfig::getCarpetRate)
+              .setter(MossConfig::setCarpetRate);
         }
     );
 
@@ -157,6 +167,8 @@ public class MossDecorator extends NoiseDecorator<MossConfig> implements XyzFunc
     private List<BlockFilterArgument.Result> maybeReplace = DEFAULT_MAYBE_REPLACE;
 
     private List<Material> blocks = List.of(MOSS_BLOCK);
+    private Material carpetBlock = MOSS_CARPET;
+    private float carpetRate = 0.5f;
 
     @Override
     public NoiseParameter noiseParameters() {
