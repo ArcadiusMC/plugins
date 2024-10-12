@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.Getter;
+import net.arcadiusmc.ArcadiusServer;
 import net.arcadiusmc.delphi.Delphi;
 import net.arcadiusmc.delphi.DelphiProvider;
 import net.arcadiusmc.delphi.DocumentView;
@@ -55,11 +56,23 @@ public class BankPlugin extends JavaPlugin {
       Delphi delphi = DelphiProvider.get();
       delphi.getResources().registerModule("bank-page", module);
     }
+
+    ArcadiusServer server = ArcadiusServer.server();
+    server.registerLeaveListener("bankruns", player -> {
+      BankRun run = sessionMap.get(player.getUniqueId());
+      if (run == null) {
+        return false;
+      }
+
+      run.kick(true);
+      return true;
+    });
   }
 
   @Override
   public void onDisable() {
     stopAllRuns();
+    ArcadiusServer.server().unregisterLeaveListener("bankruns");
   }
 
   public void stopAllRuns() {
