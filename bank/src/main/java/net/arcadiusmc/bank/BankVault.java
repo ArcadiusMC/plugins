@@ -96,6 +96,10 @@ public class BankVault {
             .defaultsTo(Bounds3i.EMPTY)
             .getter(BankVault::getVaultRoom)
             .setter(BankVault::setVaultRoom);
+
+        builder.optional("inner-vault", InnerVault.CODEC)
+            .getter(BankVault::getInnerVault)
+            .setter(BankVault::setInnerVault);
       })
       .codec(Codec.unit(BankVault::new));
 
@@ -121,6 +125,8 @@ public class BankVault {
 
   private Duration runTime = Duration.ofMinutes(1);
   private Duration endingTime = Duration.ofSeconds(5);
+
+  private InnerVault innerVault;
 
   public void place(String variant, World world) {
     Random random = new Random();

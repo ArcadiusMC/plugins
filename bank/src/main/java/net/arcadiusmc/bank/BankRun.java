@@ -1,13 +1,17 @@
 package net.arcadiusmc.bank;
 
+import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.ArcadiusServer;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.delphi.Delphi;
 import net.arcadiusmc.delphi.DelphiProvider;
 import net.arcadiusmc.delphi.DocumentView;
@@ -24,12 +28,20 @@ import net.arcadiusmc.utils.inventory.ItemLists;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.arcadiusmc.utils.math.Bounds3i;
 import net.arcadiusmc.utils.math.WorldBounds3i;
+import net.forthecrown.grenadier.Grenadier;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.title.Title.Times;
 import org.bukkit.Bukkit;
+import org.bukkit.DyeColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
+import org.bukkit.block.data.type.WallSign;
+import org.bukkit.block.sign.Side;
+import org.bukkit.block.sign.SignSide;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
@@ -40,6 +52,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
+import org.joml.Vector3i;
 import org.slf4j.Logger;
 
 @Getter
@@ -79,6 +92,8 @@ public class BankRun {
   private String variant = "default";
 
   private RunState state = RunState.INACTIVE;
+
+  private char[] innerVaultCode;
 
   public BankRun(BankPlugin plugin, Player player, World world) {
     this.plugin = plugin;
@@ -190,6 +205,8 @@ public class BankRun {
     switchState(RunState.ONGOING);
     generateRoom();
     spawnPage();
+    setInnerVault(false);
+    generateInnerVault();
 
     Location entrance = vault.getEnterPosition().toLocation(world);
     player.teleport(entrance);
@@ -207,6 +224,8 @@ public class BankRun {
     clearRoom();
     stopTicking();
     killPage();
+    setInnerVault(false);
+    killInnerVault();
 
     if (bossBar != null) {
       bossBar.setVisible(false);
@@ -278,6 +297,129 @@ public class BankRun {
 
       openView.close();
     }
+  }
+
+  void killInnerVault() {
+    if (!PluginUtil.isEnabled("Delphi")) {
+      return;
+    }
+
+    Delphi delphi = DelphiProvider.get();
+
+    delphi.getOpenViews(player).stream()
+        .filter(view -> view.getPath().toString().startsWith("bank-page:numpad.xml?vault="))
+        .forEach(DocumentView::close);
+  }
+
+  void generateInnerVault() {
+    InnerVault inner = vault.getInnerVault();
+    if (inner == null) {
+      return;
+    }
+
+    Random random = new Random();
+
+    // Generate code
+    int codeLength = inner.getCodeLength();
+    innerVaultCode = new char[codeLength];
+    generateRandomCode(innerVaultCode, random);
+
+    // Place hints
+    char[] hintBuf = new char[codeLength];
+    List<FacingPosition> positions = inner.getCodePositions();
+
+    Collections.shuffle(positions, random);
+
+    for (int i = 0; i < positions.size(); i++) {
+      FacingPosition pos = positions.get(i);
+
+      Block block = world.getBlockAt(pos.x(), pos.y(), pos.z());
+      WallSign data = (WallSign) Material.OAK_WALL_SIGN.createBlockData();
+
+      data.setFacing(pos.facing());
+      block.setBlockData(data, false);
+
+      Sign state = (Sign) block.getState();
+      SignSide side = state.getSide(Side.FRONT);
+
+      String str;
+      DyeColor color;
+
+      if (i == 0) {
+        str = String.valueOf(innerVaultCode);
+        color = DyeColor.LIGHT_GRAY;
+      } else {
+        generateRandomCode(hintBuf, random);
+        str = String.valueOf(hintBuf);
+        color = DyeColor.GRAY;
+      }
+
+      side.setColor(color);
+      side.setGlowingText(true);
+      side.line(1, Component.text("Vault code:"));
+      side.line(2, Component.text(str));
+
+      state.update(true, false);
+    }
+
+    // Spawn numpad
+    if (!PluginUtil.isEnabled("Delphi")) {
+      return;
+    }
+
+    FullPosition numpadPos = inner.getNumpadPosition();
+    if (numpadPos.isNullLocation()) {
+      return;
+    }
+
+    Delphi delphi = DelphiProvider.get();
+
+    delphi.openDocument("bank-page:numpad.xml?vault=" + vaultKey, player)
+        .ifError(e -> {
+          LOGGER.error("Failed to open numpad page for inner vault", e);
+        })
+        .ifSuccess(view -> {
+          Location l = numpadPos.toLocation(world);
+          view.moveTo(l);
+        });
+  }
+
+  void generateRandomCode(char[] out, Random random) {
+    final char[] potentials = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+
+    for (int i = 0; i < out.length; i++) {
+      char ch = potentials[random.nextInt(potentials.length)];
+      out[i] = ch;
+    }
+  }
+
+  public void setInnerVault(boolean open) {
+    InnerVault inner = vault.getInnerVault();
+    if (inner == null) {
+      return;
+    }
+
+    String structureName = open
+        ? inner.getOpenVaultStructure()
+        : inner.getClosedVaultStructure();
+
+    if (Strings.isNullOrEmpty(structureName)) {
+      return;
+    }
+
+    Vector3i pos = inner.getPosition();
+    if (pos == null) {
+      return;
+    }
+
+    Commands.execute(
+        Grenadier.consoleSource().silent(),
+
+        "execute in %s run struct place %s position=%s %s %s",
+        world.getKey(),
+        structureName,
+        pos.x, pos.y, pos.z
+    );
   }
 
   private void generateRoom() {

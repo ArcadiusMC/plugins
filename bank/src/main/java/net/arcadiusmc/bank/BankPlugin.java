@@ -51,7 +51,7 @@ public class BankPlugin extends JavaPlugin {
 
     if (PluginUtil.isEnabled("Delphi")) {
       JarResourceModule module = new JarResourceModule(getClassLoader(), "pages");
-      module.setFilePaths(List.of("exit.xml", "enter.xml"));
+      module.setFilePaths(List.of("exit.xml", "enter.xml", "numpad.xml"));
 
       Delphi delphi = DelphiProvider.get();
       delphi.getResources().registerModule("bank-page", module);

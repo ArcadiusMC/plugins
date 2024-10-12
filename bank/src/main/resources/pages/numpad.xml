@@ -1,0 +1,38 @@
+<page>
+  <header>
+    <options screen-width="1.5" screen-height="2.5"/>
+    <style src="style.scss"/>
+    <java-object class-name="net.arcadiusmc.bank.menus.NumpadPage"/>
+  </header>
+
+  <body>
+    <div class="flex-container">
+      <div class="code-output" id="code-output">_ _ _ _</div>
+    </div>
+
+    <div class="flex-container">
+      <button numpad="1">1</button>
+      <button numpad="2">2</button>
+      <button numpad="3">3</button>
+    </div>
+
+    <div class="flex-container">
+      <button numpad="4">4</button>
+      <button numpad="5">5</button>
+      <button numpad="6">6</button>
+    </div>
+
+    <div class="flex-container">
+      <button numpad="7">7</button>
+      <button numpad="8">8</button>
+      <button numpad="9">9</button>
+    </div>
+
+    <div class="flex-container">
+      <button numpad="clear">X</button>
+      <button numpad="0">0</button>
+      <button numpad="back">&lt;</button>
+    </div>
+  </body>
+
+</page>

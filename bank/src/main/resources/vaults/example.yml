@@ -190,3 +190,20 @@ exit-menu-position:
 # Default: 1m
 #
 run-time: "1m"
+
+inner-vault:
+  open-structure: ""
+  closed-structure: ""
+  place-positions:
+    x: 0
+    y: 0
+    z: 0
+  code-length: 4
+  numpad-position:
+    x: 0
+    y: 0
+    z: 0
+    yaw: 0
+    pitch: 0
+  code-positions:
+    - {x: 0, y: 0, z: 0, facing: west}
