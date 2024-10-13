@@ -29,6 +29,9 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.Bukkit;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.Nullable;
 
 public class NameFactoryImpl implements UserNameFactory {
@@ -67,16 +70,37 @@ public class NameFactoryImpl implements UserNameFactory {
 
     TextComponent.Builder builder = text();
 
+    Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+    Team team = scoreboard.getPlayerTeam(user.getOfflinePlayer());
+
+    if (team != null && team.hasColor()) {
+      name = name.colorIfAbsent(team.color());
+    }
+
     Component prefix = formatPrefix(user, ctx);
     if (prefix != null && !ctx.intentMatches(DisplayIntent.HOLOGRAM)) {
       builder.append(prefix);
+    }
+    if (!ctx.intentMatches(DisplayIntent.HOLOGRAM)) {
+      if (team != null && !Text.isEmpty(team.prefix())) {
+        builder.append(team.prefix());
+      }
+      if (prefix != null) {
+        builder.append(prefix);
+      }
     }
 
     builder.append(name);
 
     Component suffix = formatSuffix(user, ctx);
-    if (suffix != null && !ctx.intentMatches(DisplayIntent.HOLOGRAM)) {
-      builder.append(suffix);
+    if (!ctx.intentMatches(DisplayIntent.HOLOGRAM)) {
+      if (suffix != null) {
+        builder.append(suffix);
+      }
+
+      if (team != null && !Text.isEmpty(team.suffix())) {
+        builder.append(team.suffix());
+      }
     }
 
     if (ctx.intent().isHoverTextAllowed()) {
