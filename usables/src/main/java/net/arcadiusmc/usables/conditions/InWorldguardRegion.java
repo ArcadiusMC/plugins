@@ -30,6 +30,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -111,7 +112,7 @@ class InWorldGuardRegionType implements ObjectType<InWorldguardRegion> {
     if (manager != null) {
       ProtectedRegion region = manager.getRegion(remaining);
 
-      if (region == null) {
+      if (region == null && !source.is(ConsoleCommandSender.class)) {
         reader.setCursor(start);
         throw Exceptions.unknown("Worldguard Region", reader, remaining);
       }
