@@ -130,6 +130,10 @@ public class TabMenu {
 
   public void update() {
     displayTab(lastDisplayed);
+
+    for (User user : Users.getOnline()) {
+      user.updateTabName();
+    }
   }
 
   private void internalShowUser(User user, TabText styled, PlaceholderRenderer renderer) {
