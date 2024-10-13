@@ -108,6 +108,25 @@ public abstract class CollisionSystem<S extends Entity, T> {
     collisionBuffer.clear();
   }
 
+  public void run(S source, boolean enter) {
+    Bounds3i bounds = makeSourceBounds(source, source.getLocation());
+    map.getColliding(source.getWorld(), bounds, collisionBuffer);
+
+    if (collisionBuffer.isEmpty()) {
+      return;
+    }
+
+    for (Collision<T> col : collisionBuffer) {
+      if (enter) {
+        listener.onEnter(source, col.value());
+      } else {
+        listener.onExit(source, col.value());
+      }
+    }
+
+    collisionBuffer.clear();
+  }
+
   protected Bounds3i makeSourceBounds(S source, Location l) {
     double halfWidth = source.getWidth() / 2;
     double height = source.getHeight();
