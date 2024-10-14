@@ -295,7 +295,9 @@ cmd.nickname:
     _style: $err
     tooLong:          "Nickname too long! &7(max length is ${maxLength} characters)"
     unavailable:      "Nickname unavailable."
-    noNick:           "${player} has no set nickname"
+    noNick:           "${player} has no set nickname."
+    alreadySet.self:  "${nick} is already your name/nickname."
+    alreadySet.other: "${nick} is already their name/nickname."
 
   set.self:           "Set nick to '&e${nick}&r'"
   set.other:          "Set &e${player}&r's nick to '&e${nick}&r'"

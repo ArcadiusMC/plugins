@@ -9,15 +9,14 @@ import static net.arcadiusmc.core.CoreMessages.NICK_TOO_LONG;
 import static net.arcadiusmc.core.CoreMessages.NICK_UNAVAILABLE;
 
 import com.google.common.base.Strings;
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.help.UsageFactory;
-import net.arcadiusmc.core.CoreConfig;
 import net.arcadiusmc.core.CorePermissions;
 import net.arcadiusmc.core.CorePlugin;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.UserLookup;
 import net.arcadiusmc.user.UserLookup.LookupEntry;
@@ -48,6 +47,67 @@ public class CommandNickname extends BaseCommand {
     factory.usage("<player> clear", "Clears a player's nickname");
   }
 
+  enum NickSetResult {
+    SUCCESS,
+    TAKEN,
+    TOO_LONG,
+    ALREADY_NICK,
+    ;
+  }
+
+  NickSetResult trySet(User target, String newnick) {
+    if (newnick.length() > CorePlugin.plugin().getCoreConfig().maxNickLength()) {
+      return NickSetResult.TOO_LONG;
+    }
+
+    UserLookup lookup = Users.getService().getLookup();
+    LookupEntry query = lookup.query(newnick);
+
+    if (query != null) {
+      if (query.getUniqueId().equals(target.getUniqueId())) {
+        return NickSetResult.ALREADY_NICK;
+      }
+
+      return NickSetResult.TAKEN;
+    }
+
+    target.setNickname(newnick);
+    return NickSetResult.SUCCESS;
+  }
+
+  void setSelf(User user, String nickname) throws CommandSyntaxException {
+    NickSetResult result = trySet(user, nickname);
+    switch (result) {
+      case SUCCESS -> {
+        user.sendMessage(
+            NICK_SET_SELF.get()
+                .addValue("nick", nickname)
+                .create(user)
+        );
+      }
+
+      case TOO_LONG -> {
+        int maxLength = CorePlugin.plugin().getCoreConfig().maxNickLength();
+        throw NICK_TOO_LONG.get()
+            .addValue("maxLength", maxLength)
+            .addValue("nick", nickname)
+            .exception(user);
+      }
+
+      case TAKEN -> {
+        throw NICK_UNAVAILABLE.get()
+            .addValue("nick", nickname)
+            .exception(user);
+      }
+
+      case ALREADY_NICK -> {
+        throw Messages.render("cmd.nickname.error.alreadySet.self")
+            .addValue("nick", nickname)
+            .exception(user);
+      }
+    }
+  }
+
   @Override
   public void createCommand(GrenadierCommand command) {
     command
@@ -58,18 +118,12 @@ public class CommandNickname extends BaseCommand {
           return 0;
         })
 
-        .then(argument("nick", new NicknameArgument())
+        .then(argument("nick", StringArgumentType.word())
             .executes(c -> {
               User user = getUserSender(c);
               String nickname = c.getArgument("nick", String.class);
-              user.setNickname(nickname);
 
-              user.sendMessage(
-                  NICK_SET_SELF.get()
-                      .addValue("nick", nickname)
-                      .create(user)
-              );
-
+              setSelf(user, nickname);
               return 0;
             })
         )
@@ -99,64 +153,55 @@ public class CommandNickname extends BaseCommand {
                 })
             )
 
-            .then(argument("nick", new NicknameArgument())
+            .then(argument("nick", StringArgumentType.word())
                 .executes(c -> {
                   CommandSource source = c.getSource();
                   User target = Arguments.getUser(c, "player");
 
                   String nick = c.getArgument("nick", String.class);
-
                   target.setNickname(nick);
 
                   boolean self = source.textName().equals(target.getName());
 
                   if (self) {
-                    source.sendMessage(
-                        NICK_SET_SELF.get()
-                            .addValue("nick", nick)
-                            .create(target)
-                    );
-                  } else {
-                    source.sendSuccess(
-                        NICK_SET_OTHER.get()
-                            .addValue("player", target)
-                            .addValue("nick", nick)
-                            .create(source)
-                    );
+                    setSelf(target, nick);
+                    return 0;
+                  }
+
+                  NickSetResult result = trySet(target, nick);
+                  switch (result) {
+                    case SUCCESS -> {
+                      source.sendSuccess(
+                          NICK_SET_OTHER.get()
+                              .addValue("player", target)
+                              .addValue("nick", nick)
+                              .create(source)
+                      );
+                    }
+
+                    case ALREADY_NICK -> {
+                      throw Messages.render("cmd.nickname.error.alreadySet.other")
+                          .addValue("nick", nick)
+                          .exception(source);
+                    }
+                    case TOO_LONG -> {
+                      int maxlen = CorePlugin.plugin().getCoreConfig().maxNickLength();
+
+                      throw NICK_TOO_LONG.get()
+                          .addValue("nick", nick)
+                          .addValue("maxLength", maxlen)
+                          .exception(source);
+                    }
+                    case TAKEN -> {
+                      throw NICK_UNAVAILABLE.get()
+                          .addValue("nick", nick)
+                          .exception(source);
+                    }
                   }
 
                   return 0;
                 })
             )
         );
-  }
-
-  private static class NicknameArgument implements ArgumentType<String> {
-
-    @Override
-    public String parse(StringReader reader) throws CommandSyntaxException {
-      String nick = reader.readUnquotedString();
-
-      CoreConfig config = CorePlugin.plugin().getCoreConfig();
-      int maxLength = config.maxNickLength();
-
-      if (nick.length() > maxLength) {
-        throw NICK_TOO_LONG.get()
-            .addValue("maxLength", maxLength)
-            .addValue("nick", nick)
-            .exception();
-      }
-
-      UserLookup cache = Users.getService().getLookup();
-      LookupEntry entry = cache.query(nick);
-
-      if (entry != null) {
-        throw NICK_UNAVAILABLE.get()
-            .addValue("nick", nick)
-            .exception();
-      }
-
-      return nick;
-    }
   }
 }
