@@ -663,12 +663,9 @@ public final class UserImpl implements User {
     };
   }
 
-  @Override
-  public void updateTabName() {
+  public void updateOnlyTabName() {
     ensureValid();
     ensureOnline();
-
-    service.getPlugin().getTabMenu().update();
 
     Set<NameRenderFlags> flags = EnumSet.allOf(NameRenderFlags.class);
     UserNameFactory factory = service.getNameFactory();
@@ -701,6 +698,15 @@ public final class UserImpl implements User {
           Text.LEGACY.serialize(suffix)
       );
     }
+  }
+
+  @Override
+  public void updateTabName() {
+    ensureValid();
+    ensureOnline();
+
+    service.getPlugin().getTabMenu().update();
+    updateOnlyTabName();
   }
 
   @Override
