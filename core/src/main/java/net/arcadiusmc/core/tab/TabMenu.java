@@ -10,6 +10,7 @@ import java.util.Objects;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.core.CorePlugin;
 import net.arcadiusmc.core.tab.TabConfig.DynamicBorderConfig;
+import net.arcadiusmc.core.user.UserImpl;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.TextInfo;
 import net.arcadiusmc.text.placeholder.PlaceholderRenderer;
@@ -132,7 +133,8 @@ public class TabMenu {
     displayTab(lastDisplayed);
 
     for (User user : Users.getOnline()) {
-      user.updateTabName();
+      UserImpl impl = (UserImpl) user;
+      impl.updateOnlyTabName();
     }
   }
 
