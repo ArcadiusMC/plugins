@@ -3,8 +3,8 @@ package net.arcadiusmc.core.placeholder;
 import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.MatchResult;
@@ -38,16 +38,15 @@ public class PlaceholderRendererImpl implements PlaceholderRenderer {
   }
 
   Map<String, Object> createContext(Audience viewer, Map<String, Object> ctx) {
-    Map<String, Object> result;
-
-    if (ctx == null) {
-      result = new HashMap<>();
-    } else {
-      result = new HashMap<>(ctx);
-    }
+    Map<String, Object> result = new Object2ObjectOpenHashMap<>();
 
     result.put("server", Bukkit.getServer());
     result.put("viewer", viewer);
+    result.put("time", TimeProvider.INSTANCE);
+
+    if (ctx != null) {
+      result.putAll(ctx);
+    }
 
     return result;
   }

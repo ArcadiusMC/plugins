@@ -1,5 +1,7 @@
 package net.arcadiusmc.core.placeholder;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.placeholder.ObjectPlaceholder;
@@ -21,45 +23,63 @@ public class ObjectPlaceholderSource implements PlaceholderSource {
 
   @Override
   public TextPlaceholder getPlaceholder(String name, PlaceholderContext ctx) {
-    String[] nodes = name.split("\\.");
-    int nodeIndex = 1;
+    Iterator<String> it = breakIntoElements(name);
+    Object resultSoFar = findValue(it, ctx);
 
-    Object value = ctx.context().get(nodes[0]);
+    while (true) {
+      String fieldName;
 
-    if (value == null) {
-      return null;
-    }
-
-    while (nodeIndex <= nodes.length) {
-      String node;
-      boolean last;
-
-      if (nodeIndex >= nodes.length) {
-        node = "";
-        last = true;
+      if (it.hasNext()) {
+        fieldName = it.next();
       } else {
-        node = nodes[nodeIndex];
-        last = false;
+        fieldName = "";
       }
 
-      nodeIndex++;
+      ObjectPlaceholder<Object> type = (ObjectPlaceholder<Object>)
+          service.getTypePlaceholder(resultSoFar);
 
-      ObjectPlaceholder placeholder = service.getTypePlaceholder(value);
-
-      if (placeholder != null) {
-        value = placeholder.lookup(value, node, ctx);
-        continue;
+      if (type != null) {
+        resultSoFar = type.lookup(resultSoFar, fieldName, ctx);
       }
 
-      if (last) {
-        break;
+      if (resultSoFar instanceof TextPlaceholder placeholder) {
+        return placeholder;
+      }
+      if (resultSoFar instanceof Component c) {
+        return TextPlaceholder.simple(c);
       }
 
-      LOGGER.debug("Couldn't find placeholder type for value {}", value);
-      return null;
+      if (!it.hasNext()) {
+        type = (ObjectPlaceholder<Object>) service.getTypePlaceholder(resultSoFar);
+
+        if (type != null) {
+          return new ObjectTextPlaceholder(type.lookup(resultSoFar, "", ctx));
+        }
+
+        return new ObjectTextPlaceholder(resultSoFar);
+      }
+    }
+  }
+
+  private Object findValue(Iterator<String> it, PlaceholderContext ctx) {
+    String el = "";
+    Object result = null;
+
+    while (result == null) {
+      if (!it.hasNext()) {
+        return null;
+      }
+
+      el = (el.isEmpty() ? "" : ".") + it.next();
+      result = ctx.context().get(el);
     }
 
-    return new ObjectTextPlaceholder(value);
+    return result;
+  }
+
+  private Iterator<String> breakIntoElements(String path) {
+    String[] arr = path.split("\\.");
+    return new ObjectPathIterator(arr);
   }
 
   record ObjectTextPlaceholder(Object o) implements TextPlaceholder {
@@ -67,6 +87,30 @@ public class ObjectPlaceholderSource implements PlaceholderSource {
     @Override
     public Component render(String match, PlaceholderContext render) {
       return Text.valueOf(o, render.viewer());
+    }
+  }
+
+  static class ObjectPathIterator implements Iterator<String> {
+
+    final String[] elements;
+    int idx = 0;
+
+    ObjectPathIterator(String[] elements) {
+      this.elements = elements;
+    }
+
+    @Override
+    public boolean hasNext() {
+      return idx < elements.length;
+    }
+
+    @Override
+    public String next() {
+      if (!hasNext()) {
+        throw new NoSuchElementException();
+      }
+
+      return elements[idx++];
     }
   }
 }
