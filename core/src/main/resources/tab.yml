@@ -81,6 +81,10 @@ adaptive-border:
 #
 # Any time value less than 1 tick will disable the animation
 #
+# If no frames are specified while this value is set to a non-zero
+# value, then this acts as an update interval between tab menu
+# updates
+#
 # Default: 0
 #
 frame-rate: 0

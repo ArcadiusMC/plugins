@@ -99,6 +99,10 @@ public class TabMenu {
     List<TabText> frames = config.frames();
 
     if (frames == null || frames.isEmpty()) {
+      // Simply update
+      TabText text = config.base();
+      displayTab(text);
+
       return;
     }
 
