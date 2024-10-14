@@ -76,13 +76,7 @@ class TabConfig {
   }
 
   boolean isAnimated() {
-    if (animationSpeed == null || animationSpeed.isZero() || animationSpeed.isNegative()) {
-      return false;
-    }
-    if (frames == null || frames.isEmpty()) {
-      return false;
-    }
-    return true;
+    return animationSpeed != null && animationSpeed.isPositive();
   }
 
   record DynamicBorderConfig(
