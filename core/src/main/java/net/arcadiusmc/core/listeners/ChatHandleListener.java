@@ -5,6 +5,7 @@ import io.papermc.paper.chat.ChatRenderer.Default;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import java.util.Set;
 import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.loader.MessageRender;
 import net.arcadiusmc.text.parse.ChatParseFlag;
 import net.arcadiusmc.text.parse.ChatParser;
 import net.arcadiusmc.text.parse.TextContext;
@@ -28,7 +29,7 @@ public class ChatHandleListener implements Listener {
     Player sender = event.getPlayer();
 
     ChatRenderer renderer = event.renderer() instanceof Default
-        ? DefaultChatRenderer.INSTANCE
+        ? DefaultChatRenderer.INSTANCE.resetState(sender)
         : event.renderer();
 
     if (viewers.isEmpty()) {
@@ -55,6 +56,15 @@ public class ChatHandleListener implements Listener {
   private enum DefaultChatRenderer implements ChatRenderer {
     INSTANCE;
 
+    private MessageRender render;
+
+    public ChatRenderer resetState(Player source) {
+      render = Messages.render("server.chat")
+          .addValue("player", source);
+
+      return this;
+    }
+
     @Override
     public @NotNull Component render(
         @NotNull Player source,
@@ -62,8 +72,13 @@ public class ChatHandleListener implements Listener {
         @NotNull Component message,
         @NotNull Audience viewer
     ) {
-      User user = Users.get(source);
-      return Messages.chatMessage(viewer, user, message);
+      if (render == null) {
+        resetState(source);
+      }
+
+      return render
+          .addValue("message", message)
+          .create(viewer);
     }
   }
 }
