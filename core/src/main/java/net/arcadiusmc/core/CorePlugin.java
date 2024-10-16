@@ -71,7 +71,7 @@ public class CorePlugin extends JavaPlugin {
       ps.println(">> =======================================");
       ps.println(">> Failed to initialize user system...");
       ps.println(">> Initiating system halt");
-      ps.println(">> Tell Julie");
+      ps.println(">> Tell " + getPluginMeta().getAuthors());
       ps.println(">> =======================================");
 
       ps.flush();
