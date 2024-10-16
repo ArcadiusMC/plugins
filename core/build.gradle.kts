@@ -27,6 +27,7 @@ pluginYml {
     required("FastAsyncWorldEdit")
     required("WorldGuard")
     optional("PlaceholderAPI")
+    optional("Multiverse-Core")
   }
 
   loadBefore {
