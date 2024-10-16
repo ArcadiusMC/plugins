@@ -13,24 +13,27 @@ import net.arcadiusmc.utils.io.ExtraCodecs;
 @RequiredArgsConstructor
 public class MarketScanResult {
 
-  public static final Codec<MarketScanResult> CODEC = RecordCodecBuilder.create(instance -> {
-    return instance
-        .group(
-            SignShopBlock.CODEC.listOf()
-                .optionalFieldOf("blocks", List.of())
-                .forGetter(o -> o.blocks),
+  // Something something class loading order
+  static class CodecHolder {
+    public static final Codec<MarketScanResult> CODEC = RecordCodecBuilder.create(instance -> {
+      return instance
+          .group(
+              SignShopBlock.CODEC.listOf()
+                  .optionalFieldOf("blocks", List.of())
+                  .forGetter(o -> o.blocks),
 
-            Codec.LONG.fieldOf("last_owner_login")
-                .forGetter(o -> o.lastOwnerLogin),
+              Codec.LONG.fieldOf("last_owner_login")
+                  .forGetter(o -> o.lastOwnerLogin),
 
-            Codec.FLOAT.fieldOf("scan_aggression")
-                .forGetter(o -> o.scanAggression),
+              Codec.FLOAT.fieldOf("scan_aggression")
+                  .forGetter(o -> o.scanAggression),
 
-            Codec.LONG.fieldOf("scan_timestamp")
-                .forGetter(o -> o.scanTimestamp)
-        )
-        .apply(instance, MarketScanResult::new);
-  });
+              Codec.LONG.fieldOf("scan_timestamp")
+                  .forGetter(o -> o.scanTimestamp)
+          )
+          .apply(instance, MarketScanResult::new);
+    });
+  }
 
   private final List<SignShopBlock> blocks;
 

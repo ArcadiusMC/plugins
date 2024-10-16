@@ -66,8 +66,11 @@ public class AutoEvictions {
 
   private static final Logger LOGGER = Loggers.getLogger();
 
-  private static final Codec<List<MarketScanResult>> SCAN_FILE_CODEC
-      = MarketScanResult.CODEC.listOf().optionalFieldOf("scans", List.of()).codec();
+  // Class loading order
+  static class ScanListCodec {
+    private static final Codec<List<MarketScanResult>> SCAN_FILE_CODEC
+        = MarketScanResult.CodecHolder.CODEC.listOf().optionalFieldOf("scans", List.of()).codec();
+  }
 
   private final Registry<CriterionType<?>> types = Registries.newFreezable();
   private final List<EvictionCriterion<?>> criteria = new ArrayList<>();
@@ -392,7 +395,7 @@ public class AutoEvictions {
     }
 
     return SerializationHelper.readTag(file)
-        .flatMap(tag -> SCAN_FILE_CODEC.parse(TagOps.OPS, tag))
+        .flatMap(tag -> ScanListCodec.SCAN_FILE_CODEC.parse(TagOps.OPS, tag))
         .map(ArrayList::new)
         .map(list -> {
           scans.put(key, list);
@@ -401,10 +404,10 @@ public class AutoEvictions {
   }
 
   public void save() {
-    scans.forEach((s, marketScanResults) -> {
+    scans.forEach((s, results) -> {
       Path file = getFile(s);
 
-      Optional<CompoundTag> opt = SCAN_FILE_CODEC.encodeStart(TagOps.OPS, marketScanResults)
+      Optional<CompoundTag> opt = ScanListCodec.SCAN_FILE_CODEC.encodeStart(TagOps.OPS, results)
           .flatMap(ExtraCodecs.TAG_TO_COMPOUND)
           .mapError(s1 -> "Failed to save scans file for " + s + ": " + s1)
           .resultOrPartial(LOGGER::error);
