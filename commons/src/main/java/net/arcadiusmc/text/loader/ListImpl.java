@@ -2,12 +2,14 @@ package net.arcadiusmc.text.loader;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
+import net.arcadiusmc.Loggers;
 import net.arcadiusmc.text.parse.ChatParseFlag;
 import net.arcadiusmc.text.parse.ChatParser;
 import net.arcadiusmc.text.parse.TextContext;
@@ -15,6 +17,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 
 class ListImpl implements MessageList {
 
@@ -50,9 +53,20 @@ class ListImpl implements MessageList {
     Objects.requireNonNull(format, "Null format");
 
     MessageEntry entry = entries.computeIfAbsent(key, MessageEntry::new);
-    entry.value = format;
+    entry.set(format);
 
     return this;
+  }
+
+  @Override
+  public void add(String key, Component[] array, ListMode mode) {
+    Objects.requireNonNull(key, "Null key");
+    Objects.requireNonNull(array, "Null array");
+    Objects.requireNonNull(mode, "Null mode");
+
+    MessageEntry entry = entries.computeIfAbsent(key, MessageEntry::new);
+    entry.set(array);
+    entry.listMode = mode;
   }
 
   @Override
@@ -169,24 +183,74 @@ class ListImpl implements MessageList {
 
   private static class MessageEntry implements MessageRef {
 
+    static final Random RANDOM = new Random();
+
     private final String key;
-    private Component value;
+
+    private Component[] value = null;
+    private ListMode listMode = ListMode.ITERATING;
+    private int idx = 0;
+
+    private final Component[] lenOne = new Component[1];
 
     public MessageEntry(String key) {
       this.key = key;
     }
 
-    public Optional<Component> getText() {
-      return Optional.ofNullable(value);
+    public void set(Component value) {
+      lenOne[0] = value;
+      this.value = lenOne;
+      this.idx = 0;
+    }
+
+    public void set(Component[] value) {
+      this.value = value;
+      this.idx = 0;
     }
 
     @Override
     public MessageRender get() {
-      if (value == null) {
+      if (value == null || value.length < 1) {
         return new NullRender(key);
       }
 
-      return new FormatRender(value);
+      if ("server.chat".equals(key)) {
+        Logger l = Loggers.getLogger();
+        l.debug("get message render call: value.len={}, listMode={}, idx={}",
+            value.length, listMode, idx,
+            new Throwable()
+        );
+      }
+
+      if (value.length == 1) {
+        return new FormatRender(value[0]);
+      }
+
+      Component text;
+
+      switch (listMode) {
+        case RANDOM:
+          text = value[RANDOM.nextInt(value.length)];
+          break;
+
+        case SHUFFLE:
+          text = value[idx++];
+          if (idx >= value.length) {
+            idx = 0;
+            ObjectArrays.shuffle(value, RANDOM);
+          }
+          break;
+
+        case null:
+        default:
+          text = value[idx++];
+          if (idx >= value.length) {
+            idx = 0;
+          }
+          break;
+      }
+
+      return new FormatRender(text);
     }
 
     @Override

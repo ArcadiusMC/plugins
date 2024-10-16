@@ -1,22 +1,26 @@
 package net.arcadiusmc.text.loader;
 
 import com.google.common.base.Joiner;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Stack;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.parse.ChatParser;
 import net.arcadiusmc.utils.io.FormatConversions;
 import net.arcadiusmc.utils.io.PathUtil;
@@ -293,26 +297,38 @@ public class MessageLoader {
         continue;
       }
 
-      String formatKey = ctx.prefix() + key;
+      MessageKey messageKey;
+
+      try {
+        messageKey = MessageKey.parse(key);
+      } catch (CommandSyntaxException exc) {
+        messageKey = new MessageKey(key, Map.of());
+        LOGGER.error("Failed to parse message key {}", key, exc);
+      }
+
+      String formatKey = ctx.prefix() + messageKey.key();
       JsonElement element = entry.getValue();
 
       if (element.isJsonPrimitive() || element.isJsonNull()) {
-        String strValue = element.isJsonNull() ? "null" : element.getAsString();
-
-        Component component = ChatParser.parser().parseBasic(strValue, ListImpl.TEXT_CONTEXT)
-            .applyFallbackStyle(ctx.style());
+        Component component = jsonPrimitiveToText(element, ctx);
 
         list.add(formatKey, component);
-        ctx.onMessageLoaded();
+        ctx.onMessageLoaded(formatKey, component);
 
         continue;
       }
 
       if (element.isJsonObject()) {
         var object = element.getAsJsonObject();
-        ctx.pushPrefix(key);
+        ctx.pushPrefix(messageKey.key());
         loadFromPrefixedJson(ctx, object, list);
         ctx.popPrefix();
+        continue;
+      }
+
+      if (element.isJsonArray()) {
+        JsonArray array = element.getAsJsonArray();
+        loadFromArray(list, messageKey, array, ctx);
         continue;
       }
 
@@ -324,6 +340,53 @@ public class MessageLoader {
     if (stylePushed) {
       ctx.popStyle();
     }
+  }
+
+  private static void loadFromArray(
+      MessageList list,
+      MessageKey messageKey,
+      JsonArray array,
+      LoadContext ctx
+  ) {
+    List<Component> componentList = new ObjectArrayList<>(array.size());
+    String key = ctx.prefix() + messageKey.key();
+
+    for (int i = 0; i < array.size(); i++) {
+      JsonElement el = array.get(i);
+
+      if (!el.isJsonPrimitive() && !el.isJsonNull()) {
+        LOGGER.error(
+            "Don't know how to load entry index {} at {}: Not a primitive value",
+            i, messageKey.key()
+        );
+
+        continue;
+      }
+
+      Component value = jsonPrimitiveToText(el, ctx);
+      componentList.add(value);
+
+      ctx.onMessageLoaded(key + "[" + i + "]", value);
+    }
+
+    Component[] textArray = componentList.toArray(Component[]::new);
+    String listModeString = messageKey.arguments().getOrDefault("list-mode", "incrementing");
+
+    ListMode listMode = switch (listModeString.toLowerCase()) {
+      case "random" -> ListMode.RANDOM;
+      case "shuffle" -> ListMode.SHUFFLE;
+      default -> ListMode.ITERATING;
+    };
+
+    list.add(key, textArray, listMode);
+  }
+
+  private static Component jsonPrimitiveToText(JsonElement element, LoadContext ctx) {
+    String strValue = element.isJsonNull() ? "null" : element.getAsString();
+
+    return ChatParser.parser()
+        .parseBasic(strValue, ListImpl.TEXT_CONTEXT)
+        .applyFallbackStyle(ctx.style());
   }
 
   private static void parseStyle(String string, Mutable<StyleScope> out, LoadContext ctx) {
@@ -370,8 +433,11 @@ public class MessageLoader {
 
     private int loadCounter = 0;
 
-    private void onMessageLoaded() {
+    private void onMessageLoaded(String key, Component message) {
       loadCounter++;
+
+      String paddedKey = "%-50s".formatted(key + ":");
+      LOGGER.debug("Loaded message {} {}", paddedKey, Text.plain(message));
     }
 
     void addStyle(String label, StyleScope style) {

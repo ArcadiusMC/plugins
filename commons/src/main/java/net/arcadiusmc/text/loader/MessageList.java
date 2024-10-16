@@ -25,6 +25,12 @@ public interface MessageList {
 
   MessageList add(@NotNull String key, @NotNull Component format);
 
+  default void add(String key, Component[] array) {
+    add(key, array, ListMode.ITERATING);
+  }
+
+  void add(String key, Component[] array, ListMode mode);
+
   MessageRef reference(@NotNull String key);
 
   MessageRender render(@NotNull String key);

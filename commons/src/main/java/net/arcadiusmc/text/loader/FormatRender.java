@@ -26,11 +26,6 @@ class FormatRender implements MessageRender, ViewerAwareMessage {
 
   @Override
   public MessageRender addValue(@NotNull String key, @Nullable Object value) {
-    if (key.contains(".")) {
-      renderer.add(key, value);
-      return this;
-    }
-
     if (variables == null) {
       variables = new HashMap<>();
     }
