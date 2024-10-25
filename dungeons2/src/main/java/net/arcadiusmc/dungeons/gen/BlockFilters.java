@@ -1,5 +1,7 @@
 package net.arcadiusmc.dungeons.gen;
 
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -28,5 +30,13 @@ public class BlockFilters {
 
   public static Result create(Material material) {
     return new MaterialBlockFilter(material);
+  }
+
+  public static Result parse(String string) {
+    try {
+      return ArgumentTypes.blockFilter().parse(new StringReader(string));
+    } catch (CommandSyntaxException exc) {
+      throw new RuntimeException(exc);
+    }
   }
 }
