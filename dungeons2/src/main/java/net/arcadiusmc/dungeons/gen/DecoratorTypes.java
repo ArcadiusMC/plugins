@@ -33,6 +33,7 @@ public class DecoratorTypes {
     TYPES.register("puddles", PuddleDecorator.TYPE);
     TYPES.register("overgrowth", MossDecorator.TYPE);
     TYPES.register("edge-rot", EdgeRotDecorator.TYPE);
+    TYPES.register("treasure", TreasureDecorator.TYPE);
 
     TYPES.register("functions/hanging-lights", HangingLightsDecorator.TYPE);
     TYPES.register("functions/fire", FireDecorator.TYPE);
