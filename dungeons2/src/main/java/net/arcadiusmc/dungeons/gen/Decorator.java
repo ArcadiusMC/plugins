@@ -70,6 +70,41 @@ public abstract class Decorator<C> {
     return false;
   }
 
+  protected <T> T randomFrom(List<T> list) {
+    if (list == null || list.isEmpty()) {
+      return null;
+    }
+    if (list.size() == 1) {
+      return list.getFirst();
+    }
+
+    return list.get(random.nextInt(list.size()));
+  }
+
+  protected float randomFloat() {
+    return random.nextFloat();
+  }
+
+  protected int randomInt(int upperExc) {
+    return random.nextInt(upperExc);
+  }
+
+  protected int randomInt(int lowerInc, int upperExc) {
+    return random.nextInt(lowerInc, upperExc);
+  }
+
+  protected boolean randomBool() {
+    return random.nextBoolean();
+  }
+
+  protected boolean randomBool(double chance) {
+    if (chance >= 1.0) {
+      return true;
+    }
+
+    return randomFloat() < chance;
+  }
+
   protected DungeonPiece getRootPiece() {
     return generator.getRootPiece();
   }
