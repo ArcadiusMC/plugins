@@ -59,6 +59,16 @@ public class PuddleDecorator extends NoiseDecorator<PuddleConfig> implements Xyz
       return;
     }
     if (mask == Q_ALL) {
+      if (canFullBreak(x, y, z)) {
+        if (config.waterlogged) {
+          setPuddleBlock(x, y, z, Material.WATER.createBlockData());
+        } else {
+          clearBlock(x, y, z);
+        }
+
+        return;
+      }
+
       setPuddleBlock(x, y, z, iteration.getSlab().createBlockData());
       return;
     }
@@ -69,6 +79,36 @@ public class PuddleDecorator extends NoiseDecorator<PuddleConfig> implements Xyz
     }
 
     setPuddleBlock(x, y, z, data);
+  }
+
+  boolean canFullBreak(int x, int y, int z) {
+    final float centerX = x + 0.5f;
+    final float centerY = y + 0.5f;
+    final float centerZ = z + 0.5f;
+
+    double noise = getNoise(centerX, centerY, centerZ);
+    double noiseGate = config.getNoise().getNoiseGate();
+    double rem = 1.0d - noiseGate;
+
+    if (rem < 0) {
+      return false;
+    }
+
+    double fullBreakGate = (rem / 2) + noiseGate;
+
+    if (noise < fullBreakGate) {
+      return false;
+    }
+
+    if (config.waterlogged) {
+      int by = y - 1;
+
+      if (isAir(x, by, z)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   void setPuddleBlock(int x, int y, int z, BlockData data) {
@@ -100,22 +140,24 @@ public class PuddleDecorator extends NoiseDecorator<PuddleConfig> implements Xyz
         getNoise(maxX, ny, maxZ)
     );
 
-    boolean westAir = isAir(x - 1, y, z /*, BlockFace.WEST*/);
-    boolean eastAir = isAir(x + 1, y, z /*, BlockFace.EAST*/);
-    boolean northAir = isAir(x, y, z - 1 /*, BlockFace.NORTH*/);
-    boolean southAir = isAir(x, y, z + 1 /*, BlockFace.SOUTH*/);
+    if (config.waterlogged) {
+      boolean westAir = isAir(x - 1, y, z /*, BlockFace.WEST*/);
+      boolean eastAir = isAir(x + 1, y, z /*, BlockFace.EAST*/);
+      boolean northAir = isAir(x, y, z - 1 /*, BlockFace.NORTH*/);
+      boolean southAir = isAir(x, y, z + 1 /*, BlockFace.SOUTH*/);
 
-    if (westAir | northAir) {
-      mask &= ~Q_NW;
-    }
-    if (westAir | southAir) {
-      mask &= ~Q_SW;
-    }
-    if (eastAir | northAir) {
-      mask &= ~Q_NE;
-    }
-    if (eastAir | southAir) {
-      mask &= ~Q_SE;
+      if (westAir | northAir) {
+        mask &= ~Q_NW;
+      }
+      if (westAir | southAir) {
+        mask &= ~Q_SW;
+      }
+      if (eastAir | northAir) {
+        mask &= ~Q_NE;
+      }
+      if (eastAir | southAir) {
+        mask &= ~Q_SE;
+      }
     }
 
     return mask;
