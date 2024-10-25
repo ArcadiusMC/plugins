@@ -14,6 +14,7 @@ import org.spongepowered.math.vector.Vector3i;
 
 @Getter @Setter
 public class DungeonConfig {
+  private static final Random RANDOM = new Random();
 
   public static final Codec<DungeonConfig> CODEC
       = ExistingObjectCodec.<DungeonConfig>create(builder -> {
@@ -46,6 +47,11 @@ public class DungeonConfig {
               config.decorationPasses.clear();
               config.decorationPasses.addAll(passes);
             });
+
+        builder.optional("seed", Codec.LONG)
+            .defaultValue(RANDOM::nextLong)
+            .getter(DungeonConfig::getSeed)
+            .setter(DungeonConfig::setSeed);
       })
       .codec(Codec.unit(DungeonConfig::new));
 
@@ -56,6 +62,7 @@ public class DungeonConfig {
 
   private Vector3i location = Vector3i.ZERO;
   private int potentialLevels = 35;
+  private long seed = RANDOM.nextLong();
 
   private final List<PieceType> pieceTypes = new ObjectArrayList<>();
 
@@ -64,7 +71,7 @@ public class DungeonConfig {
   }
 
   public Random createRandom() {
-    return new Random(parameters.getSeed());
+    return new Random(seed);
   }
 
   public Stream<PieceType> getMatchingPieces(PieceKind kind) {

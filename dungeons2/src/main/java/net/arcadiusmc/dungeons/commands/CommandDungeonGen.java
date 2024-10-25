@@ -562,7 +562,7 @@ public class CommandDungeonGen extends BaseCommand {
     field(builder, ident, "requiredRooms", params.getRequiredRooms());
     field(builder, ident, "roomOpenChance", params.getRoomOpenChance());
     field(builder, ident, "decoratedGateChance", params.getDecoratedGateChance());
-    field(builder, ident, "seed", params.getSeed());
+    field(builder, ident, "seed", config.getSeed());
     ident--;
     nlIndent(ident, builder).append("}");
 

@@ -2,7 +2,6 @@ package net.arcadiusmc.dungeons;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Random;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.utils.io.ExistingObjectCodec;
@@ -11,8 +10,6 @@ import org.apache.commons.lang3.Range;
 
 @Getter @Setter
 public class GenerationParameters {
-
-  private static final Random RANDOM = new Random();
 
   public static final Codec<Range<Integer>> INT_RANGE_CODEC = ExtraCodecs.combine(
       RecordCodecBuilder.create(instance -> {
@@ -63,11 +60,6 @@ public class GenerationParameters {
         builder.optional("decorated-gate-chance", Codec.FLOAT)
             .getter(GenerationParameters::getDecoratedGateChance)
             .setter(GenerationParameters::setDecoratedGateChance);
-
-        builder.optional("seed", Codec.LONG)
-            .defaultValue(RANDOM::nextLong)
-            .getter(GenerationParameters::getSeed)
-            .setter(GenerationParameters::setSeed);
       })
       .codec(Codec.unit(GenerationParameters::new));
 
@@ -81,6 +73,4 @@ public class GenerationParameters {
 
   private float roomOpenChance = 0.1f;
   private float decoratedGateChance = 0.5f;
-
-  private long seed = RANDOM.nextLong();
 }
