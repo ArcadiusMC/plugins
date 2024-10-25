@@ -1,6 +1,5 @@
 package net.arcadiusmc.dungeons.gen;
 
-import static org.bukkit.Material.AIR;
 import static org.bukkit.Material.ANDESITE;
 import static org.bukkit.Material.ANDESITE_STAIRS;
 import static org.bukkit.Material.COBBLESTONE;
@@ -45,13 +44,7 @@ public class MossDecorator extends NoiseDecorator<MossConfig> implements XyzFunc
   }
 
   private BlockData getOvergrowthBlock() {
-    List<Material> list = config.getBlocks();
-    if (list.isEmpty()) {
-      return AIR.createBlockData();
-    }
-
-    Material entry = list.get(random.nextInt(list.size()));
-    return entry.createBlockData();
+    return randomFrom(config.getBlocks()).createBlockData();
   }
 
   @Override
@@ -65,7 +58,7 @@ public class MossDecorator extends NoiseDecorator<MossConfig> implements XyzFunc
       Material carpet = config.carpetBlock;
       float rate = config.carpetRate;
 
-      if (supportUp && carpet != null && (rate < random.nextFloat())) {
+      if (supportUp && carpet != null && randomBool(rate)) {
         setBlock(x, y, z, carpet.createBlockData());
         mossify(x, y, z);
       }
@@ -75,7 +68,7 @@ public class MossDecorator extends NoiseDecorator<MossConfig> implements XyzFunc
 
     if (isTagged(x, y, z, Tag.LEAVES)
         && canOverrideLeavesMoss(x, y, z)
-        && random.nextFloat() < 0.25
+        && randomBool(0.25)
     ) {
       setBlock(x, y, z, getOvergrowthBlock());
       return;
@@ -110,7 +103,7 @@ public class MossDecorator extends NoiseDecorator<MossConfig> implements XyzFunc
       return true;
     }
     if (matchesAny(state, config.getMaybeReplace())) {
-      return random.nextBoolean();
+      return randomBool();
     }
 
     return false;

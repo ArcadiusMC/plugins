@@ -43,12 +43,8 @@ public class HangingLightsDecorator extends Decorator<HangingLightsConfig> {
       boolean soul = data.getBoolean("soul", false);
 
       float spawnChance = data.getFloat("spawn_chance", 1f);
-      if (spawnChance < 1f) {
-        float rnd = random.nextFloat();
-
-        if (rnd >= spawnChance) {
-          continue;
-        }
+      if (!randomBool(spawnChance)) {
+        continue;
       }
 
       generateHangingLight(func.getPosition(), soul);
@@ -68,7 +64,7 @@ public class HangingLightsDecorator extends Decorator<HangingLightsConfig> {
     }
 
     int maxLen = config.maxLength;
-    int chainLen = Math.min(maxLen, random.nextInt(fourth));
+    int chainLen = Math.min(maxLen, randomInt(fourth));
 
     int by = y;
 

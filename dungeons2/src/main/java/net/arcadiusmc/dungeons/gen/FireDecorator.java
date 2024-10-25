@@ -51,12 +51,8 @@ public class FireDecorator extends Decorator<Unit> {
     for (GeneratorFunction generatorFunction : list) {
       float chance = generatorFunction.getData().getFloat("chance", 1f);
 
-      if (chance < 1f) {
-        float rnd = random.nextFloat();
-
-        if (rnd >= chance) {
-          continue;
-        }
+      if (!randomBool(chance)) {
+        continue;
       }
 
       Vector3i pos = generatorFunction.getPosition();

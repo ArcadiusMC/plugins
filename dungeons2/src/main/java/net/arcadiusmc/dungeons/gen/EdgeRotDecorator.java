@@ -45,9 +45,7 @@ public class EdgeRotDecorator extends NoiseDecorator<NoiseParameter> implements 
     }
 
     double noise = getNoise(x, y, z);
-    float rnd = random.nextFloat();
-
-    if (rnd >= noise) {
+    if (!randomBool(noise)) {
       return;
     }
 
@@ -57,7 +55,7 @@ public class EdgeRotDecorator extends NoiseDecorator<NoiseParameter> implements 
     }
 
     BlockIteration mat = getMaterial(type);
-    int size = random.nextBoolean() ? 1 : 2;
+    int size = randomBool() ? 1 : 2;
 
     if (mat == null) {
       return;
@@ -65,7 +63,7 @@ public class EdgeRotDecorator extends NoiseDecorator<NoiseParameter> implements 
 
     Direction[] potentialDirections;
 
-    if (random.nextBoolean()) {
+    if (randomBool()) {
       placeStair(x, y, z, mat, edgeDir.opposite());
 
       potentialDirections = arr2;
@@ -84,13 +82,13 @@ public class EdgeRotDecorator extends NoiseDecorator<NoiseParameter> implements 
       return;
     }
 
-    if (random.nextFloat() < 0.1f) {
+    if (randomBool(0.1f)) {
       BlockData data = COBBLESTONE_SLAB.createBlockData();
       int slabX = x - edgeDir.getMod().x();
       int slabZ = z - edgeDir.getMod().z();
 
-      if (random.nextFloat() < 0.25) {
-        if (random.nextBoolean()) {
+      if (randomBool(0.25f)) {
+        if (randomBool()) {
           slabX = 0;
         } else  {
           slabZ = 0;
@@ -123,8 +121,8 @@ public class EdgeRotDecorator extends NoiseDecorator<NoiseParameter> implements 
         }
       }
 
-      if (i == 2 || random.nextBoolean()) {
-        if (random.nextBoolean()) {
+      if (i == 2 || randomBool()) {
+        if (randomBool()) {
           dir = edgeDir.opposite();
         } else if (i < 2 && potentialDirections.length == 2) {
           if (i == 0) {

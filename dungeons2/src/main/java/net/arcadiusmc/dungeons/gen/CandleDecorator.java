@@ -62,12 +62,12 @@ public class CandleDecorator extends NoiseDecorator<CandleConfig> implements Xyz
     }
 
     List<Material> candleList = config.getCandles();
-    Material candleMaterial = candleList.get(random.nextInt(candleList.size()));
+    Material candleMaterial = randomFrom(candleList);
     Candle data = (Candle) candleMaterial.createBlockData();
 
-    int candles = random.nextInt(data.getMinimumCandles(), data.getMaximumCandles() + 1);
+    int candles = randomInt(data.getMinimumCandles(), data.getMaximumCandles() + 1);
 
-    data.setLit(random.nextFloat() < config.getLitRate());
+    data.setLit(randomBool(config.getLitRate()));
     data.setCandles(candles);
 
     setBlock(x, y, z, data);

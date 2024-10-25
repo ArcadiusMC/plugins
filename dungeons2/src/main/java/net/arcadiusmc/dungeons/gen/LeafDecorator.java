@@ -63,13 +63,7 @@ public class LeafDecorator extends NoiseDecorator<LeafConfig> implements XyzFunc
   }
 
   private BlockData getLeafBlock() {
-    List<Material> list = config.getLeafMaterials();
-
-    if (list.isEmpty()) {
-      return null;
-    }
-
-    return list.get(random.nextInt(list.size())).createBlockData();
+    return randomFrom(config.leafMaterials).createBlockData();
   }
 
   @Override
@@ -112,7 +106,7 @@ public class LeafDecorator extends NoiseDecorator<LeafConfig> implements XyzFunc
   }
 
   private void groundSnakeLeaves(int x, int y, int z) {
-    int maxLength = random.nextInt(config.getMaxLength());
+    int maxLength = randomInt(config.getMaxLength());
     int len = 0;
 
     Vector2i move = new Vector2i();
@@ -169,13 +163,13 @@ public class LeafDecorator extends NoiseDecorator<LeafConfig> implements XyzFunc
 
   private void ceilingSnakeLeaves(int x, int y, int z) {
     int upperBound = config.getMaxLength();
-    int length = random.nextInt(upperBound);
+    int length = randomInt(upperBound);
 
     if (length < 1) {
       return;
     }
 
-    int dripLength = random.nextInt(length);
+    int dripLength = randomInt(length);
     int snakeLength = length - dripLength;
 
     int currentLength = 0;
@@ -206,7 +200,7 @@ public class LeafDecorator extends NoiseDecorator<LeafConfig> implements XyzFunc
         z = dropStartZ;
 
         if (!isLeafReplaceable(x, y - 1, z)
-            || (random.nextBoolean() && currentLength < (length - 1))
+            || (randomBool() && currentLength < (length - 1))
         ) {
           int by = y - 1;
 

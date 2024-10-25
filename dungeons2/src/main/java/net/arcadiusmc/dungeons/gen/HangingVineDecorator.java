@@ -50,7 +50,7 @@ public class HangingVineDecorator extends NoiseDecorator<HangingVineConfig> impl
       return;
     }
 
-    int length = Math.min(maxLength, random.nextInt(freeSpace));
+    int length = Math.min(maxLength, randomInt(freeSpace));
 
     for (int i = 0; i < length; i++) {
       if (!isAir(x, y, z)) {
@@ -70,7 +70,7 @@ public class HangingVineDecorator extends NoiseDecorator<HangingVineConfig> impl
       }
 
       if (data instanceof CaveVinesPlant plant) {
-        plant.setBerries(random.nextFloat() < config.getBerryRate());
+        plant.setBerries(randomBool(config.getBerryRate()));
       }
 
       setBlock(x, y, z, data);

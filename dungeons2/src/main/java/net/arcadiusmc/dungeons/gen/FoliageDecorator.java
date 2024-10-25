@@ -52,12 +52,11 @@ public class FoliageDecorator extends Decorator<FoliageConfig> implements XyzFun
     }
 
     float rate = config.getRate();
-    if (random.nextFloat() >= rate) {
+    if (!randomBool(rate)) {
       return;
     }
 
     WeightedList<Material> foliageList = config.getBlocks();
-
     if (foliageList.isEmpty()) {
       return;
     }
