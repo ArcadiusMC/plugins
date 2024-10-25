@@ -169,6 +169,10 @@ public abstract class Decorator<C> {
     generator.setBlock(x, y, z, data);
   }
 
+  protected void setBlock(int x, int y, int z, BlockState data) {
+    generator.setBlock(x, y, z, data);
+  }
+
   protected void clearBlock(int x, int y, int z) {
     generator.clearBlock(x, y, z);
   }

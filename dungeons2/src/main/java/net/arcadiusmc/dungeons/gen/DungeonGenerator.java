@@ -366,7 +366,7 @@ public class DungeonGenerator {
     buffer.setBlock(x, y, z, data);
   }
 
-  private void setBlock(int x, int y, int z, BlockState state) {
+  public void setBlock(int x, int y, int z, BlockState state) {
     buffer.setBlock(x, y, z, state);
   }
 
