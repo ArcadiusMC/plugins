@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import java.util.Optional;
 import java.util.Random;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.dungeons.DungeonPiece;
 import net.arcadiusmc.dungeons.LevelFunctions;
 import net.arcadiusmc.registry.Registry;
 import net.arcadiusmc.structure.BlockStructure;
@@ -39,13 +40,20 @@ public class PoolFunctionProcessor implements FunctionProcessor {
 
   private static final Logger LOGGER = Loggers.getLogger();
 
+  private final DungeonPiece piece;
   private final BlockBuffer buffer;
   private final DungeonGenerator generator;
   private final Random random;
 
   private int depth = 0;
 
-  public PoolFunctionProcessor(BlockBuffer buffer, Random random, DungeonGenerator generator) {
+  public PoolFunctionProcessor(
+      DungeonPiece piece,
+      BlockBuffer buffer,
+      Random random,
+      DungeonGenerator generator
+  ) {
+    this.piece = piece;
     this.buffer = buffer;
     this.random = random;
     this.generator = generator;
@@ -152,7 +160,7 @@ public class PoolFunctionProcessor implements FunctionProcessor {
       depth--;
     }
 
-    generator.collectFunctions(result.structure(), cfg);
+    generator.collectFunctions(piece, result.structure(), cfg);
   }
 
   private FunctionInfo getAlignmentPoint(BlockStructure structure) {

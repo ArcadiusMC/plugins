@@ -11,6 +11,7 @@ import it.unimi.dsi.fastutil.objects.ObjectLists;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -515,9 +516,13 @@ public class DungeonGenerator {
     setBlock(x, y, z, facing);
   }
 
-  public void collectFunctions(Holder<BlockStructure> structure, StructurePlaceConfig cfg) {
+  public void collectFunctions(
+      DungeonPiece piece,
+      Holder<BlockStructure> structure,
+      StructurePlaceConfig cfg
+  ) {
     for (FunctionInfo function : structure.getValue().getFunctions()) {
-      GeneratorFunction func = new GeneratorFunction(function.getFunctionKey());
+      GeneratorFunction func = new GeneratorFunction(function.getFunctionKey(), piece);
       if (function.getTag() != null) {
         func.getData().putAll(function.getTag().copy());
       }
@@ -609,6 +614,13 @@ public class DungeonGenerator {
     return freeSpace;
   }
 
+  public List<GeneratorFunction> getFunctionsIn(String functionKey, DungeonPiece piece) {
+    return getFunctions(functionKey)
+        .stream()
+        .filter(func -> Objects.equals(piece, func.getContainingPiece()))
+        .collect(ObjectArrayList.toList());
+  }
+
   class PlacingVisitor implements Consumer<DungeonPiece>, IntegrityProvider {
 
     @Override
@@ -630,12 +642,12 @@ public class DungeonGenerator {
           .addProcessor(new StairRuinProcessor(noiseGen, random))
           .addFunction(
               LevelFunctions.POOL,
-              new PoolFunctionProcessor(buffer, random, DungeonGenerator.this)
+              new PoolFunctionProcessor(piece, buffer, random, DungeonGenerator.this)
           )
           .build();
 
       structure.getValue().place(cfg);
-      collectFunctions(structure, cfg);
+      collectFunctions(piece, structure, cfg);
     }
 
     @Override

@@ -2,6 +2,7 @@ package net.arcadiusmc.dungeons.gen;
 
 import java.util.List;
 import java.util.Random;
+import net.arcadiusmc.dungeons.DungeonPiece;
 import net.arcadiusmc.utils.math.Direction;
 import net.forthecrown.grenadier.types.BlockFilterArgument;
 import net.forthecrown.grenadier.types.BlockFilterArgument.Result;
@@ -69,8 +70,16 @@ public abstract class Decorator<C> {
     return false;
   }
 
+  protected DungeonPiece getRootPiece() {
+    return generator.getRootPiece();
+  }
+
   public boolean isSupportedByAnyFace(int x, int y, int z) {
     return generator.isSupportedByAnyFace(x, y, z);
+  }
+
+  protected List<GeneratorFunction> getFunctionsIn(String functionKey, DungeonPiece piece) {
+    return generator.getFunctionsIn(functionKey, piece);
   }
 
   protected List<GeneratorFunction> getFunctions(String functionType) {
