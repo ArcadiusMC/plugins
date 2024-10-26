@@ -27,7 +27,7 @@ public class IoModule extends IdScriptableObject {
   static final int ID_readText = 2;
   static final int ID_readLines = 3;
   static final int ID_readJson = 4;
-  static final int ID_writeFile = 5;
+  static final int ID_writeText = 5;
   static final int ID_writeJson = 6;
   static final int ID_fileExists = 7;
   static final int ID_deleteFile = 8;
@@ -36,7 +36,7 @@ public class IoModule extends IdScriptableObject {
   static final String NAME_readText = "readText";
   static final String NAME_readLines = "readLines";
   static final String NAME_readJson = "readJson";
-  static final String NAME_writeFile = "writeFile";
+  static final String NAME_writeText = "writeText";
   static final String NAME_writeJson = "writeJson";
   static final String NAME_fileExists = "fileExists";
   static final String NAME_deleteFile = "deleteFile";
@@ -60,7 +60,7 @@ public class IoModule extends IdScriptableObject {
     String name = getInstanceIdName(id);
     int arity = switch (id) {
       case ID_getPath, ID_readLines, ID_readText -> 1;
-      case ID_writeFile, ID_writeJson -> 2;
+      case ID_writeText, ID_writeJson -> 2;
       default -> 1;
     };
 
@@ -74,7 +74,7 @@ public class IoModule extends IdScriptableObject {
       case ID_readText -> NAME_readText;
       case ID_readLines -> NAME_readLines;
       case ID_readJson -> NAME_readJson;
-      case ID_writeFile -> NAME_writeFile;
+      case ID_writeText -> NAME_writeText;
       case ID_writeJson -> NAME_writeJson;
       case ID_fileExists -> NAME_fileExists;
       case ID_deleteFile -> NAME_deleteFile;
@@ -89,7 +89,7 @@ public class IoModule extends IdScriptableObject {
       case NAME_readText -> ID_readText;
       case NAME_readLines -> ID_readLines;
       case NAME_readJson -> ID_readJson;
-      case NAME_writeFile -> ID_writeFile;
+      case NAME_writeText -> ID_writeText;
       case NAME_writeJson -> ID_writeJson;
       case NAME_fileExists -> ID_fileExists;
       case NAME_deleteFile -> ID_deleteFile;
@@ -166,7 +166,7 @@ public class IoModule extends IdScriptableObject {
         }
       }
 
-      case ID_writeFile -> {
+      case ID_writeText -> {
         if (args.length < 2) {
           throw ScriptRuntime.typeError("Not enough arguments, expected path and file contents");
         }
@@ -185,7 +185,7 @@ public class IoModule extends IdScriptableObject {
 
           writer.close();
         } catch (IOException e) {
-          throw ScriptRuntime.typeError("IO Error writing to file: " + e.getMessage());
+          throw new RuntimeException(e);
         }
       }
 
@@ -201,7 +201,7 @@ public class IoModule extends IdScriptableObject {
           PathUtil.ensureParentExists(path);
           Files.writeString(path, jsonString, StandardCharsets.UTF_8);
         } catch (IOException e) {
-          throw ScriptRuntime.typeError("IO Error writing to file: " + e.getMessage());
+          throw new RuntimeException(e);
         }
       }
 
@@ -232,7 +232,6 @@ public class IoModule extends IdScriptableObject {
 
       pathBuilder.append(ScriptRuntime.toString(args, i));
     }
-
 
     String path = pathBuilder.toString();
     Script script = RhinoScript.fromScope(this.getParentScope());
