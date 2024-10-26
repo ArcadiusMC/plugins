@@ -97,6 +97,11 @@ public class BlockIterations {
               .getter(BlockIteration::getWall)
               .setter(BlockIteration::setWall);
 
+          builder.optional("fence", ExtraCodecs.MATERIAL_CODEC)
+              .getter(BlockIteration::getWall)
+              .setter(BlockIteration::setWall);
+
+
           builder.optional("mossy-block", ExtraCodecs.MATERIAL_CODEC)
               .getter(BlockIteration::getMossyBlock)
               .setter(BlockIteration::setMossyBlock);
@@ -112,6 +117,10 @@ public class BlockIterations {
           builder.optional("mossy-wall", ExtraCodecs.MATERIAL_CODEC)
               .getter(BlockIteration::getMossyWall)
               .setter(BlockIteration::setMossyWall);
+
+          builder.optional("mossy-fence", ExtraCodecs.MATERIAL_CODEC)
+              .getter(BlockIteration::getMossyWall)
+              .setter(BlockIteration::setMossyWall);
         })
         .codec(Codec.unit(BlockIteration::new));
 
@@ -121,11 +130,13 @@ public class BlockIterations {
     private Material stairs = null;
     private Material slab = null;
     private Material wall = null;
+    private Material dence = null;
 
     private Material mossyBlock = null;
     private Material mossyStairs = null;
     private Material mossySlab = null;
     private Material mossyWall = null;
+    private Material mossyFence = null;
 
     public BlockIteration() {
 
