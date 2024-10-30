@@ -1,6 +1,7 @@
 package net.arcadiusmc.dungeons;
 
 import com.mojang.serialization.Codec;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.utils.io.ExistingObjectCodec;
@@ -25,6 +26,10 @@ public class DecorationParameters {
         builder.optional("glow-lichen-instead-of-moss-rate", Codec.FLOAT)
             .getter(DecorationParameters::getGlowLichenInsteadLeavesRate)
             .setter(DecorationParameters::setGlowLichenInsteadLeavesRate);
+
+        builder.optional("disabled-passes", Codec.STRING.listOf())
+            .getter(DecorationParameters::getDisabledPasses)
+            .setter(DecorationParameters::setDisabledPasses);
       })
       .codec(Codec.unit(DecorationParameters::new));
 
@@ -33,4 +38,6 @@ public class DecorationParameters {
 
   private float glowLichenInsteadLeavesRate = 0.10f;
   private NoiseParameter blockRot = new NoiseParameter();
+
+  private List<String> disabledPasses = List.of();
 }
