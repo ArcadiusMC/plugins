@@ -186,6 +186,8 @@ public class DungeonGenerator {
     PlacingVisitor visitor = new PlacingVisitor();
     rootPiece.forEachDescendant(visitor);
 
+    runPass(new DecorationPass("structure-pools", new PoolDecorator()));
+
     for (int i = 0; i < config.getDecorationPasses().size(); i++) {
       DecorationPass pass = config.getDecorationPasses().get(i);
       runPass(pass);
@@ -194,8 +196,9 @@ public class DungeonGenerator {
 
   private void runPass(DecorationPass pass) {
     String name = pass.getName();
+    List<String> disabled = config.getDecoration().getDisabledPasses();
 
-    if (pass.isDisabled()) {
+    if (pass.isDisabled() || disabled.contains(name)) {
       LOGGER.info("Decorator {} is disabled. Skipping...", name);
       return;
     }
@@ -518,6 +521,7 @@ public class DungeonGenerator {
 
   public void collectFunctions(
       DungeonPiece piece,
+      int depth,
       Holder<BlockStructure> structure,
       StructurePlaceConfig cfg
   ) {
@@ -536,13 +540,14 @@ public class DungeonGenerator {
 
       func.setPosition(position);
       func.setFacing(direction);
+      func.setDepth(depth);
 
       List<GeneratorFunction> functionsList = functions.computeIfAbsent(
           function.getFunctionKey(),
           s -> new ObjectArrayList<>()
       );
 
-      functionsList.add(func);
+      functionsList.addLast(func);
     }
   }
 
@@ -640,14 +645,14 @@ public class DungeonGenerator {
           .addProcessor(BlockProcessors.IGNORE_AIR)
           .addProcessor(new BlockRotProcessor(this, random))
           .addProcessor(new StairRuinProcessor(noiseGen, random))
-          .addFunction(
-              LevelFunctions.POOL,
-              new PoolFunctionProcessor(piece, buffer, random, DungeonGenerator.this)
-          )
+          //.addFunction(
+          //    LevelFunctions.POOL,
+          //    new PoolFunctionProcessor(piece, buffer, random, DungeonGenerator.this)
+          //)
           .build();
 
       structure.getValue().place(cfg);
-      collectFunctions(piece, structure, cfg);
+      collectFunctions(piece, 0, structure, cfg);
     }
 
     @Override

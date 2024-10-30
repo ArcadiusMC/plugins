@@ -1,20 +1,20 @@
 package net.arcadiusmc.dungeons.gen;
 
 import com.google.common.base.Strings;
+import com.mojang.datafixers.util.Unit;
+import it.unimi.dsi.fastutil.longs.LongList;
+import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import net.arcadiusmc.Loggers;
-import net.arcadiusmc.dungeons.DungeonPiece;
 import net.arcadiusmc.dungeons.LevelFunctions;
 import net.arcadiusmc.registry.Registry;
+import net.arcadiusmc.structure.BlockPalette;
 import net.arcadiusmc.structure.BlockStructure;
 import net.arcadiusmc.structure.FunctionInfo;
-import net.arcadiusmc.structure.FunctionProcessor;
 import net.arcadiusmc.structure.StructurePlaceConfig;
 import net.arcadiusmc.structure.StructurePlaceConfig.Builder;
 import net.arcadiusmc.structure.Structures;
 import net.arcadiusmc.structure.StructuresPlugin;
-import net.arcadiusmc.structure.buffer.BlockBuffer;
 import net.arcadiusmc.structure.pool.StructureAndPalette;
 import net.arcadiusmc.structure.pool.StructurePool;
 import net.arcadiusmc.utils.math.Direction;
@@ -22,11 +22,10 @@ import net.arcadiusmc.utils.math.Rotation;
 import net.arcadiusmc.utils.math.Transform;
 import net.arcadiusmc.utils.math.Vectors;
 import net.forthecrown.nbt.CompoundTag;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.spongepowered.math.vector.Vector3i;
 
-public class PoolFunctionProcessor implements FunctionProcessor {
+public class PoolDecorator extends Decorator<Unit> {
 
   static final int MAX_DEPTH = 16;
 
@@ -40,70 +39,41 @@ public class PoolFunctionProcessor implements FunctionProcessor {
 
   private static final Logger LOGGER = Loggers.getLogger();
 
-  private final DungeonPiece piece;
-  private final BlockBuffer buffer;
-  private final DungeonGenerator generator;
-  private final Random random;
-
-  private int depth = 0;
-
-  public PoolFunctionProcessor(
-      DungeonPiece piece,
-      BlockBuffer buffer,
-      Random random,
-      DungeonGenerator generator
-  ) {
-    this.piece = piece;
-    this.buffer = buffer;
-    this.random = random;
-    this.generator = generator;
+  public PoolDecorator() {
+    super(Unit.INSTANCE);
   }
 
   @Override
-  public void process(@NotNull FunctionInfo info, @NotNull StructurePlaceConfig config) {
-    if (depth >= MAX_DEPTH) {
+  public void execute() {
+    List<GeneratorFunction> poolFunctions = getFunctions(LevelFunctions.POOL);
+
+    for (GeneratorFunction poolFunction : poolFunctions) {
+      placePool(poolFunction);
+    }
+  }
+
+  private void placePool(GeneratorFunction function) {
+    if (function.getDepth() > MAX_DEPTH) {
       return;
     }
 
-    CompoundTag data = info.getTag();
-    if (data == null || data.isEmpty()) {
+    CompoundTag data = function.getData();
+    float chance = data.getFloat(TAG_CHANCE, 1f);
+
+    if (!randomBool(chance)) {
       return;
     }
 
-    String poolKey = data.getString(TAG_POOL_NAME);
-    if (Strings.isNullOrEmpty(poolKey)) {
+    if (function.getDepth() > 0 && !data.getBoolean(TAG_DEEP, false)) {
       return;
     }
 
-    Structures structures = StructuresPlugin.getManager();
-    Registry<StructurePool> registry = structures.getPoolRegistry();
-    Optional<StructurePool> opt = registry.get(poolKey);
+    StructureAndPalette result = resolveStructure(data);
+    Transform transform = Transform.IDENTITY;
 
-    if (opt.isEmpty()) {
-      LOGGER.warn("Unknown structure pool '{}'", poolKey);
+    if (result == null) {
       return;
     }
-
-    StructurePool pool = opt.get();
-    Optional<StructureAndPalette> structOpt = pool.getRandom(structures.getRegistry(), random);
-
-    if (structOpt.isEmpty()) {
-      LOGGER.warn("Pool '{}' returned a non-existing structure", poolKey);
-      return;
-    }
-
-    float rate = data.getFloat(TAG_CHANCE, 1f);
-    if (rate < 1f) {
-      float rand = generator.getRandom().nextFloat();
-
-      if (rand >= rate) {
-        return;
-      }
-    }
-
-    StructureAndPalette result = structOpt.get();
-    Transform transform = config.getTransform();
-    Rotation originalRotate = transform.getRotation();
 
     if (data.contains(TAG_ROTATION)) {
       String rotation = data.getString(TAG_ROTATION, "none");
@@ -125,7 +95,7 @@ public class PoolFunctionProcessor implements FunctionProcessor {
     }
 
     if (data.getBoolean(TAG_ALIGN_POINT, true)) {
-      Direction direction = info.getFacing();
+      Direction direction = function.getFacing();
       if (direction.isRotatable()) {
         direction = direction.rotate(rotation);
       }
@@ -136,31 +106,64 @@ public class PoolFunctionProcessor implements FunctionProcessor {
       }
     }
 
-    Vector3i position = originalRotate.rotate(info.getOffset());
+    Vector3i position = function.getPosition();
+
+    if (!checkCollision(result, transform, position, data)) {
+      return;
+    }
 
     Builder builder = StructurePlaceConfig.builder()
         .pos(position)
-        .buffer(buffer)
+        .buffer(generator.getBuffer())
         .paletteName(result.paletteName())
         .addNonNullProcessor()
         .addRotationProcessor()
         //.addProcessor(BlockProcessors.IGNORE_AIR)
         .transform(transform);
 
-    if (data.getBoolean(TAG_DEEP, false)) {
-      builder.addFunction(LevelFunctions.POOL, this);
-    }
-
     StructurePlaceConfig cfg = builder.build();
 
-    depth++;
-    try {
-      result.structure().getValue().place(cfg);
-    } finally {
-      depth--;
+    result.structure().getValue().place(cfg);
+
+    generator.collectFunctions(
+        function.getContainingPiece(),
+        function.getDepth() + 1,
+        result.structure(),
+        cfg
+    );
+  }
+
+  private boolean checkCollision(
+      StructureAndPalette struct,
+      Transform t,
+      Vector3i pos,
+      CompoundTag data
+  ) {
+    if (!data.getBoolean(TAG_CHECK_COLLISION)) {
+      return true;
     }
 
-    generator.collectFunctions(piece, depth, result.structure(), cfg);
+    t = t.addOffset(pos);
+
+    BlockPalette palette = struct.structure().getValue().getPalette(struct.paletteName());
+    if (palette == null) {
+      return false;
+    }
+
+    for (LongList value : palette.getBlock2Positions().values()) {
+      for (int i = 0; i < value.size(); i++) {
+        long packed = value.getLong(i);
+        Vector3i blockPos = t.apply(Vectors.fromLong(packed));
+
+        if (isAir(blockPos.x(), blockPos.y(), blockPos.z())) {
+          continue;
+        }
+
+        return false;
+      }
+    }
+
+    return true;
   }
 
   private FunctionInfo getAlignmentPoint(BlockStructure structure) {
@@ -194,5 +197,31 @@ public class PoolFunctionProcessor implements FunctionProcessor {
     }
 
     return Transform.offset(off.mul(-1)).addRotation(transRotate);
+  }
+
+  private StructureAndPalette resolveStructure(CompoundTag data) {
+    String poolKey = data.getString(TAG_POOL_NAME);
+    if (Strings.isNullOrEmpty(poolKey)) {
+      return null;
+    }
+
+    Structures structures = StructuresPlugin.getManager();
+    Registry<StructurePool> registry = structures.getPoolRegistry();
+    Optional<StructurePool> opt = registry.get(poolKey);
+
+    if (opt.isEmpty()) {
+      LOGGER.warn("Unknown structure pool '{}'", poolKey);
+      return null;
+    }
+
+    StructurePool pool = opt.get();
+    Optional<StructureAndPalette> structOpt = pool.getRandom(structures.getRegistry(), random);
+
+    if (structOpt.isEmpty()) {
+      LOGGER.warn("Pool '{}' returned a non-existing structure", poolKey);
+      return null;
+    }
+
+    return structOpt.get();
   }
 }
