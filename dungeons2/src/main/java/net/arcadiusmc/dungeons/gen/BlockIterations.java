@@ -36,6 +36,7 @@ public class BlockIterations {
           || iteration.slab == material
           || iteration.stairs == material
           || iteration.wall == material
+          || iteration.fence == material
       ) {
         return iteration;
       }
@@ -81,15 +82,15 @@ public class BlockIterations {
 
     static final Codec<BlockIteration> CODEC
         = ExistingObjectCodec.<BlockIteration>create(builder -> {
-          builder.field("block", ExtraCodecs.MATERIAL_CODEC)
+          builder.optional("block", ExtraCodecs.MATERIAL_CODEC)
               .getter(BlockIteration::getBlock)
               .setter(BlockIteration::setBlock);
 
-          builder.field("slab", ExtraCodecs.MATERIAL_CODEC)
+          builder.optional("slab", ExtraCodecs.MATERIAL_CODEC)
               .getter(BlockIteration::getSlab)
               .setter(BlockIteration::setSlab);
 
-          builder.field("stairs", ExtraCodecs.MATERIAL_CODEC)
+          builder.optional("stairs", ExtraCodecs.MATERIAL_CODEC)
               .getter(BlockIteration::getStairs)
               .setter(BlockIteration::setStairs);
 
@@ -98,8 +99,8 @@ public class BlockIterations {
               .setter(BlockIteration::setWall);
 
           builder.optional("fence", ExtraCodecs.MATERIAL_CODEC)
-              .getter(BlockIteration::getWall)
-              .setter(BlockIteration::setWall);
+              .getter(BlockIteration::getFence)
+              .setter(BlockIteration::setFence);
 
 
           builder.optional("mossy-block", ExtraCodecs.MATERIAL_CODEC)
@@ -130,7 +131,7 @@ public class BlockIterations {
     private Material stairs = null;
     private Material slab = null;
     private Material wall = null;
-    private Material dence = null;
+    private Material fence = null;
 
     private Material mossyBlock = null;
     private Material mossyStairs = null;
