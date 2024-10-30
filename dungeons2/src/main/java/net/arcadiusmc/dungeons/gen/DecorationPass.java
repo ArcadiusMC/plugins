@@ -27,4 +27,13 @@ public class DecorationPass {
   private Decorator<?> decorator;
   private String name;
   private boolean disabled;
+
+  public DecorationPass() {
+
+  }
+
+  public DecorationPass(String name, Decorator<?> decorator) {
+    this.decorator = decorator;
+    this.name = name;
+  }
 }
