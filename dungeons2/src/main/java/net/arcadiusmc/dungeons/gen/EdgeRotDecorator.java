@@ -70,6 +70,10 @@ public class EdgeRotDecorator extends NoiseDecorator<NoiseParameter> implements 
       arr2[0] = edgeDir.left();
       arr2[1] = edgeDir.right();
     } else {
+      if (mat.getSlab() == null) {
+        return;
+      }
+
       setBlock(x, y, z, mat.getSlab().createBlockData());
 
       potentialDirections = arr3;
@@ -146,6 +150,10 @@ public class EdgeRotDecorator extends NoiseDecorator<NoiseParameter> implements 
   }
 
   void placeStair(int x, int y, int z, BlockIteration mat, Direction direction, Shape shape) {
+    if (mat.getStairs() == null) {
+      return;
+    }
+
     Stairs stair = (Stairs) mat.getStairs().createBlockData();
     stair.setFacing(direction.asBlockFace());
     stair.setWaterlogged(false);

@@ -69,12 +69,24 @@ public class PuddleDecorator extends NoiseDecorator<PuddleConfig> implements Xyz
         return;
       }
 
+      if (iteration.getSlab() == null) {
+        return;
+      }
+
       setPuddleBlock(x, y, z, iteration.getSlab().createBlockData());
+      return;
+    }
+
+    if (iteration.getStairs() == null) {
       return;
     }
 
     BlockData data = createStairs(iteration.getStairs(), mask);
     if (data == null) {
+      if (iteration.getSlab() == null) {
+        return;
+      }
+
       data = iteration.getSlab().createBlockData();
     }
 
