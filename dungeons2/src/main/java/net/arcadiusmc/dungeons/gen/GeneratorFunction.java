@@ -16,6 +16,7 @@ public class GeneratorFunction {
   private final DungeonPiece containingPiece;
   private Vector3i position = Vector3i.ZERO;
   private Direction facing = Direction.WEST;
+  private int depth = 0;
 
   public GeneratorFunction(String functionKey, DungeonPiece containingPiece) {
     this.functionKey = functionKey;
