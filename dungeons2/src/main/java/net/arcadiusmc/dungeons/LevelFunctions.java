@@ -10,4 +10,6 @@ public final class LevelFunctions {
   public static final String POOL = "pool";
   public static final String ALIGNMENT_POINT = "dungeons/alignment_point";
   public static final String SPAWNER = "dungeons/spawner";
+  public static final String TRIAL_SPAWNER = "dungeons/trial_spawner";
+  public static final String VAULT = "dungeons/vault";
 }
