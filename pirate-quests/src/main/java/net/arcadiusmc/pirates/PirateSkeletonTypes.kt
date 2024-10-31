@@ -239,6 +239,7 @@ fun spawnSkeletonTypeAt(type: PirateSkeletonType, location: Location, random: Ra
     }
 
     it.lootTable = LootTables.EMPTY.lootTable
+    it.removeWhenFarAway = false
 
     val equip = it.equipment
 
