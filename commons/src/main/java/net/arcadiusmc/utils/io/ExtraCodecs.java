@@ -43,6 +43,8 @@ import net.arcadiusmc.utils.inventory.ItemLists;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.forthecrown.nbt.BinaryTag;
 import net.forthecrown.nbt.CompoundTag;
+import net.forthecrown.nbt.paper.TagTranslators;
+import net.forthecrown.nbt.string.Snbt;
 import net.forthecrown.nbt.string.TagParseException;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
@@ -59,6 +61,8 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.World;
+import org.bukkit.craftbukkit.entity.CraftEntitySnapshot;
+import org.bukkit.entity.EntitySnapshot;
 import org.bukkit.inventory.ItemStack;
 
 public @UtilityClass class ExtraCodecs {
@@ -116,6 +120,39 @@ public @UtilityClass class ExtraCodecs {
 
     return Results.success(key);
   }, NamespacedKey::asString);
+
+  public static final Codec<BinaryTag> BINARY_TAG = new PrimitiveCodec<>() {
+    @Override
+    public <T> DataResult<BinaryTag> read(DynamicOps<T> ops, T input) {
+      if (ops instanceof TagOps) {
+        return Results.success((BinaryTag) input);
+      }
+
+      DataResult<String> stringResult = ops.getStringValue(input);
+      if (stringResult.isSuccess()) {
+        try {
+          BinaryTag tag = Snbt.parse(stringResult.result().get());
+          return Results.success(tag) ;
+        } catch (TagParseException exc) {
+          // Ignored
+        }
+      }
+
+      return Results.success(ops.convertTo(TagOps.OPS, input));
+    }
+
+    @Override
+    public <T> T write(DynamicOps<T> ops, BinaryTag value) {
+      if (ops instanceof TagOps) {
+        return (T) value;
+      }
+
+      return TagOps.OPS.convertTo(ops, value);
+    }
+  };
+
+  public static final Codec<CompoundTag> COMPOUND_TAG
+      = BINARY_TAG.comapFlatMap(TAG_TO_COMPOUND, Function.identity());
 
   public static final Codec<ItemStack> ITEM_CODEC = new PrimitiveCodec<>() {
     @Override
@@ -321,6 +358,31 @@ public @UtilityClass class ExtraCodecs {
           Sound::name
       )
   );
+
+  public static final Codec<EntitySnapshot> ENTITY_SNAPSHOT = RecordCodecBuilder.create(instance -> {
+    return instance
+        .group(
+            registryCodec(Registry.ENTITY_TYPE).fieldOf("entity-type")
+                .forGetter(EntitySnapshot::getEntityType),
+
+            COMPOUND_TAG
+                .validate(compoundTag -> {
+                  if (compoundTag.isEmpty()) {
+                    return Results.error("'data' cannot have an empty tag!");
+                  }
+                  return Results.success(compoundTag);
+                })
+                .optionalFieldOf("data")
+                .forGetter(o -> Optional.empty())
+        )
+        .apply(instance, (type, compoundTag) -> {
+          net.minecraft.nbt.CompoundTag nmsTag = compoundTag
+              .map(TagTranslators.COMPOUND::toMinecraft)
+              .orElse(new net.minecraft.nbt.CompoundTag());
+
+          return CraftEntitySnapshot.create(nmsTag, type);
+        });
+  });
 
   /* ----------------------------------------------------------- */
 
