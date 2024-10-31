@@ -9,6 +9,7 @@ repositories {
 
 dependencies {
   compileOnly(project(":commons"))
+  testImplementation(project(":commons"))
   //compileOnly(project(":cosmetics"))
   compileOnly(project(":punishments"))
   compileOnly(project(":menus"))

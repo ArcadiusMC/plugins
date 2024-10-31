@@ -37,7 +37,7 @@ public class AutoGen {
 
     WaypointConfig config = manager.config();
 
-    if (AutoGen.isDisabled(config, chunk.getWorld())) {
+    if (isDisabled(config, chunk.getWorld())) {
       return;
     }
 
@@ -50,8 +50,7 @@ public class AutoGen {
 
     World world = chunk.getWorld();
 
-    Vector2i waypointPos = AutoGen.nearestGridWaypoint(min, world);
-    assert waypointPos != null;
+    Vector2i waypointPos = nearestGridCenter(min, config.wildernessWaypointGrid);
 
     if ((waypointPos.x() < min.x() || waypointPos.y() < min.y())
         || (waypointPos.x() > max.x() || waypointPos.y() > max.y())
@@ -60,6 +59,35 @@ public class AutoGen {
     }
 
     Tasks.runLater(() -> AutoGen.placeAutoWaypoint(world, manager, waypointPos), 20);
+  }
+
+  public static Vector2i nearestGridCenter(Vector2i wpos, Vector2i gridSize) {
+    int x = wpos.x();
+    int z = wpos.y();
+
+    int gx = gridSize.x();
+    int gz = gridSize.y();
+
+    int cx = f(x, gx);
+    int cz = f(z, gz);
+
+    return new Vector2i(cx, cz);
+  }
+
+  public static int f(double x, double g) {
+    //
+    // I WILL FUCKING KILL SOMEONE, WHY DOES THIS FUCNTION **NEED** DOUBLES
+    // IF GIVEN ANY OTHER DATA TYPE IT RETURNS THE WRONG RESULT, WHY ARE
+    // 64BIT FLOATING POINT NUMBERS REQUIRED FOR CORRECTNESS WHAT THE FUCK
+    //
+    // integers? Nope, wrong
+    // longs? ALSO WRONG
+    //
+    // BUT DOUBLES???? CORRECT DING DING DING DING DING
+    //
+    double off = x + Math.floor(g / 2);
+    double girdPos = Math.floor(off / g);
+    return (int) Math.floor(girdPos * g);
   }
 
   public static void placeAutoWaypoint(World world, WaypointManager manager, Vector2i waypointPos) {
@@ -75,7 +103,7 @@ public class AutoGen {
       return;
     }
 
-    LOGGER.debug("Generating waypoint at {}", waypointPos);
+    LOGGER.info("Generating waypoint at {}", waypointPos);
 
     Chunk chunk = world.getChunkAt(
         Vectors.toChunk(waypointPos.x()),
@@ -121,7 +149,7 @@ public class AutoGen {
     }
 
     Vector2i gridSize = config.wildernessWaypointGrid;
-    return pos.div(gridSize).mul(gridSize);
+    return nearestGridCenter(pos, gridSize);
   }
 
   public static boolean isDisabled(WaypointConfig config, World world) {
