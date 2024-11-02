@@ -8,6 +8,7 @@ import static com.mojang.serialization.Codec.BOOL;
 import static com.mojang.serialization.Codec.INT;
 import static com.mojang.serialization.Codec.STRING;
 
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -194,6 +195,10 @@ public class WaypointProperties {
 
         throw Exceptions.create("Direction value must not be 'up' or 'down'");
       });
+
+  public static final WaypointProperty<Boolean> OVERRIDE_HULK_CHECK
+      = new WaypointProperty<>("override_hulk_check", BoolArgumentType.bool(), BOOL, false)
+      .setUpdatesMarker(false);
 
   private static Codec<TextColor> createColorCodec() {
     return INT.xmap(TextColor::color, TextColor::value);

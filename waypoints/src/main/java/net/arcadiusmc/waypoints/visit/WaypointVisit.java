@@ -133,14 +133,27 @@ public class WaypointVisit implements Runnable {
     // 4) The area above the user must only be air
     // 5) The user shouldn't be in spectator mode
     boolean clearAboveDest = isClearAbove(getTeleportLocation().add(0, 1, 0));
-    boolean clearAbovePlayer
-        = isClearAbove(user.getLocation().add(0, Math.ceil(user.getPlayer().getHeight()), 0));
+
+    boolean clearAbovePlayer = allowsHulkSmash(
+        isClearAbove(user.getLocation().add(0, Math.ceil(user.getPlayer().getHeight()), 0)),
+        nearWaypoint ? nearestWaypoint : null
+    );
 
     hulkSmash = manager.config().hulkSmashPoles
         && user.get(WaypointPrefs.HULK_SMASH_ENABLED)
         && clearAboveDest
         && clearAbovePlayer
         && user.getGameMode() != GameMode.SPECTATOR;
+  }
+
+  private boolean allowsHulkSmash(boolean clearAbove, Waypoint waypoint) {
+    if (waypoint == null) {
+      return clearAbove;
+    }
+    if (waypoint.get(WaypointProperties.OVERRIDE_HULK_CHECK)) {
+      return true;
+    }
+    return clearAbove;
   }
 
   static boolean isClearAbove(Location l) {
