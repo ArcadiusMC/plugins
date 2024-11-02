@@ -27,6 +27,7 @@ import net.arcadiusmc.utils.io.SerializationHelper;
 import net.arcadiusmc.waypoints.event.WaypointRemoveEvent;
 import net.arcadiusmc.waypoints.type.WaypointType;
 import net.arcadiusmc.waypoints.util.MultiHomeFixer;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.slf4j.Logger;
 
@@ -192,8 +193,12 @@ public class WaypointManager {
       onAliasesUpdate(waypoint, null, aliases);
     }
 
-    chunkMap.add(waypoint.getWorld(), waypoint.getBounds(), waypoint);
-    discoveryMap.add(waypoint.getWorld(), waypoint.getDiscoveryBounds(), waypoint);
+    World world = waypoint.getWorld();
+
+    if (world != null) {
+      chunkMap.add(world, waypoint.getBounds(), waypoint);
+      discoveryMap.add(world, waypoint.getDiscoveryBounds(), waypoint);
+    }
 
     waypoint.getType().onWaypointAdded(waypoint);
   }
