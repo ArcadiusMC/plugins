@@ -8,6 +8,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -299,6 +300,27 @@ public class CommandWaypoints {
         like -> {
           return Text.format("Updating &e{0}&r.", NamedTextColor.GRAY, like);
         }
+    );
+  }
+
+  public void removeNullWorld(CommandSource source) {
+    int removed = 0;
+    List<Waypoint> list = new ArrayList<>(manager.getWaypoints());
+
+    for (Waypoint waypoint : list) {
+      if (waypoint.getWorld() != null) {
+        continue;
+      }
+
+      manager.removeWaypoint(waypoint);
+      removed++;
+    }
+
+    source.sendSuccess(
+        Text.format("Removed &e${0}&r waypoints.",
+            NamedTextColor.GRAY,
+            removed
+        )
     );
   }
 

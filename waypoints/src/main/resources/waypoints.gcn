@@ -22,6 +22,11 @@ literal("update-all") {
   executes = updateAll()
 }
 
+literal("remove-no-world") {
+  description = "Removes all waypoints with no world"
+  executes = removeNullWorld()
+}
+
 literal("update-webmap").argument("waypoint", @waypoint) {
   map_result("waypoint") = @to_waypoint
   executes = updateDynmap()
