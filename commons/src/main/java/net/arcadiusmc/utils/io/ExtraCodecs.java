@@ -372,14 +372,14 @@ public @UtilityClass class ExtraCodecs {
                   }
                   return Results.success(compoundTag);
                 })
-                .optionalFieldOf("data")
-                .forGetter(o -> Optional.empty())
+                .fieldOf("data")
+                .forGetter(o -> {
+                  var nmsTag = ((CraftEntitySnapshot) o).getData();
+                  return TagTranslators.COMPOUND.toApiType(nmsTag);
+                })
         )
         .apply(instance, (type, compoundTag) -> {
-          net.minecraft.nbt.CompoundTag nmsTag = compoundTag
-              .map(TagTranslators.COMPOUND::toMinecraft)
-              .orElse(new net.minecraft.nbt.CompoundTag());
-
+          net.minecraft.nbt.CompoundTag nmsTag = TagTranslators.COMPOUND.toMinecraft(compoundTag);
           return CraftEntitySnapshot.create(nmsTag, type);
         });
   });
