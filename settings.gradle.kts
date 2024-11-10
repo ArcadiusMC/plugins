@@ -42,6 +42,7 @@ include("merchants")
 include("voicechat-hook")
 include("cosmetics")
 include("bank")
+include("emperors-powers")
 
 include("pirate-quests")
 

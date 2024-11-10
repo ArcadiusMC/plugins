@@ -1,0 +1,18 @@
+
+#
+# The multiplier applied to the tax rate
+#
+# newTaxRate = currentTaxRate * taxChangeAmount
+#
+# Default: 0.02
+#
+tax-change-amount: 0.02
+
+#
+# The amount rent is raised/lowered by.
+#
+# newRent = currentRent + (rentChangeAmount * currentRent)
+#
+# Default: 0.25
+#
+rent-change-rate: 0.25
