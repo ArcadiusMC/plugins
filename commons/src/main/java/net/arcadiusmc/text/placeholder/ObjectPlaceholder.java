@@ -40,10 +40,14 @@ public interface ObjectPlaceholder<T> {
       case "floor" -> value.longValue();
       case "roman" -> text(RomanNumeral.arabicToRoman(value.longValue()));
 
+      case "percent", "percents", "percentage", "percentages"-> {
+        yield value.floatValue() * 100.0f;
+      }
+
       case "signed" -> {
         double doubleValue = value.doubleValue();
 
-        if (doubleValue < 0) {
+        if (doubleValue <= 0) {
           yield Text.formatNumber(value);
         }
 
