@@ -1,12 +1,20 @@
 package net.arcadiusmc.utils;
 
+import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectIntPair;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Random;
 import lombok.Getter;
+import net.arcadiusmc.utils.io.ExtraCodecs;
+import org.bukkit.block.spawner.SpawnerEntry;
 
 /**
  * A list with weighted entries to provide for randomized lookups where the
@@ -16,6 +24,8 @@ import lombok.Getter;
  */
 public class WeightedList<T> {
 
+  static final int DEFAULT_WEIGHT = 10;
+
   private final List<Entry<T>> values = new ObjectArrayList<>();
 
   /**
@@ -23,6 +33,39 @@ public class WeightedList<T> {
    */
   @Getter
   private int totalWeight = 0;
+
+  public static <T> Codec<WeightedList<T>> codec(Codec<T> baseCodec) {
+    Codec<Pair<T, Integer>> weightAndValueCodec = Codec
+        .mapPair(
+            baseCodec.fieldOf("value"),
+            Codec.INT.optionalFieldOf("weight", 1)
+        )
+        .codec();
+
+//    Codec<Pair<T, Integer>> weightEntryCodec = Codec.either(baseCodec, weightAndValueCodec)
+//        .xmap(
+//            pair -> pair.map(t -> Pair.of(t, DEFAULT_WEIGHT), p -> p),
+//            Either::right
+//        );
+
+    return weightAndValueCodec.listOf()
+        .xmap(
+            pairs -> {
+              WeightedList<T> list = new WeightedList<>();
+              for (Pair<T, Integer> pair : pairs) {
+                list.add(pair.getSecond(), pair.getFirst());
+              }
+              return list;
+            },
+            list -> {
+              List<Pair<T, Integer>> result = new ObjectArrayList<>();
+              for (Entry<T> value : list.values) {
+                result.add(Pair.of(value.value, value.weight));
+              }
+              return result;
+            }
+        );
+  }
 
   public void addAll(WeightedList<T> other) {
     for (var e : other.values) {
