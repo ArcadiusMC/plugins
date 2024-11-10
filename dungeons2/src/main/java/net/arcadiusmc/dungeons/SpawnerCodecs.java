@@ -26,18 +26,6 @@ public final class SpawnerCodecs {
 
   public static final Codec<Integer> LIGHT_LEVEL = Codec.intRange(MIN_LIGHT, MAX_LIGHT);
 
-  public static final Codec<Range<Integer>> LIGHT_LEVEL_RANGE
-      = RecordCodecBuilder.create(instance -> {
-        return instance
-            .group(
-                LIGHT_LEVEL.optionalFieldOf("min", MIN_LIGHT)
-                    .forGetter(Range::getMinimum),
-                LIGHT_LEVEL.optionalFieldOf("max", MAX_LIGHT)
-                    .forGetter(Range::getMaximum)
-            )
-            .apply(instance, Range::between);
-      });
-
   public static final Codec<SpawnRule> RULE = ExistingObjectCodec.createCodec(
       SpawnerCodecs::emptyRule,
       builder -> {
