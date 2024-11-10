@@ -1,6 +1,7 @@
 package net.arcadiusmc.dungeons.gen;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import net.arcadiusmc.dungeons.DungeonPiece;
 import net.arcadiusmc.utils.math.Direction;
@@ -48,19 +49,19 @@ public abstract class Decorator<C> {
 
   protected boolean matchesAny(int x, int y, int z, List<BlockFilterArgument.Result> filters) {
     BlockState state = getBlock(x, y, z);
-
-    if (state == null) {
-      return false;
-    }
-
     return matchesAny(state, filters);
   }
 
   protected boolean matchesAny(BlockState state, List<BlockFilterArgument.Result> filters) {
+    BlockState testState = Objects.requireNonNullElseGet(
+        state,
+        () -> Material.AIR.createBlockData().createBlockState()
+    );
+
     for (int i = 0; i < filters.size(); i++) {
       Result filter = filters.get(i);
 
-      if (!filter.test(state)) {
+      if (!filter.test(testState)) {
         continue;
       }
 
