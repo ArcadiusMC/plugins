@@ -68,7 +68,7 @@ public class ShopListMenu extends ListPage<Market> {
   private final MenuSettings settings;
   private final MenuConfig config;
 
-  ShopListMenu(ContextOption<Integer> page, MenuSettings settings, MenuConfig config) {
+  public ShopListMenu(ContextOption<Integer> page, MenuSettings settings, MenuConfig config) {
     super(null, page);
 
     this.settings = settings;
