@@ -31,8 +31,11 @@ public class ShopLists {
   @Getter
   private final Registry<ShopListMenu> registry = Registries.newRegistry();
 
-  static final ContextSet SET = ContextSet.create();
-  static final ContextOption<Integer> PAGE = SET.newOption(0);
+  @Getter
+  private MenuSettings currentSettings;
+
+  public static final ContextSet SET = ContextSet.create();
+  public static final ContextOption<Integer> PAGE = SET.newOption(0);
 
   private final Path file;
 
@@ -57,21 +60,23 @@ public class ShopLists {
         settings = MenuSettings.DEFAULT;
       }
 
+      this.currentSettings = settings;
+
       MenuConfig.MAP_CODEC.parse(JsonOps.INSTANCE, object)
           .mapError(s -> "Failed to load market-menus: " + s)
           .resultOrPartial(LOGGER::error)
-          .ifPresent(map -> loadFrom(map, settings));
+          .ifPresent(this::loadFrom);
     });
   }
 
-  private void loadFrom(Map<String, MenuConfig> map, MenuSettings settings) {
+  private void loadFrom(Map<String, MenuConfig> map) {
     for (Entry<String, MenuConfig> entry : map.entrySet()) {
-      ShopListMenu menu = new ShopListMenu(PAGE, settings, entry.getValue());
+      ShopListMenu menu = new ShopListMenu(PAGE, currentSettings, entry.getValue());
       registry.register(entry.getKey(), menu);
     }
   }
 
-  record MenuConfig(
+  public record MenuConfig(
       Component title,
       Component headerName,
       List<Component> description,
@@ -108,7 +113,7 @@ public class ShopLists {
         = Codec.unboundedMap(ExtraCodecs.KEY_CODEC, CODEC);
   }
 
-  record MenuSettings(
+  public record MenuSettings(
       boolean alignItemNames,
       Component availableName,
       Component takenName,
