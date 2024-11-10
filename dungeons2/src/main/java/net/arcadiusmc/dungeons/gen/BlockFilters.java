@@ -24,7 +24,11 @@ public class BlockFilters {
 
     @Override
     public <T> DataResult<T> encode(Result input, DynamicOps<T> ops, T prefix) {
-      return DataResult.error(() -> "This cannot be saved");
+      if (input instanceof MaterialBlockFilter filter) {
+        return DataResult.success(ops.createString(filter.material().key().asString()));
+      }
+
+      return DataResult.success(ops.createString(input.toString()));
     }
   };
 
