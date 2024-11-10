@@ -85,20 +85,7 @@ public class FoliageDecorator extends Decorator<FoliageConfig> implements XyzFun
   @Getter @Setter
   public static class FoliageConfig {
     static final Codec<WeightedList<Material>> MATERIALS_CODEC
-        = Codec.mapPair(
-            ExtraCodecs.MATERIAL_CODEC.fieldOf("value"),
-            Codec.INT.optionalFieldOf("weight", 1)
-        )
-        .codec()
-        .listOf()
-        .xmap(
-            pairs -> {
-              WeightedList<Material> list = new WeightedList<>();
-              pairs.forEach(p -> list.add(p.getSecond(), p.getFirst()));
-              return list;
-            },
-            weighted -> ObjectLists.emptyList()
-        );
+        = WeightedList.codec(ExtraCodecs.MATERIAL_CODEC);
 
     static final Codec<FoliageConfig> CODEC = ExistingObjectCodec.createCodec(
         FoliageConfig::new,
