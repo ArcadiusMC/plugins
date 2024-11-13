@@ -42,6 +42,7 @@ import net.arcadiusmc.utils.inventory.ItemList;
 import net.arcadiusmc.utils.inventory.ItemLists;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.forthecrown.nbt.BinaryTag;
+import net.forthecrown.nbt.BinaryTags;
 import net.forthecrown.nbt.CompoundTag;
 import net.forthecrown.nbt.paper.TagTranslators;
 import net.forthecrown.nbt.string.Snbt;
@@ -366,20 +367,17 @@ public @UtilityClass class ExtraCodecs {
                 .forGetter(EntitySnapshot::getEntityType),
 
             COMPOUND_TAG
-                .validate(compoundTag -> {
-                  if (compoundTag.isEmpty()) {
-                    return Results.error("'data' cannot have an empty tag!");
-                  }
-                  return Results.success(compoundTag);
-                })
-                .fieldOf("data")
+                .optionalFieldOf("data")
                 .forGetter(o -> {
                   var nmsTag = ((CraftEntitySnapshot) o).getData();
-                  return TagTranslators.COMPOUND.toApiType(nmsTag);
+                  return Optional.of(TagTranslators.COMPOUND.toApiType(nmsTag));
                 })
         )
         .apply(instance, (type, compoundTag) -> {
-          net.minecraft.nbt.CompoundTag nmsTag = TagTranslators.COMPOUND.toMinecraft(compoundTag);
+          CompoundTag tag = compoundTag.orElseGet(BinaryTags::compoundTag);
+          tag.putString("id", type.key().asString());
+
+          net.minecraft.nbt.CompoundTag nmsTag = TagTranslators.COMPOUND.toMinecraft(tag);
           return CraftEntitySnapshot.create(nmsTag, type);
         });
   });
