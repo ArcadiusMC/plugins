@@ -8,11 +8,9 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.Exceptions;
-import net.arcadiusmc.text.Text;
 import net.arcadiusmc.utils.VanillaAccess;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
@@ -20,18 +18,15 @@ import net.forthecrown.grenadier.types.ArgumentTypes;
 import net.forthecrown.grenadier.types.EntitySelector;
 import net.forthecrown.grenadier.types.ParsedPosition;
 import net.forthecrown.nbt.BinaryTag;
-import net.forthecrown.nbt.CompoundTag;
 import net.forthecrown.nbt.paper.PaperNbt;
 import net.forthecrown.nbt.path.TagPath;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.TileState;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
 
 public class CommandDataGet extends BaseCommand {
 
@@ -144,7 +139,7 @@ public class CommandDataGet extends BaseCommand {
       return format("&e{0}&7 data: &f{1}", displayName, dataText);
     }
 
-    return format("&e{0}&f data at {1}: &f{2}", displayName, path, dataText);
+    return format("&e{0}&7 data at {1}: &f{2}", displayName, path.getInput(), dataText);
   }
 
   private List<BinaryTag> processPath(BinaryTag tag, TagPath path) {
