@@ -84,6 +84,8 @@ decoration-passes:
         amplitude: 0.8
         octaves: 5
         noise-gate: 0.58
+      overgrowth-blocks:
+        - "moss_block"
       replaceable:
         - "stone"
         - "andesite"
@@ -173,6 +175,29 @@ decoration-passes:
       frequency: 1
       amplitude: 1
       octaves: 1
+
+  - type: spawners
+    name: spawners
+    settings:
+      override-all: true
+      can-replace:
+        - "#air"
+        - "#flowers"
+        - "#leaves"
+        - "tall_grass"
+        - "short_grass"
+      entries:
+        - weight: 10
+          value:
+            max-spawn-delay: 100
+            spawn-count: 4
+            spawn-range: 5
+            entities:
+              - entity:
+                  entity-type: "skeleton"
+                  data: "{asdf:1b}"
+                weight: 10
+
 
 pieces:
   # Root
