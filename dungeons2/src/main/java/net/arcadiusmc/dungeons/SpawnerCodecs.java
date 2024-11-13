@@ -8,7 +8,6 @@ import java.util.Optional;
 import net.arcadiusmc.utils.io.ExistingObjectCodec;
 import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.Results;
-import org.apache.commons.lang3.Range;
 import org.bukkit.Bukkit;
 import org.bukkit.Keyed;
 import org.bukkit.block.spawner.SpawnRule;
@@ -103,7 +102,7 @@ public final class SpawnerCodecs {
   });
 
   public static SpawnRule emptyRule() {
-    return new SpawnRule(MIN_LIGHT, MIN_LIGHT, MAX_LIGHT, MAX_LIGHT);
+    return new SpawnRule(MIN_LIGHT, MAX_LIGHT, MIN_LIGHT, MAX_LIGHT);
   }
 
   public static Equipment emptyEquipment() {
