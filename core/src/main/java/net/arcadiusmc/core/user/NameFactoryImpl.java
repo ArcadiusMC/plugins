@@ -77,14 +77,12 @@ public class NameFactoryImpl implements UserNameFactory {
       name = name.colorIfAbsent(team.color());
     }
 
-    Component prefix = formatPrefix(user, ctx);
-    if (prefix != null && !ctx.intentMatches(DisplayIntent.HOLOGRAM)) {
-      builder.append(prefix);
-    }
     if (!ctx.intentMatches(DisplayIntent.HOLOGRAM)) {
       if (team != null && !Text.isEmpty(team.prefix())) {
         builder.append(team.prefix());
       }
+
+      Component prefix = formatPrefix(user, ctx);
       if (prefix != null) {
         builder.append(prefix);
       }
@@ -92,8 +90,9 @@ public class NameFactoryImpl implements UserNameFactory {
 
     builder.append(name);
 
-    Component suffix = formatSuffix(user, ctx);
     if (!ctx.intentMatches(DisplayIntent.HOLOGRAM)) {
+      Component suffix = formatSuffix(user, ctx);
+
       if (suffix != null) {
         builder.append(suffix);
       }
