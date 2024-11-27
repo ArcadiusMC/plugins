@@ -150,8 +150,6 @@ public class ValueModifierList {
 
       if (op == ModifierOp.DISCOUNT_BASE || op == ModifierOp.DISCOUNT_STACKING) {
         displayAmount = -displayAmount;
-      } else {
-        displayAmount--;
       }
 
       return Messages.render("markets", "modifiers", op.name().toLowerCase())
