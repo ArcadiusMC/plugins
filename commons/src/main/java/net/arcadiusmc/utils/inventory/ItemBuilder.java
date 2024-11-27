@@ -213,6 +213,21 @@ public abstract class ItemBuilder<T extends ItemBuilder<T>> implements Cloneable
     return getThis();
   }
 
+  public T addEnchantGlint() {
+    baseMeta.setEnchantmentGlintOverride(true);
+    return getThis();
+  }
+
+  public T removeEnchantGlintOverride() {
+    baseMeta.setEnchantmentGlintOverride(null);
+    return getThis();
+  }
+
+  public T disableEnchantGlint() {
+    baseMeta.setEnchantmentGlintOverride(false);
+    return getThis();
+  }
+
   /* ----------------------------- MISC ------------------------------ */
 
   public <X, Z> T addData(@NotNull NamespacedKey key,
