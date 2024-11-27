@@ -142,12 +142,18 @@ public class CommandDataGet extends BaseCommand {
     return format("&e{0}&7 data at {1}: &f{2}", displayName, path.getInput(), dataText);
   }
 
-  private List<BinaryTag> processPath(BinaryTag tag, TagPath path) {
+  private List<BinaryTag> processPath(BinaryTag tag, TagPath path) throws CommandSyntaxException {
     if (path == null) {
       return List.of(tag);
     }
 
-    return path.get(tag);
+    List<BinaryTag> list = path.get(tag);
+
+    if (list.isEmpty()) {
+      throw Exceptions.format("No data at path {0}", path.getInput());
+    }
+
+    return list;
   }
 
   interface DataProvider<A, T> {
