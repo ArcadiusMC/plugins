@@ -11,6 +11,8 @@ import net.arcadiusmc.markets.placeholders.MarketPlaceholders;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.loader.MessageList;
 import net.arcadiusmc.text.loader.MessageLoader;
+import net.arcadiusmc.user.Users;
+import net.arcadiusmc.user.name.UserNameFactory;
 import net.arcadiusmc.utils.PeriodicalSaver;
 import net.arcadiusmc.utils.io.PluginJar;
 import net.arcadiusmc.utils.io.SerializationHelper;
@@ -19,7 +21,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 @Getter
 public class MarketsPlugin extends JavaPlugin {
 
-  private final MessageList messageList = MessageList.create();
+  private static final String PROFILE_FIELD_ID = "owned_market_name";
 
   private MarketsConfig pluginConfig = MarketsConfig.EMPTY;
 
@@ -38,8 +40,6 @@ public class MarketsPlugin extends JavaPlugin {
 
   @Override
   public void onEnable() {
-    Messages.MESSAGE_LIST.addChild(getName(), messageList);
-
     saver = PeriodicalSaver.create(this::save, Duration.ofMinutes(30));
     saver.start();
 
@@ -58,20 +58,24 @@ public class MarketsPlugin extends JavaPlugin {
     MarketCommands.registerAll(this);
     MarketPlaceholders.registerAll();
     MarketLeaderboards.registerAll(this);
+
+    UserNameFactory factory = Users.getService().getNameFactory();
+    factory.addAdminProfileField(PROFILE_FIELD_ID, 10, new MarketProfileField(this));
   }
 
   @Override
   public void onDisable() {
-    Messages.MESSAGE_LIST.removeChild(getName());
     MarketPlaceholders.unregisterAll();
-
     save();
+
+    UserNameFactory factory = Users.getService().getNameFactory();
+    factory.removeAdminField(PROFILE_FIELD_ID);
   }
 
   @Override
   public void reloadConfig() {
     PluginJar.saveResources("config.yml");
-    MessageLoader.loadPluginMessages(this, messageList);
+    MessageLoader.loadPluginMessages(this);
     SerializationHelper.readAsJson(
         getDataFolder().toPath().resolve("config.yml"),
         jsonObject -> {

@@ -18,6 +18,8 @@ markets:
   banned:                   "&eBanned ${player} from your shop."
   unbanned:                 "Unbanned ${player} from your shop."
 
+  profileField:             "&eOwned Shop Name"
+
   evictionStart:            "Your player shop is being evicted!\nReason: &f${reason}&r.\nEviction date: &e${date}&r."
 
   entrance:
