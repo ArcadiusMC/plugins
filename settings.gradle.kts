@@ -10,8 +10,6 @@ include("punishments")
 include("scripting-impl")
 include("scripting")
 
-include("scripting2")
-
 // Service providers, tools
 include("vanilla-hook")
 include("webmap")
