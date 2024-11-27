@@ -17,4 +17,8 @@ dependencies {
 pluginYml {
   prefixedName("Emperors-Powers")
   main = "net.arcadiusmc.emperor.EmperorPlugin"
+
+  depends {
+    required("MCKotlin-Paper")
+  }
 }
