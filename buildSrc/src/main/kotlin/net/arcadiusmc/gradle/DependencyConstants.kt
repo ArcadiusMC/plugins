@@ -7,7 +7,7 @@ const val NBT_LIB           = "net.forthecrown:nbt:1.5.2"
 const val PAPER_NBT         = "net.forthecrown:paper-nbt:1.7.5"
 
 const val MATH_LIB          = "org.spongepowered:math:2.1.0-SNAPSHOT"
-const val TOML              = "org.tomlj:tomlj:1.1.0"
+const val TOML              = "org.tomlj:tomlj:1.1.1"
 const val CONFIGURATE       = "org.spongepowered:configurate-core:4.1.2"
 
 const val WORLD_GUARD       = "com.sk89q.worldguard:worldguard-bukkit:7.0.7"
