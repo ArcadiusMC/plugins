@@ -15,13 +15,10 @@ import net.arcadiusmc.text.loader.MessageRender
 import net.arcadiusmc.user.User
 import net.arcadiusmc.user.Users
 import net.arcadiusmc.utils.context.Context
-import net.arcadiusmc.utils.inventory.ItemBuilder
 import net.arcadiusmc.utils.inventory.ItemStacks
 import net.arcadiusmc.utils.inventory.SkullItemBuilder
 import net.kyori.adventure.text.Component.text
-import org.bukkit.Material
-import org.bukkit.enchantments.Enchantment
-import org.bukkit.inventory.ItemFlag
+import org.bukkit.inventory.ItemStack
 
 private val config: MenuConfig = MenuConfig(
   text("Shop list"),
@@ -36,10 +33,10 @@ private const val ARROW_DOWN_TEXTURE_ID = "96a011e626b71cead984193511e82e65c1359
 
 private const val MOD_ID = "emperors_powers"
 
-private val raiseRentSlot = Slot.of(1)
-private val lowerRentSlot = Slot.of(1)
-private val raiseTaxesSlot = Slot.of(1)
-private val lowerTaxesSlot = Slot.of(1)
+private val raiseRentSlot  = Slot.of(3, 1)
+private val lowerRentSlot  = Slot.of(3, 2)
+private val raiseTaxesSlot = Slot.of(5, 1)
+private val lowerTaxesSlot = Slot.of(5, 2)
 
 class ClickableListPage(settings: MenuSettings): ShopListMenu(ShopLists.PAGE, settings, config) {
 
@@ -50,6 +47,10 @@ class ClickableListPage(settings: MenuSettings): ShopListMenu(ShopLists.PAGE, se
 
     val page = ActionsPage(this, entry)
     page.menu.open(user, context)
+  }
+
+  public override fun getItem(user: User?, entry: Market?, context: Context?): ItemStack {
+    return super.getItem(user, entry, context)
   }
 }
 
@@ -69,6 +70,11 @@ class ActionsPage(parent: MenuPage, val market: Market): MenuPage(parent) {
 
     builder.add(raiseRentSlot, createRentNode(true))
     builder.add(lowerRentSlot, createRentNode(false ))
+  }
+
+  override fun createItem(user: User, context: Context): ItemStack {
+    val p: ClickableListPage = parent as ClickableListPage
+    return p.getItem(user, market, context)
   }
 
   class FoundModifiers {
@@ -129,7 +135,15 @@ class ActionsPage(parent: MenuPage, val market: Market): MenuPage(parent) {
       }
       .setRunnable { user, context, click ->
         val amount = getPlugin().emperorConfig?.taxChangeAmount ?: 0.0f
-        applyModifierTo(user, market.taxModifiers, amount, "taxes", raise)
+        applyModifierTo(
+          user,
+          market.taxModifiers,
+          amount,
+          "taxes",
+          raise,
+          market.baseTaxRate
+        )
+        click.shouldReloadMenu(true)
       }
       .build()
   }
@@ -143,7 +157,15 @@ class ActionsPage(parent: MenuPage, val market: Market): MenuPage(parent) {
       }
       .setRunnable { user, context, click ->
         val amount = getPlugin().emperorConfig?.rentChangeRate ?: 0.0f
-        applyModifierTo(user, market.rentModifiers, amount, "rent", raise)
+        applyModifierTo(
+          user,
+          market.rentModifiers,
+          amount,
+          "rent",
+          raise,
+          market.baseRent.toFloat()
+        )
+        click.shouldReloadMenu(true)
       }
       .build()
   }
@@ -153,7 +175,8 @@ class ActionsPage(parent: MenuPage, val market: Market): MenuPage(parent) {
     list: ValueModifierList,
     amount: Float,
     messageKey: String,
-    raise: Boolean
+    raise: Boolean,
+    base: Float
   ) {
     var amount: Float = amount
     if (!raise) {
@@ -180,7 +203,12 @@ class ActionsPage(parent: MenuPage, val market: Market): MenuPage(parent) {
     )
 
     list.add(mod)
-    user.sendMessage(makeMessage("$messagePrefix.applied").create(user))
+    user.sendMessage(
+      makeMessage("$messagePrefix.applied")
+        .addValue("amount", amount)
+        .addValue("newAmount", list.apply(base))
+        .create(user)
+    )
   }
 
   private fun createItem(
@@ -211,8 +239,7 @@ class ActionsPage(parent: MenuPage, val market: Market): MenuPage(parent) {
 
       builder
         .addLore(activeText)
-        .addEnchant(Enchantment.BINDING_CURSE, 1)
-        .addFlags(ItemFlag.HIDE_ENCHANTS)
+        .addEnchantGlint()
     }
 
     return builder;

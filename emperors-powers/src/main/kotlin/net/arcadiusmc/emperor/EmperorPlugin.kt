@@ -14,6 +14,7 @@ class EmperorPlugin: JavaPlugin() {
 
   override fun onEnable() {
     reloadConfig()
+    CommandEmperorPowers(this)
   }
 
   override fun onDisable() {
@@ -38,13 +39,15 @@ fun getPlugin(): EmperorPlugin {
 }
 
 val CONFIG_CODEC = ExistingObjectCodec.createCodec({EmperorConfig()}, { builder ->
-  builder.optional("tax-change-amount", Codec.FLOAT)
-    .setter { t, u -> t.taxChangeAmount = u }
-    .getter { t -> t.taxChangeAmount}
+  builder.optional("tax-change-amount", Codec.FLOAT).apply {
+    setter { t, u -> t.taxChangeAmount = u }
+    getter { t -> t.taxChangeAmount}
+  }
 
-  builder.optional("rent-change-rate", Codec.FLOAT)
-    .setter { t, u -> t.rentChangeRate = u }
-    .getter { t -> t.rentChangeRate}
+  builder.optional("rent-change-rate", Codec.FLOAT).apply {
+    setter { t, u -> t.rentChangeRate = u }
+    getter { t -> t.rentChangeRate}
+  }
 })
 
 class EmperorConfig {
