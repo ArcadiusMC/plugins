@@ -1,5 +1,6 @@
 plugins {
   java
+  kotlin("jvm") version "2.0.0"
 }
 
 repositories {
@@ -12,6 +13,8 @@ dependencies {
 
   testImplementation(project(":structures"))
   testImplementation(project(":commons"))
+
+  implementation(kotlin("stdlib"))
 }
 
 pluginYml {
