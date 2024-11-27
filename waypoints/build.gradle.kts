@@ -1,3 +1,5 @@
+import net.arcadiusmc.gradle.DependencyLoad
+
 plugins {
   java
 }
@@ -21,5 +23,12 @@ pluginYml {
 
   loadAfter {
     regular("project:vanilla-hook")
+  }
+
+  depends {
+    optional("Citizens") {
+      load = DependencyLoad.BEFORE
+      joinClasspath = false
+    }
   }
 }
