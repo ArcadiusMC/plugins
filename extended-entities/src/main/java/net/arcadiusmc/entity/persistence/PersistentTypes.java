@@ -48,10 +48,6 @@ public class PersistentTypes {
   /* --------------------------- STATIC METHODS --------------------------- */
 
   public static void registerAll() {
-    registerComponent("id", EntityId.class, ExtraCodecs.STRING_UUID.xmap(EntityId::new, EntityId::getId));
-    registerComponent("bukkit_handle", Handle.class);
-    registerComponent("transform", Transform.class);
-
     registerPrimitive(Boolean.TYPE, Boolean.class,  Codec.BOOL);
 
     registerPrimitive(Byte.TYPE,    Byte.class,     Codec.BYTE);
@@ -155,6 +151,10 @@ public class PersistentTypes {
     if (type.isArray()) {
       Class<Object> componentType = (Class<Object>) type.componentType();
       ObjectSerializer<Object> serializer = getTypeCodec(componentType);
+
+      if (serializer == null) {
+        return null;
+      }
 
       Codec<T> arr = (Codec<T>) arrayCodec(componentType, serializer.codec);
       return registerSerializer(type, arr);

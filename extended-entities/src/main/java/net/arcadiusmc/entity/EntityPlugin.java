@@ -22,12 +22,15 @@ public class EntityPlugin extends JavaPlugin {
   private BukkitTask ticker;
   private EntityStorage storage;
 
+  private boolean loadFailed = false;
+
   @Override
   public void onEnable() {
     engine = new Engine();
     storage = new EntityStorage(this);
 
     Entities.engine = engine;
+    PersistentTypes.registerAll();
 
     engine.addSystem(new IdSystem());
     engine.addSystem(new HandleSystem());
@@ -35,20 +38,28 @@ public class EntityPlugin extends JavaPlugin {
     engine.addSystem(new GuardianBeam());
 
     EntityTemplates.registerAll();
-    PersistentTypes.registerAll();
 
     new CommandCustomEntity(this);
 
     BukkitScheduler scheduler = getServer().getScheduler();
     ticker = scheduler.runTaskTimer(this, new TickTask(engine), 1, 1);
 
-    storage.loadEntities(engine);
+    try {
+      storage.loadEntities(engine);
+      loadFailed = false;
+    } catch (Throwable t) {
+      loadFailed = true;
+      throw t;
+    }
   }
 
   @Override
   public void onDisable() {
     ticker = Tasks.cancel(ticker);
-    storage.saveEntities(engine);
+
+    if (!loadFailed) {
+      storage.saveEntities(engine);
+    }
 
     Entities.engine = null;
   }

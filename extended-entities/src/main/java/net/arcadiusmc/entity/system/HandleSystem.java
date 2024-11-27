@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import net.arcadiusmc.entity.Entities;
+import net.arcadiusmc.entity.persistence.PersistentTypes;
 import net.arcadiusmc.entity.util.UuidDataType;
 import net.arcadiusmc.events.Events;
 import net.arcadiusmc.utils.VanillaAccess;
@@ -47,6 +48,9 @@ public class HandleSystem extends IteratingSystem {
 
   public HandleSystem() {
     super(Family.all(Handle.class, Transform.class).get());
+
+    PersistentTypes.registerComponent("bukkit_handle", Handle.class);
+    PersistentTypes.registerComponent("transform", Transform.class);
   }
 
   public Entity getEntityByMinecraftId(UUID uuid) {

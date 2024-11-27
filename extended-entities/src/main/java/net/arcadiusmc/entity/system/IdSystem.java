@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.entity.persistence.PersistentTypes;
+import net.arcadiusmc.utils.io.ExtraCodecs;
 import org.slf4j.Logger;
 
 public class IdSystem extends EntitySystem {
@@ -22,6 +24,12 @@ public class IdSystem extends EntitySystem {
 
   private final IdRegisteringListener listener = new IdRegisteringListener();
   private final ComponentListener componentListener = new ComponentListener();
+
+  public IdSystem() {
+    PersistentTypes.registerComponent("id", EntityId.class,
+        ExtraCodecs.UUID_CODEC.xmap(EntityId::new, EntityId::getId)
+    );
+  }
 
   public Entity getEntity(UUID uuid) {
     return byId.get(uuid);
