@@ -6,7 +6,6 @@ import net.arcadiusmc.text.loader.MessageLoader
 import net.arcadiusmc.utils.io.ConfigCodec
 import net.arcadiusmc.utils.io.ExistingObjectCodec
 import org.bukkit.plugin.java.JavaPlugin
-import java.util.function.BiConsumer
 
 class EmperorPlugin: JavaPlugin() {
 
