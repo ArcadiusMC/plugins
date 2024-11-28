@@ -70,9 +70,7 @@ public class SkullItemBuilder extends ItemBuilder<SkullItemBuilder> {
     }
 
     if (!profile.hasTextures()) {
-      CompletableFuture.runAsync(() -> {
-        profile.complete(true);
-      });
+      profile.complete(true);
     }
 
     meta().setPlayerProfile(profile);
