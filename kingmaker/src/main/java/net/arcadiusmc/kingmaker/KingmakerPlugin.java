@@ -6,9 +6,11 @@ import lombok.Getter;
 import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.events.Events;
 import net.arcadiusmc.kingmaker.listener.CoinMintListener;
+import net.arcadiusmc.kingmaker.usables.TestIsMonarch;
 import net.arcadiusmc.text.loader.MessageLoader;
 import net.arcadiusmc.text.placeholder.PlaceholderService;
 import net.arcadiusmc.text.placeholder.Placeholders;
+import net.arcadiusmc.usables.UsablesPlugin;
 import net.arcadiusmc.utils.PeriodicalSaver;
 import net.arcadiusmc.utils.io.PluginJar;
 import net.arcadiusmc.utils.io.SerializationHelper;
@@ -38,6 +40,9 @@ public class KingmakerPlugin extends JavaPlugin {
 
     PlaceholderService service = Placeholders.getService();
     service.getDefaults().add("monarch", new MonarchPlaceholder(kingmaker));
+
+    UsablesPlugin plugin = UsablesPlugin.get();
+    plugin.getConditions().register("is_monarch", TestIsMonarch.TYPE);
   }
 
   @Override

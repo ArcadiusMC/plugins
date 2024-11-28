@@ -8,6 +8,7 @@ repositories {
 
 dependencies {
   compileOnly(project(":commons"))
+  compileOnly(project(":usables"))
 }
 
 pluginYml {

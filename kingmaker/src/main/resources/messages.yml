@@ -4,6 +4,7 @@ kingmaker:
     noMonarch:      "There is no set monarch."
     alreadySet:     "${player} is already the monarch."
     standAdded:     "Monarch stand for entity ${entity} has already been added."
+    usableError:    "Only monarchs are allowed to use this!"
 
   reloaded.plugin:  "&7Reloaded kingmaker plugin."
   reloaded.config:  "&7Reloaded kingmaker config."
