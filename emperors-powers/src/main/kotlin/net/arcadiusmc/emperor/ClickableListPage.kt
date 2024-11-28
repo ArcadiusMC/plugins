@@ -11,12 +11,14 @@ import net.arcadiusmc.markets.gui.ShopLists.MenuSettings
 import net.arcadiusmc.menu.*
 import net.arcadiusmc.menu.page.MenuPage
 import net.arcadiusmc.text.Messages
+import net.arcadiusmc.text.TextWriter
 import net.arcadiusmc.text.loader.MessageRender
 import net.arcadiusmc.user.User
 import net.arcadiusmc.user.Users
 import net.arcadiusmc.utils.context.Context
 import net.arcadiusmc.utils.inventory.ItemStacks
 import net.arcadiusmc.utils.inventory.SkullItemBuilder
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.Component.text
 import org.bukkit.inventory.ItemStack
 
@@ -28,8 +30,10 @@ private val config: MenuConfig = MenuConfig(
   54
 )
 
-private const val ARROW_UP_TEXTURE_ID = "957a5bdf42f152178d154bb2237d9fd35772a7f32bcfd33beeb8edc4820ba"
-private const val ARROW_DOWN_TEXTURE_ID = "96a011e626b71cead984193511e82e65c1359565f0a2fcd1184872f89d908c65"
+private const val ARROW_UP = "957a5bdf42f152178d154bb2237d9fd35772a7f32bcfd33beeb8edc4820ba"
+private const val ARROW_DOWN = "96a011e626b71cead984193511e82e65c1359565f0a2fcd1184872f89d908c65"
+private const val SELECTED_ARROW_UP = "45c588b9ec0a08a37e01a809ed0903cc34c3e3f176dc92230417da93b948f148"
+private const val SELECTED_ARROW_DOWN = "1cb8be16d40c25ace64e09f6086d408ebc3d545cfb2990c5b6c25dabcedeacc"
 
 private const val MOD_ID = "emperors_powers"
 
@@ -51,6 +55,43 @@ class ClickableListPage(settings: MenuSettings): ShopListMenu(ShopLists.PAGE, se
 
   public override fun getItem(user: User?, entry: Market?, context: Context?): ItemStack {
     return super.getItem(user, entry, context)
+  }
+
+  override fun writeLore(writer: TextWriter, market: Market) {
+    val taxMods = getModifier(market.taxModifiers)
+    val rentMods = getModifier(market.rentModifiers)
+
+    val rentStatus: Component = Messages.render(getStatusText(rentMods, "rent"))
+      .create(writer.viewer())
+
+    val taxStatus: Component = Messages.render(getStatusText(taxMods, "tax"))
+      .create(writer.viewer())
+
+    val taxRate = market.taxRate
+    val rent = market.rent
+
+    writer.write(
+      Messages.render("emperor.headerLore")
+        .addValue("tax", taxRate)
+        .addValue("rent", rent)
+        .addValue("rentStatus", rentStatus)
+        .addValue("taxStatus", taxStatus)
+        .create(writer.viewer())
+    )
+  }
+
+  private fun getStatusText(mods: FoundModifiers, key: String): String {
+    var messageKey: String = "emperor.headerLore.status.$key."
+
+    if (!mods.foundAny) {
+      messageKey += "unchanged"
+    } else if (mods.positive != null) {
+      messageKey += "raised"
+    } else {
+      messageKey += "lowered"
+    }
+
+    return messageKey
   }
 }
 
@@ -77,46 +118,13 @@ class ActionsPage(parent: MenuPage, val market: Market): MenuPage(parent) {
     return p.getItem(user, market, context)
   }
 
-  class FoundModifiers {
-    var positive: Modifier? = null
-    var negative: Modifier? = null
-
-    val foundAny: Boolean get() {
-      return positive != null || negative != null
-    }
-
-    fun foundMatching(raise: Boolean): Boolean {
-      if (raise) {
-        return positive != null
-      } else {
-        return negative != null
-      }
-    }
-  }
-
-  private fun getModifier(list: ValueModifierList): FoundModifiers {
-    val result = FoundModifiers()
-
-    for (modifier in list.modifiers) {
-      if (MOD_ID != modifier.tag) {
-        continue
-      }
-
-      if (modifier.amount > 0) {
-        result.positive = modifier
-      } else if (modifier.amount < 0) {
-        result.negative = modifier
-      }
-    }
-
-    return result
-  }
-
   private fun createTaxNode(raise: Boolean): MenuNode {
     return MenuNode.builder()
       .setItem { user, context ->
         val builder = createItem("taxes", user, raise, market.taxModifiers)
         val bracket = market.taxBracket
+
+        builder.addLore("")
 
         if (bracket != null) {
           builder.addLore(
@@ -178,31 +186,22 @@ class ActionsPage(parent: MenuPage, val market: Market): MenuPage(parent) {
     raise: Boolean,
     base: Float
   ) {
-    var amount: Float = amount
-    if (!raise) {
-      amount = -amount
-    }
-
     val messagePrefix = makeMessagePrefix(messageKey, raise)
     val found = getModifier(list)
 
-    if (found.foundAny) {
-      list.modifiers.remove(found.positive)
-      list.modifiers.remove(found.negative)
+    list.modifiers.remove(found.positive)
+    list.modifiers.remove(found.negative)
 
+    if (found.foundMatching(raise)) {
       user.sendMessage(makeMessage("$messagePrefix.removed").create(user))
       return
     }
 
-    val mod = Modifier(
-      amount,
-      ModifierOp.MULTIPLY,
-      null,
-      MOD_ID,
-      "Emperor said so :("
-    )
+    val modOp = if (raise) ModifierOp.ADD_MULTIPLIED else ModifierOp.SUB_MULTIPLIED
+    val mod = Modifier(amount, modOp, null, MOD_ID, "Imperial Decree")
 
     list.add(mod)
+
     user.sendMessage(
       makeMessage("$messagePrefix.applied")
         .addValue("amount", amount)
@@ -219,10 +218,13 @@ class ActionsPage(parent: MenuPage, val market: Market): MenuPage(parent) {
   ): SkullItemBuilder {
     val builder = ItemStacks.headBuilder()
 
+    val modifier = getModifier(list)
+    val foundMatching = modifier.foundMatching(raise)
+
     if (raise) {
-      builder.setTextureId(ARROW_UP_TEXTURE_ID)
+      builder.setTextureId(if (foundMatching) SELECTED_ARROW_UP else ARROW_UP)
     } else {
-      builder.setTextureId(ARROW_DOWN_TEXTURE_ID)
+      builder.setTextureId(if (foundMatching) SELECTED_ARROW_DOWN else ARROW_DOWN)
     }
 
     val messagePrefix = makeMessagePrefix(messageKey, raise)
@@ -233,11 +235,11 @@ class ActionsPage(parent: MenuPage, val market: Market): MenuPage(parent) {
     builder.setName(name)
     builder.addLore(lore)
 
-    val modifier = getModifier(list)
-    if (modifier.foundMatching(raise)) {
+    if (foundMatching) {
       val activeText = makeMessage("$messagePrefix.active").create(user)
 
       builder
+        .addLore("")
         .addLore(activeText)
         .addEnchantGlint()
     }
@@ -255,9 +257,76 @@ class ActionsPage(parent: MenuPage, val market: Market): MenuPage(parent) {
     val rent = market.rent
     val taxRate = market.taxRate
 
+    val config = getPlugin().emperorConfig
+    val baseRent = market.baseRent.toFloat()
+    val rentChange = getChange(baseRent, market.rentModifiers, config?.rentChangeRate)
+    val taxChange = getChange(market.baseTaxRate, market.taxModifiers, config?.taxChangeAmount)
+
     return Messages.render(messageKey)
       .addValue("shopOwner", owner)
-      .addValue("taxRate", taxRate)
+      .addValue("tax", taxRate)
       .addValue("rent", rent)
+      .addValue("rentChange", rentChange)
+      .addValue("taxChange", taxChange)
   }
+
+  private fun getChange(base: Float, list: ValueModifierList, emperorMod: Float?): Float {
+    if (emperorMod == null) {
+      return base
+    }
+
+    val without = applyWithoutEmperorMods(base, list)
+    val with = without + (without * emperorMod)
+
+    return with - without
+  }
+
+  private fun applyWithoutEmperorMods(base: Float, list: ValueModifierList): Float {
+    var result: Float = base
+
+    for (modifier in list.modifiers) {
+      if (modifier.tag == MOD_ID) {
+        continue
+      }
+
+      result = modifier.applyModifer(base, result)
+    }
+
+    return result
+  }
+}
+
+class FoundModifiers {
+  var positive: Modifier? = null
+  var negative: Modifier? = null
+
+  val foundAny: Boolean get() {
+    return positive != null || negative != null
+  }
+
+  fun foundMatching(raise: Boolean): Boolean {
+    if (raise) {
+      return positive != null
+    } else {
+      return negative != null
+    }
+  }
+}
+
+private fun getModifier(list: ValueModifierList): FoundModifiers {
+  val result = FoundModifiers()
+
+  for (modifier in list.modifiers) {
+    if (MOD_ID != modifier.tag) {
+      continue
+    }
+
+    if (modifier.amount > 0) {
+      result.positive = modifier
+    } else if (modifier.amount < 0) {
+      result.negative = modifier
+    }
+  }
+
+  return result
 }

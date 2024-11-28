@@ -1,41 +1,66 @@
 _namespace: "emperor"
 
 taxBracketInfo:
-  fallsInto: "This shop falls into ${amount} tax bracket, and they will be taxed!"
-  none: "&7This shop does &lnot&7 fall into a tax bracket\nright now."
+  fallsInto:        "This shop falls into ${amount} tax bracket, and they will be taxed!"
+  none:             "&7This shop does &lnot&7 fall into a tax bracket\nright now."
+
+headerLore: |-
+  &7Current tax rate: &e${tax.percent}%&7.
+  &7Current rent: &e${rent.money}&7.
+  
+  ${rentStatus}
+  ${taxStatus}
+
+headerLore.status:
+  tax:
+    unchanged:      "&7This shop's taxes not been changed."
+    raised:         "&eThis shop's taxes been raised."
+    lowered:        "&6This shop's taxes have been lowered."
+  rent:
+    unchanged:      "&7This shop's rent has not been changed."
+    raised:         "&eThis shop's rent has been raised"
+    lowered:        "&6This shop's rent has been lowered"
 
 taxes.raise:
-  name: "&eRaise Taxes for &6${shopOwner}&e."
-  lore: |-
+  name:             "&eRaise Taxes for &6${shopOwner}&e."
+  lore: |
 
-    &7Raise the amount this shop is taxed by &e${taxRate.percent}%&7.
-  active: "&aShop tax rate has already been raised."
-  applied: "Raised ${shopOwner}'s tax rate by ${amount.percent}."
-  removed: "Removed tax rate raise from ${shopOwner}'s shop."
+    &7Raise the amount this shop is taxed by &e${taxChange.percent}%&7.
+    &8(Currently ${tax.percent})
+
+  active:           "&aShop tax rate has already been raised."
+  applied:          "&eRaised &6${shopOwner}&e's tax rate by &6${amount.percent}&e."
+  removed:          "&eRemoved tax rate raise from &6${shopOwner}&e's shop."
 
 taxes.lower:
-  name: "&eLower taxes for &6${shopOwner}&e."
-  lore: |-
+  name:             "&eLower taxes for &6${shopOwner}&e."
+  lore: |
     
-    &7Lower the amount this shop is taxed by &e${taxRate.percent}%&7.
-  active: "&aShop tax rate has already been lowered."
-  applied: "Lowered ${shopOwner}'s tax rate by ${amount.percent}."
-  removed: "Removed tax rate cut from ${shopOwner}'s shop."
+    &7Lower the amount this shop is taxed by &e${taxChange.percent}%&7.
+    &8(Currently ${tax.percent})
+
+  active:           "&aShop tax rate has already been lowered."
+  applied:          "&eLowered &e${shopOwner}&e's tax rate by &e${amount.percent}&e."
+  removed:          "&eRemoved tax rate cut from &6${shopOwner}&e's shop."
 
 rent.raise:
-  name: "&eRaise rent for &6${shopOwner}&e."
-  lore: |-
+  name:             "&eRaise rent for &6${shopOwner}&e."
+  lore: |
     
-    &7Raise the shop's rent by &e${rent}&7.
-  active: "&aShop rent has already been raised."
-  applied: "Raised ${shopOwner}'s rent by ${amount.percent} to ${newAmount}."
-  removed: "Removed rent raise from ${shopOwner}'s shop."
+    &7Raise the shop's rent by &e${rentChange.money}&7.
+    &8(Currently ${rent.money})
+
+  active:           "&aShop rent has already been raised."
+  applied:          "&eRaised &6${shopOwner}&e's rent by &6${amount.percent}%&e to &6${newAmount.money}&e."
+  removed:          "&eRemoved rent raise from &6${shopOwner}&e's shop."
 
 rent.lower:
-  name: "&eLower rent for &6${shopOwner}&e."
-  lore: |-
+  name:             "&eLower rent for &6${shopOwner}&e."
+  lore: |
     
-    &7Lower the shop's rent by &e${rent}&7.
-  active: "&aShop rent has already been lowered."
-  applied: "Cut ${shopOwner}'s rent by ${amount.percent}, now ${newAmount}."
-  removed: "Removed rent cut from ${shopOwner}'s shop."
+    &7Lower the shop's rent by &e${rentChange.money}&7.
+    &8(Currently ${rent.money})
+
+  active:           "&aShop rent has already been lowered."
+  applied:          "&eCut &6${shopOwner}&e's rent by &6${amount.percent}%&e, now &6${newAmount.money}&e."
+  removed:          "&eRemoved rent cut from &6${shopOwner}&e's shop."
