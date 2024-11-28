@@ -35,7 +35,7 @@ private const val ARROW_DOWN = "96a011e626b71cead984193511e82e65c1359565f0a2fcd1
 private const val SELECTED_ARROW_UP = "45c588b9ec0a08a37e01a809ed0903cc34c3e3f176dc92230417da93b948f148"
 private const val SELECTED_ARROW_DOWN = "1cb8be16d40c25ace64e09f6086d408ebc3d545cfb2990c5b6c25dabcedeacc"
 
-private const val MOD_ID = "emperors_powers"
+const val MOD_ID = "emperors_powers"
 
 private val raiseRentSlot  = Slot.of(3, 1)
 private val lowerRentSlot  = Slot.of(3, 2)

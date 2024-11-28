@@ -1,5 +1,7 @@
 _namespace: "emperor"
 
+clearedMods:        "&eCleared all existing emperor modifiers."
+
 taxBracketInfo:
   fallsInto:        "This shop falls into ${amount} tax bracket, and they will be taxed!"
   none:             "&7This shop does &lnot&7 fall into a tax bracket\nright now."
