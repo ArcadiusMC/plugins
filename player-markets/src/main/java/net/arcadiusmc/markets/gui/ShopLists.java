@@ -115,19 +115,23 @@ public class ShopLists {
 
   public record MenuSettings(
       boolean alignItemNames,
+      boolean usePlayerHeadWhenOwned,
       Component availableName,
       Component takenName,
       Component firstLine,
       Component priceLine
   ) {
     static final MenuSettings DEFAULT
-        = new MenuSettings(true, empty(), empty(), empty(), empty());
+        = new MenuSettings(true, true, empty(), empty(), empty(), empty());
 
     static final Codec<MenuSettings> CODEC = RecordCodecBuilder.create(instance -> {
       return instance
           .group(
               Codec.BOOL.fieldOf("align-header-names")
                   .forGetter(MenuSettings::alignItemNames),
+
+              Codec.BOOL.optionalFieldOf("use-owner-head", DEFAULT.usePlayerHeadWhenOwned)
+                  .forGetter(MenuSettings::usePlayerHeadWhenOwned),
 
               ExtraCodecs.COMPONENT.fieldOf("available-name")
                   .forGetter(MenuSettings::availableName),
