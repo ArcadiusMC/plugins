@@ -108,7 +108,7 @@ public class ValueModifierList {
               Codec.FLOAT.fieldOf("amount").forGetter(Modifier::amount),
 
               ExtraCodecs.enumCodec(ModifierOp.class)
-                  .optionalFieldOf("operation", ModifierOp.DISCOUNT_STACKING)
+                  .optionalFieldOf("operation", ModifierOp.SUB_MULTIPLIED)
                   .forGetter(Modifier::op),
 
               ExtraCodecs.INSTANT.optionalFieldOf("end_date")
@@ -148,7 +148,7 @@ public class ValueModifierList {
 
       float displayAmount = amount;
 
-      if (op == ModifierOp.DISCOUNT_BASE || op == ModifierOp.DISCOUNT_STACKING) {
+      if (op == ModifierOp.SUB_MULTIPLIED_BASE || op == ModifierOp.SUB_MULTIPLIED) {
         displayAmount = -displayAmount;
       }
 
@@ -157,17 +157,21 @@ public class ValueModifierList {
           .addValue("reason", reason)
           .create(viewer);
     }
+
+    public float applyModifer(float base, float value) {
+      return op.apply(base, value, amount);
+    }
   }
 
   public enum ModifierOp {
-    DISCOUNT_BASE {
+    SUB_MULTIPLIED_BASE {
       @Override
       float apply(float base, float value, float modifier) {
         return value - (base * modifier);
       }
     },
 
-    DISCOUNT_STACKING {
+    SUB_MULTIPLIED {
       @Override
       float apply(float base, float value, float modifier) {
         return value - (value * modifier);
@@ -178,6 +182,13 @@ public class ValueModifierList {
       @Override
       float apply(float base, float value, float modifier) {
         return value + base * modifier;
+      }
+    },
+
+    ADD_MULTIPLIED {
+      @Override
+      float apply(float base, float value, float modifier) {
+        return value + (value * modifier);
       }
     },
 

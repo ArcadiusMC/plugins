@@ -176,10 +176,11 @@ markets:
   modifiers:
     _style: "reset"
     noDisplay:              "Reason not set"
-    discount_base:          "&9${value.signed}% base:&r ${reason}"
-    discount_stacking:      "&9${value.signed}%:&r ${reason}"
+    sub_multiplied_base:    "&9${value.signed}% base:&r ${reason}"
+    sub_multiplied:         "&9${value.signed}%:&r ${reason}"
     add_multiplied_base:    "&9${value.signed}% base:&r ${reason}"
-    multiply:               "&9${value.signed}%:&r ${reason}"
+    add_multiplied:         "&9${value.signed}%:&r ${reason}"
+    multiply:               "&9${value}%:&r ${reason}"
 
   gui:
     _style: "reset"
