@@ -37,6 +37,14 @@ class CommandEmperorPowers: BaseCommand {
         )
       )
 
+      .then(literal("reload-config")
+        .executes { c ->
+          plugin.reloadConfig()
+          c.source.sendSuccess(Messages.renderText("emperor.reloaded", c.source))
+          return@executes SINGLE_SUCCESS
+        }
+      )
+
       .then(literal("clear-all-modifers")
         .executes { c ->
           for (market in Markets.getManager().markets) {

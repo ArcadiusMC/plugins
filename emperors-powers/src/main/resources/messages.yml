@@ -1,6 +1,7 @@
 _namespace: "emperor"
 
 clearedMods:        "&eCleared all existing emperor modifiers."
+reloaded:           "&eReloaded Emperor's Powers config."
 
 taxBracketInfo:
   fallsInto:        "This shop falls into ${amount} tax bracket, and they will be taxed!"
