@@ -2,6 +2,7 @@ package net.arcadiusmc.core;
 
 import static net.arcadiusmc.text.Messages.MESSAGE_LIST;
 
+import com.google.common.base.Strings;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.JsonOps;
@@ -17,11 +18,13 @@ import java.util.Set;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.text.loader.MessageRef;
 import net.arcadiusmc.utils.VanillaAccess;
+import net.arcadiusmc.utils.WgUtils;
 import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.JsonWrapper;
 import net.arcadiusmc.utils.io.PathUtil;
 import net.arcadiusmc.utils.io.PluginJar;
 import net.arcadiusmc.utils.io.SerializationHelper;
+import org.bukkit.Bukkit;
 import org.bukkit.HeightMap;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
@@ -32,8 +35,8 @@ import org.slf4j.Logger;
 
 public class Wild {
 
-  static final MessageRef DISABLED = MESSAGE_LIST.reference("cmd.wild.notAllowed");
-  static final MessageRef FAILED = MESSAGE_LIST.reference("cmd.wild.failed");
+  public static final MessageRef DISABLED = MESSAGE_LIST.reference("cmd.wild.notAllowed");
+  public static final MessageRef FAILED = MESSAGE_LIST.reference("cmd.wild.failed");
 
   private static final Logger LOGGER = Loggers.getLogger();
 
@@ -57,13 +60,29 @@ public class Wild {
       throw DISABLED.exception(player);
     }
 
-    Location found = findWild(player.getWorld());
+    World world = getFlagWorld(player.getLocation());
+    Location found = findWild(world);
 
     if (found == null) {
       throw FAILED.exception(player);
     }
 
     return found;
+  }
+
+  public World getFlagWorld(Location location) {
+    String wildWorldName = WgUtils.getFlagValue(location, CoreFlags.WILD_WORLD);
+
+    if (Strings.isNullOrEmpty(wildWorldName)) {
+      return location.getWorld();
+    }
+
+    World w = Bukkit.getWorld(wildWorldName);
+    if (w == null) {
+      return location.getWorld();
+    }
+
+    return w;
   }
 
   public Location findWild(World world) {

@@ -531,6 +531,7 @@ cmd.wild:
   _style: $err
   notAllowed:         "Cannot use /wild here"
   failed:             "Failed to find wilderness location"
+  many:               "&eTeleported &6${count}&e players to the wilderness."
 
 cmd.ignorelist:
   _style: "yellow"
