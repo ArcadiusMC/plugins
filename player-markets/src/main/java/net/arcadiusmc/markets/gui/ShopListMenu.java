@@ -109,6 +109,9 @@ public class ShopListMenu extends ListPage<Market> {
 
     if (!hasOwner) {
       builder.setProfile(UNOWNED_HEAD);
+    } else if (settings.usePlayerHeadWhenOwned()) {
+      User owner = Users.get(entry.getOwnerId());
+      builder.setProfile(owner.getProfile());
     } else {
       builder.setProfile(OWNED_HEAD);
     }
@@ -134,7 +137,7 @@ public class ShopListMenu extends ListPage<Market> {
     return builder.build();
   }
 
-  private void writeLore(TextWriter writer, Market market) {
+  protected void writeLore(TextWriter writer, Market market) {
     Component firstLine = Placeholders.render(settings.firstLine(), writer.viewer());
 
     if (!Text.isEmpty(firstLine)) {
