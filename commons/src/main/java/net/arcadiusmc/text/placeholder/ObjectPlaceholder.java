@@ -44,6 +44,8 @@ public interface ObjectPlaceholder<T> {
         yield value.floatValue() * 100.0f;
       }
 
+      case "currency", "money", "denarii" -> Messages.currency(value);
+
       case "signed" -> {
         double doubleValue = value.doubleValue();
 
