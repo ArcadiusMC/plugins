@@ -91,17 +91,12 @@ public class DialogueCodecs {
             strictOptional(ExtraCodecs.COMPONENT, "prompt-hover", empty())
                 .forGetter(DialogueNode::getPromptHover),
 
-            strictOptional(ExtraCodecs.listOrValue(ExtraCodecs.COMPONENT), "text", List.of())
+            DialogueContent.MAP_CODEC
                 .forGetter(DialogueNode::getContent),
 
-            strictOptional(LINK_CODEC.listOf(), "links", List.of())
-                .forGetter(DialogueNode::getLinks),
-
-            strictOptional(ExprListCodec.ACTIONS_STRING_LIST, "on-view")
-                .forGetter(o -> Optional.of(o.getExprList().getActions())),
-
-            strictOptional(ExprListCodec.CONDITION_STRING_LIST, "conditions")
-                .forGetter(o -> Optional.of(o.getExprList().getConditions())),
+            DialogueContent.CODEC.listOf()
+                .optionalFieldOf("potential-contents", List.of())
+                .forGetter(DialogueNode::getPotentialContents),
 
             strictOptional(DialogueOptions.CODEC, "settings")
                 .forGetter(node -> Optional.ofNullable(node.getOptions())),
@@ -112,31 +107,17 @@ public class DialogueCodecs {
             strictOptional(Codec.BOOL, "hide-if-unavailable", false)
                 .forGetter(DialogueNode::isHideIfUnavailable)
         )
-        .apply(instance, (prompt, hover, content, links, actions, conditions, options, invalidate, hide) -> {
+        .apply(instance, (prompt, hover, content, potentialContents, options, invalidate, hide) -> {
           DialogueNode node = new DialogueNode();
 
           node.setPrompt(prompt);
           node.setPromptHover(hover);
-          node.getLinks().addAll(links);
-          node.getContent().addAll(content);
+          node.setContent(content);
           node.setInvalidateInteraction(invalidate);
           node.setHideIfUnavailable(hide);
+          node.addPotentialContents(potentialContents);
 
           options.ifPresent(node::setOptions);
-
-          actions.ifPresent(actions1 -> {
-            for (Action action : actions1) {
-              node.getExprList().getActions().addLast(action);
-            }
-          });
-
-          conditions.ifPresent(conditions1 -> {
-            ConditionsList existing = node.getExprList().getConditions();
-            for (int i = 0; i < conditions1.size(); i++) {
-              existing.add(conditions1.get(i), i);
-              existing.setError(i, conditions1.getError(i));
-            }
-          });
 
           return node;
         });

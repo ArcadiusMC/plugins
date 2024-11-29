@@ -86,7 +86,7 @@ public class CommandDialogue extends BaseCommand {
       DialogueManager manager = plugin.getManager();
 
       for (Player player : players) {
-        Interaction interaction = node.getExprList().createInteraction(player);
+        Interaction interaction = node.getContent().getExprList().createInteraction(player);
         manager.genInteractionId(interaction);
 
         node.use(interaction);

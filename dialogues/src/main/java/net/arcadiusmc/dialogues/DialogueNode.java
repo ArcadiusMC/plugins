@@ -3,7 +3,9 @@ package net.arcadiusmc.dialogues;
 import static net.arcadiusmc.usables.Usables.NO_FAILURE;
 
 import com.google.common.base.Strings;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import lombok.Getter;
@@ -27,11 +29,9 @@ public class DialogueNode {
 
   private static final Logger LOGGER = Loggers.getLogger();
 
-  private final List<Component> content = new ArrayList<>();
+  private DialogueContent content;
 
-  private final List<Link> links = new ArrayList<>();
-
-  private final ExprList exprList = new ExprList();
+  private final List<DialogueContent> potentialContents = new ObjectArrayList<>();
 
   @Setter
   private DialogueOptions options = DialogueOptions.defaultOptions();
@@ -55,7 +55,7 @@ public class DialogueNode {
   long randomId;
 
   public DialogueNode() {
-    exprList.setSilent(true);
+
   }
 
   private ClickEvent getClickEvent(long interactionId) {
@@ -108,6 +108,8 @@ public class DialogueNode {
 
     ButtonType endType;
     Component hoverText;
+
+    var exprList = content.getExprList();
     int failedIndex = exprList.getFailureIndex(interaction);
 
     if (failedIndex != NO_FAILURE) {
@@ -137,97 +139,30 @@ public class DialogueNode {
   }
 
   public void use(Interaction interaction) {
-    int failureIndex = exprList.getFailureIndex(interaction);
-    if (failureIndex != NO_FAILURE) {
-      Player player = interaction.getPlayer().orElse(null);
-
-      if (player == null) {
-        return;
-      }
-
-      Component error = exprList.formatError(failureIndex, player, interaction);
-
-      if (!Text.isEmpty(error)) {
-        DialogueRenderer renderer = new DialogueRenderer(interaction, this);
-        Component rendered = render(renderer, List.of(error));
-        sendMessage(player, rendered);
-      }
-
-      return;
-    }
-
-    for (Condition condition : exprList.getConditions()) {
-      condition.afterTests(interaction);
-    }
-
-    exprList.runActions(interaction);
-    view(interaction);
-
-    if (invalidateInteraction) {
-      long id = interaction.getValue("__id", Long.class).orElse(0L);
-
-      if (id == 0)  {
-        return;
-      }
-
-      DialogueManager manager = DialoguesPlugin.plugin().getManager();
-      manager.getInteractionIdMap().remove(id);
-      manager.freeId(id);
-      interaction.getContext().remove("__id");
-    }
-  }
-
-  private void view(Interaction interaction) {
-    Optional<User> playerOpt = interaction.getUser();
-
-    if (content.isEmpty() || playerOpt.isEmpty()) {
-      return;
-    }
-
-    User user = playerOpt.get();
-
-    DialogueRenderer renderer = new DialogueRenderer(interaction, this);
-    Component text = render(renderer, content);
-
-    sendMessage(user, text);
-  }
-
-  void sendMessage(Audience audience, Component message) {
-    audience.sendMessage(message);
-
-    if (options.getTalkSound() != null) {
-      audience.playSound(options.getTalkSound());
-    }
-  }
-
-  private Component render(DialogueRenderer renderer, List<Component> content) {
-    TextJoiner joiner = TextJoiner.newJoiner();
-
-    DialogueOptions options = renderer.getOptions();
-    Component prefix = options.getPrefix();
-    Component suffix = options.getSuffix();
-
-    if (!Text.isEmpty(prefix)) {
-      joiner.add(renderer.render(prefix));
-    }
-
-    TextJoiner nlJoiner = TextJoiner.onNewLine();
-    nlJoiner.add(content.stream().map(renderer::render));
-
-    for (Link link : links) {
-      Component text = link.renderButton(renderer);
-      if (text == null) {
+    for (DialogueContent potentialContent : potentialContents) {
+      if (!potentialContent.test(interaction)) {
         continue;
       }
-      nlJoiner.add(text);
+
+      potentialContent.use(interaction);
+      return;
     }
 
-    joiner.add(nlJoiner.asComponent());
+    content.use(interaction);
+  }
 
-    if (!Text.isEmpty(suffix)) {
-      joiner.add(renderer.render(suffix));
+  public void setContent(DialogueContent content) {
+    this.content = content;
+
+    if (content != null) {
+      content.setNode(this);
     }
+  }
 
-    return joiner.asComponent();
+  public void addPotentialContents(Collection<DialogueContent> list) {
+    potentialContents.addAll(list);
+    for (DialogueContent dialogueContent : list) {
+      dialogueContent.setNode(this);
+    }
   }
 }

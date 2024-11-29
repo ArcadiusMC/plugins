@@ -167,6 +167,31 @@ name-of-a-node:
     - "Line 2"
     - "Line 3"
 
+  potential-contents:
+    - conditions:
+        - has_items: "1;stone"
+      on-view:
+        - show_text: "Hello, world!"
+      text:
+        - "asdasd"
+        - "asdasd"
+        - "asdasd"
+        - "asdasd"
+      links:
+        - node: 'example'
+
+    - conditions:
+        - has_items: "1;stone"
+      on-view:
+        - show_text: "Hello, world!"
+      text:
+        - "asdasd"
+        - "asdasd"
+        - "asdasd"
+        - "asdasd"
+      links:
+        - node: 'example'
+
 name-of-another-node:
   prompt: "I'm a button, click me"
 
