@@ -7,12 +7,18 @@ import com.mojang.serialization.Codec.ResultFunction;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.MapLike;
+import com.mojang.serialization.RecordBuilder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
@@ -38,6 +44,30 @@ public class ExistingObjectCodec<T> {
     Builder<T> builder = builder();
     consumer.accept(builder);
     return builder.build();
+  }
+
+  public MapCodec<T> mapCodec(Supplier<T> constructor) {
+    return new MapCodec<T>() {
+      @Override
+      public <T1> Stream<T1> keys(DynamicOps<T1> ops) {
+        List<String> stringList = new ArrayList<>();
+        for (CodecField<T, Object> field : fields) {
+          stringList.add(field.name);
+        }
+        return stringList.stream().map(ops::createString);
+      }
+
+      @Override
+      public <T1> DataResult<T> decode(DynamicOps<T1> ops, MapLike<T1> input) {
+        return mapDecode(ops, input, constructor.get());
+      }
+
+      @Override
+      public <T1> RecordBuilder<T1> encode(T input, DynamicOps<T1> ops, RecordBuilder<T1> prefix) {
+        mapEncode(ops, prefix, input);
+        return prefix;
+      }
+    };
   }
 
   public Codec<T> codec(Codec<T> codec) {
@@ -66,42 +96,44 @@ public class ExistingObjectCodec<T> {
   }
 
   public <S> DataResult<T> decode(DynamicOps<S> ops, S value, T object) {
-    return ops.getMap(value).flatMap(mapLike -> {
-      DataResult<T> result = Results.success(object);
+    return ops.getMap(value).flatMap(mapLike -> mapDecode(ops, mapLike, object));
+  }
 
-      for (CodecField<T, Object> field : fields) {
-        S foundValue = mapLike.get(field.name);
+  public <S> DataResult<T> mapDecode(DynamicOps<S> ops, MapLike<S> mapLike, T object) {
+    DataResult<T> result = Results.success(object);
 
-        if (foundValue == null) {
-          if (field.optional) {
-            if (field.defaultValue != null) {
-              field.setter.accept(object, field.defaultValue.get());
-            }
+    for (CodecField<T, Object> field : fields) {
+      S foundValue = mapLike.get(field.name);
 
-            continue;
+      if (foundValue == null) {
+        if (field.optional) {
+          if (field.defaultValue != null) {
+            field.setter.accept(object, field.defaultValue.get());
           }
 
-          result = result.apply2(
-              (t, o) -> t,
-              Results.error("Missing value for field '%s'", field.name)
-          );
           continue;
         }
 
-        DataResult<?> fieldResult = field.codec.parse(ops, foundValue)
-            .mapError(s -> "Failed to decode field " + field.name + ": " + s);
-
         result = result.apply2(
-            (t, o) -> {
-              field.setter.accept(t, o);
-              return t;
-            },
-            fieldResult
+            (t, o) -> t,
+            Results.error("Missing value for field '%s'", field.name)
         );
+        continue;
       }
 
-      return result;
-    });
+      DataResult<?> fieldResult = field.codec.parse(ops, foundValue)
+          .mapError(s -> "Failed to decode field " + field.name + ": " + s);
+
+      result = result.apply2(
+          (t, o) -> {
+            field.setter.accept(t, o);
+            return t;
+          },
+          fieldResult
+      );
+    }
+
+    return result;
   }
 
   public <S> DataResult<S> encode(DynamicOps<S> ops, T object) {
@@ -110,7 +142,11 @@ public class ExistingObjectCodec<T> {
 
   public <S> DataResult<S> encode(DynamicOps<S> ops, T object, S prefix) {
     var builder = ops.mapBuilder();
+    mapEncode(ops, builder, object);
+    return builder.build(prefix);
+  }
 
+  public <S> void mapEncode(DynamicOps<S> ops, RecordBuilder<S> builder, T object) {
     for (CodecField<T, Object> field : fields) {
       Object fieldValue = field.getter.apply(object);
 
@@ -126,8 +162,6 @@ public class ExistingObjectCodec<T> {
 
       builder.add(field.name, encodeResult);
     }
-
-    return builder.build(prefix);
   }
 
   public static class Builder<T> {
