@@ -183,6 +183,9 @@ public final class CoreCommands {
     currencies.get("balances").ifPresent(currency -> {
       new CurrencyCommand("balance", currency, "bal", "bank", "cash", "money", "ebal");
     });
+    currencies.get("gems").ifPresent(currency -> {
+      new CurrencyCommand("gems", currency, "gem");
+    });
   }
 
   static void createMapTopCommands() {
