@@ -100,7 +100,7 @@ public interface SMessages {
     ItemStack item = exampleItem.clone();
     item.setAmount(entry.amount());
 
-    return Messages.render("signshops.history.entry.", entry.wasBuy() ? "buy" : "sell")
+    return Messages.render("signshops.history.entry", entry.wasBuy() ? "buy" : "sell")
         .addValue("player", Users.get(entry.customer()))
         .addValue("item", item)
         .addValue("price", UnitFormat.currency(entry.earned()))
