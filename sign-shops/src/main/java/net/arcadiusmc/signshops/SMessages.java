@@ -120,7 +120,7 @@ public interface SMessages {
   static Component setLine(Audience viewer, int line, Component text) {
     return Messages.render("signshops.edit.setLine")
         .addValue("line", line)
-        .addValue("text", text)
+        .addValue("lineText", text)
         .create(viewer);
   }
 }

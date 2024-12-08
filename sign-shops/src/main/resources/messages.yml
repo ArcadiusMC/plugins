@@ -67,5 +67,5 @@ signshops:
     type:               "This is now a &e${type}&r shop."
     amount:             "Set shop item-amount to &e${item}&r."
     price:              "Set shop price to &e${price}&r."
-    setLine:            "Set line &e${line}&r to '&f${text}&r'"
+    setLine:            "Set line &e${line}&r to '&f${lineText}&r'"
 
