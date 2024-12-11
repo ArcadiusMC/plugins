@@ -108,6 +108,8 @@ public abstract class InteractableCommand<H extends Usable> extends UsableComman
       ListAccess<Condition> listAccess
   ) {
     return literal("error-overrides")
+        .requires(hasAdminPermission())
+
         .then(literal("list")
             .executes(c -> {
               H holder = provider.get(c);
