@@ -7,6 +7,7 @@ import net.arcadiusmc.packet.PacketHandler;
 import net.arcadiusmc.utils.math.Vectors;
 import net.arcadiusmc.utils.math.WorldVec3i;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
@@ -177,19 +178,25 @@ class SignPacketListener {
 
   @PacketHandler(ignoreCancelled = true)
   public void onBlockEntityData(ClientboundBlockEntityDataPacket packet, PacketCall call) {
-    if (packet.getType() != BlockEntityType.SIGN
-        && packet.getType() != BlockEntityType.HANGING_SIGN
-    ) {
+    BlockEntityType<?> type = packet.getType();
+    if (type != BlockEntityType.SIGN && type != BlockEntityType.HANGING_SIGN) {
       return;
     }
 
-    var entity = renderSign(packet.getPos(), packet.getType(), packet.getTag(), call);
+    var entity = renderSign(packet.getPos(), type, packet.getTag(), call);
 
     if (entity == null) {
       return;
     }
 
-    ClientboundBlockEntityDataPacket replacement = ClientboundBlockEntityDataPacket.create(entity);
+    RegistryAccess access = call.getPacketListener().player.registryAccess();
+
+    ClientboundBlockEntityDataPacket replacement = new ClientboundBlockEntityDataPacket(
+        entity.getBlockPos(),
+        entity.getType(),
+        entity.sanitizeSentNbt(entity.getUpdateTag(access))
+    );
+
     call.setReplacementPacket(replacement);
   }
 
