@@ -195,6 +195,7 @@ public class WaypointVisit implements Runnable {
         .addPredicate(VisitPredicate.NEAREST_VALID)
         .addPredicate(VisitPredicate.NOT_AT_SAME)
         .addPredicate(VisitPredicate.IS_DISCOVERED)
+        .addPredicate(VisitPredicate.NOT_DISABLED)
 
         // This order matters, vehicles must be handled before
         // other passengers

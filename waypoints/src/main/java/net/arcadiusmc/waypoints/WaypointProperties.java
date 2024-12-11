@@ -197,7 +197,11 @@ public class WaypointProperties {
       });
 
   public static final WaypointProperty<Boolean> OVERRIDE_HULK_CHECK
-      = new WaypointProperty<>("override_hulk_check", BoolArgumentType.bool(), BOOL, false)
+      = new WaypointProperty<>("override_hulk_check", bool(), BOOL, false)
+      .setUpdatesMarker(false);
+
+  public static final WaypointProperty<Boolean> DISABLED
+      = new WaypointProperty<>("disabled", bool(), BOOL, false)
       .setUpdatesMarker(false);
 
   private static Codec<TextColor> createColorCodec() {

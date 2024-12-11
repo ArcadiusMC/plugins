@@ -195,4 +195,16 @@ public interface WExceptions {
         .addValue("player", user)
         .exception(viewer);
   }
+
+  static CommandSyntaxException nearestWaypointDisabled(Waypoint near) {
+    return Messages.render("waypoints.errors.nearestDisabled")
+        .addValue("waypoint", near.nonNullDisplayName())
+        .exception();
+  }
+
+  static CommandSyntaxException targetWaypointDisabled(Waypoint destination) {
+    return Messages.render("waypoints.errors.destinationDisabled")
+        .addValue("waypoint", destination.nonNullDisplayName())
+        .exception();
+  }
 }

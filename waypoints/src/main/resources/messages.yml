@@ -28,6 +28,8 @@ waypoints:
     notDiscovered.named:    "You haven't discovered &f${waypoint}&r yet!"
     notDiscovered.other:    "${player} has not discovered that waypoint."
     alreadyDiscovered:      "${player} has already discovered ${waypoint}!"
+    nearestDisabled:        "Current waypoint is disabled."
+    destinationDisabled:    "That waypoint is disabled."
 
   discovered:
     list:                   "&7${waypoint} discovered players: &f${list}."

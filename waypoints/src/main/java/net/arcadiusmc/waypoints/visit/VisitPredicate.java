@@ -76,6 +76,23 @@ public interface VisitPredicate {
   VisitPredicate DESTINATION_VALID = waypointIsValid(true);
   VisitPredicate NEAREST_VALID = waypointIsValid(false);
 
+  VisitPredicate NOT_DISABLED = visit -> {
+    // Waypoint admin permission ignores disabled state
+    if (visit.getUser().hasPermission(WPermissions.WAYPOINTS_ADMIN)) {
+      return;
+    }
+
+    Waypoint near = visit.getNearestWaypoint();
+    if (visit.isNearWaypoint() && near.get(WaypointProperties.DISABLED)) {
+      throw WExceptions.nearestWaypointDisabled(near);
+    }
+
+    Waypoint destination = visit.getDestination();
+    if (destination.get(WaypointProperties.DISABLED)) {
+      throw WExceptions.targetWaypointDisabled(destination);
+    }
+  };
+
   /**
    * Tests if the visit is allowed to continue
    * <p></p>
