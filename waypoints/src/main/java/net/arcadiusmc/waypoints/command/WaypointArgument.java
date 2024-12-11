@@ -1,11 +1,14 @@
 package net.arcadiusmc.waypoints.command;
 
+import com.google.common.base.Strings;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import net.arcadiusmc.command.ArcSuggestions;
 import net.arcadiusmc.command.arguments.ParseResult;
@@ -14,12 +17,17 @@ import net.arcadiusmc.user.Users;
 import net.arcadiusmc.waypoints.WExceptions;
 import net.arcadiusmc.waypoints.WPermissions;
 import net.arcadiusmc.waypoints.Waypoint;
+import net.arcadiusmc.waypoints.WaypointExtension;
 import net.arcadiusmc.waypoints.WaypointManager;
+import net.arcadiusmc.waypoints.WaypointProperties;
+import net.arcadiusmc.waypoints.WaypointProperty;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Completions;
 import net.forthecrown.grenadier.Readers;
 
 public class WaypointArgument implements ArgumentType<ParseResult<Waypoint>> {
+
+  private static final int ALIAS_SUGGESTION_INPUT_REQ = 3;
 
   public static final String FLAG_CURRENT = "-current";
   public static final String FLAG_NEAREST = "-nearest";
@@ -84,9 +92,26 @@ public class WaypointArgument implements ArgumentType<ParseResult<Waypoint>> {
 
     WaypointManager manager = WaypointManager.getInstance();
 
-    var extensions = manager.getExtensions();
+    Collection<WaypointExtension> extensions = manager.getExtensions();
     extensions.forEach(extension -> extension.addSuggestions(builder, source));
 
-    return Completions.suggest(builder, manager.getNames());
+    // Suggest names and only include aliases if the input is longer
+    // than 3 characters
+    String remaining = builder.getRemainingLowerCase();
+
+    for (Waypoint waypoint : manager.getWaypoints()) {
+      String name = waypoint.get(WaypointProperties.NAME);
+
+      if (Strings.isNullOrEmpty(name)) {
+        continue;
+      }
+      if (!Completions.matches(remaining, name)) {
+        continue;
+      }
+
+      builder.suggest(name);
+    }
+
+    return builder.buildFuture();
   }
 }
