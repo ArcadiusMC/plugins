@@ -20,6 +20,7 @@ public final class CoreListeners {
     register(new MobHealthBar(plugin));
     register(new PlayerLoggingListener(plugin));
     register(new PlayerTeleportListener());
+    register(new ProjectileLaunchListener());
     register(new ServerListener());
     register(new ServerPingListener());
     register(new SignOwnershipListener());
