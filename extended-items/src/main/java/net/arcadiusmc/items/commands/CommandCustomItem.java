@@ -1,5 +1,7 @@
 package net.arcadiusmc.items.commands;
 
+import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
+
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.Optional;
@@ -8,6 +10,7 @@ import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.arguments.Arguments;
 import net.arcadiusmc.command.arguments.RegistryArguments;
 import net.arcadiusmc.items.ExtendedItem;
+import net.arcadiusmc.items.ItemPlugin;
 import net.arcadiusmc.items.ItemType;
 import net.arcadiusmc.items.ItemTypes;
 import net.arcadiusmc.items.Level;
@@ -18,6 +21,8 @@ import net.arcadiusmc.user.User;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.GrenadierCommand;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -39,6 +44,18 @@ public class CommandCustomItem extends BaseCommand {
   @Override
   public void createCommand(GrenadierCommand command) {
     command
+        .then(literal("reload-config")
+            .executes(c -> {
+              ItemPlugin pl = ItemPlugin.getPlugin(ItemPlugin.class);
+              pl.reloadConfig();
+
+              c.getSource().sendSuccess(
+                  Component.text("Reloaded custom items config", NamedTextColor.GRAY)
+              );
+              return SINGLE_SUCCESS;
+            })
+        )
+
         .then(literal("upgrade")
             .executes(c -> {
               upgrade(c, false);
