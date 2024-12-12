@@ -619,3 +619,18 @@ cmd.tabsuffix:
 
   set:                "Set tab-suffix to &f${value}&r."
   cleared:            "Cleared tab-suffix."
+
+cmd.pworldborder:
+  _style: $normal
+
+  errors:
+    _style: $err
+    notCustom:        "${player} doesn't have a custom world border."
+
+  info:               "&6${player}&r world border: center=&e${center.bx}x ${center.bz}z&r, diameter=&e${diameter}&r."
+  reset.multi:        "Reset &e${players} players'&r world border."
+  reset.single:       "Reset &e${player}&r's world border."
+  center.multi:       "Set &e${players}&r players' world border center to &6${center.bx}x ${center.bz}z&r."
+  center.single:      "Set &e${player}&r's world border center to &6${center.bx}x ${center.bz}z&r."
+  diameter.multi:     "Set &e${players}&r players' world border diameter to &6${diameter}&r."
+  diameter.single:    "Set &e${player}&r's world border diameter to &6${diameter}&r."
