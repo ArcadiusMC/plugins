@@ -12,6 +12,7 @@ import net.arcadiusmc.core.commands.admin.CommandBroadcast;
 import net.arcadiusmc.core.commands.admin.CommandCoinPile;
 import net.arcadiusmc.core.commands.admin.CommandCooldown;
 import net.arcadiusmc.core.commands.admin.CommandArcadiusCore;
+import net.arcadiusmc.core.commands.admin.CommandCreateSummon;
 import net.arcadiusmc.core.commands.admin.CommandDataGet;
 import net.arcadiusmc.core.commands.admin.CommandGameMode;
 import net.arcadiusmc.core.commands.admin.CommandGetOffset;
@@ -102,6 +103,7 @@ public final class CoreCommands {
     new CommandUserFlags(plugin);
     new CommandCoinPile();
     new CommandDataGet();
+    new CommandCreateSummon();
 
     if (Loggers.getLogger().isDebugEnabled()) {
       new CommandHalt();
