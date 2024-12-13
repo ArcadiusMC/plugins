@@ -19,6 +19,7 @@ import net.arcadiusmc.menu.Menus;
 import net.arcadiusmc.menu.Slot;
 import net.arcadiusmc.merchants.commands.CommandEnchantMerchant;
 import net.arcadiusmc.text.Messages;
+import net.arcadiusmc.utils.Advancements;
 import net.arcadiusmc.utils.inventory.DefaultItemBuilder;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.arcadiusmc.utils.io.ExtraCodecs;
@@ -185,6 +186,11 @@ public class EnchantsMerchant extends Merchant {
           ItemStacks.giveOrDrop(user.getInventory(), item);
           click.shouldClose(true);
           alreadyPurchased.add(user.getUniqueId());
+
+          Advancements.grant(
+              user.getPlayer(),
+              NamespacedKey.fromString("arcadiusmc:purchase_from_edward")
+          );
 
           user.sendMessage(
               Messages.render("merchants.enchants.bought")
