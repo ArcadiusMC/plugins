@@ -20,6 +20,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.Nullable;
 
 class ComponentPlaceholder extends OptionedPlaceholder {
@@ -43,6 +44,8 @@ class ComponentPlaceholder extends OptionedPlaceholder {
       .build();
 
   private static final ArgumentOption<String> HOVER = quotedString("hover").build();
+
+  private static final ArgumentOption<String> FONT = quotedString("font").build();
 
   private static final ArgumentOption<Boolean> ITALIC = boolOpt("italic");
   private static final ArgumentOption<Boolean> BOLD = boolOpt("bold");
@@ -69,6 +72,7 @@ class ComponentPlaceholder extends OptionedPlaceholder {
       .oneOf(COPY_TEXT, OPEN_URL, RUN_COMMAND, SUGGEST_CMD, KEYBIND)
 
       .addOptional(HOVER)
+      .addOptional(FONT)
 
       .addOptional(COLOR)
       .addOptional(ITALIC)
@@ -118,6 +122,10 @@ class ComponentPlaceholder extends OptionedPlaceholder {
     var builder = Style.style();
 
     options.getValueOptional(COLOR).ifPresent(builder::color);
+
+    options.getValueOptional(FONT)
+        .map(NamespacedKey::fromString)
+        .ifPresent(builder::font);
 
     options.getValueOptional(ITALIC).ifPresent(state -> {
       builder.decoration(TextDecoration.ITALIC, state);
