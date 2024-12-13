@@ -1077,7 +1077,7 @@ public class Waypoint {
 
     return Text.format("[{0}]", color, name)
         .hoverEvent(writer.asComponent())
-        .clickEvent(ClickEvent.suggestCommand("/visit " + effectiveName));
+        .clickEvent(ClickEvent.suggestCommand("/visit " + name));
   }
 
   private void writeDiscovered(TextWriter writer) {
