@@ -9,6 +9,7 @@ public final class CoreListeners {
 
   public static void registerAll(CorePlugin plugin) {
     register(new AdminBroadcastListener());
+    register(new AdvancementListener(plugin));
     register(new AltLoginListener(plugin));
     register(new ChatHandleListener());
     register(new CoinpileListener());

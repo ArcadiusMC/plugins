@@ -1,0 +1,17 @@
+# -----------------------------------------------------------------------------
+# Custom Advancement Rewards
+# -----------------------------------------------------------------------------
+# This file makes it so certain commands are executed when certain advancements
+# are completed.
+#
+# Example below:
+# -----------------------------------------------------------------------------
+
+#
+# When an advancement with this ID is given to a player, the following
+# commands are executed
+#
+minecraft:example:
+  - "command1"
+  - "command2"
+  - "command3"

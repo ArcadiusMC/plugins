@@ -47,6 +47,7 @@ public class CorePlugin extends JavaPlugin {
   private Wild wild;
   private EmojiLoader emojiLoader;
   private TabMenu tabMenu;
+  private CustomAdvancementRewards advancementRewards;
 
   public static CorePlugin plugin() {
     return getPlugin(CorePlugin.class);
@@ -88,6 +89,7 @@ public class CorePlugin extends JavaPlugin {
     wild = new Wild();
     emojiLoader = new EmojiLoader();
     tabMenu = new TabMenu(this);
+    advancementRewards = new CustomAdvancementRewards(this);
 
     cooldowns = new CooldownsImpl(getDataPath());
     invStorage = new InventoryStorageImpl(getDataPath());
@@ -178,5 +180,6 @@ public class CorePlugin extends JavaPlugin {
     wild.load();
     emojiLoader.load();
     tabMenu.load();
+    advancementRewards.load();
   }
 }
