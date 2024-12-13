@@ -4,7 +4,6 @@ import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import java.time.Duration;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -21,6 +20,7 @@ import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
+import net.arcadiusmc.utils.Advancements;
 import net.arcadiusmc.utils.PluginUtil;
 import net.arcadiusmc.utils.Tasks;
 import net.arcadiusmc.utils.Time;
@@ -39,8 +39,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
-import org.bukkit.advancement.Advancement;
-import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.type.WallSign;
@@ -238,10 +236,7 @@ public class BankRun {
     }
 
     if (!removeGains) {
-      NamespacedKey advancementKey = vault.getAdvancementKey();
-      if (advancementKey != null) {
-        giveAdvancement(advancementKey);
-      }
+      grantAdvancement();
 
       player.sendMessage(
           Messages.render("bankruns.completed")
@@ -264,22 +259,14 @@ public class BankRun {
     compareAndRemoveItems();
   }
 
-  private void giveAdvancement(NamespacedKey key) {
-    Advancement adv = Bukkit.getAdvancement(key);
-    if (adv == null) {
-      LOGGER.warn("Unknown advancement '{}' cannot give", key);
+  private void grantAdvancement() {
+    NamespacedKey advancementKey = vault.getAdvancementKey();
+    if (advancementKey == null) {
       return;
     }
 
-    Collection<String> criteria = adv.getCriteria();
-    AdvancementProgress progress = player.getAdvancementProgress(adv);
-
-    if (progress.isDone()) {
-      return;
-    }
-
-    for (String criterion : criteria) {
-      progress.awardCriteria(criterion);
+    if (!Advancements.grant(player, advancementKey)) {
+      LOGGER.warn("Couldn't find advancement with ID {}", advancementKey);
     }
   }
 
