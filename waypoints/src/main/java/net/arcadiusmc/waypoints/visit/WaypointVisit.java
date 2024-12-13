@@ -17,6 +17,7 @@ import lombok.experimental.Accessors;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.user.User;
+import net.arcadiusmc.utils.Advancements;
 import net.arcadiusmc.utils.Locations;
 import net.arcadiusmc.utils.Tasks;
 import net.arcadiusmc.waypoints.Waypoint;
@@ -30,6 +31,7 @@ import net.arcadiusmc.waypoints.type.WaypointTypes;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -272,6 +274,12 @@ public class WaypointVisit implements Runnable {
 
     // Run start handlers
     runHandlers(h -> h.onStart(this));
+
+    // Grant advancement, if it exists
+    Advancements.grant(
+        user.getPlayer(),
+        NamespacedKey.fromString("arcadiusmc:use_waypoint")
+    );
 
     Player player = user.getPlayer();
     Entity teleportedEntity = findRootEntity(player);
