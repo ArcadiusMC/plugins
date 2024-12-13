@@ -41,6 +41,13 @@ world-name: void
 ending-duration: 5s
 
 #
+# Advancement given to players after they complete a run in this vault
+#
+# Default: "" (No advancement)
+#
+advancement: "arcadiusmc:example"
+
+#
 # The bounding box of the vault room
 #
 # Used to kill all dropped items and coin piles inside.

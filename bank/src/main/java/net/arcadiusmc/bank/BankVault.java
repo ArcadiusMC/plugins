@@ -18,6 +18,7 @@ import net.arcadiusmc.utils.io.ExtraCodecs;
 import net.arcadiusmc.utils.io.JomlCodecs;
 import net.arcadiusmc.utils.math.Bounds3i;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
@@ -100,6 +101,10 @@ public class BankVault {
         builder.optional("inner-vault", InnerVault.CODEC)
             .getter(BankVault::getInnerVault)
             .setter(BankVault::setInnerVault);
+
+        builder.optional("advancement", ExtraCodecs.NAMESPACED_KEY)
+            .getter(BankVault::getAdvancementKey)
+            .setter(BankVault::setAdvancementKey);
       })
       .codec(Codec.unit(BankVault::new));
 
@@ -119,6 +124,8 @@ public class BankVault {
   private final FullPosition enterPosition = new FullPosition();
   private final FullPosition menuEnterPosition = new FullPosition();
   private final FullPosition menuExitPosition = new FullPosition();
+
+  private NamespacedKey advancementKey;
 
   private String worldName;
   private Bounds3i vaultRoom = Bounds3i.EMPTY;

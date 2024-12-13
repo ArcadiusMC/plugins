@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -36,7 +37,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
+import org.bukkit.advancement.Advancement;
+import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.type.WallSign;
@@ -234,6 +238,11 @@ public class BankRun {
     }
 
     if (!removeGains) {
+      NamespacedKey advancementKey = vault.getAdvancementKey();
+      if (advancementKey != null) {
+        giveAdvancement(advancementKey);
+      }
+
       player.sendMessage(
           Messages.render("bankruns.completed")
               .addValue("coinEarnings", Messages.currency(pickedCoins))
@@ -253,6 +262,25 @@ public class BankRun {
     }
 
     compareAndRemoveItems();
+  }
+
+  private void giveAdvancement(NamespacedKey key) {
+    Advancement adv = Bukkit.getAdvancement(key);
+    if (adv == null) {
+      LOGGER.warn("Unknown advancement '{}' cannot give", key);
+      return;
+    }
+
+    Collection<String> criteria = adv.getCriteria();
+    AdvancementProgress progress = player.getAdvancementProgress(adv);
+
+    if (progress.isDone()) {
+      return;
+    }
+
+    for (String criterion : criteria) {
+      progress.awardCriteria(criterion);
+    }
   }
 
   private void spawnPage() {
