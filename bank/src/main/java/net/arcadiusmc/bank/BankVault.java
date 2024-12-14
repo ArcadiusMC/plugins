@@ -4,23 +4,17 @@ import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import lombok.Getter;
 import lombok.Setter;
-import net.arcadiusmc.ArcadiusServer;
-import net.arcadiusmc.ArcadiusServer.CoinPileSize;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.utils.io.ExistingObjectCodec;
 import net.arcadiusmc.utils.io.ExtraCodecs;
-import net.arcadiusmc.utils.io.JomlCodecs;
 import net.arcadiusmc.utils.math.Bounds3i;
-import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
-import org.joml.Vector3f;
 import org.slf4j.Logger;
 
 @Getter @Setter
@@ -40,27 +34,11 @@ public class BankVault {
 
         builder.optional("chests", ChestGroup.CODEC.listOf())
             .getter(BankVault::getChestGroups)
-            .setter((bankVault, chestGroups1) -> bankVault.chestGroups.addAll(chestGroups1));
+            .setter((vault, groups) -> vault.chestGroups.addAll(groups));
 
-        builder.optional("coins", JomlCodecs.VEC3F.listOf())
-            .getter(BankVault::getCoinPositions)
-            .setter((bankVault, vector3fs) -> bankVault.coinPositions.addAll(vector3fs));
-
-        builder.optional("min-coin-value", Codec.INT)
-            .getter(BankVault::getMinCoinValue)
-            .setter(BankVault::setMinCoinValue);
-
-        builder.optional("max-coin-value", Codec.INT)
-            .getter(BankVault::getMaxCoinValue)
-            .setter(BankVault::setMaxCoinValue);
-
-        builder.optional("max-spawned-coin-value", Codec.INT)
-            .getter(BankVault::getMaxSpawnedCoinValue)
-            .setter(BankVault::setMaxSpawnedCoinValue);
-
-        builder.optional("max-spawned-coins", Codec.INT)
-            .getter(BankVault::getMaxSpawnedCoins)
-            .setter(BankVault::setMaxSpawnedCoins);
+        builder.optional("coins", CoinGroup.CODEC.listOf())
+            .getter(BankVault::getCoinGroups)
+            .setter((vault, groups) -> vault.coinGroups.addAll(groups));
 
         builder.optional("exit-position", FullPosition.CODEC)
             .getter(BankVault::getExitPosition)
@@ -112,13 +90,7 @@ public class BankVault {
   private final Map<String, String> variationNames = new Object2ObjectOpenHashMap<>();
 
   private final List<ChestGroup> chestGroups = new ArrayList<>();
-
-  private final List<Vector3f> coinPositions = new ArrayList<>();
-  private int minCoinValue = 10;
-  private int maxCoinValue = 1000;
-
-  private int maxSpawnedCoinValue = Integer.MAX_VALUE;
-  private int maxSpawnedCoins = Integer.MAX_VALUE;
+  private final List<CoinGroup> coinGroups = new ArrayList<>();
 
   private final FullPosition exitPosition = new FullPosition();
   private final FullPosition enterPosition = new FullPosition();
@@ -148,43 +120,8 @@ public class BankVault {
   }
 
   private void spawnCoins(World world, Random random) {
-    int coinMin = Math.min(minCoinValue, maxCoinValue);
-    int coinMax = Math.max(minCoinValue, maxCoinValue);
-
-    int coinValueDif = coinMax - coinMin;
-    int valueThird = coinValueDif / 3;
-
-    Location location = new Location(world, 0, 0, 0);
-    ArcadiusServer server = ArcadiusServer.server();
-
-    int spawnedCount = 0;
-    int spawnedValue = 0;
-
-    Collections.shuffle(coinPositions, random);
-
-    for (Vector3f coinPosition : coinPositions) {
-      location.set(coinPosition.x, coinPosition.y, coinPosition.z);
-
-      int value = random.nextInt(coinMin, coinMax + 1);
-      CoinPileSize size;
-
-      if (value <= valueThird) {
-        size = CoinPileSize.SMALL;
-      } else if (value <= (valueThird * 2)) {
-        size = CoinPileSize.MEDIUM;
-      } else {
-        size = CoinPileSize.LARGE;
-      }
-
-      int rounded = roundCoinValue(value);
-      spawnedValue += rounded;
-      spawnedCount++;
-
-      server.spawnCoinPile(location, rounded, size);
-
-      if (spawnedValue > maxSpawnedCoinValue || spawnedCount > maxSpawnedCoins) {
-        break;
-      }
+    for (CoinGroup group : coinGroups) {
+      group.spawn(world, random);
     }
   }
 

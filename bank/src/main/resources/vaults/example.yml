@@ -99,49 +99,38 @@ chests:
       - {x: 0, y: 0, z: 0, facing: north}
 
 #
-# List of coin spawn positions.
-#
-# This list is shuffled everytime the bank vault is entered.
+# List of coin groups
 #
 # Default: [] (No coins spawns)
 #
 coins:
-  - { x: 0, y: 0, z: 0 }
-  - { x: 0, y: 0, z: 0 }
-  - { x: 0, y: 0, z: 0 }
-  - { x: 0, y: 0, z: 0 }
-  - { x: 0, y: 0, z: 0 }
-  - { x: 0, y: 0, z: 0 }
-  - { x: 0, y: 0, z: 0 }
-  - { x: 0, y: 0, z: 0 }
+  - min-value: 10
+    # Minimum value that coins can spawn with in this group
+    # (Required value)
 
-#
-# Minimum value of the coins the vault can spawn
-#
-# Default: 10
-#
-min-coin-value: 10
+    max-value: 10
+    # Maximum value that coins can spawn with in this group
+    # (Required value)
 
-#
-# Maximum value of the coins the vault can spawn
-#
-# Default: 1000
-#
-max-coin-value: 1000
+    max-spawned-value: 10
+    # Maximum total value of coins that can spawn
+    # (Default: unlimited)
 
-#
-# Maximum amount of coins that can be spawned
-#
-# Default: No limit
-#
-max-spawned-coins: -1
+    max-spawned-coins: 10
+    # Maximum number of coins that can spawn
+    # (Default: unlimited)
 
-#
-# Maximum total monetary value of coins that can be spawned
-#
-# Default: No limit
-#
-max-spawned-coin-value: -1
+    positions:
+    # Array of coin spawn positions (x, y and z coordinates)
+    # (Required value)
+      - { x: 0, y: 0, z: 0 }
+      - { x: 0, y: 0, z: 0 }
+      - { x: 0, y: 0, z: 0 }
+      - { x: 0, y: 0, z: 0 }
+      - { x: 0, y: 0, z: 0 }
+      - { x: 0, y: 0, z: 0 }
+      - { x: 0, y: 0, z: 0 }
+      - { x: 0, y: 0, z: 0 }
 
 #
 # The position the player will be teleported to when they exit the vault

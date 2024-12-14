@@ -91,14 +91,16 @@ public class VaultDebug implements Runnable {
     Vector3d up = new Vector3d();
     Vector3d down = new Vector3d();
 
-    for (Vector3f coinPosition : vault.getCoinPositions()) {
-      up.set(coinPosition);
-      down.set(coinPosition);
+    for (CoinGroup coinGroup : vault.getCoinGroups()) {
+      for (Vector3f coinPosition : coinGroup.getPositions()) {
+        up.set(coinPosition);
+        down.set(coinPosition);
 
-      up.y += half;
-      down.y -= half;
+        up.y += half;
+        down.y -= half;
 
-      line(player, up, down, Color.GREEN);
+        line(player, up, down, Color.GREEN);
+      }
     }
   }
 
