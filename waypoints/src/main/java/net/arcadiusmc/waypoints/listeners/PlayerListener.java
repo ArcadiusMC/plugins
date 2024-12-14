@@ -9,6 +9,7 @@ import java.util.UUID;
 import net.arcadiusmc.Loggers;
 import net.arcadiusmc.command.Exceptions;
 import net.arcadiusmc.text.Text;
+import net.arcadiusmc.utils.Advancements;
 import net.arcadiusmc.utils.Tasks;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.arcadiusmc.waypoints.Waypoint;
@@ -100,6 +101,10 @@ public class PlayerListener implements Listener {
     } catch (CommandSyntaxException exc) {
       Exceptions.handleSyntaxException(player, exc);
       return;
+    }
+
+    if (copy == null) {
+      Advancements.grant(player, "arcadiusmc:create_waypoint");
     }
 
     copyingWaypoint.remove(player.getUniqueId());

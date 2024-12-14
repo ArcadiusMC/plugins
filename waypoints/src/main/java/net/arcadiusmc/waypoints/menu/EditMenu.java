@@ -14,6 +14,7 @@ import net.arcadiusmc.menu.page.MenuPage;
 import net.arcadiusmc.text.Text;
 import net.arcadiusmc.text.placeholder.Placeholders;
 import net.arcadiusmc.user.User;
+import net.arcadiusmc.utils.Advancements;
 import net.arcadiusmc.utils.context.Context;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.arcadiusmc.waypoints.Waypoint;
@@ -134,6 +135,8 @@ public class EditMenu extends MenuPage {
 
           String plainName = Text.plain(meta.displayName());
           validateName(plainName);
+
+          Advancements.grant(user.getPlayer(), "arcadiusmc:name_waypoint");
 
           waypoint.set(WaypointProperties.NAME, plainName);
           click.shouldReloadMenu(true);
