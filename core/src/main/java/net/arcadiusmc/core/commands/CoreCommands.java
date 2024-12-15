@@ -24,6 +24,7 @@ import net.arcadiusmc.core.commands.admin.CommandMemory;
 import net.arcadiusmc.core.commands.admin.CommandPlayerTime;
 import net.arcadiusmc.core.commands.admin.CommandPlayerWorldBorder;
 import net.arcadiusmc.core.commands.admin.CommandSign;
+import net.arcadiusmc.core.commands.admin.CommandSilently;
 import net.arcadiusmc.core.commands.admin.CommandSkull;
 import net.arcadiusmc.core.commands.admin.CommandSmite;
 import net.arcadiusmc.core.commands.admin.CommandSpecificGameMode;
@@ -106,6 +107,7 @@ public final class CoreCommands {
     new CommandDataGet();
     new CommandCreateSummon();
     new CommandPlayerWorldBorder();
+    new CommandSilently();
 
     if (Loggers.getLogger().isDebugEnabled()) {
       new CommandHalt();
