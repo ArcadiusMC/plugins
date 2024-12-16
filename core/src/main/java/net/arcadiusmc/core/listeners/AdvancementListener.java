@@ -1,13 +1,12 @@
 package net.arcadiusmc.core.listeners;
 
 import java.util.List;
-import java.util.Map;
 import net.arcadiusmc.command.Commands;
 import net.arcadiusmc.core.CorePlugin;
+import net.arcadiusmc.core.CustomAdvancementRewards;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Grenadier;
 import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -24,15 +23,10 @@ public class AdvancementListener implements Listener {
   @EventHandler(ignoreCancelled = true)
   public void onPlayerAdvancementDone(PlayerAdvancementDoneEvent event) {
     Player player = event.getPlayer();
-    NamespacedKey key = event.getAdvancement().getKey();
 
-    Map<NamespacedKey, List<String>> map = plugin.getAdvancementRewards().getRewardMap();
+    CustomAdvancementRewards rewards = plugin.getAdvancementRewards();
+    List<String> commands = rewards.getCommands(event.getAdvancement());
 
-    if (map == null || map.isEmpty()) {
-      return;
-    }
-
-    List<String> commands = map.get(key);
     if (commands == null || commands.isEmpty()) {
       return;
     }
