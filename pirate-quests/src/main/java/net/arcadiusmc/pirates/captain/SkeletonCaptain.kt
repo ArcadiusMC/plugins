@@ -181,7 +181,7 @@ fun trySpawnSkeletonCaptain(boundingBox: WorldBounds3i) {
     expanded.centerY(),
     expanded.centerZ()
   )
-  currentFight.worldBorder!!.size = max(expanded.sizeX(), expanded.sizeZ()).toDouble()
+  currentFight.worldBorder!!.size = max(expanded.sizeX(), expanded.sizeZ()).toDouble() + 20.0
 
   val bar = currentFight.bossbar
   bar.progress = 1.0
