@@ -102,14 +102,14 @@ public class BankPlugin extends JavaPlugin {
       JsonObject object = SerializationHelper.readAsJson(path);
       String key = PathUtil.getFileKey(dir, path);
 
+      if (key.equals("example")) {
+        return;
+      }
+
       BankVault.CODEC.parse(JsonOps.INSTANCE, object)
           .mapError(s -> "Failed to load vault " + key + ": " + s)
           .resultOrPartial(getSLF4JLogger()::error)
           .ifPresent(bankVault -> {
-            if (key.equals("example")) {
-              return;
-            }
-
             vaultMap.put(key, bankVault);
           });
     });
