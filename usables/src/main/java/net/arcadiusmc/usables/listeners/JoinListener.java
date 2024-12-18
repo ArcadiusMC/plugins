@@ -2,6 +2,7 @@ package net.arcadiusmc.usables.listeners;
 
 import com.google.common.base.Strings;
 import net.arcadiusmc.Loggers;
+import net.arcadiusmc.usables.Interaction;
 import net.arcadiusmc.usables.UsablesPlugin;
 import net.arcadiusmc.user.event.UserJoinEvent;
 import org.bukkit.event.EventHandler;
@@ -34,8 +35,10 @@ class JoinListener implements Listener {
 
     if (kit == null) {
       LOGGER.warn("No kit named '{}' found, cannot give firstJoinKit", kitName);
+      return;
     }
 
-    kit.interact(event.getPlayer());
+    Interaction interaction = kit.createInteraction(event.getPlayer(), true);
+    kit.interact(interaction);
   }
 }
