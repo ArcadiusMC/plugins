@@ -4,6 +4,7 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.util.Collection;
 import java.util.List;
 import lombok.Getter;
 import net.arcadiusmc.command.Exceptions;
@@ -134,14 +135,19 @@ public abstract class CmdUsableCommand<T extends CommandUsable> extends Interact
   @Override
   protected void addPrefixedArguments(LiteralArgumentBuilder<CommandSource> builder) {
     builder.executes(c -> {
-      var user = getUserSender(c);
-      var list = usables.getUsable(user.getPlayer());
+      Collection<T> list;
+
+      if (c.getSource().isPlayer()) {
+        list = usables.getUsable(c.getSource().asPlayer());
+      } else {
+        list = usables.values();
+      }
 
       if (list.isEmpty()) {
         throw Exceptions.NOTHING_TO_LIST.exception();
       }
 
-      user.sendMessage(
+      c.getSource().sendMessage(
           Text.format("{0}s ({1, number}): &e{2}",
               NamedTextColor.GRAY,
 
