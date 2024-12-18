@@ -36,7 +36,13 @@ public abstract class CommandUsable extends Usable {
 
   @Override
   public boolean interact(Interaction interaction) {
-    if (!runConditions(interaction)) {
+    boolean admin = interaction.getBoolean("adminInteraction").orElse(false);
+
+    if (admin) {
+      if (!runAdditional(interaction)) {
+        return false;
+      }
+    } else if (!runConditions(interaction)) {
       return false;
     }
 
@@ -47,11 +53,34 @@ public abstract class CommandUsable extends Usable {
       return false;
     }
 
-    onInteract(playerOpt.get(), interaction.getBoolean("adminInteraction").orElse(false));
+    onInteract(playerOpt.get(), admin);
     return true;
   }
 
   protected abstract void onInteract(Player player, boolean adminInteraction);
+
+  private boolean runAdditional(Interaction interaction) {
+    getConditions();
+    if (additional == null) {
+      return true;
+    }
+
+    boolean res = additional.test(interaction);
+
+    if (!res) {
+      Player player = interaction.getPlayer().orElse(null);
+      Component message = formatError(0, player, interaction);
+
+      if (message != null && player != null) {
+        player.sendMessage(message);
+      }
+
+      return false;
+    }
+
+    additional.afterTests(interaction);
+    return true;
+  }
 
   @Override
   public ConditionsList getConditions() {
