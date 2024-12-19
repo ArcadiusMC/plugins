@@ -26,6 +26,10 @@ public class ObjectPlaceholderSource implements PlaceholderSource {
     Iterator<String> it = breakIntoElements(name);
     Object resultSoFar = findValue(it, ctx);
 
+    if (resultSoFar == null) {
+      return null;
+    }
+
     while (true) {
       String fieldName;
 
