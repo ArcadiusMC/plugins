@@ -175,7 +175,7 @@ public class BankRun {
         long maxTicks = toTicks(vault.getEndingTime());
         long remaining = maxTicks - ticks;
 
-        if (remaining < (maxTicks * 0.5) && remaining % 20 == 0 && remaining > 0) {
+        if (remaining <= (maxTicks * 0.5) && remaining % 20 == 0 && remaining > 0) {
           long secondsLeft = remaining / 20;
 
           Component title = Messages.render("bankruns.kickout.title")
