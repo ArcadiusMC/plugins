@@ -23,6 +23,8 @@ import net.arcadiusmc.core.commands.admin.CommandLaunch;
 import net.arcadiusmc.core.commands.admin.CommandMemory;
 import net.arcadiusmc.core.commands.admin.CommandPlayerTime;
 import net.arcadiusmc.core.commands.admin.CommandPlayerWorldBorder;
+import net.arcadiusmc.core.commands.admin.CommandRunCommandList;
+import net.arcadiusmc.core.commands.admin.CommandRunMulti;
 import net.arcadiusmc.core.commands.admin.CommandSign;
 import net.arcadiusmc.core.commands.admin.CommandSilently;
 import net.arcadiusmc.core.commands.admin.CommandSkull;
@@ -108,6 +110,8 @@ public final class CoreCommands {
     new CommandCreateSummon();
     new CommandPlayerWorldBorder();
     new CommandSilently();
+    new CommandRunMulti();
+    new CommandRunCommandList(plugin);
 
     if (Loggers.getLogger().isDebugEnabled()) {
       new CommandHalt();
