@@ -61,7 +61,11 @@ class DisplayEntry implements Comparable<DisplayEntry> {
     condition.put("random", random);
     condition.put("date", date);
 
-    ExecResult<Object> evalResult = condition.clearEvaluationBindings().evaluate().logError();
+    ExecResult<Object> evalResult = condition.clearEvaluationBindings().evaluate();
+
+    if (!evalResult.isSuccess()) {
+      condition.close();
+    }
 
     return ExecResults.toBoolean(evalResult).result().orElse(false);
   }
