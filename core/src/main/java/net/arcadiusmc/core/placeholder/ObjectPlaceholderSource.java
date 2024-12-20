@@ -74,7 +74,7 @@ public class ObjectPlaceholderSource implements PlaceholderSource {
         return null;
       }
 
-      el = (el.isEmpty() ? "" : ".") + it.next();
+      el = el + (el.isEmpty() ? "" : ".") + it.next();
       result = ctx.context().get(el);
     }
 
