@@ -8,7 +8,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import net.arcadiusmc.command.ArcSuggestions;
 import net.arcadiusmc.command.arguments.ParseResult;
@@ -20,7 +19,6 @@ import net.arcadiusmc.waypoints.Waypoint;
 import net.arcadiusmc.waypoints.WaypointExtension;
 import net.arcadiusmc.waypoints.WaypointManager;
 import net.arcadiusmc.waypoints.WaypointProperties;
-import net.arcadiusmc.waypoints.WaypointProperty;
 import net.forthecrown.grenadier.CommandSource;
 import net.forthecrown.grenadier.Completions;
 import net.forthecrown.grenadier.Readers;
@@ -98,6 +96,7 @@ public class WaypointArgument implements ArgumentType<ParseResult<Waypoint>> {
     // Suggest names and only include aliases if the input is longer
     // than 3 characters
     String remaining = builder.getRemainingLowerCase();
+    boolean admin = source.hasPermission(WPermissions.WAYPOINTS_ADMIN);
 
     for (Waypoint waypoint : manager.getWaypoints()) {
       String name = waypoint.get(WaypointProperties.NAME);
@@ -106,6 +105,9 @@ public class WaypointArgument implements ArgumentType<ParseResult<Waypoint>> {
         continue;
       }
       if (!Completions.matches(remaining, name)) {
+        continue;
+      }
+      if (waypoint.get(WaypointProperties.DISABLED) && !admin) {
         continue;
       }
 
