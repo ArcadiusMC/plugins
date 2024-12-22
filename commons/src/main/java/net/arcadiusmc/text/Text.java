@@ -698,11 +698,11 @@ public final class Text {
       builder.append(':');
     }
 
-    builder.append(minutes)
-        .append(':')
-        .append(seconds)
-        .append(':')
-        .append(milliseconds);
+    appendPadded(builder, minutes);
+    builder.append(":");
+    appendPadded(builder, seconds);
+    builder.append(":");
+    appendPadded(builder, milliseconds);
 
     return builder.toString();
   }
