@@ -7,6 +7,8 @@ import net.kyori.adventure.util.Ticks;
 import org.bukkit.Location;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Transformation;
+import org.spongepowered.math.vector.Vector3f;
 
 public class HologramTicker {
 
@@ -55,6 +57,30 @@ public class HologramTicker {
       }
 
       hologram.setLocation(loc, false);
+      updateFromEntity(gotten, hologram);
     }
+  }
+
+  private void updateFromEntity(TextDisplay display, Hologram h) {
+    TextDisplayMeta meta = h.getDisplayMeta();
+    Transformation trans = display.getTransformation();
+
+    meta.setScale(toSponge(trans.getScale()));
+    meta.setTranslation(toSponge(trans.getTranslation()));
+    meta.setBillboard(display.getBillboard());
+    meta.setAlign(display.getAlignment());
+    meta.setBrightness(display.getBrightness());
+    meta.setBackgroundColor(display.getBackgroundColor());
+    meta.setYaw(display.getYaw());
+    meta.setPitch(display.getPitch());
+    meta.setShadowed(display.isShadowed());
+    meta.setSeeThrough(meta.isSeeThrough());
+    meta.setLineWidth(meta.getLineWidth());
+    meta.setOpacity(display.getTextOpacity());
+
+  }
+
+  private Vector3f toSponge(org.joml.Vector3f joml) {
+    return Vector3f.from(joml.x, joml.y, joml.z);
   }
 }
