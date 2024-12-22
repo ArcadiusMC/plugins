@@ -28,9 +28,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 @Getter
 public class BankPlugin extends JavaPlugin {
 
-  static final int ENTER_SUCCESS = 0;
-  static final int ENTER_ALREADY_IN_VAULT = 1;
-  static final int ENTER_UNKNOWN_WORLD = 2;
+  public static final int ENTER_SUCCESS = 0;
+  public static final int ENTER_ALREADY_IN_VAULT = 1;
+  public static final int ENTER_UNKNOWN_WORLD = 2;
+  public static final int ENTER_VAULT_IN_USE = 3;
 
   private final Map<String, BankVault> vaultMap = new HashMap<>();
   private final Map<UUID, BankRun> sessionMap = new HashMap<>();
@@ -119,6 +120,14 @@ public class BankPlugin extends JavaPlugin {
     BankRun run = sessionMap.get(user.getUniqueId());
     if (run != null) {
       return ENTER_ALREADY_IN_VAULT;
+    }
+
+    for (BankRun value : sessionMap.values()) {
+      if (!value.getVaultKey().equals(vaultKey)) {
+        continue;
+      }
+
+      return ENTER_VAULT_IN_USE;
     }
 
     World world = Bukkit.getWorld(vault.getWorldName());

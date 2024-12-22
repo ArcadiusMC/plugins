@@ -3,6 +3,7 @@ package net.arcadiusmc.bank;
 import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 import static net.arcadiusmc.bank.BankPlugin.ENTER_ALREADY_IN_VAULT;
 import static net.arcadiusmc.bank.BankPlugin.ENTER_UNKNOWN_WORLD;
+import static net.arcadiusmc.bank.BankPlugin.ENTER_VAULT_IN_USE;
 
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -231,6 +232,12 @@ public class CommandBankVault extends BaseCommand {
           .addValue("vault", vaultKey)
           .addValue("player", user)
           .addValue("worldName", vault.getWorldName())
+          .exception(c.getSource());
+    }
+    if (res == ENTER_VAULT_IN_USE) {
+      throw Messages.render("cmd.bankruns.error.vaultInUse")
+          .addValue("vault", vaultKey)
+          .addValue("player", user)
           .exception(c.getSource());
     }
 

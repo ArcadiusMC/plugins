@@ -1,6 +1,6 @@
 package net.arcadiusmc.bank.menus;
 
-import static net.kyori.adventure.text.Component.text;
+import static net.arcadiusmc.bank.BankPlugin.ENTER_VAULT_IN_USE;
 
 import com.google.common.base.Strings;
 import java.util.ArrayList;
@@ -17,13 +17,13 @@ import net.arcadiusmc.dom.TagNames;
 import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.EventTypes;
 import net.arcadiusmc.dom.event.MouseEvent;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.Users;
 import net.arcadiusmc.utils.inventory.ItemList;
 import net.arcadiusmc.utils.inventory.ItemLists;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.forthecrown.nbt.CompoundTag;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.inventory.PlayerInventory;
 import org.slf4j.Logger;
 
@@ -74,13 +74,17 @@ public class EnterVaultPage {
       });
 
       if (tickets.totalItemCount() < 1) {
-        user.sendMessage(text("You need at least 1 ticket for this vault!", NamedTextColor.RED));
+        user.sendMessage(Messages.renderText("bankruns.ticketRequired", user));
         return;
       }
 
       tickets.removeItems(1);
 
-      plugin.startRun(user, vault, vaultKey, "default");
+      int res = plugin.startRun(user, vault, vaultKey, "default");
+
+      if (res == ENTER_VAULT_IN_USE) {
+        user.sendMessage(Messages.renderText("bankruns.vaultInUse", user));
+      }
     });
   }
 

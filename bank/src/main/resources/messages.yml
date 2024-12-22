@@ -7,6 +7,9 @@ bankruns:
   completed:        "&a&lTimes up! &7Made it out of the vault with &6${coinEarnings}&r of coins."
   kickout.title:    "&c&l${secondsLeft}"
   kickout.subtitle: "&6Until total loss of gains."
+  ticketRequired:   "&cYou need at least 1 ticket for this vault!"
+  vaultInUse:       "&cVault is currently in use."
+
 
 cmd.bankruns:
   _style: $normal
@@ -16,6 +19,7 @@ cmd.bankruns:
     alreadyInVault: "${player} is already doing a bank run."
     notInVault:     "${player} is not in any bank run."
     unknownWorld:   "Cannot make ${player} enter vault! ${vault} has unknown world '${worldName}'"
+    vaultInUse:     "Vault already in use."
 
   debug:            "Set &edebug.${debugName}&r to &6${state}&r."
   debug.toggle:     "Set bank plugin debug mode to &e${state}&r."
