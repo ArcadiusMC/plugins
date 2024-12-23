@@ -78,13 +78,14 @@ public class EnterVaultPage {
         return;
       }
 
-      tickets.removeItems(1);
-
       int res = plugin.startRun(user, vault, vaultKey, "default");
 
       if (res == ENTER_VAULT_IN_USE) {
         user.sendMessage(Messages.renderText("bankruns.vaultInUse", user));
+        return;
       }
+
+      tickets.removeItems(1);
     });
   }
 
