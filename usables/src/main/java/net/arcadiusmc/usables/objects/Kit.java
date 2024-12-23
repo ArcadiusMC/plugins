@@ -2,21 +2,15 @@ package net.arcadiusmc.usables.objects;
 
 import java.util.Collection;
 import java.util.Objects;
-import java.util.Optional;
-import net.forthecrown.nbt.CompoundTag;
 import net.arcadiusmc.text.TextWriter;
-import net.arcadiusmc.usables.Condition.TransientCondition;
-import net.arcadiusmc.usables.Interaction;
 import net.arcadiusmc.utils.inventory.ItemArrayList;
 import net.arcadiusmc.utils.inventory.ItemList;
 import net.arcadiusmc.utils.inventory.ItemLists;
 import net.arcadiusmc.utils.inventory.ItemStacks;
 import net.arcadiusmc.utils.io.TagUtil;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import net.forthecrown.nbt.CompoundTag;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.Nullable;
 
 public class Kit extends CommandUsable {
 
@@ -28,19 +22,12 @@ public class Kit extends CommandUsable {
 
   @Override
   protected void onInteract(Player player, boolean adminInteraction) {
-    for (ItemStack item : items) {
-      player.getInventory().addItem(item.clone());
-    }
+    ItemStacks.giveOrDrop(player.getInventory(), items);
   }
 
   @Override
   public String getCommandPrefix() {
     return "/kit " + getName();
-  }
-
-  @Override
-  protected TransientCondition additionalCondition() {
-    return new InventoryCondition();
   }
 
   @Override
@@ -76,28 +63,5 @@ public class Kit extends CommandUsable {
 
     this.items.clear();
     this.items.addAll(ItemLists.cloneAllItems(items));
-  }
-
-  private class InventoryCondition implements TransientCondition {
-    @Override
-    public boolean test(Interaction interaction) {
-      Optional<Player> playerOpt = interaction.getPlayer();
-
-      if (playerOpt.isEmpty()) {
-        return false;
-      }
-
-      return ItemStacks.hasRoom(playerOpt.get().getInventory(), items);
-    }
-
-    @Override
-    public Component failMessage(Interaction interaction) {
-      return Component.text("Not enough inventory space", NamedTextColor.GRAY);
-    }
-
-    @Override
-    public @Nullable Component displayInfo() {
-      return Component.text("Inventory space check");
-    }
   }
 }
