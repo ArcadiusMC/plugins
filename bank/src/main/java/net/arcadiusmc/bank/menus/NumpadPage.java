@@ -9,6 +9,7 @@ import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.TextNode;
 import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.EventTypes;
+import net.arcadiusmc.dom.event.MouseButton;
 import net.arcadiusmc.dom.event.MouseEvent;
 
 public class NumpadPage {
@@ -117,6 +118,10 @@ public class NumpadPage {
 
     @Override
     public void handleEvent(MouseEvent event) {
+      if (event.getButton() != MouseButton.RIGHT) {
+        return;
+      }
+
       Element target = event.getTarget();
       if (target == null) {
         return;

@@ -7,6 +7,8 @@ import net.arcadiusmc.bank.BankRun.RunState;
 import net.arcadiusmc.dom.Document;
 import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.event.EventTypes;
+import net.arcadiusmc.dom.event.MouseButton;
+import net.arcadiusmc.dom.event.MouseEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.slf4j.Logger;
@@ -36,6 +38,11 @@ public class FinishRunPage {
     }
 
     button.addEventListener(EventTypes.CLICK, event -> {
+      MouseEvent mev = (MouseEvent) event;
+      if (mev.getButton() != MouseButton.RIGHT) {
+        return;
+      }
+
       if (bankRun.getState() == RunState.INACTIVE) {
         return;
       }

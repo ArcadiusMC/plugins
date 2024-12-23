@@ -16,6 +16,7 @@ import net.arcadiusmc.dom.Element;
 import net.arcadiusmc.dom.TagNames;
 import net.arcadiusmc.dom.event.EventListener;
 import net.arcadiusmc.dom.event.EventTypes;
+import net.arcadiusmc.dom.event.MouseButton;
 import net.arcadiusmc.dom.event.MouseEvent;
 import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.user.User;
@@ -56,6 +57,11 @@ public class EnterVaultPage {
     //appendVariations(document, vault);
 
     element.addEventListener(EventTypes.CLICK, event -> {
+      MouseEvent mev = (MouseEvent) event;
+      if (mev.getButton() != MouseButton.RIGHT) {
+        return;
+      }
+
       User user = Users.get(event.getDocument().getView().getPlayer());
       PlayerInventory inventory = user.getInventory();
 
