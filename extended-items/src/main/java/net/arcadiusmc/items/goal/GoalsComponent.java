@@ -69,18 +69,35 @@ public class GoalsComponent extends ItemComponent implements CallbackComponent, 
     }
 
     this.progress.put(key, progress);
-
-    if (!(progress >= goal.goal())) {
-      return;
-    }
-
     Level level = item.getComponent(Level.class).orElse(null);
 
     if (level == null) {
       return;
     }
 
+    if (!shouldLevelup(level)) {
+      return;
+    }
+
     level.levelUp(player);
+  }
+
+  private boolean shouldLevelup(Level level) {
+    int idx = level.getLevel() - 1;
+    if (idx >= goals.levelGoals.length) {
+      return false;
+    }
+
+    LevelGoalImpl levelGoal = goals.levelGoals[idx];
+    for (Goal goal : levelGoal.goals) {
+      float f = progress.getFloat(goal.trigger().toString());
+
+      if (f < goal.goal()) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   private Goal findGoal(GoalKey trigger) {
