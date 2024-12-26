@@ -47,6 +47,10 @@ public class FinishRunPage {
         return;
       }
 
+      event.stopPropagation();
+      event.preventDefault();
+
+      event.getDocument().getView().close();
       bankRun.kick(false);
     });
   }
