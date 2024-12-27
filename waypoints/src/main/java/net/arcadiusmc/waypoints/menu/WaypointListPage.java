@@ -2,9 +2,8 @@ package net.arcadiusmc.waypoints.menu;
 
 import com.google.common.base.Strings;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 import net.arcadiusmc.menu.ClickContext;
 import net.arcadiusmc.menu.Menus;
 import net.arcadiusmc.menu.page.ListPage;
@@ -13,9 +12,11 @@ import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.UserProperty;
 import net.arcadiusmc.utils.context.Context;
 import net.arcadiusmc.utils.inventory.ItemStacks;
+import net.arcadiusmc.waypoints.WPermissions;
 import net.arcadiusmc.waypoints.Waypoint;
 import net.arcadiusmc.waypoints.WaypointManager;
 import net.arcadiusmc.waypoints.WaypointPrefs;
+import net.arcadiusmc.waypoints.WaypointProperties;
 import net.arcadiusmc.waypoints.visit.WaypointVisit;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
@@ -73,11 +74,16 @@ public class WaypointListPage extends ListPage<Waypoint> {
   public static List<Waypoint> getList(User user) {
     WaypointManager manager = WaypointManager.getInstance();
 
-    Stream<Waypoint> stream = manager.getWaypoints()
+    List<Waypoint> list = manager.getWaypoints()
         .stream()
-        .filter(waypoint -> !Strings.isNullOrEmpty(waypoint.getEffectiveName()));
-
-    ArrayList<Waypoint> list = new ArrayList<>(stream.toList());
+        .filter(waypoint -> !Strings.isNullOrEmpty(waypoint.getEffectiveName()))
+        .filter(waypoint -> {
+          if (user.hasPermission(WPermissions.WAYPOINTS_ADMIN)) {
+            return true;
+          }
+          return !waypoint.get(WaypointProperties.DISABLED);
+        })
+        .collect(Collectors.toList());
 
     WaypointOrder order = user.get(WaypointPrefs.MENU_ORDER);
     boolean inverted = user.get(WaypointPrefs.MENU_ORDER_INVERTED);
