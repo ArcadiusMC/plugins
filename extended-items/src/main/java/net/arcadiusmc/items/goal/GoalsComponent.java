@@ -68,7 +68,7 @@ public class GoalsComponent extends ItemComponent implements CallbackComponent, 
       return;
     }
 
-    this.progress.put(key, progress);
+    this.progress.put(key, Math.min(progress, goal.goal()));
     Level level = item.getComponent(Level.class).orElse(null);
 
     if (level == null) {
