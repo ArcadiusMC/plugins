@@ -1,10 +1,7 @@
 package net.arcadiusmc.pirates.catacombs
 
 import net.arcadiusmc.Worlds
-import net.arcadiusmc.pirates.copyBlocks
-import net.arcadiusmc.pirates.getRandomSkeletonType
-import net.arcadiusmc.pirates.riseFromTheGrave
-import net.arcadiusmc.pirates.spawnSkeletonTypeAt
+import net.arcadiusmc.pirates.*
 import net.arcadiusmc.utils.Tasks
 import net.arcadiusmc.utils.math.Vectors
 import net.arcadiusmc.utils.math.WorldBounds3i
@@ -103,6 +100,10 @@ private fun spawn(boundingBox: WorldBounds3i, player: Player) {
 
   currentState.totalSpawnedHealth = 0.0
 
+  val modifiers = createModifiers {
+    attackDamage = 0.5f
+  }
+
   for (spawn in SPAWNS) {
     val pitch = currentState.random.nextFloat(-22.5f, 22.5f)
     val yaw = currentState.random.nextFloat(-180f, 180f)
@@ -110,7 +111,7 @@ private fun spawn(boundingBox: WorldBounds3i, player: Player) {
     val location = Location(world, spawn.x, spawn.y - 2.0, spawn.z, yaw, pitch)
     val type = getRandomSkeletonType(currentState.random)
 
-    val skeleton = spawnSkeletonTypeAt(type, location, currentState.random)
+    val skeleton = spawnSkeletonTypeAt(type, location, currentState.random, modifiers)
 
     skeleton.removeWhenFarAway = false
     skeleton.isPersistent = true

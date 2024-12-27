@@ -23,6 +23,13 @@ import org.bukkit.scoreboard.Team
 import java.util.*
 import java.util.function.Consumer
 
+class SkeletonTypeModifiers {
+  var health: Float = 1.0f
+  var attackDamage: Float = 1.0f
+  var followRange: Float = 1.0f
+  var moveSpeed: Float = 1.0f
+}
+
 class PirateSkeletonType {
   var name: Component? = null
   var entityType: Class<out AbstractSkeleton> = Skeleton::class.java
@@ -52,6 +59,12 @@ const val LEVITATION_POTION_AMPLIFIER = 2
 const val LEVITATION_POTION_DURATION = 1 * 20 // 2 seconds
 
 val SKELETON_TYPES: WeightedList<PirateSkeletonType> = createTypes()
+
+fun createModifiers(act: (SkeletonTypeModifiers.() -> Unit)?): SkeletonTypeModifiers {
+  val mods = SkeletonTypeModifiers()
+  act?.invoke(mods)
+  return mods
+}
 
 private fun createTypes(): WeightedList<PirateSkeletonType> {
   val list = WeightedList<PirateSkeletonType>()
@@ -230,7 +243,12 @@ private class GraveRiseTask(val skeleton: LivingEntity, val moveSpeed: Double):
   }
 }
 
-fun spawnSkeletonTypeAt(type: PirateSkeletonType, location: Location, random: Random): AbstractSkeleton {
+fun spawnSkeletonTypeAt(
+  type: PirateSkeletonType,
+  location: Location,
+  random: Random,
+  mods: SkeletonTypeModifiers? = null
+): AbstractSkeleton {
   val w = location.world
 
   return w.spawn(location, type.entityType) {
@@ -258,10 +276,10 @@ fun spawnSkeletonTypeAt(type: PirateSkeletonType, location: Location, random: Ra
     equip.setItemInMainHand(getClonedItem(type.mainhand, random))
     equip.setItemInOffHand(getClonedItem(type.offhand, random))
 
-    applyAttributeValue(it, Attribute.GENERIC_MAX_HEALTH, type.health)
-    applyAttributeValue(it, Attribute.GENERIC_MOVEMENT_SPEED, type.moveSpeed)
-    applyAttributeValue(it, Attribute.GENERIC_ATTACK_DAMAGE, type.attackDamage)
-    applyAttributeValue(it, Attribute.GENERIC_FOLLOW_RANGE, type.followRange)
+    applyAttributeValue(it, Attribute.GENERIC_MAX_HEALTH, type.health, mods?.health)
+    applyAttributeValue(it, Attribute.GENERIC_MOVEMENT_SPEED, type.moveSpeed, mods?.moveSpeed)
+    applyAttributeValue(it, Attribute.GENERIC_ATTACK_DAMAGE, type.attackDamage, mods?.attackDamage)
+    applyAttributeValue(it, Attribute.GENERIC_FOLLOW_RANGE, type.followRange, mods?.followRange)
 
     it.health = it.getAttribute(Attribute.GENERIC_MAX_HEALTH)!!.value
 
@@ -269,13 +287,13 @@ fun spawnSkeletonTypeAt(type: PirateSkeletonType, location: Location, random: Ra
   }
 }
 
-private fun applyAttributeValue(e: Attributable, attr: Attribute, value: Float?) {
+private fun applyAttributeValue(e: Attributable, attr: Attribute, value: Float?, modifier: Float?) {
   if (value == null) {
     return
   }
 
   val inst = e.getAttribute(attr) ?: return
-  inst.baseValue = value.toDouble()
+  inst.baseValue = (value * (modifier ?: 1.0f)).toDouble()
 }
 
 private fun getClonedItem(list: List<ItemStack?>?, random: Random): ItemStack? {
