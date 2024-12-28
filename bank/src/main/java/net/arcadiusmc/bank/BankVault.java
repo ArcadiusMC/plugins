@@ -83,6 +83,10 @@ public class BankVault {
         builder.optional("advancement", ExtraCodecs.NAMESPACED_KEY)
             .getter(BankVault::getAdvancementKey)
             .setter(BankVault::setAdvancementKey);
+
+        builder.optional("run-count-objective", Codec.STRING)
+            .getter(BankVault::getCounterObjectiveName)
+            .setter(BankVault::setCounterObjectiveName);
       })
       .codec(Codec.unit(BankVault::new));
 
@@ -98,6 +102,7 @@ public class BankVault {
   private final FullPosition menuExitPosition = new FullPosition();
 
   private NamespacedKey advancementKey;
+  private String counterObjectiveName = "";
 
   private String worldName;
   private Bounds3i vaultRoom = Bounds3i.EMPTY;

@@ -53,6 +53,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Score;
+import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.util.BoundingBox;
 import org.joml.Vector3i;
 import org.slf4j.Logger;
@@ -237,6 +240,7 @@ public class BankRun {
 
     if (!removeGains) {
       grantAdvancement();
+      incrementCounterScore();
 
       player.sendMessage(
           Messages.render("bankruns.completed")
@@ -257,6 +261,24 @@ public class BankRun {
     }
 
     compareAndRemoveItems();
+  }
+
+  private void incrementCounterScore() {
+    String objectiveName = vault.getCounterObjectiveName();
+    if (Strings.isNullOrEmpty(objectiveName)) {
+      return;
+    }
+
+    Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+    Objective obj = scoreboard.getObjective(objectiveName);
+
+    if (obj == null) {
+      LOGGER.warn("No objective named '{}' found. Cannot increment run counter", objectiveName);
+      return;
+    }
+
+    Score score = obj.getScore(player);
+    score.setScore(score.getScore() + 1);
   }
 
   private void grantAdvancement() {

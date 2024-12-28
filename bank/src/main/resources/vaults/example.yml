@@ -41,6 +41,14 @@ world-name: void
 ending-duration: 5s
 
 #
+# Name of the scoreboard objective used to count how many runs a player
+# has done.
+#
+# Default: "" (None, runs not counted)
+#
+run-count-objective: "bankruns.example"
+
+#
 # Advancement given to players after they complete a run in this vault
 #
 # Default: "" (No advancement)
