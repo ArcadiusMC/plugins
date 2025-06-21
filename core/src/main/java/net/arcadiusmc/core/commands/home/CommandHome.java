@@ -5,6 +5,7 @@ import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.command.help.UsageFactory;
 import net.arcadiusmc.core.CorePermissions;
 import net.arcadiusmc.core.user.UserHomes;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.text.loader.MessageRender;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.UserTeleport;
@@ -79,6 +80,9 @@ public class CommandHome extends BaseCommand {
       return 0;
     }
 
+    if (!WgUtils.testFlag(user.getLocation(), WgUtils.PLAYER_TELEPORTING, user.getPlayer())) {
+      throw Messages.tpNotAllowedHere(source);
+    }
     if (!WgUtils.testFlag(l, WgUtils.PLAYER_TELEPORTING, user.getPlayer())) {
       throw HomeMessages.FORBIDDEN.exception(user);
     }

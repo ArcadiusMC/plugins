@@ -3,6 +3,7 @@ package net.arcadiusmc.core.commands;
 import net.arcadiusmc.command.BaseCommand;
 import net.arcadiusmc.core.CoreExceptions;
 import net.arcadiusmc.core.CorePermissions;
+import net.arcadiusmc.text.Messages;
 import net.arcadiusmc.user.User;
 import net.arcadiusmc.user.UserTeleport;
 import net.arcadiusmc.utils.WgUtils;
@@ -38,6 +39,9 @@ public class CommandBack extends BaseCommand {
 
           if (!WgUtils.testFlag(ret, WgUtils.PLAYER_TELEPORTING)) {
             throw CoreExceptions.RETURN_FORBIDDEN.exception(user);
+          }
+          if (!WgUtils.testFlag(user.getLocation(), WgUtils.PLAYER_TELEPORTING, user.getPlayer())) {
+            throw Messages.tpNotAllowedHere(user);
           }
 
           user.createTeleport(user::getReturnLocation, UserTeleport.Type.BACK)

@@ -6,6 +6,7 @@ import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.event.ClickEvent.runCommand;
 
 import com.google.common.base.Joiner;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -428,5 +429,9 @@ public interface Messages {
         .addValue("remaining", remaining)
         .addValue("cooldown", cooldownLength)
         .create(viewer);
+  }
+
+  static CommandSyntaxException tpNotAllowedHere(Audience viewer) {
+    return render("errors.tpFromHere").exception(viewer);
   }
 }

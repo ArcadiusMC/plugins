@@ -153,6 +153,7 @@ errors:
   inventoryEmpty:     "Inventory empty!"
   mustHoldItem:       "Must be holding an item!"
   invalidColor:       "Invalid color ${color}"
+  tpFromHere:         "&cTeleportation not allowed here!"
 
 teleporting:
   _style: $normal
