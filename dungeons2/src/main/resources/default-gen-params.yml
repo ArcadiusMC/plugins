@@ -1,0 +1,44 @@
+#
+# How many rooms deep can a dungeon generate.
+#
+depth-range:
+  min: 5
+  max: 10
+
+#
+# How many non-connector rooms can generate back to back
+#
+room-depth-range:
+  min: 1
+  max: 1
+
+# How many connector rooms (hallways, stairways) can generate back t o back
+connector-depth-range:
+  min: 1
+  max: 2
+
+#
+# Max number of open exits a non-connector room is allowed to have.
+#
+max-room-exits: 2
+
+#
+# Max number of open exits a connector room is allowed to have
+#
+max-connector-exits: 4
+
+#
+# Chance for non-connector rooms to be 'open', meaning other rooms
+# can generate after the room
+#
+room-open-chance: 0.1
+
+#
+# Chance for a closed gate to be replaced with a 'decorated' gate
+#
+decorated-gate-chance: 0.5
+
+#
+# Number of rooms required for a level to be valid.
+#
+required-rooms: 3
