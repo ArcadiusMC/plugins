@@ -1,0 +1,234 @@
+deco-parameters:
+  block-rot:
+    noise-scale: 0.08
+    frequency: 10
+    amplitude: 0.5
+    octaves: 4
+  mossy-radius: 1
+  moss-dropoff-after: 1
+  glow-lichen-instead-of-moss-rate: 0.10
+
+decoration-passes:
+  - type: vines
+    name: cave-vines
+    settings:
+      noise:
+        noise-map-name: 'vegetation'
+        noise-scale: 0.1
+        frequency: 20
+        amplitude: 0.8
+        octaves: 5
+        noise-gate: 0.6
+      vine-block: 'cave_vines_plant'
+      bottom-block: 'cave_vines'
+      max-length: 4
+      berry-rate: 0.25
+
+  - type: leaves
+    name: leaves
+    settings:
+      noise:
+        noise-map-name: 'vegetation'
+        noise-scale: 0.1
+        frequency: 20
+        amplitude: 0.8
+        octaves: 5
+        noise-gate: 0.6
+      leaf-materials:
+        - "oak_leaves"
+        - "spruce_leaves"
+        - "birch_leaves"
+        - "jungle_leaves"
+        - "acacia_leaves"
+        - "dark_oak_leaves"
+        - "mangrove_leaves"
+      can-replace:
+        - "glow_lichen"
+        - "#flowers"
+        - "short_grass"
+        - "tall_grass"
+      ceiling-leaves-allowed: true
+      floor-leaves-allowed: true
+      max-length: 10
+
+  - type: overgrowth
+    name: moss-and-grass
+    settings:
+      noise:
+        noise-map-name: 'vegetation'
+        noise-scale: 0.1
+        frequency: 20
+        amplitude: 0.8
+        octaves: 5
+        noise-gate: 0.58
+      overgrowth-blocks:
+        - "moss_block"
+      replaceable:
+        - "stone"
+        - "andesite"
+        - "cobblestone"
+      maybe-replaceable:
+        - "stone_bricks"
+        - "deepslate"
+        - "andesite_stairs"
+        - "cobblestone_stairs"
+
+  - type: foliage
+    name: foliage
+    settings:
+      foliage-rate: 0.75
+      blocks:
+        - value: 'short_grass'
+          weight: 10
+        - value: 'tall_grass'
+          weight: 5
+        - value: 'poppy'
+          weight: 5
+        - value: 'torchflower'
+          weight: 5
+        - value: 'oak_leaves'
+          weight: 1
+        - value: 'spruce_leaves'
+          weight: 1
+        - value: 'birch_leaves'
+          weight: 1
+        - value: 'jungle_leaves'
+          weight: 1
+        - value: 'acacia_leaves'
+          weight: 1
+        - value: 'dark_oak_leaves'
+          weight: 1
+        - value: 'mangrove_leaves'
+          weight: 1
+      generate-on:
+        - "moss_block"
+        - "dirt"
+        - "grass_block"
+
+  - type: puddles
+    name: puddles
+    settings:
+      noise:
+        noise-scale: 0.08
+        frequency: 10
+        amplitude: 0.5
+        octaves: 4
+        noise-gate: 0.6
+      waterlogged: true
+
+  - type: 'functions/hanging-lights'
+    name: hanging-lights
+    settings:
+      max-length: 4
+
+  - type: candles
+    name: candles
+    settings:
+      noise:
+        noise-scale: 0.08
+        frequency: 1
+        amplitude: 1
+        octave: 1
+        noise-gate: 0.65
+      candle-blocks:
+        - "candle"
+        - "white_candle"
+        - "orange_candle"
+        - "gray_candle"
+        - "light_gray_candle"
+        - "brown_candle"
+        - "green_candle"
+      lit-candle-rate: 1.0
+      bind-to-wall: true
+
+  - type: 'functions/fire'
+    name: fire
+
+  - type: edge-rot
+    name: edge-rot
+    disabled: true
+    settings:
+      noise-scale: 1
+      frequency: 1
+      amplitude: 1
+      octaves: 1
+
+  - type: spawners
+    name: spawners
+    settings:
+      override-all: true
+      can-replace:
+        - "#air"
+        - "#flowers"
+        - "#leaves"
+        - "tall_grass"
+        - "short_grass"
+      entries:
+        - weight: 10
+          value:
+            max-spawn-delay: 100
+            spawn-count: 4
+            spawn-range: 5
+            entities:
+              - entity:
+                  entity-type: "skeleton"
+                  data: "{asdf:1b}"
+                weight: 10
+
+
+pieces:
+  # Root
+  - structure: dungeons/roots/root_1
+    type: root
+
+  # Boss Rooms
+  - structure: dungeons/boss_rooms/room1
+    type: boss_room
+
+  # Connectors
+  - structure: dungeons/3_way_left_right_hallway
+    type: connector
+  - structure: dungeons/4_way_hallway
+    type: connector
+  - structure: dungeons/lturn_left
+    type: connector
+  - structure: dungeons/short_hallway
+    type: connector
+
+  # Stair connectors
+  - structure: dungeons/stairs/3_way
+    type: connector
+  - structure: dungeons/stairs/4_way
+    type: connector
+  - structure: dungeons/stairs/less_short
+    type: connector
+  - structure: dungeons/stairs/regular
+    type: connector
+  - structure: dungeons/stairs/short
+    type: connector
+
+  # Regular rooms
+  - structure: dungeons/rooms/jail
+    type: mob_room
+  - structure: dungeons/rooms/library
+    type: mob_room
+  - structure: dungeons/rooms/lion
+    type: mob_room
+  - structure: dungeons/rooms/skylights
+    type: mob_room
+  - structure: dungeons/rooms/wide
+    type: mob_room
+  - structure: dungeons/mausoleum
+    type: mob_room
+
+  # Regular gates
+  - structure: dungeons/default_gate
+    type: open_gate
+  - structure: dungeons/closed_gate
+    type: closed_gate
+
+  # Decorated gates
+  - structure: dungeons/knight_gate
+    type: decorated_gate
+  - structure: dungeons/collapsed_gate
+    type: decorated_gate
