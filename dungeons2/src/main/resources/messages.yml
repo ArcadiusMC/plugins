@@ -1,0 +1,41 @@
+_namespace: dungeons
+
+reloadedConfig:       "&7Reloaded Dungeons Config."
+resetWorld:           "&7Reset dungeon world."
+
+sessionList.header:   "&7${border:20} &eActive sessions: &7${border:20}"
+
+sizes:
+  small:              "Small"
+  medium:             "Medium"
+  large:              "Large"
+
+sessions:
+  _style: gray
+  closed:             "Closed session ${session}."
+  addedPlayers:       "Added &e${players}&r to session &6${session}&r."
+  removedPlayers:     "Removed &e${players}&r from session &6${session}&r."
+  created:            "Created new session with &e${players} players&r: &6${session}&r."
+  started:            "Forced &e${session}&r to enter the dungeons."
+
+usersettings:
+  _style: gray
+  query: |-
+    &e${player} dungeon user settings:&r
+    Difficulty: &e${difficulty}&r
+    Level Size: &e${levelSize}&r
+  difficulty:         "Set &e${player}&r dungeon difficulty setting to &6${difficulty}&r."
+  levelSize:          "Set &e${player}&r dungeon size setting to &6${levelSize}&r."
+
+sessionDisplay:
+  name:               "[Players=${playerCount} cell=${cellX},${cellZ}]"
+  hover: |-
+    &7Players: &e${playerList}
+    &7Cell X: &e${cellX}
+    &7Cell Z: &e${cellZ}
+
+error:
+  _style: red
+  notInDungeon:       "${player} is not in the dungeon"
+  unusedCellId:       "${id} is not a currently in use Cell ID."
+  alreadyInSession:   "${player} is already in the dungeons."
