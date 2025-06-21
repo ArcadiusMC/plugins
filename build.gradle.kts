@@ -4,7 +4,6 @@ import java.time.LocalDateTime
 plugins {
   java
   id("arcadius")
-  id("io.freefair.lombok") version "8.6"
 }
 
 version = makeDateVersion()
@@ -26,9 +25,10 @@ val buildAll = task("build-all-plugins") {
   description = "Builds all plugin modules and moves them into the build directory"
 }
 
+val lombokDep = "org.projectlombok:lombok:1.18.38"
+
 subprojects {
   apply(plugin = "java")
-  apply(plugin = "io.freefair.lombok")
   apply(plugin = "arcadius")
 
   group = rootProject.group
@@ -66,10 +66,11 @@ subprojects {
 
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.10.3")
-  }
 
-  java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+    compileOnly(lombokDep)
+    annotationProcessor(lombokDep)
+    testCompileOnly(lombokDep)
+    testAnnotationProcessor(lombokDep)
   }
 
   tasks {
