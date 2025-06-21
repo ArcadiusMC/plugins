@@ -1,0 +1,19 @@
+generator-settings:
+  depth-range:
+    min: 5
+    max: 10
+  room-depth-range:
+    min: 1
+    max: 1
+  connector-depth-range:
+    min: 1
+    max: 2
+  max-room-exits: 2
+  max-connector-exits: 4
+  room-open-chance: 0.1
+  decorated-gate-chance: 0.5
+  required-rooms: 3
+
+user-settings:
+  difficulty: normal
+  size: medium
