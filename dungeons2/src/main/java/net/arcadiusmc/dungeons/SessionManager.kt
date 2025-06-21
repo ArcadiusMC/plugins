@@ -11,6 +11,7 @@ import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitTask
 import org.spongepowered.math.vector.Vector2i
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 
 const val SECTION_CELL_BITSHIFT = 11
@@ -43,12 +44,21 @@ fun toCellCenter(cellId: Long): Vector2i {
   return fromCellId(cellId).add(SECTION_CELL_SIZE / 2, SECTION_CELL_SIZE / 2)
 }
 
-class SessionManager {
+class SessionManager(val plugin: DungeonsPlugin) {
   private val byPlayerId: MutableMap<UUID, DungeonSession> = Object2ObjectOpenHashMap()
   private val byCellId: Long2ObjectMap<DungeonSession> = Long2ObjectOpenHashMap()
   private val usedCells: LongSet = LongOpenHashSet()
 
   private var tickTask: BukkitTask? = null
+
+  val usedCellIds: LongSet get() {
+    return usedCells
+  }
+
+  val sessions: Collection<DungeonSession>
+    get() {
+      return Collections.unmodifiableCollection(byCellId.values)
+    }
 
   fun close() {
     stopTicking()
@@ -85,7 +95,7 @@ class SessionManager {
     return cellId
   }
 
-  private fun findFreeCell(): Long {
+  fun findFreeCell(): Long {
     var cellX = 0
     var cellZ = 0
     var moveX = 1
@@ -123,6 +133,10 @@ class SessionManager {
     }
   }
 
+  fun getSessionByCell(cellId: Long): Optional<DungeonSession> {
+    return Optional.ofNullable(byCellId[cellId])
+  }
+
   fun getSession(player: Player): Optional<DungeonSession> {
     return Optional.ofNullable(byPlayerId[player.uniqueId])
   }
@@ -141,5 +155,24 @@ class SessionManager {
     for (player in session.getPlayers()) {
       byPlayerId.remove(player.uniqueId)
     }
+  }
+
+  fun closeAll() {
+    val list = ArrayList(this.byCellId.values)
+    for (dungeonSession in list) {
+      dungeonSession.close()
+    }
+  }
+
+  fun newSession(): DungeonSession {
+    val id = acquireCell()
+    val sess = DungeonSession(this, id)
+
+    sess.levelType = plugin.levelTypes.registry.getHolder(LevelTypeManager.REGULAR).getOrNull()
+    sess.onSessionCreate()
+
+    byCellId[id] = sess
+
+    return sess
   }
 }

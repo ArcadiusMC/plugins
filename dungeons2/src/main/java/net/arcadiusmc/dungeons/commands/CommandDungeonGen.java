@@ -525,17 +525,7 @@ public class CommandDungeonGen extends BaseCommand {
   }
 
   private static World worldReset() {
-    World world = DungeonWorld.reset();
-    world.setDifficulty(Difficulty.HARD);
-    world.setTime(6000L);
-
-    world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
-    world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
-    world.setGameRule(GameRule.DO_FIRE_TICK, false);
-    world.setGameRule(GameRule.DO_MOB_SPAWNING, false);
-    world.setGameRule(GameRule.RANDOM_TICK_SPEED, 0);
-
-    return world;
+    return DungeonWorld.reset();
   }
 
   private StringBuilder nlIndent(int ident, StringBuilder builder) {

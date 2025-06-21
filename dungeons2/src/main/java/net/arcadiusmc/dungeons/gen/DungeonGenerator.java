@@ -2,7 +2,6 @@ package net.arcadiusmc.dungeons.gen;
 
 import static org.bukkit.Material.AIR;
 import static org.bukkit.Material.GLOW_LICHEN;
-import static org.bukkit.Material.SPAWNER;
 
 import com.google.common.base.Stopwatch;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -14,14 +13,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
 import net.arcadiusmc.Loggers;
-import net.arcadiusmc.Worlds;
 import net.arcadiusmc.dungeons.DungeonConfig;
 import net.arcadiusmc.dungeons.DungeonPiece;
-import net.arcadiusmc.dungeons.LevelFunctions;
 import net.arcadiusmc.dungeons.NoiseParameter;
 import net.arcadiusmc.dungeons.gen.BlockIterations.BlockIteration;
 import net.arcadiusmc.registry.Holder;
@@ -37,19 +35,13 @@ import net.arcadiusmc.utils.VanillaAccess;
 import net.arcadiusmc.utils.math.Bounds3i;
 import net.arcadiusmc.utils.math.Direction;
 import net.arcadiusmc.utils.math.Transform;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Tag;
-import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.BlockSupport;
-import org.bukkit.block.CreatureSpawner;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.MultipleFacing;
-import org.bukkit.block.spawner.SpawnRule;
-import org.bukkit.entity.EntitySnapshot;
-import org.bukkit.entity.Skeleton;
 import org.bukkit.util.noise.NoiseGenerator;
 import org.bukkit.util.noise.PerlinNoiseGenerator;
 import org.slf4j.Logger;
@@ -87,6 +79,23 @@ public class DungeonGenerator {
 
     this.noiseGen = new PerlinNoiseGenerator(random);
     this.noiseMaps.put("noise-gen", noiseGen);
+  }
+
+  public static CompletableFuture<DungeonGenerator> generateAsync(DungeonConfig config, Random random) {
+    return CompletableFuture
+        .supplyAsync(() -> generateLevel(config, random))
+        .thenApply(root -> {
+          DungeonGenerator generator = new DungeonGenerator(root, random, config);
+          generator.generateDungeon();
+          return generator;
+        })
+        .whenComplete((blockBuffer, throwable) -> {
+          if (throwable == null) {
+            return;
+          }
+
+          LOGGER.error("Failed to generate dungeon", throwable);
+        });
   }
 
   public static DungeonPiece generateLevel(DungeonConfig config, Random random) {
@@ -166,10 +175,6 @@ public class DungeonGenerator {
   }
 
   public BlockBuffer generateDungeon() {
-    if (!position.equals(Vector3i.ZERO)) {
-      rootPiece.transform(Transform.offset(position));
-    }
-
     Stopwatch genTimer = Stopwatch.createStarted();
 
     try {
@@ -224,37 +229,6 @@ public class DungeonGenerator {
   }
 
   /* --------------------------- Spawner pass ---------------------------- */
-
-  public void spawnerPass() {
-    List<GeneratorFunction> list = getFunctions(LevelFunctions.SPAWNER);
-    World world = Worlds.overworld();
-    Location l = new Location(world, 0, 0, 0);
-
-    Skeleton skeleton = world.createEntity(l, Skeleton.class);
-
-    EntitySnapshot snapshot = skeleton.createSnapshot();
-    assert snapshot != null;
-
-    for (GeneratorFunction func : list) {
-      int x = func.getPosition().x();
-      int y = func.getPosition().y();
-      int z = func.getPosition().z();
-
-      if (!isAir(x, y, z)) {
-        continue;
-      }
-
-      CreatureSpawner state = (CreatureSpawner) SPAWNER.createBlockData().createBlockState();
-      state.setSpawnCount(3);
-      state.setMinSpawnDelay(2 * 20);
-      state.setMaxSpawnDelay(10 * 20);
-      state.setRequiredPlayerRange(10);
-
-      state.addPotentialSpawn(snapshot, 10, new SpawnRule(0, 15, 0, 15));
-
-      setBlock(x, y, z, state);
-    }
-  }
 
   public boolean hasSupport(int x, int y, int z, BlockFace face) {
     BlockState block = getBlock(x, y, z);

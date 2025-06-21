@@ -12,4 +12,5 @@ public final class LevelFunctions {
   public static final String SPAWNER = "dungeons/spawner";
   public static final String TRIAL_SPAWNER = "dungeons/trial_spawner";
   public static final String VAULT = "dungeons/vault";
+  public static final String PLAYER_SPAWNS = "dungeons/playerspawn";
 }
